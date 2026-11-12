@@ -7,17 +7,19 @@ export const accordionItem = cva('flex flex-col items-stretch', {
   variants: {
     variant: {
       menu: '',
-      footer: 'border-t border-line',
+      footer: 'border-line border-t last:border-b',
+      section: '',
     },
   },
   defaultVariants: { variant: 'menu' },
 })
 
-export const accordionTrigger = cva('flex justify-between items-center border border-transparent', {
+export const accordionTrigger = cva('flex items-center justify-between border border-transparent', {
   variants: {
     variant: {
       menu: 'py-4',
       footer: 'py-5',
+      section: 'py-3',
     },
   },
   defaultVariants: { variant: 'menu' },
@@ -28,18 +30,20 @@ export const accordionLabel = cva('text-ink', {
     variant: {
       menu: 'type-body-lg',
       footer: 'type-heading',
+      section: 'type-body-lg',
     },
   },
   defaultVariants: { variant: 'menu' },
 })
 
-export const accordionIcon = cva('w-5 h-5 text-ink')
+export const accordionIcon = cva('h-5 w-5 text-ink')
 
 export const accordionContent = cva('flex flex-col items-stretch overflow-hidden', {
   variants: {
     variant: {
       menu: 'pb-2',
       footer: 'pb-5',
+      section: 'pb-2',
     },
   },
   defaultVariants: { variant: 'menu' },

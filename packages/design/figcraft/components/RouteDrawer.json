@@ -255,7 +255,7 @@
                         "fill": "VariableID:19"
                       },
                       "textAlign": "left",
-                      "textStyle": "S:11"
+                      "textStyle": "S:22"
                     }
                   ]
                 },
@@ -344,16 +344,16 @@
             "vertical": "fill"
           },
           "boundVariables": {
-            "gap": "VariableID:41",
             "paddingHorizontal": "VariableID:44",
             "paddingVertical": "VariableID:41"
           },
           "slot": "body",
+          "overflow": "vertical",
           "layout": {
             "mode": "vertical",
             "mainAlign": "min",
             "crossAlign": "min",
-            "gap": 16,
+            "gap": 0,
             "padding": [
               16,
               24,
@@ -755,7 +755,7 @@
                         "fill": "VariableID:19"
                       },
                       "textAlign": "left",
-                      "textStyle": "S:11"
+                      "textStyle": "S:22"
                     }
                   ]
                 },
@@ -844,16 +844,16 @@
             "vertical": "fill"
           },
           "boundVariables": {
-            "gap": "VariableID:41",
             "paddingHorizontal": "VariableID:44",
             "paddingVertical": "VariableID:41"
           },
           "slot": "body",
+          "overflow": "vertical",
           "layout": {
             "mode": "vertical",
             "mainAlign": "min",
             "crossAlign": "min",
-            "gap": 16,
+            "gap": 0,
             "padding": [
               16,
               24,

@@ -33,7 +33,8 @@
           "VariableID:7",
           "VariableID:8",
           "VariableID:9",
-          "VariableID:116"
+          "VariableID:116",
+          "VariableID:135"
         ]
       },
       "VariableCollectionId:2": {
@@ -77,7 +78,8 @@
           "VariableID:127",
           "VariableID:128",
           "VariableID:129",
-          "VariableID:131"
+          "VariableID:131",
+          "VariableID:134"
         ]
       },
       "VariableCollectionId:3": {
@@ -1107,6 +1109,51 @@
           "VariableCollectionId:4/mode1": 448.0
         },
         "variableCollectionId": "VariableCollectionId:4"
+      },
+      "VariableID:134": {
+        "codeSyntax": {},
+        "description": "The hairline ring around popups: the alert dialog's ring-1 (the kit's ring-foreground/10). Ink at 10 % in both schemes.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:134",
+        "key": "VariableID:134",
+        "name": "color/popup-ring",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.10000000149011612,
+            "b": 0.07058823853731155,
+            "g": 0.062745101749897,
+            "r": 0.05098039284348488
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.10000000149011612,
+            "b": 0.9647058844566345,
+            "g": 0.9607843160629272,
+            "r": 0.95686274766922
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:135": {
+        "codeSyntax": {},
+        "description": "Monospace: key caps (the route drawer's esc). Menlo is a font Tailwind's mono stack already names, so code keeps that stack.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:135",
+        "key": "VariableID:135",
+        "name": "font/mono",
+        "remote": false,
+        "resolvedType": "STRING",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:1/mode1": "Menlo"
+        },
+        "variableCollectionId": "VariableCollectionId:1"
       },
       "VariableID:14": {
         "codeSyntax": {},

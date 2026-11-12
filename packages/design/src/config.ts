@@ -80,10 +80,27 @@ type ComponentsSection = {
   /** Sets whose component sits in a line of text: its root is `inline-flex`, not `flex`. */
   inline?: string[]
   /**
-   * The Tailwind variant an `interaction` value maps to, per set, where it isn't the value itself: a Base UI
-   * part that marks its state with a data attribute, `{ "Checkbox": { "disabled": "data-disabled" } }`.
+   * The Tailwind variant an `interaction` or `position` value maps to, per set, where it isn't the value itself: a
+   * Base UI part that marks its state with a data attribute, `{ "Checkbox": { "disabled": "data-disabled" } }`, a
+   * hover that a disabled button ignores, `{ "hover": "enabled:hover" }`, or a position of its own,
+   * `{ "afterCurrent": "[[data-current]+&]" }`.
    */
-  interactionPrefixes?: Record<string, Partial<Record<'hover' | 'focus-visible' | 'active' | 'disabled', string>>>
+  interactionPrefixes?: Record<string, Record<string, string>>
+  /**
+   * Layers that take the interaction states as their own, per set: each is its own element with its own hover and
+   * disabled (a stepper's two buttons), so its classes use the plain variants and its layers follow it through
+   * `group-*\/<set>-<layer>`, not the component's.
+   */
+  interactionParts?: Record<string, string[]>
+  /** Layers placed at run time (a tooltip's arrow, which Base UI moves along the edge): `absolute`, no inset. */
+  runtimePositions?: string[]
+  /** Sets whose root fills its parent's width (`w-full`), as the form controls do. */
+  fullWidth?: string[]
+  /**
+   * A text style a layer sets for the text inside it to inherit (a drawer panel's `text-sm`): `Set` or
+   * `Set › layer` -> `type/*`. FigCraft puts text styles on text layers only.
+   */
+  inheritedText?: Record<string, string>
 }
 
 type DesignMdSection = {
@@ -186,6 +203,10 @@ export function loadConfig(path: string): ResolvedConfig {
       runtimeFills: components.runtimeFills ?? [],
       inline: components.inline ?? [],
       interactionPrefixes: components.interactionPrefixes ?? {},
+      interactionParts: components.interactionParts ?? {},
+      runtimePositions: components.runtimePositions ?? [],
+      fullWidth: components.fullWidth ?? [],
+      inheritedText: components.inheritedText ?? {},
     },
     designMd: designMd && { ...designMd, output: fromRoot(designMd.output) },
     flow: flow && {

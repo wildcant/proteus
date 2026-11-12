@@ -57,9 +57,27 @@
       "Field › exampleError": "example content: the children are the caller's",
       "Field › exampleCheckbox": "example content: the children are the caller's",
       "Field › exampleLabel": "example content: the children are the caller's",
-      "RadioGroup › exampleItem": "example content: the children are the caller's"
+      "RadioGroup › exampleItem": "example content: the children are the caller's",
+      "Button › icon": "the caller's icon: the Button sizes any <svg> in it ([&_svg]:size-4) and colours it through currentColor"
     },
-    "inline": ["Button"]
+    "inline": ["Button"],
+    "fullWidth": ["Input", "NativeSelect", "Field", "RadioGroup"],
+    "runtimePositions": ["Tooltip › arrow"],
+    "inheritedText": {
+      "Drawer": "type/body-compact"
+    },
+    "interactionParts": {
+      "QuantityStepper": ["decrement", "increment"],
+      "Accordion": ["item"]
+    },
+    "interactionPrefixes": {
+      "QuantityStepper": {
+        "hover": "enabled:hover"
+      },
+      "DropdownMenuItem": {
+        "afterCurrent": "[[data-current]+&]"
+      }
+    }
   },
   "designMd": {
     "output": "../../DESIGN.md",

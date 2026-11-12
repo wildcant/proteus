@@ -34,13 +34,22 @@ import { join } from 'node:path'
 
 import type { ComponentsConfig } from '../config.ts'
 import type { TextStyle, Variable } from '../tokens/snapshot.ts'
-import { type Absolute, type ComponentSet, type Layer, type Layout, notExportedBecause } from './snapshot.ts'
+import {
+  type Absolute,
+  type ComponentSet,
+  type Effect,
+  type Layer,
+  type Layout,
+  notExportedBecause,
+} from './snapshot.ts'
 
 export type ComponentsContext = {
   config: ComponentsConfig
   /** The token snapshot's variables, by id. */
   variables: Record<string, Variable>
   textStyles: TextStyle[]
+  /** The token snapshot's effect styles: a layer's `shadow/*` style is its `shadow-*` class. */
+  effectStyles: { id: string; name: string }[]
   textStylePrefix: string
 }
 
@@ -50,6 +59,9 @@ const VIEWPORT = 'viewport'
 /** `rest` is the base; each other value is the Tailwind variant of the same name unless the config maps it. */
 const STATES = ['rest', 'hover', 'focus-visible', 'active', 'disabled'] as const
 const INTERACTION = 'interaction'
+/** `default` is the base; each other value is the Tailwind variant of the same name unless the config maps it. */
+const POSITIONS = ['default', 'first', 'last', 'only', 'odd', 'even'] as const
+const POSITION = 'position'
 
 type Slots = Record<string, string>
 type Props = Record<string, string>
@@ -79,32 +91,39 @@ export function buildComponents(sets: ComponentSet[], context: ComponentsContext
 }
 
 function generateSet(set: ComponentSet, context: ComponentsContext) {
-  const designOnly = [VIEWPORT, INTERACTION]
+  const designOnly = [VIEWPORT, INTERACTION, POSITION]
   const variantProps = set.properties.filter((p) => p.type === 'variant' && !designOnly.includes(p.name))
   const viewportProp = set.properties.find((p) => p.type === 'variant' && p.name === VIEWPORT)
   const interactionProp = set.properties.find((p) => p.type === 'variant' && p.name === INTERACTION)
+  const positionProp = set.properties.find((p) => p.type === 'variant' && p.name === POSITION)
   const keys = variantProps.map((p) => p.name)
   const options = Object.fromEntries(variantProps.map((p) => [p.name, p.options ?? []]))
   const defaults = Object.fromEntries(variantProps.map((p) => [p.name, String(p.default)]))
   const problems: string[] = []
   const notes = new Set<string>()
 
-  const viewports = viewportProp?.options ?? ['mobile']
-  const unknown = viewports.filter((v) => !(BREAKPOINTS as readonly string[]).includes(v))
-  if (unknown.length) problems.push(`viewport values ${unknown.join(', ')}; use ${BREAKPOINTS.join(', ')}`)
-  if (!viewports.includes('mobile')) problems.push('the viewport property needs a mobile value, the base classes')
-  const states = interactionProp?.options ?? ['rest']
-  const unknownStates = states.filter((v) => !(STATES as readonly string[]).includes(v))
-  if (unknownStates.length) problems.push(`interaction values ${unknownStates.join(', ')}; use ${STATES.join(', ')}`)
-  if (!states.includes('rest')) problems.push('the interaction property needs a rest value, the base classes')
-  const group = kebab(set.name)
   const statePrefixes = context.config.interactionPrefixes[set.name] ?? {}
-  // On the root the state's own variant; on a part, the root's state through the named group.
-  const stateVariant = (state: string, isRoot: boolean) => {
-    const variant = statePrefixes[state as keyof typeof statePrefixes] ?? state
-    return isRoot ? `${variant}:` : `group-${variant}/${group}:`
+  // Every state a variant can be drawn in, rest first: the interaction states, then the positions.
+  const stateOrder = designOnlyStates(
+    { viewport: viewportProp?.options, interaction: interactionProp?.options, position: positionProp?.options },
+    statePrefixes,
+    problems,
+  )
+  // The layers that own their states (each its own element); every other layer follows the nearest one above it,
+  // the component itself by default.
+  const owners = context.config.interactionParts[set.name] ?? []
+  const groupOf = (owner: string) => (owner ? `${kebab(set.name)}-${kebab(owner)}` : kebab(set.name))
+  // On the layer that owns the state, the state's own variant; below it, the owner's state through its named group.
+  const stateVariant = (state: string, part: string, owner: string) => {
+    const variant = statePrefixes[state] ?? state
+    if (part === owner) return `${variant}:`
+    return `${variant
+      .split(':')
+      .map((v) => `group-${v}/${groupOf(owner)}`)
+      .join(':')}:`
   }
-  let usesGroup = false
+  const partOwner = new Map<string, string>()
+  const groups = new Set<string>()
 
   const { variables } = context
   const token = (id: string | undefined, prefix: string) => {
@@ -118,6 +137,7 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
         .map((v) => [Object.values(v.valuesByMode)[0], v.name.slice(prefix.length).replaceAll('/', '-')]),
     )
   const textStyleNames = Object.fromEntries(context.textStyles.map((s) => [s.id, s.name]))
+  const effectStyleNames = Object.fromEntries(context.effectStyles.map((s) => [s.id, s.name]))
   const leading = Object.fromEntries(context.textStyles.map((s) => [s.id, lineHeightPx(s)]))
 
   const qualified = qualifiedNames(set.variants)
@@ -127,6 +147,8 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
     spaceByValue: byValue('space/'),
     strokeByValue: byValue('stroke/'),
     textStyleNames,
+    effectStyleNames,
+    textStylesByName: Object.fromEntries(context.textStyles.map((s) => [s.name, s.id])),
     textStylePrefix: context.textStylePrefix,
     leading,
     config: context.config,
@@ -138,25 +160,39 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
   }
 
   // Every variant -> its props, its viewport and, per part (layer name), its slots. The component itself is part "".
-  const drawn = set.variants.map((variant) => {
+  const drawn: Drawn[] = set.variants.map((variant) => {
     const all: Props = Object.fromEntries(
-      keys.length || viewportProp || interactionProp
+      keys.length || viewportProp || interactionProp || positionProp
         ? variant.name.split(', ').map((pair) => pair.split('=') as [string, string])
         : [],
     )
-    const { [VIEWPORT]: viewport = 'mobile', [INTERACTION]: state = 'rest', ...props } = all
-    const parts: Record<string, Slots> = {}
+    const {
+      [VIEWPORT]: viewport = 'mobile',
+      [INTERACTION]: interaction = 'rest',
+      [POSITION]: position = 'default',
+      ...props
+    } = all
     const where = variant.name || set.name
+    if (interaction !== 'rest' && position !== 'default') {
+      problems.push(`${where}: an interaction state and a position at once are not mapped; draw each on its own`)
+    }
+    const state = interaction !== 'rest' ? interaction : position !== 'default' ? position : 'rest'
+    const parts: Record<string, Slots> = {}
+    // Per part, the names of its children in the auto layout, in the order drawn.
+    const orders: Record<string, string[]> = {}
     const walk = (
       node: Layer,
       parentLayout: string | undefined,
       isRoot: boolean,
       parentName: string,
-      parentStretches = false,
+      parentStretches: boolean,
+      owner: string,
     ) => {
       // A name used under several parents is qualified by its parent: `actionLabel`; one directly under the
       // component keeps its own name.
-      const part = isRoot ? '' : camel(qualified.has(node.name) ? `${parentName} ${node.name}` : node.name)
+      const part = isRoot ? '' : partName(node, parentName)
+      const ownerHere = !isRoot && owners.includes(node.name) ? part : owner
+      partOwner.set(part, ownerHere)
       const own = layerSlots(node, parentLayout, {
         ...ctx,
         isRoot,
@@ -176,13 +212,21 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
       parts[part] = own
       if (node.type === 'INSTANCE') return
       const stretches = stretchesChildren(node)
-      for (const child of styledChildren(set.name, node, textProps, context.config)) {
-        walk(child, node.layout?.mode, false, isRoot ? '' : node.name, stretches)
+      const children = styledChildren(set.name, node, textProps, context.config)
+      orders[part] = children
+        .filter((child) => !child.absolute && child.visible !== false)
+        .map((child) => partName(child, isRoot ? '' : node.name))
+      for (const child of children) {
+        walk(child, node.layout?.mode, false, isRoot ? '' : node.name, stretches, ownerHere)
       }
     }
-    walk(variant, undefined, true, '')
-    return { props, viewport, state, parts }
+    const partName = (node: Layer, parentName: string) =>
+      camel(qualified.has(node.name) ? `${parentName} ${node.name}` : node.name)
+    walk(variant, undefined, true, '', false, '')
+    return { props, viewport, state, parts, orders }
   })
+
+  reverseReorderedStacks(drawn, keys, (message) => problems.push(`${set.name} › ${message}`))
 
   // One entry per combination of the cva props; the states and viewports drawn for it become prefixed classes.
   const comboKey = (props: Props) => keys.map((k) => props[k]).join('|')
@@ -245,12 +289,15 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
         const fail = (message: string) =>
           problems.push(`${set.name} › ${part || set.name}, ${describeProps(combo.props)}: ${message}`)
         const rest = series('rest')
-        const stateClasses = STATES.slice(1).flatMap((state) =>
-          stateful(rest, series(state), slot, stateVariant(state, part === ''), (message) =>
-            fail(`${state}: ${message}`),
-          ),
-        )
-        if (part !== '' && stateClasses.length) usesGroup = true
+        const owner = partOwner.get(part) ?? ''
+        const stateClasses = stateOrder
+          .slice(1)
+          .flatMap((state) =>
+            stateful(rest, series(state), slot, stateVariant(state, part, owner), (message) =>
+              fail(`${state}: ${message}`),
+            ),
+          )
+        if (part !== owner && stateClasses.length) groups.add(owner)
         return { props: combo.props, cls: joinClasses(responsive(rest, slot, fail), ...stateClasses) }
       })
       const derived = derive(values, keys, options)
@@ -280,9 +327,11 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
     return { name: camel(`${set.name}${part ? ` ${part}` : ''}`), base, vmap, compounds: merged, used }
   })
 
-  // A part that follows the component's state names the root as its group.
-  const root = exports.find((e) => e.name === camel(set.name))
-  if (usesGroup && root) root.base.unshift(`group/${group}`)
+  // A layer that follows another's state names that one as its group.
+  for (const owner of groups) {
+    const named = exports.find((e) => e.name === camel(`${set.name}${owner ? ` ${owner}` : ''}`))
+    named?.base.unshift(`group/${groupOf(owner)}`)
+  }
 
   const isBool = (k: string) => (options[k] ?? []).every((o) => o === 'true' || o === 'false')
   const value = (k: string, v: string) => (isBool(k) ? v : `'${v}'`)
@@ -326,6 +375,68 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
   return { source, problems, notes: [...notes] }
 }
 
+/** Checks the design-only properties' values; returns the states a variant can be drawn in, rest first. */
+function designOnlyStates(
+  drawn: { viewport?: string[]; interaction?: string[]; position?: string[] },
+  prefixes: Record<string, string>,
+  problems: string[],
+) {
+  const viewports = drawn.viewport ?? ['mobile']
+  const unknown = viewports.filter((v) => !(BREAKPOINTS as readonly string[]).includes(v))
+  if (unknown.length) problems.push(`viewport values ${unknown.join(', ')}; use ${BREAKPOINTS.join(', ')}`)
+  if (!viewports.includes('mobile')) problems.push('the viewport property needs a mobile value, the base classes')
+  const states = drawn.interaction ?? ['rest']
+  const unknownStates = states.filter((v) => !(STATES as readonly string[]).includes(v))
+  if (unknownStates.length) problems.push(`interaction values ${unknownStates.join(', ')}; use ${STATES.join(', ')}`)
+  if (!states.includes('rest')) problems.push('the interaction property needs a rest value, the base classes')
+  const positions = drawn.position ?? ['default']
+  const unknownPositions = positions.filter((v) => !(POSITIONS as readonly string[]).includes(v) && !prefixes[v])
+  if (unknownPositions.length) {
+    problems.push(
+      `position values ${unknownPositions.join(', ')}; use ${POSITIONS.join(', ')} or map them in interactionPrefixes`,
+    )
+  }
+  if (!positions.includes('default')) problems.push('the position property needs a default value, the base classes')
+  return [
+    'rest',
+    ...STATES.slice(1).filter((state) => states.includes(state)),
+    ...positions.filter((p) => p !== 'default'),
+  ]
+}
+
+type Drawn = {
+  props: Props
+  viewport: string
+  state: string
+  parts: Record<string, Slots>
+  orders: Record<string, string[]>
+}
+
+// The code has one DOM order, the one drawn at the largest viewport. A smaller viewport that draws a stack's
+// children the other way round reverses the stack there (`flex-col-reverse sm:flex-row`).
+function reverseReorderedStacks(drawn: Drawn[], keys: string[], fail: (message: string) => void) {
+  const rank = (viewport: string) => (BREAKPOINTS as readonly string[]).indexOf(viewport)
+  for (const v of drawn) {
+    const peers = drawn.filter((o) => o.state === v.state && keys.every((k) => o.props[k] === v.props[k]))
+    const top = peers.reduce((a, b) => (rank(b.viewport) > rank(a.viewport) ? b : a))
+    if (top === v) continue
+    for (const [part, drawnOrder] of Object.entries(v.orders)) {
+      // Children shown at only one of the two viewports are hidden at the other; only the shared ones have an order.
+      const dom = top.orders[part]?.filter((name) => drawnOrder.includes(name)) ?? []
+      const order = drawnOrder.filter((name) => dom.includes(name))
+      const slots = v.parts[part]
+      if (order.join() === dom.join() || !slots) continue
+      if (order.join() !== [...dom].reverse().join()) {
+        fail(
+          `${part || 'the component'}: children drawn ${order.join(', ')} at ${v.viewport} but ${dom.join(', ')} at ${top.viewport}; only a reversed order maps (flex-*-reverse)`,
+        )
+        continue
+      }
+      slots.direction = slots.direction === 'flex-col' ? 'flex-col-reverse' : 'flex-row-reverse'
+    }
+  }
+}
+
 function describeProps(props: Props) {
   return (
     Object.entries(props)
@@ -349,6 +460,11 @@ const RESETS: Record<string, string> = {
   height: 'h-auto',
   minWidth: 'min-w-0',
   minHeight: 'min-h-0',
+  maxWidth: 'max-w-none',
+  maxHeight: 'max-h-none',
+  ring: 'ring-0',
+  shadow: 'shadow-none',
+  blur: 'backdrop-blur-none',
   rotate: 'rotate-0',
   position: 'static',
   bg: 'bg-transparent',
@@ -541,6 +657,9 @@ type SlotContext = {
   spaceByValue: Map<unknown, string>
   strokeByValue: Map<unknown, string>
   textStyleNames: Record<string, string>
+  effectStyleNames: Record<string, string>
+  /** Text style ids by name (`type/body`). */
+  textStylesByName: Record<string, string>
   textStylePrefix: string
   /** Each text style's line height in px, by style id. */
   leading: Record<string, number | undefined>
@@ -564,32 +683,89 @@ function styledChildren(setName: string, node: Layer, textProps: Set<string>, co
 // The slots of one layer. A slot holds one concern (display, padding x, fill…), so no two classes in a variant
 // conflict, and a breakpoint can override exactly the concern that changes.
 function layerSlots(node: Layer, parentLayout: string | undefined, ctx: SlotContext): Slots {
+  const key = ctx.isRoot ? ctx.setName : `${ctx.setName} › ${node.name}`
   const flex = ctx.isRoot && ctx.config.inline.includes(ctx.setName) ? 'inline-flex' : 'flex'
-  const s: Slots = { display: node.visible === false ? 'hidden' : node.layout ? flex : '' }
+  const display = node.layout?.mode === 'grid' ? 'grid' : node.layout ? flex : ''
+  const s: Slots = { display: node.visible === false ? 'hidden' : display }
   if (node.opacity != null && node.opacity < 1) s.opacity = `opacity-${Math.round(node.opacity * 100)}`
-  if ((node.effects ?? []).some((e) => e.visible !== false))
-    s.effects = ctx.fail('effects (shadows, blurs) are not mapped')
-  s.width = sizeClass(node, 'horizontal', parentLayout, ctx)
+  s.width =
+    ctx.isRoot && ctx.config.fullWidth.includes(ctx.setName)
+      ? 'w-full'
+      : sizeClass(node, 'horizontal', parentLayout, ctx)
   s.height = sizeClass(node, 'vertical', parentLayout, ctx)
-  s.minWidth = minSizeClass(node, 'minWidth', 'min-w', ctx)
-  s.minHeight = minSizeClass(node, 'minHeight', 'min-h', ctx)
+  s.minWidth = boundSizeClass(node, 'minWidth', 'min-w', ctx)
+  s.minHeight = boundSizeClass(node, 'minHeight', 'min-h', ctx)
+  s.maxWidth = boundSizeClass(node, 'maxWidth', 'max-w', ctx)
+  s.maxHeight = boundSizeClass(node, 'maxHeight', 'max-h', ctx)
   s.rotate = rotateClass(node, ctx.fail)
   // On the web an absolute layer is placed against its nearest positioned ancestor, so its parent is `relative`.
+  // A layer placed at run time keeps only `absolute`: its insets are the code's.
   s.position = node.absolute
-    ? absoluteClass(node.absolute, ctx)
+    ? ctx.config.runtimePositions.includes(key)
+      ? 'absolute'
+      : absoluteClass(node.absolute, ctx)
     : (node.children ?? []).some((child) => child.absolute)
       ? 'relative'
       : ''
-  if (node.type === 'TEXT') return { ...s, ...textSlots(node, ctx) }
+  const effects = effectSlots(node, ctx)
+  if (node.type === 'TEXT') return { ...s, ...textSlots(node, ctx), ...effects }
   // A nested instance is a child component (an Icon, say): only its box is styled here, through className.
-  if (node.type === 'INSTANCE') return { ...s, ...instanceSlots(node, ctx) }
+  if (node.type === 'INSTANCE') return { ...s, ...instanceSlots(node, ctx), ...effects }
   // A vector is a glyph the component draws as an <svg> in currentColor: its colour is the class, its shape code.
   if (node.type === 'VECTOR') return { ...s, width: '', height: '', textColor: glyphColor([node], ctx) }
   if (!['COMPONENT', 'FRAME', 'RECTANGLE'].includes(node.type)) {
     ctx.fail(`${node.type} layers are not mapped yet; extend packages/design/src/components/build.ts`)
     return s
   }
-  return { ...s, ...frameSlots(node, ctx) }
+  // A text style the layer sets for the text inside it to inherit.
+  const inherited = ctx.config.inheritedText[key]
+  const type = inherited
+    ? inherited.startsWith('type/') && ctx.textStylesByName[inherited]
+      ? `${ctx.textStylePrefix}${inherited.slice('type/'.length).replaceAll('/', '-')}`
+      : ctx.fail(`inheritedText ${inherited} is not a type/* text style`)
+    : ''
+  return { ...s, ...frameSlots(node, ctx), type, ...effects }
+}
+
+/** Tailwind's blur scale, in px. */
+const BLURS: Record<number, string> = { 4: 'xs', 8: 'sm', 12: 'md', 16: 'lg', 24: 'xl', 40: '2xl', 64: '3xl' }
+
+// A layer's visible effects. An effect style (`shadow/*`) is its `shadow-*` class; a drop shadow with no offset and
+// no blur, only a spread, is a ring (`ring-3 ring-focus-ring`, its colour a Theme role); a background blur is
+// `backdrop-blur-*`. Any other shadow is drawn through an effect style, so the token holds its numbers.
+function effectSlots(node: Layer, ctx: SlotContext): Slots {
+  const all = node.effects ?? []
+  const shown = all.map((effect, index) => ({ effect, index })).filter(({ effect }) => effect.visible !== false)
+  if (shown.length === 0) return {}
+  if (node.effectStyle) {
+    const name = ctx.effectStyleNames[node.effectStyle]
+    return {
+      shadow: name?.startsWith('shadow/')
+        ? `shadow-${name.slice('shadow/'.length).replaceAll('/', '-')}`
+        : ctx.fail(`effect style ${name ?? node.effectStyle} is not a shadow/* style`),
+    }
+  }
+  const out: Slots = {}
+  for (const { effect, index } of shown) {
+    if (effect.type === 'backgroundBlur') {
+      const size = BLURS[effect.radius ?? 0]
+      out.blur = size
+        ? `backdrop-blur-${size}`
+        : ctx.fail(`background blur ${effect.radius} is off Tailwind's blur scale`)
+    } else if (effect.type === 'dropShadow' && isRing(effect)) {
+      if (out.ring) out.ring = ctx.fail('two rings; draw one')
+      const role = ctx.token(node.boundVariables?.[`effects/${index}/color`], 'color/')
+      out.ring = role ? `ring-${effect.spread} ring-${role}` : ctx.fail('ring colour is not bound to a Theme colour')
+    } else {
+      out.shadow = ctx.fail(`a shadow is an effect style (shadow/*); apply one`)
+    }
+  }
+  return out
+}
+
+function isRing(effect: Effect) {
+  const [x = 0, y = 0] = effect.offset ?? []
+  return x === 0 && y === 0 && !effect.radius && (effect.spread ?? 0) > 0
 }
 
 // Layer names that appear under more than one parent name in a variant (the component itself counts as '').
@@ -640,14 +816,18 @@ function sizeToken(node: Layer, horizontal: boolean, parentLayout: string | unde
   return asStroke
 }
 
+// Along the axis the parent stacks its children, or across it, where a stretching parent already sizes it. A grid
+// cell stretches its child.
+function fillClass(axis: 'horizontal' | 'vertical', parentLayout: string | undefined, ctx: SlotContext) {
+  if (!parentLayout) return ctx.fail(`fill ${axis} on the component itself; width is the caller's layout`)
+  if (parentLayout === 'grid') return ''
+  if (parentLayout === axis) return 'flex-1'
+  return ctx.parentStretches ? '' : 'self-stretch'
+}
+
 function sizeClass(node: Layer, axis: 'horizontal' | 'vertical', parentLayout: string | undefined, ctx: SlotContext) {
   const sizing = node.sizing?.[axis]
-  if (sizing === 'fill') {
-    if (!parentLayout) return ctx.fail(`fill ${axis} on the component itself; width is the caller's layout`)
-    // Along the axis the parent stacks its children, or across it, where a stretching parent already sizes it.
-    if (parentLayout === axis) return 'flex-1'
-    return ctx.parentStretches ? '' : 'self-stretch'
-  }
+  if (sizing === 'fill') return fillClass(axis, parentLayout, ctx)
   if (sizing !== 'fixed') return ''
   // A layer pinned to both edges takes its size from its insets.
   if (node.absolute?.[axis] === (axis === 'horizontal' ? 'leftRight' : 'topBottom')) return ''
@@ -668,9 +848,14 @@ function sizeClass(node: Layer, axis: 'horizontal' | 'vertical', parentLayout: s
   return ctx.fail(`fixed ${horizontal ? 'width' : 'height'} ${value} is not bound to a space token`)
 }
 
-// A minimum size bound to space/* keeps a layer at least a token's size while it hugs content that grows with the
-// text. A nested instance keeps its component's own minimum; an unbound minimum is left out with a note.
-function minSizeClass(node: Layer, field: 'minWidth' | 'minHeight', prefix: string, ctx: SlotContext) {
+// A minimum or maximum size bound to space/* keeps a layer within a token's size while it hugs content that grows
+// with the text. A nested instance keeps its component's own; an unbound one is left out with a note.
+function boundSizeClass(
+  node: Layer,
+  field: 'minWidth' | 'minHeight' | 'maxWidth' | 'maxHeight',
+  prefix: string,
+  ctx: SlotContext,
+) {
   if (!node[field] || node.type === 'INSTANCE') return ''
   const named = ctx.token(node.boundVariables?.[field], 'space/')
   if (named) return `${prefix}-${named}`
@@ -792,6 +977,8 @@ function stretchesChildren(node: Layer) {
   if (mode !== 'horizontal' && mode !== 'vertical') return false
   const across = mode === 'horizontal' ? 'vertical' : 'horizontal'
   const inFlow = (node.children ?? []).filter((child) => !child.absolute && child.visible !== false)
+  // An empty slot holds the caller's content, which fills it as a block would.
+  if (node.slot && inFlow.length === 0) return true
   return inFlow.length > 0 && inFlow.every((child) => child.sizing?.[across] === 'fill')
 }
 
@@ -828,7 +1015,11 @@ function frameSlots(node: Layer, ctx: SlotContext): Slots {
     bg: ctx.config.runtimeFills.includes(`${ctx.setName} › ${node.name}`) ? '' : colorClass(node, 'bg', ctx),
     ...borderSlots(node, strokes.length, ctx),
     rounded: roundedClass(node, ctx),
-    overflow: node.clip ? 'overflow-hidden' : '',
+    overflow: node.overflow
+      ? { vertical: 'overflow-y-auto', horizontal: 'overflow-x-auto', both: 'overflow-auto' }[node.overflow]
+      : node.clip
+        ? 'overflow-hidden'
+        : '',
     // A slot's glyph (not one inside a nested instance, which colours itself) takes the slot's text colour.
     ...(node.slot ? { textColor: glyphColor(ownVectors(node), ctx) } : {}),
   }
@@ -840,25 +1031,15 @@ function ownVectors(node: Layer): Layer[] {
 }
 
 function layoutSlots(node: Layer, layout: Layout, inset: number[], ctx: SlotContext): Slots {
-  if (layout.mode !== 'horizontal' && layout.mode !== 'vertical') {
+  const isGrid = layout.mode === 'grid'
+  if (layout.mode !== 'horizontal' && layout.mode !== 'vertical' && !isGrid) {
     return { direction: ctx.fail(`${layout.mode} auto layout is not mapped yet`) }
   }
   const space = (fields: string[], value: number, prefix: string, less = 0) =>
     spaceClass(node, fields, value, prefix, less, ctx)
   const [top = 0, right = 0, bottom = 0, left = 0] = layout.padding ?? []
   const [insetTop = 0, insetRight = 0, insetBottom = 0, insetLeft = 0] = inset
-  // Sides that differ get a class each (pt-3 pb-8).
-  return {
-    direction: layout.mode === 'vertical' ? 'flex-col' : '',
-    justify:
-      ({ center: 'justify-center', max: 'justify-end', spaceBetween: 'justify-between' } as Slots)[
-        layout.mainAlign ?? ''
-      ] ?? '',
-    items: stretchesChildren(node)
-      ? 'items-stretch'
-      : (({ min: 'items-start', center: 'items-center', max: 'items-end', baseline: 'items-baseline' } as Slots)[
-          layout.crossAlign ?? ''
-        ] ?? ''),
+  const padding = {
     px:
       right === left && insetRight === insetLeft
         ? space(['paddingHorizontal', 'paddingLeft'], right, 'px', insetRight)
@@ -873,6 +1054,37 @@ function layoutSlots(node: Layer, layout: Layout, inset: number[], ctx: SlotCont
             space(['paddingTop', 'paddingVertical'], top, 'pt', insetTop),
             space(['paddingBottom', 'paddingVertical'], bottom, 'pb', insetBottom),
           ),
+  }
+  // A grid of equal columns, its cells stretched (the CSS default): the column count, the gaps between columns
+  // (gap) and rows (crossGap).
+  if (isGrid) {
+    if (layout.columnTracks?.length || layout.rowTracks?.length) {
+      return { direction: ctx.fail('grid tracks other than equal columns are not mapped yet') }
+    }
+    const columns = layout.gridColumns ?? 1
+    const [gap, crossGap] = [layout.gap ?? 0, layout.crossGap ?? 0]
+    return {
+      direction: columns > 1 ? `grid-cols-${columns}` : '',
+      ...padding,
+      gap:
+        gap === crossGap
+          ? space(['gap'], gap, 'gap')
+          : joinClasses(space(['gap'], gap, 'gap-x'), space(['crossGap'], crossGap, 'gap-y')),
+    }
+  }
+  // Sides that differ get a class each (pt-3 pb-8).
+  return {
+    direction: layout.mode === 'vertical' ? 'flex-col' : '',
+    justify:
+      ({ center: 'justify-center', max: 'justify-end', spaceBetween: 'justify-between' } as Slots)[
+        layout.mainAlign ?? ''
+      ] ?? '',
+    items: stretchesChildren(node)
+      ? 'items-stretch'
+      : (({ min: 'items-start', center: 'items-center', max: 'items-end', baseline: 'items-baseline' } as Slots)[
+          layout.crossAlign ?? ''
+        ] ?? ''),
+    ...padding,
     ...gapSlots(layout, space),
   }
 }

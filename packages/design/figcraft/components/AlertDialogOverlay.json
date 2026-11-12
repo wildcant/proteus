@@ -30,7 +30,7 @@
           ],
           "startRadius": 0,
           "type": "backgroundBlur",
-          "visible": false
+          "visible": true
         }
       ]
     }

@@ -65,7 +65,7 @@
         {
           "blend": "normal",
           "color": {
-            "a": 0.10196078568696976,
+            "a": 0.10000000149011612,
             "b": 0,
             "g": 0,
             "r": 0
@@ -78,12 +78,12 @@
           "showBehind": false,
           "spread": -3,
           "type": "dropShadow",
-          "visible": false
+          "visible": true
         },
         {
           "blend": "normal",
           "color": {
-            "a": 0.10196078568696976,
+            "a": 0.10000000149011612,
             "b": 0,
             "g": 0,
             "r": 0
@@ -96,9 +96,10 @@
           "showBehind": false,
           "spread": -4,
           "type": "dropShadow",
-          "visible": false
+          "visible": true
         }
       ],
+      "effectStyle": "S:5",
       "layout": {
         "mode": "vertical",
         "mainAlign": "min",

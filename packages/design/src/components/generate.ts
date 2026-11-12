@@ -11,6 +11,7 @@ export function componentsContext(config: ResolvedConfig): ComponentsContext {
     config: config.components,
     variables: tokens.variables,
     textStyles: tokens.textStyles,
+    effectStyles: tokens.effectStyles,
     textStylePrefix: config.tokens.textStyles.prefix,
   }
 }

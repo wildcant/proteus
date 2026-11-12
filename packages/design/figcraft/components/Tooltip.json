@@ -26,10 +26,11 @@
       "boundVariables": {
         "fill": "VariableID:18",
         "gap": "VariableID:34",
+        "maxWidth": "VariableID:67",
         "paddingHorizontal": "VariableID:41",
-        "paddingVertical": "VariableID:38",
-        "width": "VariableID:67"
+        "paddingVertical": "VariableID:38"
       },
+      "maxWidth": 224,
       "layout": {
         "mode": "horizontal",
         "mainAlign": "min",

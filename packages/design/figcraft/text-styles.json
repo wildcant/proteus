@@ -507,5 +507,31 @@
       "link": null
     },
     "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:135"
+    },
+    "description": "Key caps (the route drawer's esc): the kit's font-mono text-[11px], its line height the drawer's text-sm ratio it inherits.",
+    "id": "S:22",
+    "name": "type/kbd",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Menlo",
+      "font_size": 11,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "pixels",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 142.857
+      },
+      "link": null
+    },
+    "type": "text"
   }
 ]

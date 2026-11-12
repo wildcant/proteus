@@ -33,6 +33,8 @@ function snapshot(textStyles: TextStyle[], extra: Variable[] = [], effectStyles:
     variable('v:radius', 'radius/full', PRIMITIVES, { [`${PRIMITIVES}/1`]: 9999 }),
     variable('v:tracking', 'tracking/tight', PRIMITIVES, { [`${PRIMITIVES}/1`]: -2 }),
     variable('v:font', 'font/sans', PRIMITIVES, { [`${PRIMITIVES}/1`]: 'Manrope' }),
+    // A font Tailwind's own stack already names keeps that stack as it is: the browser picks as it always has.
+    variable('v:mono', 'font/mono', PRIMITIVES, { [`${PRIMITIVES}/1`]: 'Menlo' }),
     variable('v:chamfer', 'chamfer/s', PRIMITIVES, { [`${PRIMITIVES}/1`]: 6 }),
     variable('c:ink', 'color/ink', THEME, { [`${THEME}/light`]: alias('v:ink'), [`${THEME}/dark`]: alias('v:paper') }),
     variable('c:scrim', 'color/scrim', THEME, {
@@ -193,6 +195,9 @@ describe('tokens', () => {
     )
     // Primitives land in Tailwind's namespaces; the palette stays out of classes by default.
     expect(css).toContain('--font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;')
+    expect(css).toContain(
+      '--font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;',
+    )
     expect(css).toContain('--spacing-4: 1rem;')
     expect(css).toContain('--radius-full: calc(infinity * 1px);')
     expect(css).toContain('--tracking-tight: -0.02em;')

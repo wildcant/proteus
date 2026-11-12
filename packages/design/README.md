@@ -66,18 +66,51 @@ differ from `rest` at the same viewport, under its Tailwind variant (`hover:bg-i
 `disabled:opacity-50`). On a layer inside the component the state is the component's, read through a
 named group: the root gets `group/<set-name>` and the layer `group-hover/<set-name>:`. Breakpoint and
 state compose (`md:hover:`). Where a Base UI part marks its state with a data attribute instead, map the
-value in `components.interactionPrefixes` (`{ "Checkbox": { "disabled": "data-disabled" } }`).
+value in `components.interactionPrefixes` (`{ "Checkbox": { "disabled": "data-disabled" } }`). A layer on
+`components.interactionParts` owns its states (each of a stepper's two buttons is its own element): it takes
+the plain variants, and the layers inside it follow it through `group-*/<set>-<layer>`. A mapped variant with a
+colon (`enabled:hover`, a hover that a disabled button ignores) becomes `group-enabled/…:group-hover/…:` below
+its owner.
+
+A design-only `position` variant property (`default`, `first`, `last`, `only`, `odd`, `even`, or a value
+mapped in `components.interactionPrefixes`, `{ "afterCurrent": "[[data-current]+&]" }`) works the same way:
+`default` is the base, each other value only what differs, under its variant (`first:border-transparent`,
+`last:border-b`). A variant is drawn in one interaction state or one position, not both.
+
+The code has one DOM order, the one drawn at the largest viewport. A smaller viewport that draws a stack's
+children in the reverse order reverses the stack there (`flex-col-reverse sm:flex-row`); any other change of
+order stops the build.
 
 Read beyond tokens: layer opacity is `opacity-*`; a stroke drawn transparent (`#RRGGBB00` or paint
 opacity 0) is `border-transparent`, so variants keep a bordered one's box; an auto layout whose in-flow
 children all fill across it is `items-stretch`, and those children carry no `self-stretch`; a vector
 draws in `currentColor`, so its Theme colour is `text-*` on its layer, or on the slot that holds it. A set
 on `components.inline` has an `inline-flex` root (a button that sits in a sentence); every other root is
-`flex`. A text style's decoration and underline offset are part of the style (`type/link`): setting a
+`flex`; a set on `components.fullWidth` has a `w-full` root (the form controls). A grid auto layout of equal
+columns is `grid` (`grid-cols-*` past one column, `gap-*` from gap and crossGap); its cells stretch their
+children. A maximum width or height bound to `space/*` is `max-w-*` / `max-h-*`. A frame that scrolls
+(prototype overflow) is `overflow-y-auto` / `overflow-x-auto` / `overflow-auto`, else a clipping frame is
+`overflow-hidden`; FigCraft's node.get doesn't report overflow, so the export reads it from the saved file's
+`document.json`. An empty slot is `items-stretch`: the caller's content fills it as a block would. A layer on
+`components.runtimePositions` (a tooltip's arrow, which Base UI places) is `absolute` with no inset, so a
+preview position never reaches code. A layer on `components.inheritedText` sets the text style the text inside
+it inherits (a drawer panel's `text-sm`): FigCraft puts text styles on text layers only.
+
+Effects: a layer with a `shadow/*` effect style is `shadow-*`; a drop shadow with no offset and no blur, only
+a spread, is a ring (`ring-3 ring-focus-ring`, its colour bound to a Theme role, so a translucent ring needs a
+translucent role: `color/focus-ring`, `color/popup-ring`); a background blur on Tailwind's scale (4, 8, 12, 16,
+24, 40, 64 px) is `backdrop-blur-*`. Drawn in the `focus-visible` interaction, a ring is the focus ring
+(`focus-visible:ring-3 focus-visible:ring-focus-ring`). Any other shadow stops the build: apply a `shadow/*`
+style. A hidden effect is off.
+
+A text style's decoration and underline offset are part of the style (`type/link`): setting a
 decoration on a text layer detaches its style in FigCraft.
 
 Only token-bound values become classes. A raw colour, an unbound padding or a layer kind the build
 does not map stops the build with the layer named, so the design is fixed rather than guessed.
+
+The generated files go through the repo's Biome: formatted, and their classes sorted as its
+`useSortedClasses` lint sorts them, so the verify gate leaves them as generated.
 
 ## DESIGN.md
 
@@ -263,7 +296,11 @@ Committed and shared, one section per exporter. The machine paths are in `design
     "runtimeSizes": {},                               // "Set › layer" -> "horizontal" | "vertical", sized in code
     "runtimeFills": [],                               // "Set › layer" whose fill is data
     "inline": ["Button"],                             // sets whose root is inline-flex
-    "interactionPrefixes": {}                         // set -> { interaction value -> Tailwind variant }
+    "interactionPrefixes": {},                        // set -> { interaction or position value -> Tailwind variant }
+    "interactionParts": {},                           // set -> layers that own their interaction states
+    "runtimePositions": [],                           // "Set › layer" placed at run time: absolute, no inset
+    "fullWidth": [],                                  // sets whose root is w-full
+    "inheritedText": {}                               // "Set" or "Set › layer" -> type/* its text inherits
   },
   "designMd": {                                       // optional
     "output": "../../DESIGN.md",

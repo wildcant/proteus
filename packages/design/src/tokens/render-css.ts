@@ -196,14 +196,26 @@ function fluid(from: number, to: number, fromWidth: number, toWidth: number, roo
   return `clamp(${rem(Math.min(from, to))}, ${preferred}, ${rem(Math.max(from, to))})`
 }
 
+/** Tailwind's own stacks: a family is put in front of its key's, unless the stack already names it. */
+const FONT_STACKS: Record<string, string[]> = {
+  sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+  serif: ['ui-serif', 'Georgia', 'serif'],
+  mono: [
+    'ui-monospace',
+    'SFMono-Regular',
+    'Menlo',
+    'Monaco',
+    'Consolas',
+    '"Liberation Mono"',
+    '"Courier New"',
+    'monospace',
+  ],
+}
+
 function fontStack(key: string, family: string) {
-  const fallback =
-    key === 'mono'
-      ? 'ui-monospace, SFMono-Regular, Menlo, monospace'
-      : key === 'serif'
-        ? 'ui-serif, Georgia, serif'
-        : 'ui-sans-serif, system-ui, sans-serif'
-  return `"${family}", ${fallback}`
+  const fallback = FONT_STACKS[key] ?? (FONT_STACKS.sans as string[])
+  const named = fallback.map((name) => name.replaceAll('"', ''))
+  return (named.includes(family) ? fallback : [`"${family}"`, ...fallback]).join(', ')
 }
 
 function scalar(value: Length, name: string) {

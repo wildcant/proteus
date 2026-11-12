@@ -1,15 +1,21 @@
+import { join } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 
 import { buildComponents, type ComponentsContext } from '../components/build.ts'
 import { type ComponentSet, exportCandidates, type Layer } from '../components/snapshot.ts'
+import { formatTs } from '../files.ts'
 import { componentsConfig, fill, frame, text, tokenSnapshot } from './fixtures.ts'
 
 const context: ComponentsContext = {
   config: componentsConfig,
   variables: tokenSnapshot.variables,
   textStyles: tokenSnapshot.textStyles,
+  effectStyles: tokenSnapshot.effectStyles,
   textStylePrefix: 'type-',
 }
+
+const repo = join(import.meta.dirname, '../../../..')
 
 const variantProperty = (name: string, options: string[]) => ({
   name,
@@ -363,5 +369,196 @@ describe('components', () => {
     expect(files.get('/shop/src/components/ui/tag/tag.variants.ts')).toContain(
       "export const tagLabel = cva('type-body md:type-heading text-ink')",
     )
+  })
+
+  it('maps a ring drawn as a spread shadow, an effect style and a background blur; any other shadow stops the build', () => {
+    const ring = { type: 'dropShadow', color: { r: 0, g: 0, b: 0, a: 0.5 }, offset: [0, 0], radius: 0, spread: 3 }
+    const variant = (state: 'rest' | 'focus-visible'): Layer => ({
+      ...frame(`interaction=${state}`, 'horizontal'),
+      type: 'COMPONENT',
+      ...fill('c:surface'),
+      // The ring shows only in focus-visible; at rest it is drawn hidden.
+      effects: [{ ...ring, visible: state === 'focus-visible' }],
+      boundVariables: { fill: 'c:surface', 'effects/0/color': 'c:ring' },
+      children: [
+        // A layer with a shadow/* effect style takes its class, whatever its shadows are.
+        { ...frame('panel', 'vertical'), effectStyle: 'S:lg', effects: [{ type: 'dropShadow', offset: [0, 10] }] },
+        { ...frame('scrim', 'vertical'), effects: [{ type: 'backgroundBlur', radius: 4 }] },
+      ],
+    })
+    const chip: ComponentSet = {
+      name: 'Chip',
+      page: 'components/ui',
+      properties: [variantProperty('interaction', ['rest', 'focus-visible'])],
+      variants: [variant('rest'), variant('focus-visible')],
+    }
+    const source = buildComponents([chip], context).files.get('/shop/src/components/ui/chip/chip.variants.ts')
+    expect(source).toContain(
+      "export const chip = cva('flex bg-surface focus-visible:ring-3 focus-visible:ring-focus-ring')",
+    )
+    expect(source).toContain("export const chipPanel = cva('flex flex-col shadow-lg')")
+    expect(source).toContain("export const chipScrim = cva('flex flex-col backdrop-blur-xs')")
+
+    const raw = single('Card', 'components/ui', {
+      variants: [
+        {
+          ...frame('Card', 'vertical'),
+          type: 'COMPONENT',
+          effects: [{ type: 'dropShadow', offset: [0, 4], radius: 6 }],
+        },
+      ],
+    })
+    expect(() => buildComponents([raw], context)).toThrow('Card: a shadow is an effect style (shadow/*)')
+  })
+
+  it('leaves a runtime position to code, maps a max width and a vertical scroll, and reverses a stack drawn reversed', () => {
+    const tip = single('Tip', 'components/ui', {
+      variants: [
+        {
+          ...frame('Tip', 'horizontal'),
+          type: 'COMPONENT',
+          maxWidth: 224,
+          boundVariables: { maxWidth: 's:56' },
+          children: [
+            {
+              ...frame('arrow', 'horizontal'),
+              absolute: { horizontal: 'left', vertical: 'bottom', left: 112, top: 30, right: 102, bottom: -2 },
+            },
+            { ...frame('body', 'vertical'), clip: true, overflow: 'vertical' },
+          ],
+        },
+      ],
+    })
+    // DOM order is the largest viewport's; mobile draws the same children the other way up.
+    const footer = (viewport: 'mobile' | 'md'): Layer => ({
+      ...frame(`viewport=${viewport}`, viewport === 'mobile' ? 'vertical' : 'horizontal'),
+      type: 'COMPONENT',
+      children:
+        viewport === 'mobile'
+          ? [frame('action', 'horizontal'), frame('cancel', 'horizontal')]
+          : [frame('cancel', 'horizontal'), frame('action', 'horizontal')],
+    })
+    const bar: ComponentSet = {
+      name: 'Bar',
+      page: 'components/ui',
+      properties: [variantProperty('viewport', ['mobile', 'md'])],
+      variants: [footer('mobile'), footer('md')],
+    }
+    const { files } = buildComponents([tip, bar], {
+      ...context,
+      config: { ...componentsConfig, runtimePositions: ['Tip › arrow'] },
+    })
+    const source = files.get('/shop/src/components/ui/tip/tip.variants.ts')
+    expect(source).toContain("export const tip = cva('flex max-w-56 relative')")
+    expect(source).toContain("export const tipArrow = cva('flex absolute')")
+    expect(source).toContain("export const tipBody = cva('flex flex-col overflow-y-auto')")
+    expect(files.get('/shop/src/components/ui/bar/bar.variants.ts')).toContain(
+      "export const bar = cva('flex flex-col-reverse md:flex-row')",
+    )
+  })
+
+  it('maps a position property to first:/last: and a part that owns its states to its own variants', () => {
+    // Every item has a top rule; the first one's is transparent, the last one also closes with a bottom rule.
+    const item = (position: 'default' | 'first' | 'last'): Layer => ({
+      ...frame(`position=${position}`, 'horizontal'),
+      type: 'COMPONENT',
+      strokes: [{ type: 'solid', color: position === 'first' ? '#00000000' : '#dee0e3' }],
+      strokeWeight: 1,
+      strokeSides: [1, 0, position === 'last' ? 1 : 0, 0],
+      boundVariables: { stroke: 'c:line' },
+    })
+    const row: ComponentSet = {
+      name: 'Row',
+      page: 'components/ui',
+      properties: [variantProperty('position', ['default', 'first', 'last'])],
+      variants: [item('default'), item('first'), item('last')],
+    }
+    // Each button of the stepper takes its own hover; the glyph in it follows its button, not the stepper.
+    const stepper = (state: 'rest' | 'hover' | 'disabled'): Layer => ({
+      ...frame(`interaction=${state}`, 'horizontal'),
+      type: 'COMPONENT',
+      children: [
+        {
+          ...frame('step', 'horizontal'),
+          ...(state === 'disabled' ? { opacity: 0.3 } : {}),
+          ...(state === 'hover' ? fill('c:line') : {}),
+          children: [text('label', 'body', state === 'hover' ? 'c:accent' : 'c:ink')],
+        },
+      ],
+    })
+    const counter: ComponentSet = {
+      name: 'Counter',
+      page: 'components/ui',
+      properties: [variantProperty('interaction', ['rest', 'hover', 'disabled'])],
+      variants: [stepper('rest'), stepper('hover'), stepper('disabled')],
+    }
+    const { files } = buildComponents([row, counter], {
+      ...context,
+      config: {
+        ...componentsConfig,
+        interactionParts: { Counter: ['step'] },
+        interactionPrefixes: { Counter: { hover: 'enabled:hover' } },
+      },
+    })
+    expect(files.get('/shop/src/components/ui/row/row.variants.ts')).toContain(
+      "export const row = cva('flex border-t last:border-b border-line first:border-transparent')",
+    )
+    const counterSource = files.get('/shop/src/components/ui/counter/counter.variants.ts')
+    expect(counterSource).toContain("export const counter = cva('flex')")
+    expect(counterSource).toContain(
+      "export const counterStep = cva('group/counter-step flex enabled:hover:bg-line disabled:opacity-30')",
+    )
+    expect(counterSource).toContain(
+      "export const counterLabel = cva('type-body text-ink group-enabled/counter-step:group-hover/counter-step:text-accent')",
+    )
+  })
+
+  it('lays out a grid, fills a listed set, sets an inherited text style and stretches an empty slot', () => {
+    const group = single('Choices', 'components/ui', {
+      variants: [
+        {
+          ...frame('Choices', 'vertical'),
+          type: 'COMPONENT',
+          layout: { mode: 'grid', gap: 8, crossGap: 8, padding: [0, 0, 0, 0], gridColumns: 1 },
+          boundVariables: { gap: 's:2', crossGap: 's:2' },
+          children: [{ ...frame('choice', 'horizontal'), sizing: { horizontal: 'fill' as const } }],
+        },
+      ],
+    })
+    const sheet = single('Sheet', 'components/ui', {
+      variants: [
+        {
+          ...frame('Sheet', 'vertical'),
+          type: 'COMPONENT',
+          children: [
+            {
+              ...frame('content', 'vertical', {
+                layout: { mode: 'vertical', crossAlign: 'min', gap: 0, padding: [0, 0, 0, 0] },
+              }),
+              slot: true,
+            },
+          ],
+        },
+      ],
+    })
+    const { files } = buildComponents([group, sheet], {
+      ...context,
+      config: { ...componentsConfig, fullWidth: ['Choices'], inheritedText: { Sheet: 'type/body' } },
+    })
+    const choices = files.get('/shop/src/components/ui/choices/choices.variants.ts')
+    expect(choices).toContain("export const choices = cva('grid w-full gap-2')")
+    expect(choices).toContain("export const choicesChoice = cva('flex')")
+    const sheetSource = files.get('/shop/src/components/ui/sheet/sheet.variants.ts')
+    expect(sheetSource).toContain("export const sheet = cva('flex flex-col type-body')")
+    expect(sheetSource).toContain("export const sheetContent = cva('flex flex-col items-stretch')")
+  })
+
+  it('formats the generated file with its classes in the order the repo lint sorts them', () => {
+    const path = join(repo, 'apps/store/src/components/ui/x/x.variants.ts')
+    const formatted = formatTs(
+      new Map([[path, "import { cva } from 'class-variance-authority'\nexport const x = cva('px-4 flex')\n"]]),
+      repo,
+    )
+    expect(formatted.get(path)).toContain("cva('flex px-4')")
   })
 })

@@ -11,21 +11,24 @@ export const quantityStepper = cva('flex items-start', {
   defaultVariants: { size: 'xs' },
 })
 
-export const quantityStepperDecrement = cva('flex items-center justify-center', {
-  variants: {
-    size: {
-      lg: 'h-12.5 w-13',
-      xs: 'h-8 w-8',
+export const quantityStepperDecrement = cva(
+  'group/quantity-stepper-decrement flex items-center justify-center disabled:opacity-30',
+  {
+    variants: {
+      size: {
+        lg: 'h-12.5 w-13 enabled:hover:bg-surface-subtle',
+        xs: 'h-8 w-8',
+      },
     },
+    defaultVariants: { size: 'xs' },
   },
-  defaultVariants: { size: 'xs' },
-})
+)
 
-export const quantityStepperDecrementIcon = cva('text-ink', {
+export const quantityStepperDecrementIcon = cva('', {
   variants: {
     size: {
-      lg: 'h-4 w-4',
-      xs: 'h-3.5 w-3.5',
+      lg: 'h-4 w-4 text-ink',
+      xs: 'h-3.5 w-3.5 text-ink group-enabled/quantity-stepper-decrement:group-hover/quantity-stepper-decrement:text-ink-muted',
     },
   },
   defaultVariants: { size: 'xs' },
@@ -43,21 +46,24 @@ export const quantityStepperCount = cva('flex items-center justify-center self-s
 
 export const quantityStepperValue = cva('type-body-compact text-ink')
 
-export const quantityStepperIncrement = cva('flex items-center justify-center', {
-  variants: {
-    size: {
-      lg: 'h-12.5 w-13',
-      xs: 'h-8 w-8',
+export const quantityStepperIncrement = cva(
+  'group/quantity-stepper-increment flex items-center justify-center disabled:opacity-30',
+  {
+    variants: {
+      size: {
+        lg: 'h-12.5 w-13 enabled:hover:bg-surface-subtle',
+        xs: 'h-8 w-8',
+      },
     },
+    defaultVariants: { size: 'xs' },
   },
-  defaultVariants: { size: 'xs' },
-})
+)
 
-export const quantityStepperIncrementIcon = cva('text-ink', {
+export const quantityStepperIncrementIcon = cva('', {
   variants: {
     size: {
-      lg: 'h-4 w-4',
-      xs: 'h-3.5 w-3.5',
+      lg: 'h-4 w-4 text-ink',
+      xs: 'h-3.5 w-3.5 text-ink group-enabled/quantity-stepper-increment:group-hover/quantity-stepper-increment:text-ink-muted',
     },
   },
   defaultVariants: { size: 'xs' },

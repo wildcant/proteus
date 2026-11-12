@@ -25,6 +25,8 @@
   --color-scrim: var(--scrim);
   --color-scrim-dialog: var(--scrim-dialog);
   --color-field-disabled: var(--field-disabled);
+  --color-popup-ring: var(--popup-ring);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --spacing: 0.25rem;
   --radius-kbd: 0.25rem;
@@ -94,6 +96,7 @@
   --scrim: rgb(0 0 0 / 0.8);
   --scrim-dialog: rgb(0 0 0 / 0.1);
   --field-disabled: rgb(222 224 227 / 0.5);
+  --popup-ring: rgb(13 16 18 / 0.1);
   --type-display-size: clamp(2rem, 1.6479rem + 1.5023vw, 3rem);
   --type-title-size: clamp(1.5rem, 1.3239rem + 0.7512vw, 2rem);
   --type-heading-size: 1.25rem;
@@ -124,6 +127,7 @@
   --scrim: rgb(0 0 0 / 0.8);
   --scrim-dialog: rgb(0 0 0 / 0.1);
   --field-disabled: rgb(46 50 56 / 0.8);
+  --popup-ring: rgb(244 245 246 / 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -152,6 +156,7 @@
     --scrim: rgb(0 0 0 / 0.8);
     --scrim-dialog: rgb(0 0 0 / 0.1);
     --field-disabled: rgb(46 50 56 / 0.8);
+    --popup-ring: rgb(244 245 246 / 0.1);
   }
 }
 
@@ -323,5 +328,14 @@
     font-size: var(--text-2xs);
     font-weight: 700;
     line-height: 1;
+  }
+}
+
+@utility type-kbd {
+  && {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    line-height: 1.4286;
   }
 }

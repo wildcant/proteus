@@ -45,7 +45,7 @@
         {
           "blend": "normal",
           "color": {
-            "a": 0.10196078568696976,
+            "a": 0.10000000149011612,
             "b": 0,
             "g": 0,
             "r": 0
@@ -58,12 +58,12 @@
           "showBehind": false,
           "spread": -5,
           "type": "dropShadow",
-          "visible": false
+          "visible": true
         },
         {
           "blend": "normal",
           "color": {
-            "a": 0.10196078568696976,
+            "a": 0.10000000149011612,
             "b": 0,
             "g": 0,
             "r": 0
@@ -76,9 +76,10 @@
           "showBehind": false,
           "spread": -6,
           "type": "dropShadow",
-          "visible": false
+          "visible": true
         }
       ],
+      "effectStyle": "S:6",
       "layout": {
         "mode": "vertical",
         "mainAlign": "min",
@@ -148,7 +149,7 @@
                 "paddingVertical": "VariableID:33",
                 "stroke": "VariableID:24"
               },
-              "mainComponentName": "current=false, highlighted=true",
+              "mainComponentName": "current=false, highlighted=true, position=default",
               "overrides": [
                 "strokes"
               ],
@@ -265,7 +266,7 @@
                 "paddingHorizontal": "VariableID:38",
                 "paddingVertical": "VariableID:33"
               },
-              "mainComponentName": "current=true, highlighted=false",
+              "mainComponentName": "current=true, highlighted=false, position=default",
               "strokeSides": [
                 1,
                 0,

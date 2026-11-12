@@ -1,5 +1,6 @@
 // The component half of the snapshot: one `figcraft/components/<Set>.json` per exported component set,
 // trimmed to what the build reads, so moving a variant on the canvas doesn't change the JSON.
+import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -20,6 +21,20 @@ export type Layout = {
   strokesIncluded?: boolean
   wrap?: boolean
   crossGap?: number
+  /** A grid's column count; tracks other than equal columns are not mapped. */
+  gridColumns?: number
+  columnTracks?: unknown[]
+  rowTracks?: unknown[]
+}
+
+/** An effect as FigCraft reports it: a shadow, a blur. Colours are 0–1 channels. */
+export type Effect = {
+  type?: string
+  visible?: boolean
+  color?: { r: number; g: number; b: number; a: number }
+  offset?: number[]
+  radius?: number
+  spread?: number
 }
 
 /** A layer placed outside its parent's auto layout: its constraints and insets from the parent's edges. */
@@ -60,7 +75,13 @@ export type Layer = {
   minWidth?: number
   minHeight?: number
   slot?: boolean
-  effects?: { visible?: boolean }[]
+  effects?: Effect[]
+  /** The effect style the layer's effects come from. */
+  effectStyle?: string
+  maxWidth?: number
+  maxHeight?: number
+  /** Scrolling (prototype overflow): the axis the frame's content scrolls along. */
+  overflow?: 'horizontal' | 'vertical' | 'both'
   layout?: Layout
   width?: number
   height?: number
@@ -178,6 +199,7 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
       }),
     )
 
+    const overflows = readOverflows(config.figcraft.file)
     if (names.length === 0) rmSync(dir, { recursive: true, force: true })
     if (chosen.length > 0) mkdirSync(dir, { recursive: true })
     for (const component of chosen) {
@@ -200,12 +222,28 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
         page: component.page,
         ...(component.description ? { description: component.description } : {}),
         properties: props.properties,
-        variants: variants.map((variant) => trim(variant, setOf, undefined)),
+        variants: variants.map((variant) => trim(variant, setOf, overflows, undefined)),
       }
       writeFileSync(join(dir, `${component.name}.json`), `${JSON.stringify(doc, null, 2)}\n`)
     }
     console.info(`exported ${chosen.length} component set(s): ${chosen.map((c) => c.name).join(', ') || 'none'}`)
   })
+}
+
+/**
+ * Each scrolling frame's axis, by node id. FigCraft's node.get doesn't report a frame's overflow, so it is read from
+ * the saved file itself: a zip whose `document.json` holds every node by id.
+ */
+function readOverflows(file: string | undefined): Overflows {
+  if (!file) return new Map()
+  const document = JSON.parse(
+    execFileSync('unzip', ['-p', file, 'document.json'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }),
+  ) as { nodes?: Record<string, { overflow?: string }> }
+  return new Map(
+    Object.entries(document.nodes ?? {}).flatMap(([id, node]) =>
+      node.overflow && node.overflow !== 'none' ? [[id, node.overflow as Layer['overflow']] as const] : [],
+    ),
+  )
 }
 
 const KEPT = [
@@ -229,19 +267,35 @@ const KEPT = [
   'dashes',
   'minWidth',
   'minHeight',
+  'maxWidth',
+  'maxHeight',
   'slot',
   'effects',
 ] as const
 
-function trim(node: FigCraftNode, setOf: Map<string, string>, parent: FigCraftNode | undefined): Layer {
+type Overflows = Map<string, Layer['overflow']>
+
+function trim(
+  node: FigCraftNode,
+  setOf: Map<string, string>,
+  overflows: Overflows,
+  parent: FigCraftNode | undefined,
+): Layer {
   const out = Object.fromEntries(KEPT.filter((key) => node[key] != null).map((key) => [key, node[key]])) as Layer
-  const styles = node.styles as { text?: string } | undefined
+  const styles = node.styles as { text?: string; effect?: string } | undefined
   if (styles?.text) out.textStyle = styles.text
+  if (styles?.effect) out.effectStyle = styles.effect
+  const overflow = overflows.get(String(node.id))
+  if (overflow) out.overflow = overflow
   const layout = node.layout as (Layout & { mode: string }) | undefined
   if (layout && layout.mode !== 'none') {
     const { mode, mainAlign, crossAlign, gap, padding, strokesIncluded } = layout
     out.layout = { mode, mainAlign, crossAlign, gap, padding, strokesIncluded }
     if (layout.wrap) Object.assign(out.layout, { wrap: true, crossGap: layout.crossGap })
+    if (mode === 'grid') {
+      const { crossGap, gridColumns, columnTracks, rowTracks } = layout
+      Object.assign(out.layout, { crossGap, gridColumns, columnTracks, rowTracks })
+    }
   }
   const sizing = node.sizing as Layer['sizing']
   if (sizing?.horizontal === 'fixed') out.width = node.width as number
@@ -264,6 +318,6 @@ function trim(node: FigCraftNode, setOf: Map<string, string>, parent: FigCraftNo
     }
   }
   const children = node.children ?? []
-  if (children.length) out.children = children.map((child) => trim(child, setOf, node))
+  if (children.length) out.children = children.map((child) => trim(child, setOf, overflows, node))
   return out
 }

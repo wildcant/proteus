@@ -17,8 +17,9 @@ export function stale(files: Map<string, string>): string[] {
 }
 
 /**
- * Formats generated TS the way the repo's Biome would, so the verify gate's formatter leaves it as
- * generated and `--check` compares like with like. Biome is the repo root's, found by walking up.
+ * Formats generated TS the way the repo's Biome would, and sorts its Tailwind classes as its lint does
+ * (`useSortedClasses` in `cva()`), so the verify gate leaves it as generated and `--check` compares like with like.
+ * Biome is the repo root's, found by walking up.
  */
 export function formatTs(files: Map<string, string>, from: string): Map<string, string> {
   if (files.size === 0) return files
@@ -27,11 +28,15 @@ export function formatTs(files: Map<string, string>, from: string): Map<string, 
   return new Map(
     [...files].map(([path, source]) => [
       path,
-      execFileSync(biome, ['format', `--stdin-file-path=${relative(repo, path)}`], {
-        cwd: repo,
-        input: source,
-        encoding: 'utf8',
-      }),
+      execFileSync(
+        biome,
+        ['check', '--write', '--only=nursery/useSortedClasses', `--stdin-file-path=${relative(repo, path)}`],
+        {
+          cwd: repo,
+          input: source,
+          encoding: 'utf8',
+        },
+      ),
     ]),
   )
 }

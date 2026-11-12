@@ -49,6 +49,8 @@ const variables = [
   role('c:surface', 'color/surface', 'ffffff', '0d1012'),
   role('c:accent', 'color/accent', '004eba', '7aa9ff'),
   role('c:line', 'color/line', 'dee0e3', '2e3238'),
+  role('c:ring', 'color/focus-ring', '0d1012', 'f4f5f6'),
+  primitive('s:56', 'space/56', 224),
 ]
 
 const textStyle = (name: string, size: number, fontStyle: string): TextStyle => ({
@@ -88,7 +90,7 @@ export const tokenSnapshot: Snapshot = {
   },
   variables: Object.fromEntries(variables.map((v) => [v.id, v])),
   textStyles: [textStyle('heading', 20, 'Bold'), textStyle('body', 16, 'Regular')],
-  effectStyles: [],
+  effectStyles: [{ id: 'S:lg', name: 'shadow/lg', description: '', effects: [] }],
 }
 
 export const componentsConfig: ComponentsConfig = {
@@ -100,6 +102,10 @@ export const componentsConfig: ComponentsConfig = {
   runtimeFills: [],
   inline: [],
   interactionPrefixes: {},
+  interactionParts: {},
+  runtimePositions: [],
+  fullWidth: [],
+  inheritedText: {},
 }
 
 /** A solid fill bound to a Theme role. */

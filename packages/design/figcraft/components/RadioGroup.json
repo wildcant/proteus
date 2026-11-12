@@ -12,10 +12,11 @@
         "vertical": "hug"
       },
       "boundVariables": {
+        "crossGap": "VariableID:35",
         "gap": "VariableID:35"
       },
       "layout": {
-        "mode": "vertical",
+        "mode": "grid",
         "mainAlign": "min",
         "crossAlign": "min",
         "gap": 8,
@@ -25,7 +26,11 @@
           0,
           0
         ],
-        "strokesIncluded": true
+        "strokesIncluded": true,
+        "crossGap": 8,
+        "gridColumns": 1,
+        "columnTracks": [],
+        "rowTracks": []
       },
       "children": [
         {
