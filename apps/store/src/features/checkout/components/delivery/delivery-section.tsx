@@ -5,9 +5,11 @@ import { ShippingAddressForm } from '#/features/checkout/components/shipping-add
 import { ShippingAddressPicker } from '#/features/checkout/components/shipping-address-picker/shipping-address-picker'
 import type { CheckoutData } from '#/features/checkout/hooks/use-checkout-data'
 import type { CheckoutForm } from '#/features/checkout/hooks/use-checkout-form'
+import type { CheckoutLinks } from '#/features/checkout/types/links'
 
 type DeliveryProps = Pick<CheckoutData, 'cart' | 'addresses' | 'isAddressesLoading' | 'cartAddresses'> & {
   form: CheckoutForm
+  links: Pick<CheckoutLinks, 'addAddress' | 'editAddress'>
   /** The section body's content, the caller's layer. */
   contentClassName?: string
 }
@@ -15,7 +17,15 @@ type DeliveryProps = Pick<CheckoutData, 'cart' | 'addresses' | 'isAddressesLoadi
 type DeliverySectionProps = DeliveryProps & { className?: string }
 
 /** Confirm a saved address, or type one. A shopper is only ever offered one of the two. */
-function Delivery({ cart, addresses, isAddressesLoading, form, cartAddresses, contentClassName }: DeliveryProps) {
+function Delivery({
+  cart,
+  addresses,
+  isAddressesLoading,
+  form,
+  links,
+  cartAddresses,
+  contentClassName,
+}: DeliveryProps) {
   if (isAddressesLoading) return <Skeleton className="h-40 w-full" />
   if (addresses.length > 0 && cartAddresses) {
     return (
@@ -24,6 +34,7 @@ function Delivery({ cart, addresses, isAddressesLoading, form, cartAddresses, co
         cart={cart}
         addresses={addresses}
         cartAddresses={cartAddresses}
+        links={links}
         className={contentClassName}
       />
     )

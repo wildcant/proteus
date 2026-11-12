@@ -40,6 +40,9 @@ function renderInRouter(ui: ReactNode) {
   return render(<RouterProvider router={router as never} />, { wrapper: I18nTestProvider })
 }
 
+/** The PDP, as a plain path: this router has no such route. */
+const productLink = (productId: string) => ({ to: `/products/${productId}` })
+
 function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductListItem, 'id' | 'title'>) {
   return {
     handle: 'a-garment',
@@ -60,13 +63,20 @@ function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductLis
 }
 
 test('a sold-out product wears the badge', async () => {
-  await renderInRouter(<ProductCard product={product({ id: 'prod_gone', title: 'Sport Shorts', soldOut: true })} />)
+  await renderInRouter(
+    <ProductCard
+      product={product({ id: 'prod_gone', title: 'Sport Shorts', soldOut: true })}
+      link={productLink('prod_gone')}
+    />,
+  )
 
   await expect.element(page.getByText('Sold out')).toBeVisible()
 })
 
 test('a product in stock carries no badge', async () => {
-  await renderInRouter(<ProductCard product={product({ id: 'prod_here', title: 'Sport Shorts' })} />)
+  await renderInRouter(
+    <ProductCard product={product({ id: 'prod_here', title: 'Sport Shorts' })} link={productLink('prod_here')} />,
+  )
 
   // The card first, then the absence. An unanchored `not.toBeInTheDocument()` passes against a
   // component that has not rendered yet, which is the one way this claim could hold for a card
@@ -79,6 +89,7 @@ test('a product in stock carries no badge', async () => {
 test('a sold-out product stays in the grid, in the place the API gave it', async () => {
   await renderInRouter(
     <ProductGrid
+      productLink={productLink}
       products={[
         product({ id: 'prod_first', title: 'Linen Shirt' }),
         product({ id: 'prod_gone', title: 'Sport Shorts', soldOut: true }),

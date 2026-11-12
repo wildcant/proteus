@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import { useNavigate } from '@tanstack/react-router'
 import { Loader2Icon } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreProductResponseProduct, StoreProductVariant } from '#/api/generated/model'
@@ -11,7 +12,7 @@ import {
   addToCartAdd,
   addToCartQuantity,
 } from '#/features/products/components/add-to-cart/add-to-cart.variants'
-import { useModal } from '#/lib/modal-state'
+import type { LinkTarget } from '#/lib/link-target'
 
 const MAX_QUANTITY = 10
 
@@ -19,13 +20,15 @@ type AddToCartProps = {
   product: StoreProductResponseProduct
   /** Owned by the product page: the gallery and the picker react to it too, so it lives in the URL. */
   selectedVariant: StoreProductVariant | undefined
+  /** ADD_TO_BAG: the bag, open over this page. */
+  bagLink: LinkTarget
   className?: string
 }
 
-export function AddToCart({ product, selectedVariant, className }: AddToCartProps) {
+export function AddToCart({ product, selectedVariant, bagLink, className }: AddToCartProps) {
   const [quantity, setQuantity] = useState(1)
   const addLineItem = useAddLineItem()
-  const { setOpen: setCartOpen } = useModal('cart')
+  const navigate = useNavigate()
 
   const handleAddToCart = () => {
     if (!selectedVariant) return
@@ -39,7 +42,7 @@ export function AddToCart({ product, selectedVariant, className }: AddToCartProp
         // The panel is the confirmation. A toast saying "Added to cart" on top of a panel that
         // just slid in showing the item is the same message twice. Opening from the mutation
         // rather than from a watched item count means a background refetch cannot pop it open.
-        onSuccess: () => setCartOpen(true),
+        onSuccess: () => navigate(bagLink),
       },
     )
   }

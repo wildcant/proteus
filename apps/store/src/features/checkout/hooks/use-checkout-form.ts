@@ -9,6 +9,7 @@ import { useLogout } from '#/entities/customer/api/auth'
 import { useMarket } from '#/hooks/use-market'
 import { errorMessage, type SubmitFormParams } from '#/lib/form'
 import { useAppForm } from '#/lib/form-hook'
+import type { CheckoutLinks } from '../types/links'
 import { CheckoutAddress } from '../utils/checkout-address'
 import { checkoutReturnUrl } from '../utils/payment/return-url'
 import type { CheckoutData } from './use-checkout-data'
@@ -76,11 +77,12 @@ export function emptyShippingAddress(iso2: string): CheckoutFormValues['shipping
 
 type CheckoutFormParams = SubmitFormParams<StoreCompleteCartResponse> & {
   data: CheckoutData
+  links: Pick<CheckoutLinks, 'orderPlaced' | 'signedOut'>
 }
 
 export function useCheckoutForm(params: CheckoutFormParams) {
   const { t } = useLingui()
-  const { completeOrder } = useCompleteOrder()
+  const { completeOrder } = useCompleteOrder(params.links)
   const { controller, confirmPayment } = usePlaceOrder(params.data.cart.id)
   /**
    * What the gateway said, in the shopper's words. Held here rather than as a field error: it is
@@ -88,9 +90,9 @@ export function useCheckoutForm(params: CheckoutFormParams) {
    */
   const [paymentError, setPaymentError] = useState<string | null>(null)
   // Stay in checkout rather than falling home. Signing out here almost always means "wrong
-  // account", not "I'm done" — the cart survives the sign-out, so the order should too. Naming
-  // the route rather than staying put also closes any address drawer, which a guest cannot reopen.
-  const logout = useLogout({ redirectTo: '/checkout' })
+  // account", not "I'm done" — the cart survives the sign-out, so the order should too. Landing on
+  // the page rather than staying put also closes any address drawer, which a guest cannot reopen.
+  const logout = useLogout({ signedOut: params.links.signedOut })
 
   const { current } = useMarket()
 

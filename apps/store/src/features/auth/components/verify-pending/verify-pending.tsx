@@ -7,9 +7,16 @@ import {
   verifyPendingBackToSignIn,
   verifyPendingHeading,
 } from '#/features/auth/components/verify-pending/verify-pending.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /** Shown after signing up, or signing in to an account that has not confirmed its email yet. */
-export function VerifyPending({ className }: { className?: string }) {
+export function VerifyPending({
+  signInLink,
+  className,
+}: {
+  /** BACK_TO_SIGN_IN. */ signInLink: LinkTarget
+  className?: string
+}) {
   const { t } = useLingui()
   return (
     <div className={cn(verifyPending(), className)}>
@@ -18,7 +25,7 @@ export function VerifyPending({ className }: { className?: string }) {
           We sent a verification link to your email. Click it to confirm your account, then come back and sign in.
         </Trans>
       </AuthHeading>
-      <ButtonLink variant="outline" to="/login" size="lg" className={verifyPendingBackToSignIn()}>
+      <ButtonLink {...signInLink} variant="outline" size="lg" className={verifyPendingBackToSignIn()}>
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </div>

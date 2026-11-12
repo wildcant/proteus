@@ -15,12 +15,14 @@ import {
   searchResultsTitle,
   searchResultsViewAll,
 } from '#/features/products/components/search-results/search-results.variants'
+import type { SearchLinks } from '#/features/products/types/links'
 import { useDebounce } from '#/hooks/use-debounce'
 import { useMarket } from '#/hooks/use-market'
 
 type SearchResultsProps = {
   /** The live field value. Debounced here rather than by the caller, so the field stays responsive. */
   term: string
+  links: Pick<SearchLinks, 'product' | 'viewAll' | 'bestSellers'>
 }
 
 /**
@@ -29,7 +31,7 @@ type SearchResultsProps = {
  * The reference also runs a `TRENDING SEARCHES` column beside both, which has no source — `q`
  * goes into `buildSearchFilter` and is never recorded anywhere.
  */
-export function SearchResults({ term }: SearchResultsProps) {
+export function SearchResults({ term, links }: SearchResultsProps) {
   const trimmed = term.trim()
   const [debouncedTerm, setDebouncedTerm] = useState('')
   const { current } = useMarket()
@@ -42,7 +44,7 @@ export function SearchResults({ term }: SearchResultsProps) {
     { enabled: debouncedTerm.length > 0 },
   )
 
-  if (!debouncedTerm) return <SearchBestSellers />
+  if (!debouncedTerm) return <SearchBestSellers links={links} />
 
   // Undefined only on the very first search of the session; every later term keeps the previous
   // results on screen via keepPreviousData rather than falling back to this.
@@ -65,12 +67,12 @@ export function SearchResults({ term }: SearchResultsProps) {
           <Trans>Products</Trans>
         </h2>
 
-        <ProductGrid products={products} className={searchResultsGrid()} />
+        <ProductGrid products={products} productLink={links.product} className={searchResultsGrid()} />
       </div>
 
       {/* The panel is a preview; the PLP is where the full result set lives. */}
       <div className={searchResultsFooter({ state: 'results' })}>
-        <Link to="/" search={{ q: debouncedTerm }} className={searchResultsViewAll()}>
+        <Link {...links.viewAll(debouncedTerm)} className={searchResultsViewAll()}>
           <Trans>View all &ldquo;{debouncedTerm}&rdquo;</Trans>
         </Link>
       </div>

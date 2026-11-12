@@ -13,6 +13,7 @@ import {
   productListNotFoundText,
   productListNotFoundTitle,
 } from '#/features/products/components/product-list-not-found/product-list-not-found.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * What a scoped list page — a category, a collection — shows when its handle names nothing the
@@ -21,7 +22,16 @@ import {
  *
  * Each page brings its own words; the way out is the same, the whole catalogue.
  */
-export function ProductListNotFound({ heading, body }: { heading: ReactNode; body: ReactNode }) {
+export function ProductListNotFound({
+  heading,
+  body,
+  shopAllLink,
+}: {
+  heading: ReactNode
+  body: ReactNode
+  /** SHOP_ALL. */
+  shopAllLink: LinkTarget
+}) {
   return (
     // `mx-auto w-full` centres the capped page, which the design file draws as stretched.
     <main className={cn(productListNotFound(), 'mx-auto w-full')}>
@@ -31,7 +41,7 @@ export function ProductListNotFound({ heading, body }: { heading: ReactNode; bod
           <h1 className={productListNotFoundTitle()}>{heading}</h1>
           <p className={productListNotFoundMessage()}>{body}</p>
         </div>
-        <ButtonLink to="/" className={productListNotFoundAction()}>
+        <ButtonLink {...shopAllLink} className={productListNotFoundAction()}>
           <Trans>Shop all</Trans>
         </ButtonLink>
       </div>

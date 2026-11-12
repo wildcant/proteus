@@ -39,6 +39,9 @@ const noop = async () => undefined
  * part of the real route tree — a component test that booted the app's router would be asserting
  * through the router's own loaders.
  */
+/** The route's links, as plain paths: this router has no such routes. */
+const links = { account: { to: '/account' }, startShopping: { to: '/' } }
+
 function renderInRouter(ui: ReactNode) {
   const router = createRouter({
     routeTree: createRootRoute({ component: () => <>{ui}</> }),
@@ -58,6 +61,7 @@ test('a wallet that will not load is told apart from an empty one, and offers a 
       onRetry={onRetry}
       onSetDefault={vi.fn()}
       onRemove={noop}
+      links={links}
     />,
   )
 
@@ -81,6 +85,7 @@ test('choosing a card nominates that card as the default', async () => {
       onRetry={vi.fn()}
       onSetDefault={onSetDefault}
       onRemove={noop}
+      links={links}
     />,
   )
 
@@ -103,6 +108,7 @@ test('a wallet of nothing but expired cards says what to do about it', async () 
       onRetry={vi.fn()}
       onSetDefault={vi.fn()}
       onRemove={noop}
+      links={links}
     />,
   )
 

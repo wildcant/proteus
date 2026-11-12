@@ -26,7 +26,7 @@ type PanelProps = useRender.ComponentProps<'div'> & {
  * header's search control, at page scale.
  *
  * Polymorphic through base-ui's `useRender` rather than a `to` prop, so a panel that navigates
- * is `render={<Link to="…" />}` and the whole block becomes the hit target.
+ * is `render={<Link {...link} />}` and the whole block becomes the hit target.
  *
  * Lives here rather than in `features/account` because the address book uses it too, and a
  * presentational block with no feature logic in it has no business making one feature depend on

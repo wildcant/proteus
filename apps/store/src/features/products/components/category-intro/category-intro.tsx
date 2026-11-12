@@ -7,12 +7,20 @@ import {
   categoryIntroChildren,
 } from '#/features/products/components/category-intro/category-intro.variants'
 import { TagChip } from '#/features/products/components/tag-chip/tag-chip'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * What sits under a category page's heading: its description, then a chip per Visible child in
  * rank order. Each chip is a plain link, so the shopper's search, sort and page stay behind.
  */
-export function CategoryIntro({ category }: { category: StoreProductCategoryTreeNode }) {
+export function CategoryIntro({
+  category,
+  categoryLink,
+}: {
+  category: StoreProductCategoryTreeNode
+  /** CATEGORY: a child's page. */
+  categoryLink: (handle: string) => LinkTarget
+}) {
   if (!category.description && category.children.length === 0) return null
 
   return (
@@ -23,9 +31,7 @@ export function CategoryIntro({ category }: { category: StoreProductCategoryTree
         <ul className={cn(categoryIntroChildren(), 'm-0 list-none p-0')}>
           {category.children.map((child) => (
             <li key={child.id} className={categoryIntroChild()}>
-              <TagChip render={<Link to="/categories/$handle" params={{ handle: child.handle }} />}>
-                {child.name}
-              </TagChip>
+              <TagChip render={<Link {...categoryLink(child.handle)} />}>{child.name}</TagChip>
             </li>
           ))}
         </ul>

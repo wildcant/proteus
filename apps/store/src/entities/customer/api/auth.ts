@@ -6,6 +6,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { authResetPassword } from '#/api/generated/auth/auth'
 import type { ResetPasswordBody, ResetPasswordResponse } from '#/api/generated/model'
 import { clearToken } from '#/lib/auth-token'
+import type { LinkTarget } from '#/lib/link-target'
 
 export const useRequestPasswordReset = (
   options?: UseMutationOptions<ResetPasswordResponse, Error, ResetPasswordBody>,
@@ -24,13 +25,13 @@ export const useRequestPasswordReset = (
 }
 
 export type LogoutParams = {
-  /** Where to land instead of the home page — checkout passes its own path, so signing out of the
-   *  wrong account does not also throw away the order being placed. Must be a route a guest can
-   *  reach: the navigation happens after the token is gone. */
-  redirectTo?: string
+  /** SIGN_OUT, from the route: the home page, or checkout's own page, so signing out of the wrong account does not
+   *  also throw away the order being placed. Must be a page a guest can reach: the navigation happens after the token
+   *  is gone. */
+  signedOut: LinkTarget
 }
 
-export const useLogout = (params?: LogoutParams) => {
+export const useLogout = ({ signedOut }: LogoutParams) => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
@@ -40,6 +41,6 @@ export const useLogout = (params?: LogoutParams) => {
     // what they had. See the detach TODO in .tasks/next-todos for what this costs.
     clearToken()
     queryClient.resetQueries()
-    navigate({ to: params?.redirectTo ?? '/' })
+    navigate(signedOut)
   }
 }

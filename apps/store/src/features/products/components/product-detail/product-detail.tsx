@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { getRouteApi, Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useSuspenseProduct } from '#/features/products/api/products'
 import { AddToCart } from '#/features/products/components/add-to-cart/add-to-cart'
 import {
@@ -29,22 +29,26 @@ import { ProductGallery } from '#/features/products/components/product-gallery/p
 import { ProductSpecs } from '#/features/products/components/product-specs/product-specs'
 import { VariantPicker } from '#/features/products/components/variant-picker/variant-picker'
 import { VariantStock } from '#/features/products/components/variant-stock/variant-stock'
+import type { ProductDetailLinks } from '#/features/products/types/links'
 import { useFormatters } from '#/hooks/use-formatters'
 import { useMarket } from '#/hooks/use-market'
 
-const route = getRouteApi('/_main/products/$productId')
+type ProductDetailProps = {
+  productId: string
+  /** The `?variant` the route read. */
+  variantId: string | undefined
+  links: ProductDetailLinks
+}
 
-export function ProductDetail() {
-  const { productId } = route.useParams()
-  const { variant: variantId } = route.useSearch()
-  const navigate = route.useNavigate()
+export function ProductDetail({ productId, variantId, links }: ProductDetailProps) {
+  const navigate = useNavigate()
   const { current } = useMarket()
   const { formatPrice } = useFormatters()
   const { product } = useSuspenseProduct(productId, { countryCode: current.iso2 })
 
   // The market has no product under this id — either none exists or none of its variants have a
   // price here. Both arrive as the API's one not-found, and both read the same to the shopper.
-  if (!product) return <ProductError />
+  if (!product) return <ProductError browseLink={links.browse} />
 
   // An unknown id in the URL falls back to the first variant rather than erroring.
   const selectedVariant = product.variants.find((variant) => variant.id === variantId) ?? product.variants[0]
@@ -61,7 +65,7 @@ export function ProductDetail() {
       {/* The reference has no breadcrumb because it has a mega-nav to go back to. `/` is
           our only listing, so this is the only way back from a PDP reached by search or by link. */}
       <nav className={productDetailBreadcrumb()}>
-        <Link to="/" className={productDetailProductsLink()}>
+        <Link {...links.products} className={productDetailProductsLink()}>
           <Trans>Products</Trans>
         </Link>
         <span className={productDetailSeparator()}>/</span>
@@ -122,11 +126,16 @@ export function ProductDetail() {
             // scroll reset: `scrollRestoration: true` (router.tsx) otherwise restores every scroller
             // it has tracked — including the gallery, matched by a structural selector the remount
             // does not escape — which put the new colourway on the old slide index.
-            onVariantChange={(id) => navigate({ search: { variant: id }, replace: true, resetScroll: false })}
+            onVariantChange={(id) => navigate({ ...links.variant(id), replace: true, resetScroll: false })}
             className={productDetailPicker()}
           />
 
-          <AddToCart product={product} selectedVariant={selectedVariant} className={productDetailAddToCart()} />
+          <AddToCart
+            product={product}
+            selectedVariant={selectedVariant}
+            bagLink={links.bagOpen}
+            className={productDetailAddToCart()}
+          />
 
           <ProductSpecs product={product} variant={selectedVariant} className={productDetailSpecs()} />
         </div>

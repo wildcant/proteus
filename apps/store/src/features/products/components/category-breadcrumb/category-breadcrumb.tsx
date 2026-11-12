@@ -10,19 +10,30 @@ import {
   categoryBreadcrumbLink,
   categoryBreadcrumbSeparator,
 } from '#/features/products/components/category-breadcrumb/category-breadcrumb.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * The way back up from a category page: "Shop all", then each ancestor, root first. The Category
  * itself is left off — it is the heading directly below.
  */
-export function CategoryBreadcrumb({ ancestors }: { ancestors: StoreProductCategoryTreeNode[] }) {
+export function CategoryBreadcrumb({
+  ancestors,
+  allProductsLink,
+  categoryLink,
+}: {
+  ancestors: StoreProductCategoryTreeNode[]
+  /** ALL_PRODUCTS. */
+  allProductsLink: LinkTarget
+  /** CATEGORY: an ancestor's page. */
+  categoryLink: (handle: string) => LinkTarget
+}) {
   const { t } = useLingui()
 
   return (
     <nav aria-label={t`Breadcrumb`}>
       <ol className={cn(categoryBreadcrumb(), 'm-0 list-none p-0')}>
         <li className="flex">
-          <Link to="/" className={categoryBreadcrumbLink()}>
+          <Link {...allProductsLink} className={categoryBreadcrumbLink()}>
             <Trans>Shop all</Trans>
           </Link>
         </li>
@@ -32,7 +43,7 @@ export function CategoryBreadcrumb({ ancestors }: { ancestors: StoreProductCateg
               <ChevronRightIcon className={categoryBreadcrumbSeparator()} />
             </li>
             <li className="flex">
-              <Link to="/categories/$handle" params={{ handle: ancestor.handle }} className={categoryBreadcrumbLink()}>
+              <Link {...categoryLink(ancestor.handle)} className={categoryBreadcrumbLink()}>
                 {ancestor.name}
               </Link>
             </li>

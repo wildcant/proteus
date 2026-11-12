@@ -12,8 +12,14 @@ import {
   productEmptyPackage,
 } from '#/features/products/components/product-empty/product-empty.variants'
 import type { ProductListSearch } from '#/features/products/utils/product-list-search'
+import type { LinkTarget } from '#/lib/link-target'
 
-type ProductEmptyProps = { search: ProductListSearch; isScoped: boolean; className?: string }
+type ProductEmptyProps = {
+  search: ProductListSearch
+  /** SHOP_ALL, on a scoped list only: the home page is already all of it. */
+  shopAllLink?: LinkTarget
+  className?: string
+}
 
 /**
  * Replaces the grid rather than following it — an empty result set used to paint an empty grid
@@ -25,7 +31,7 @@ type ProductEmptyProps = { search: ProductListSearch; isScoped: boolean; classNa
  * searched list stays scoped and keeps its search. A scoped list with nothing in it at all
  * links to "Shop all"; the home page is already that.
  */
-export function ProductEmpty({ search, isScoped, className }: ProductEmptyProps) {
+export function ProductEmpty({ search, shopAllLink, className }: ProductEmptyProps) {
   const { q, tag, filter, minPrice, maxPrice } = search
 
   if (q) {
@@ -61,8 +67,8 @@ export function ProductEmpty({ search, isScoped, className }: ProductEmptyProps)
 
   return (
     <EmptyMessage className={className} message={<Trans>No products yet.</Trans>}>
-      {isScoped ? (
-        <ButtonLink to="/">
+      {shopAllLink ? (
+        <ButtonLink {...shopAllLink}>
           <Trans>Shop all</Trans>
         </ButtonLink>
       ) : null}

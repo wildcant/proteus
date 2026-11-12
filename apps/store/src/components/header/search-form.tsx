@@ -4,6 +4,7 @@ import { XIcon } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
 import { SearchControl } from '#/components/store/search-control/search-control'
+import type { LinkTarget } from '#/lib/link-target'
 
 type SearchFormProps = {
   className?: string
@@ -11,6 +12,8 @@ type SearchFormProps = {
   focusOnMount?: boolean
   value: string
   onChange: (value: string) => void
+  /** SEARCH_SUBMIT, from the route: the list for a term, or every product for an empty one. */
+  submitLink: (term: string) => LinkTarget
 }
 
 /**
@@ -22,7 +25,7 @@ type SearchFormProps = {
  * Deliberately not FloatingLabelInput: that control is bordered, 56px tall and floats its
  * label into the box. It still needs a real associated label, so one is rendered sr-only.
  */
-export function SearchForm({ className, focusOnMount, value, onChange }: SearchFormProps) {
+export function SearchForm({ className, focusOnMount, value, onChange, submitLink }: SearchFormProps) {
   const { t } = useLingui()
   const navigate = useNavigate()
   const inputId = useId()
@@ -42,10 +45,9 @@ export function SearchForm({ className, focusOnMount, value, onChange }: SearchF
         <form
           onSubmit={(event) => {
             event.preventDefault()
-            const trimmed = value.trim()
             // No explicit close: this search carries no `modal`, so landing on it is what
             // shuts the panel. One navigation, not two racing each other.
-            navigate({ to: '/', search: trimmed ? { q: trimmed } : {} })
+            navigate(submitLink(value.trim()))
           }}
         />
       }

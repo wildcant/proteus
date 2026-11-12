@@ -10,6 +10,7 @@ import {
 } from '#/features/checkout/components/checkout-content/checkout-content.variants'
 import { CheckoutForm } from '#/features/checkout/components/checkout-form/checkout-form'
 import { CheckoutSummary } from '#/features/checkout/components/checkout-summary/checkout-summary'
+import type { CheckoutLinks } from '#/features/checkout/types/links'
 
 /**
  * The split. The one store surface that is not `max-w-350` — the grey runs to the viewport edge
@@ -19,13 +20,13 @@ import { CheckoutSummary } from '#/features/checkout/components/checkout-summary
  * draws the desktop order and reverses it on mobile (`flex-col-reverse lg:flex-row`), which would
  * put the form first for the keyboard on a phone; the direction is the DOM's here instead.
  */
-export function CheckoutContent() {
+export function CheckoutContent({ links }: { links: CheckoutLinks }) {
   const { cart } = useSuspenseCart()
 
   // Nothing to check out, and no cart page to land on. The catalogue is the honest destination:
   // opening the panel over it would only say "empty" a second time.
   if (!cart || cart.items.length === 0) {
-    return <Navigate to="/" />
+    return <Navigate {...links.bagEmpty} />
   }
 
   return (
@@ -36,7 +37,7 @@ export function CheckoutContent() {
 
       <div className={cn(checkoutContentFormColumn(), 'lg:basis-1/2')}>
         <div className={cn(checkoutContentFormInner(), 'mx-auto w-full lg:mr-0 lg:ml-auto')}>
-          <CheckoutForm cart={cart} className={checkoutContentForm()} />
+          <CheckoutForm cart={cart} links={links} className={checkoutContentForm()} />
         </div>
       </div>
     </main>

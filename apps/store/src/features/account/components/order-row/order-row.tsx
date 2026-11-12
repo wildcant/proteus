@@ -19,14 +19,24 @@ import {
   orderRowTotal,
 } from '#/features/account/components/order-row/order-row.variants'
 import { useFormatters } from '#/hooks/use-formatters'
+import type { LinkTarget } from '#/lib/link-target'
 
 /** One past order in the account's list, the whole row the link to its page. */
-export function OrderRow({ order, className }: { order: StoreOrderListResponseOrdersItem; className?: string }) {
+export function OrderRow({
+  order,
+  link,
+  className,
+}: {
+  order: StoreOrderListResponseOrdersItem
+  /** ORDER. */
+  link: LinkTarget
+  className?: string
+}) {
   const { t } = useLingui()
   const { formatPrice, formatDate } = useFormatters()
 
   return (
-    <Link to="/account/orders/$orderId" params={{ orderId: order.id }} className={cn(orderRow(), className)}>
+    <Link {...link} className={cn(orderRow(), className)}>
       <OrderThumbnails items={order.items} />
 
       {/* Two lines on a phone — number and date, then status and total — rather than four

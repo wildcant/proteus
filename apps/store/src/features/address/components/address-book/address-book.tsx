@@ -25,17 +25,28 @@ import { AddressBookEmpty } from '#/features/address/components/address-book-emp
 import { AddressCard } from '#/features/address/components/address-card/address-card'
 import { AddressListFallback } from '#/features/address/components/address-list-fallback/address-list-fallback'
 import { MainAddressPanel } from '#/features/address/components/main-address-panel/main-address-panel'
+import type { LinkTarget } from '#/lib/link-target'
+
+/** The address book's ways out, the `AddressBook` screen's on the flow map. */
+type AddressBookLinks = {
+  /** BACK_TO_ACCOUNT. */
+  account: LinkTarget
+  /** ADD_ADDRESS. */
+  addAddress: LinkTarget
+  /** EDIT_ADDRESS. */
+  editAddress: (addressId: string) => LinkTarget
+}
 
 /**
  * Phone-first: back link, title, the main address, the full-width ink button, then the list.
  * `lg:` introduces the split — main address and button in a narrow left column, the list on the
  * right.
  */
-export function AddressBook() {
+export function AddressBook({ links }: { links: AddressBookLinks }) {
   return (
     <main className={cn(addressBook(), 'mx-auto w-full')}>
       <div className={addressBookHeading()}>
-        <BackLink to="/account" className={addressBookBack()}>
+        <BackLink link={links.account} className={addressBookBack()}>
           <Trans>Back to account</Trans>
         </BackLink>
         <h1 className={addressBookTitle()}>
@@ -50,7 +61,7 @@ export function AddressBook() {
           <Suspense fallback={<Skeleton className="h-44 w-full" />}>
             <MainAddressPanel className={addressBookMainAddress()} />
           </Suspense>
-          <ButtonLink to="/account/addresses/new" className={addressBookAddAddress()}>
+          <ButtonLink {...links.addAddress} className={addressBookAddAddress()}>
             <PlusIcon />
             <Trans>Add an address</Trans>
           </ButtonLink>
@@ -58,7 +69,7 @@ export function AddressBook() {
 
         <div className={cn(addressBookList(), 'min-w-0')}>
           <Suspense fallback={<AddressListFallback className="self-stretch" />}>
-            <AddressList />
+            <AddressList editLink={links.editAddress} />
           </Suspense>
         </div>
       </div>
@@ -66,7 +77,7 @@ export function AddressBook() {
   )
 }
 
-function AddressList() {
+function AddressList({ editLink }: { editLink: AddressBookLinks['editAddress'] }) {
   const { addresses } = useSuspenseAddresses()
   const updateAddress = useUpdateAddress()
   const main = addresses.find((address) => address.isDefaultShipping || address.isDefaultBilling)
@@ -90,7 +101,12 @@ function AddressList() {
       >
         {addresses.map((address) => (
           <li key={address.id} className={addressBookAddress()}>
-            <AddressCard address={address} isDefault={address.id === main?.id} className="w-full" />
+            <AddressCard
+              address={address}
+              isDefault={address.id === main?.id}
+              editLink={editLink(address.id)}
+              className="w-full"
+            />
           </li>
         ))}
       </RadioGroup>

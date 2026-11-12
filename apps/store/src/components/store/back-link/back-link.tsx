@@ -1,5 +1,4 @@
 import { cn } from '@proteus/ui-core'
-import type { LinkProps } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import {
@@ -9,8 +8,10 @@ import {
   backLinkLabel,
 } from '#/components/store/back-link/back-link.variants'
 import { ButtonLink } from '#/components/ui/button/button'
+import type { LinkTarget } from '#/lib/link-target'
 
-type BackLinkProps = Pick<LinkProps, 'to'> & {
+type BackLinkProps = {
+  link: LinkTarget
   children: ReactNode
   className?: string
 }
@@ -22,12 +23,12 @@ type BackLinkProps = Pick<LinkProps, 'to'> & {
  * focus ring turns ink, and that border is what the drawing leaves out (it draws the link 2px
  * shorter than the page renders).
  */
-export function BackLink({ to, className, children }: BackLinkProps) {
+export function BackLink({ link, className, children }: BackLinkProps) {
   return (
     // `block` / `inline-flex`: the link sits on a text line, as the store renders it — the line's
     // strut leaves 1.5px under it that the caller's drawn flex column drops.
     <div className={cn(className, 'block')}>
-      <ButtonLink variant="link" to={to} className={cn(backLink(), 'inline-flex')}>
+      <ButtonLink {...link} variant="link" className={cn(backLink(), 'inline-flex')}>
         <ChevronLeftIcon aria-hidden="true" className={cn(backLinkChevron(), backLinkGlyph())} />
         <span className={backLinkLabel()}>{children}</span>
       </ButtonLink>

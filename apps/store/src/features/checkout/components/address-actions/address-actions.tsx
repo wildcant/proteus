@@ -15,6 +15,7 @@ import {
   addressActionsItems,
   addressActionsMenu,
 } from '#/features/checkout/components/address-actions/address-actions.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * The menu's rows are drawn as plain frames; here they are ghost Buttons for the focus ring, so
@@ -29,7 +30,16 @@ const MENU_ROW = 'w-full justify-start hover:bg-transparent dark:hover:bg-transp
  * A sibling of the label rather than inside it: a button nested in a `<label>` is a click the
  * browser forwards to the radio, so opening the menu would also select the row.
  */
-export function AddressActions({ address, className }: { address: StoreCustomerAddress; className?: string }) {
+export function AddressActions({
+  address,
+  editLink,
+  className,
+}: {
+  address: StoreCustomerAddress
+  /** EDIT_ADDRESS. */
+  editLink: LinkTarget
+  className?: string
+}) {
   const { t } = useLingui()
   const prompt = usePrompt()
   const deleteAddress = useDeleteAddress()
@@ -70,9 +80,8 @@ export function AddressActions({ address, className }: { address: StoreCustomerA
       <PopoverContent className={cn(addressActions(), addressActionsMenu(), 'static')}>
         <div className={addressActionsItems()}>
           <ButtonLink
+            {...editLink}
             variant="ghost"
-            to="/checkout/addresses/$addressId/edit"
-            params={{ addressId: address.id }}
             className={cn(addressActionsEdit(), addressActionsEditLabel(), MENU_ROW)}
           >
             <Trans>Edit address</Trans>

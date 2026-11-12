@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { ShoppingBagIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui-core'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button/button'
 import { useCart } from '#/entities/cart/api/cart'
 import { CartBadge } from '#/features/cart/components/cart-badge/cart-badge'
@@ -10,7 +11,7 @@ import {
   cartTriggerBag,
   cartTriggerGlyph,
 } from '#/features/cart/components/cart-trigger/cart-trigger.variants'
-import { useModal } from '#/lib/modal-state'
+import type { BagLinks } from '#/features/cart/types/links'
 
 /**
  * The bag. One button at every width — the bar used to render an `sm:hidden` link to `/cart`
@@ -20,15 +21,20 @@ import { useModal } from '#/lib/modal-state'
  * It opens the panel rather than navigating: `/cart` is still reachable from the side menu and
  * the footer, but the bag itself is now a place to act, not a page to visit.
  */
-export function CartTrigger() {
+export function CartTrigger({ links }: { links: Pick<BagLinks, 'open' | 'openEmpty'> }) {
   const { t } = useLingui()
   const { cart } = useCart()
-  const { setOpen } = useModal('cart')
+  const navigate = useNavigate()
 
   const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
 
   return (
-    <Button variant="ghost" size="icon" aria-label={t`Cart`} onClick={() => setOpen(true)}>
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={t`Cart`}
+      onClick={() => navigate(itemCount > 0 ? links.open : links.openEmpty)}
+    >
       {/* The badge hangs off the *glyph's* corner, so it anchors to this wrapper rather than to
           the button. `size="icon"` is 32px around a 20px bag, and offsets measured from the
           button's own corner land six pixels inside the bag, burying it under the counter.

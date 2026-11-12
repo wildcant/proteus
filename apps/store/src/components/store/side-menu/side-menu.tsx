@@ -3,6 +3,7 @@ import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
+import type { HeaderLinks } from '#/components/header/header-links'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
 import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger } from '#/components/header/search-triggers'
@@ -46,10 +47,10 @@ const LG_GUTTER = 'lg:px-8'
  * without an onClick. The search trigger sets `modal` to `search` in a single navigation, so
  * the menu closes exactly as the panel opens rather than the two overlapping.
  */
-export function SideMenu({ menu }: { menu: MenuSource }) {
+export function SideMenu({ menu, links }: { menu: MenuSource; links: HeaderLinks }) {
   const { t } = useLingui()
-  const { isOpen, setOpen } = useModal('menu')
-  const entries = useMenuEntries(menu)
+  const { isOpen, setOpen } = useModal('menu', { open: links.openMenu, close: links.close })
+  const entries = useMenuEntries(menu, links.menu)
 
   return (
     <Drawer open={isOpen} onOpenChange={setOpen} swipeDirection="left">
@@ -82,7 +83,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
         </div>
 
         <div className={cn(sideMenuSearch(), 'shrink-0', LG_GUTTER)}>
-          <SearchBarTrigger className={sideMenuSearchBar()} />
+          <SearchBarTrigger openLink={links.openSearch} className={sideMenuSearchBar()} />
         </div>
 
         {/* The rail's destinations, from the same menu, nested: a Category with children expands in
@@ -104,7 +105,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
               </li>
             ))}
             <li>
-              <Link to="/account" className={rowClassName}>
+              <Link {...links.account} className={rowClassName}>
                 <Trans>Account</Trans>
                 <ChevronRightIcon className={chevronClassName} />
               </Link>

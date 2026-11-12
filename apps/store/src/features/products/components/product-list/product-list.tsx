@@ -10,10 +10,17 @@ import {
   productListPagination,
   productListResults,
 } from '#/features/products/components/product-list/product-list.variants'
+import type { ProductListLinks } from '#/features/products/types/links'
 import type { ProductListView } from '#/features/products/utils/product-list-search'
 import { useMarket } from '#/hooks/use-market'
 
-export function ProductList({ scope, search, onSearchChange, className }: ProductListView & { className?: string }) {
+export function ProductList({
+  scope,
+  search,
+  onSearchChange,
+  links,
+  className,
+}: ProductListView & { links: ProductListLinks; className?: string }) {
   const { offset } = search
   const { current } = useMarket()
   const { products, count } = useSuspenseProducts(productsPageQuery({ ...search, scope, countryCode: current.iso2 }))
@@ -28,7 +35,13 @@ export function ProductList({ scope, search, onSearchChange, className }: Produc
   // A scope is what makes a list narrower than the whole catalogue, and so what gives "Shop all"
   // somewhere wider to go. The home page's is empty.
   if (products.length === 0) {
-    return <ProductEmpty search={search} isScoped={Object.keys(scope).length > 0} className={className} />
+    return (
+      <ProductEmpty
+        search={search}
+        shopAllLink={Object.keys(scope).length > 0 ? links.shopAll : undefined}
+        className={className}
+      />
+    )
   }
 
   return (
@@ -37,7 +50,7 @@ export function ProductList({ scope, search, onSearchChange, className }: Produc
         aria-busy={isNavigating}
         className={cn(productListResults({ navigating: isNavigating }), isNavigating && 'transition-opacity')}
       >
-        <ProductGrid products={products} className={productListGrid()} />
+        <ProductGrid products={products} productLink={links.product} className={productListGrid()} />
       </div>
 
       <Pagination

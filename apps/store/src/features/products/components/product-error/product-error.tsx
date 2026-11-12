@@ -12,6 +12,7 @@ import {
   productErrorText,
   productErrorTitle,
 } from '#/features/products/components/product-error/product-error.variants'
+import type { LinkTarget } from '#/lib/link-target'
 
 /**
  * What the detail route shows when it has no product to show: the route's `errorComponent` when the
@@ -24,7 +25,7 @@ import {
  * The way out is the catalogue, because it is the one page that is certainly there: whatever the
  * shopper is standing in, it has products it can sell them.
  */
-export function ProductError() {
+export function ProductError({ browseLink }: { browseLink: LinkTarget }) {
   return (
     // `mx-auto w-full` centres the capped page, which the design file draws as stretched.
     <main className={cn(productError(), 'mx-auto w-full')}>
@@ -38,7 +39,7 @@ export function ProductError() {
             <Trans>It may not be one we sell here.</Trans>
           </p>
         </div>
-        <ButtonLink to="/" className={productErrorAction()}>
+        <ButtonLink {...browseLink} className={productErrorAction()}>
           <Trans>Browse products</Trans>
         </ButtonLink>
       </div>

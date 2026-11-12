@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { addressesQueryOptions } from '#/entities/address/api/addresses'
 import { isRegistered } from '#/lib/auth-token'
+import { flowLinks } from '#/navigation/links'
 
 /**
  * The address book, reachable from checkout. Guests never see the link that leads here — they have
@@ -9,7 +10,7 @@ import { isRegistered } from '#/lib/auth-token'
  */
 export const Route = createFileRoute('/_checkout/checkout/addresses')({
   beforeLoad: () => {
-    if (!isRegistered()) throw redirect({ to: '/checkout' })
+    if (!isRegistered()) throw redirect(flowLinks('CheckoutContent').GUEST_REDIRECT())
   },
   loader: ({ context }) => context.queryClient.ensureQueryData(addressesQueryOptions()),
   component: () => <Outlet />,

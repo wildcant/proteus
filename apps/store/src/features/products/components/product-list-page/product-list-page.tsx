@@ -9,6 +9,7 @@ import {
   productListPageList,
 } from '#/features/products/components/product-list-page/product-list-page.variants'
 import { ProductListSkeleton } from '#/features/products/components/product-list-skeleton/product-list-skeleton'
+import type { ProductListLinks } from '#/features/products/types/links'
 import type { ProductListView } from '#/features/products/utils/product-list-search'
 
 /** The routes that render a product list, which is what types the navigation back to them. */
@@ -16,6 +17,7 @@ type ProductListPath = '/' | '/categories/$handle' | '/collections/$handle'
 
 type ProductListPageProps = Pick<ProductListView, 'scope' | 'search'> & {
   from: ProductListPath
+  links: ProductListLinks
   heading: ReactNode
   /** See `ProductListHeader`: a category's breadcrumb. */
   eyebrow?: ReactNode
@@ -28,7 +30,7 @@ type ProductListPageProps = Pick<ProductListView, 'scope' | 'search'> & {
  * `search` and hands it in, so the list reads this page's params and nothing else; a change is
  * written back to the same page, merged over what is there.
  */
-export function ProductListPage({ from, scope, search, heading, eyebrow, intro }: ProductListPageProps) {
+export function ProductListPage({ from, links, scope, search, heading, eyebrow, intro }: ProductListPageProps) {
   const navigate = useNavigate()
   const list: ProductListView = {
     scope,
@@ -50,7 +52,7 @@ export function ProductListPage({ from, scope, search, heading, eyebrow, intro }
 
       <div className={productListPageList()}>
         <Suspense fallback={<ProductListSkeleton className="w-full" />}>
-          <ProductList {...list} className="w-full" />
+          <ProductList {...list} links={links} className="w-full" />
         </Suspense>
       </div>
     </main>
