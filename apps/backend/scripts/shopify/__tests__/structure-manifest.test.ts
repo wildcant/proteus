@@ -17,7 +17,7 @@ test.describe('buildStructureManifest', () => {
     const manifest = buildStructureManifest(
       parse([
         'campos:',
-        '  - { nombre: Género, clave: genero }',
+        '  - { nombre: Género, clave: genero, filtro: true }',
         '  - { nombre: Estilo, clave: estilo }',
         '  - { nombre: Colección, clave: coleccion }',
         'categorias:',
@@ -44,9 +44,9 @@ test.describe('buildStructureManifest', () => {
     )
 
     expect(manifest.metafields).toEqual([
-      { name: 'Género', namespace: 'custom', key: 'genero', type: 'list.single_line_text_field' },
-      { name: 'Estilo', namespace: 'custom', key: 'estilo', type: 'list.single_line_text_field' },
-      { name: 'Colección', namespace: 'custom', key: 'coleccion', type: 'list.single_line_text_field' },
+      { name: 'Género', namespace: 'custom', key: 'genero', type: 'list.single_line_text_field', filter: true },
+      { name: 'Estilo', namespace: 'custom', key: 'estilo', type: 'list.single_line_text_field', filter: false },
+      { name: 'Colección', namespace: 'custom', key: 'coleccion', type: 'list.single_line_text_field', filter: false },
     ])
     expect(manifest.collections).toEqual([
       {
@@ -116,7 +116,11 @@ test.describe('buildStructureManifest', () => {
         ],
       },
     })
-    expect(manifest.metafields.map((metafield) => metafield.key)).toEqual(['genero', 'tipo', 'colecciones'])
+    expect(manifest.metafields.map(({ key, filter }) => [key, filter])).toEqual([
+      ['genero', true],
+      ['tipo', true],
+      ['colecciones', false],
+    ])
     expect(manifest.collections).toHaveLength(15)
     expect(manifest.menu.map((item) => [item.title, item.children.map((child) => child.title)])).toEqual([
       ['Men', ['Tops', 'Bottoms', 'Shoes']],

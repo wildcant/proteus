@@ -60,6 +60,8 @@ CREATE TABLE "product_metafield_definition" (
 	"key" text NOT NULL,
 	"name" text NOT NULL,
 	"type" text DEFAULT 'list.single_line_text_field' NOT NULL,
+	"filterable" boolean DEFAULT false NOT NULL,
+	"rank" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone

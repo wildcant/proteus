@@ -14,6 +14,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/store/product/queries.ts:6
+msgid "Write a filter as key:value"
+msgstr "Escribe un filtro como clave:valor"
+
+#. js-lingui-explicit-id
 #: src/bounded.ts:63
 msgid "Use {maximum} characters or fewer"
 msgstr "Usa {maximum} caracteres o menos"

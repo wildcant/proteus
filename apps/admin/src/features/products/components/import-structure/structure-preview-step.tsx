@@ -15,15 +15,18 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
   const { metafields, categories, collections } = plan
 
   const atRoot = t`top level`
+  // The key, and whether the storefront offers the metafield as a filter.
+  const metafieldDetail = (row: { key: string; filterable: boolean }) =>
+    row.filterable ? t`${row.key} · filter` : row.key
   const under = (parentHandle: string | null | undefined) => parentHandle ?? atRoot
   const groups: { title: string; rows: ChangeRow[]; destructive?: boolean }[] = [
     {
       title: t`Metafields to create`,
-      rows: metafields.create.map((row) => ({ key: row.key, label: row.name, detail: row.key })),
+      rows: metafields.create.map((row) => ({ key: row.key, label: row.name, detail: metafieldDetail(row) })),
     },
     {
-      title: t`Metafields to rename`,
-      rows: metafields.update.map((row) => ({ key: row.key, label: row.name, detail: row.key })),
+      title: t`Metafields to update`,
+      rows: metafields.update.map((row) => ({ key: row.key, label: row.name, detail: metafieldDetail(row) })),
     },
     {
       title: t`Metafields to delete`,

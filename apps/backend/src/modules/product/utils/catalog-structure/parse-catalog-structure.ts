@@ -35,8 +35,11 @@ const key = z
   .string({ error: ifWrongType('Must be a clave.') })
   .regex(KEY_PATTERN, 'Must be 2 to 64 lowercase letters, digits, "-" or "_", like "genero".')
 
+/** `filtro: true` offers the campo as a storefront filter, Shopify's per-definition filter switch. */
+const filter = z.boolean({ error: ifWrongType('Must be true or false.') })
+
 const field = z.strictObject(
-  { nombre: name, clave: key },
+  { nombre: name, clave: key, filtro: filter.optional() },
   { error: ifWrongType('Must be a campo with nombre and clave.') },
 )
 
@@ -129,7 +132,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       errors.push({ path: `campos[${index}].clave`, message: `The clave "${raw.clave}" is used more than once.` })
     }
     keys.add(raw.clave)
-    return { name: raw.nombre, key: raw.clave }
+    return { name: raw.nombre, key: raw.clave, filterable: raw.filtro ?? false }
   })
   const toRule = (raw: RawRule | undefined, path: string) => {
     if (!raw) return null

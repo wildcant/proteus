@@ -12,8 +12,10 @@ test.describe('parseCatalogStructure', () => {
         'campos:',
         '  - nombre: Género',
         '    clave: genero',
+        '    filtro: true',
         '  - nombre: Estilo',
         '    clave: estilo',
+        '    filtro: false',
         '  - nombre: Colecciones',
         '    clave: colecciones',
         'categorias:',
@@ -43,9 +45,10 @@ test.describe('parseCatalogStructure', () => {
     expect(errors).toEqual([])
     expect(structure).toEqual({
       metafields: [
-        { name: 'Género', key: 'genero' },
-        { name: 'Estilo', key: 'estilo' },
-        { name: 'Colecciones', key: 'colecciones' },
+        // `filtro` left out is no filter.
+        { name: 'Género', key: 'genero', filterable: true },
+        { name: 'Estilo', key: 'estilo', filterable: false },
+        { name: 'Colecciones', key: 'colecciones', filterable: false },
       ],
       categories: [
         {
@@ -101,6 +104,9 @@ test.describe('parseCatalogStructure', () => {
         '  - nombre: Género',
         '    clave: Género',
         '  - nombre: Estilo',
+        '  - nombre: Talla',
+        '    clave: talla',
+        '    filtro: si',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
@@ -125,6 +131,7 @@ test.describe('parseCatalogStructure', () => {
     expect(errors).toEqual([
       { path: 'campos[0].clave', message: 'Must be 2 to 64 lowercase letters, digits, "-" or "_", like "genero".' },
       { path: 'campos[1].clave', message: 'Must be a clave.' },
+      { path: 'campos[2].filtro', message: 'Must be true or false.' },
       { path: 'categorias[0].regla', message: 'Must hold at least one condition.' },
       {
         path: 'categorias[0].hijos[0].handle',

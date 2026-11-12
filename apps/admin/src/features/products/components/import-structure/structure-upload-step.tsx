@@ -57,8 +57,9 @@ export function StructureUploadStep({ errors, onRead }: StructureUploadStepProps
                 <Trans>
                   The file lists the product metafields as <code>campos</code>, then <code>categorias</code> with their{' '}
                   <code>hijos</code>, <code>colecciones</code> and the <code>menu</code>. A <code>regla</code> fills a
-                  category or collection with the products whose metafields match. The file is the source: metafields,
-                  categories and collections it leaves out are deleted.
+                  category or collection with the products whose metafields match, and <code>filtro: true</code> offers
+                  a metafield as a storefront filter. The file is the source: metafields, categories and collections it
+                  leaves out are deleted.
                 </Trans>
               </p>
             </div>

@@ -53,6 +53,12 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   tagId?: string | string[]
   /** Products carrying any of the Tags with these values. Not a column, as `tagId`. */
   tagValue?: string | string[]
+  /**
+   * Products whose metafield holds any of the values listed for its key, for every key listed —
+   * `{ genero: ['women'], tipo: ['tops', 'bottoms'] }`. An unknown key matches nothing; a key with no
+   * values narrows nothing. Not a column, as `tagId`.
+   */
+  metafields?: Record<string, string[]>
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
@@ -338,9 +344,26 @@ export type ProductMetafieldDefinitionDTO = {
   key: string
   name: string
   type: ProductMetafieldType
+  /** Offered as a storefront filter on the product lists. */
+  filterable: boolean
+  /** Place among the definitions, the structure file's order. */
+  rank: number
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+}
+
+/** One value of a storefront filter, with how many products in view would hold it. */
+export type ProductMetafieldFilterValueDTO = {
+  value: string
+  count: number
+}
+
+/** A filterable metafield over the products in view: every value they hold, sorted. */
+export type ProductMetafieldFilterDTO = {
+  key: string
+  name: string
+  values: ProductMetafieldFilterValueDTO[]
 }
 
 /** One of a product's metafields with its values, in the order they were written. */
@@ -413,6 +436,8 @@ type CatalogStructureCollectionDTO = {
 type CatalogStructureMetafieldDTO = {
   name: string
   key: string
+  /** `filtro: true`: offered as a storefront filter. */
+  filterable: boolean
 }
 
 /**
@@ -452,8 +477,8 @@ type CatalogStructureCollectionChangeDTO = {
 
 /**
  * What applying a structure does to the metafield definitions, by key, and to the groupings, by
- * handle. A definition update is a new name. A grouping update is a new name, rule, rank or an
- * inactive Category turned active; a move is a new parent, and is listed only as a move.
+ * handle. A definition update is a new name, filter switch or place. A grouping update is a new name,
+ * rule, rank or an inactive Category turned active; a move is a new parent, and is listed only as a move.
  */
 export type CatalogStructureChangesDTO = {
   metafields: {

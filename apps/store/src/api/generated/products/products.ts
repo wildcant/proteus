@@ -7,7 +7,9 @@
  */
 import type {
   GetStoreProductParams,
+  ListStoreProductFiltersParams,
   ListStoreProductsParams,
+  StoreProductFilterListResponse,
   StoreProductListResponse,
   StoreProductResponse
 } from '../model';
@@ -16,6 +18,18 @@ import { fetcher } from '../../fetcher.ts';
 
 
 
+  /**
+ * @summary List the metafield filters over the products in view, with counts
+ */
+export const listStoreProductFilters = (
+    params?: ListStoreProductFiltersParams,
+ ) => {
+      return fetcher<StoreProductFilterListResponse>(
+      {url: `/store/product-filters`, method: 'GET',
+        params
+    },
+      );
+    }
   /**
  * @summary List published products
  */
@@ -41,5 +55,6 @@ export const getStoreProduct = (
     },
       );
     }
-  export type ListStoreProductsResult = NonNullable<Awaited<ReturnType<typeof listStoreProducts>>>
+  export type ListStoreProductFiltersResult = NonNullable<Awaited<ReturnType<typeof listStoreProductFilters>>>
+export type ListStoreProductsResult = NonNullable<Awaited<ReturnType<typeof listStoreProducts>>>
 export type GetStoreProductResult = NonNullable<Awaited<ReturnType<typeof getStoreProduct>>>

@@ -1,10 +1,16 @@
 import { and, asc, eq, exists, inArray, isNull, type SQL, sql } from 'drizzle-orm'
 import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import type { Context } from '../../../core/types/context.js'
-import type { FilterableProductProps } from '../../../core/types/product/common.js'
+import type {
+  FilterableProductProps,
+  ProductMetafieldDefinitionDTO,
+  ProductMetafieldFilterValueDTO,
+} from '../../../core/types/product/common.js'
 import { BaseRepository } from '../../../core/utils/base-repository.js'
 import { productTable } from '../models/product.js'
 import { productCollectionTable } from '../models/product-collection.js'
+import { productMetafieldTable } from '../models/product-metafield.js'
+import { productMetafieldDefinitionTable } from '../models/product-metafield-definition.js'
 import { productProductCategoryTable } from '../models/product-product-category.js'
 import { productProductCollectionTable } from '../models/product-product-collection.js'
 import { productProductTagTable } from '../models/product-product-tag.js'
@@ -50,6 +56,40 @@ export class ProductRepository extends BaseRepository(productTable) {
     return rows.map((row) => row.value)
   }
 
+  /**
+   * Every live value of `definition` on the products `filters` match, sorted, each with how many of
+   * them would remain once it is chosen — standard facet counting. The values are those of the list
+   * before any selection, so a value nothing in view would keep still comes back, at 0; the count
+   * applies every selection but this definition's own, because choosing a value widens its own key
+   * (values OR) and narrows only through the others (keys AND). The Tag selection counts as one of
+   * the others. One `GROUP BY` over the definition's values.
+   */
+  async findMetafieldValueCounts(
+    definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'key'>,
+    { tagValue, metafields, ...scope }: FilterableProductProps,
+    context?: Context,
+  ): Promise<ProductMetafieldFilterValueDTO[]> {
+    const { [definition.key]: _own, ...otherMetafields } = metafields ?? {}
+    const narrowed = this.extraWhere({ tagValue, metafields: otherMetafields }) ?? sql`TRUE`
+    const client = this.getClient(context)
+    return client
+      .select({
+        value: productMetafieldTable.value,
+        count: sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number),
+      })
+      .from(productMetafieldTable)
+      .innerJoin(this.table, eq(this.table.id, productMetafieldTable.productId))
+      .where(
+        and(
+          eq(productMetafieldTable.definitionId, definition.id),
+          isNull(productMetafieldTable.deletedAt),
+          this.buildWhere(scope),
+        ),
+      )
+      .groupBy(productMetafieldTable.value)
+      .orderBy(asc(productMetafieldTable.value))
+  }
+
   /** The grouping filters: each one an `EXISTS`, ANDed with the column filters and each other. */
   protected override extraWhere(filters?: FilterableProductProps): SQL | undefined {
     if (!filters) return undefined
@@ -60,6 +100,7 @@ export class ProductRepository extends BaseRepository(productTable) {
       collectionHandle,
       tagId,
       tagValue,
+      metafields = {},
       includeDescendants = false,
       visibleOnly = false,
     } = filters
@@ -74,6 +115,9 @@ export class ProductRepository extends BaseRepository(productTable) {
     }
     if (tagId !== undefined) clauses.push(this.inGroupings(tagPivot, productTagTable.id, tagId))
     if (tagValue !== undefined) clauses.push(this.inGroupings(tagPivot, productTagTable.value, tagValue))
+    for (const [key, values] of Object.entries(metafields)) {
+      if (values.length > 0) clauses.push(this.holdsMetafield(key, values))
+    }
     return clauses.length > 0 ? and(...clauses) : undefined
   }
 
@@ -132,6 +176,29 @@ export class ProductRepository extends BaseRepository(productTable) {
             inArray(column, asArray(values)),
             isNull(pivot.deletedAt),
             isNull(grouping.deletedAt),
+          ),
+        ),
+    )
+  }
+
+  /** Products whose live metafield `key` holds any of `values`, under a live definition. */
+  private holdsMetafield(key: string, values: string[]): SQL {
+    const client = this.getClient()
+    return exists(
+      client
+        .select({ id: productMetafieldTable.id })
+        .from(productMetafieldTable)
+        .innerJoin(
+          productMetafieldDefinitionTable,
+          eq(productMetafieldDefinitionTable.id, productMetafieldTable.definitionId),
+        )
+        .where(
+          and(
+            eq(productMetafieldTable.productId, this.table.id),
+            eq(productMetafieldDefinitionTable.key, key),
+            inArray(productMetafieldTable.value, values),
+            isNull(productMetafieldTable.deletedAt),
+            isNull(productMetafieldDefinitionTable.deletedAt),
           ),
         ),
     )

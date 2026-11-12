@@ -2978,11 +2978,15 @@
           },
           "name": {
             "type": "string"
+          },
+          "filterable": {
+            "type": "boolean"
           }
         },
         "required": [
           "key",
-          "name"
+          "name",
+          "filterable"
         ]
       },
       "AdminCatalogStructureCategoryChange": {

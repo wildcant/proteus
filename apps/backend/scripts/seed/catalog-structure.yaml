@@ -1,11 +1,14 @@
 # Store structure for the development catalogue in product-import.csv. `campos` are the product
-# metafields the rules read. A rule maps each clave to the values that satisfy it: every clave must
-# match, each by any one of its values.
+# metafields the rules read; `filtro: true` also offers one as a storefront filter, in this order.
+# A rule maps each clave to the values that satisfy it: every clave must match, each by any one of
+# its values.
 campos:
   - nombre: Género
     clave: genero
+    filtro: true
   - nombre: Tipo
     clave: tipo
+    filtro: true
   - nombre: Colecciones
     clave: colecciones
 categorias:

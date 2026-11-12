@@ -73,10 +73,12 @@ export type UpdateProductDTO = {
  */
 export type ProductMetafieldValuesDTO = Record<string, string[]>
 
-/** Creates the definition of `key`, or renames the one that exists. */
+/** Creates the definition of `key`, or updates the one that exists. */
 export type UpsertProductMetafieldDefinitionDTO = {
   key: string
   name: string
+  /** Absent is not filterable. */
+  filterable?: boolean
 }
 
 /** The pivot-backed groupings a product write sets. Each replaces the product's whole set; absent leaves it alone. */

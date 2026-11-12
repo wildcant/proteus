@@ -101,11 +101,11 @@ test.describe('Structure files', () => {
     expect(plan.errors).toEqual([])
     expect(plan.metafields).toEqual({
       create: [
-        { key: 'tipo', name: 'Tipo' },
-        { key: 'colecciones', name: 'Colecciones' },
+        { key: 'tipo', name: 'Tipo', filterable: true },
+        { key: 'colecciones', name: 'Colecciones', filterable: false },
       ],
-      update: [{ key: 'genero', name: 'Género' }],
-      delete: [{ key: 'temporada', name: 'Temporada' }],
+      update: [{ key: 'genero', name: 'Género', filterable: true }],
+      delete: [{ key: 'temporada', name: 'Temporada', filterable: false }],
     })
     expect(handles(plan.categories.create)).toEqual(
       [

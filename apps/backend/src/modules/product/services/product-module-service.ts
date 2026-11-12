@@ -38,6 +38,7 @@ import type {
   ProductImportSettingsDTO,
   ProductMetafieldDefinitionDTO,
   ProductMetafieldDTO,
+  ProductMetafieldFilterDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -966,8 +967,26 @@ export class ProductModuleService implements IProductModuleService {
 
   // ── Metafields ────────────────────────────────────────────────────────
 
+  async listProductMetafieldFilters(
+    filters: FilterableProductProps,
+    context?: Context,
+  ): Promise<ProductMetafieldFilterDTO[]> {
+    const definitions = await this.productMetafieldDefinitionRepository.find(
+      { filterable: true },
+      { order: { rank: 'ASC', key: 'ASC' } },
+      context,
+    )
+    return Promise.all(
+      definitions.map(async (definition) => ({
+        key: definition.key,
+        name: definition.name,
+        values: await this.productRepository.findMetafieldValueCounts(definition, filters, context),
+      })),
+    )
+  }
+
   async listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]> {
-    return this.productMetafieldDefinitionRepository.find(undefined, { order: { key: 'ASC' } }, context)
+    return this.productMetafieldDefinitionRepository.find(undefined, { order: { rank: 'ASC', key: 'ASC' } }, context)
   }
 
   async upsertMetafieldDefinitions(

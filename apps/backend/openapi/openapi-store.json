@@ -2034,6 +2034,57 @@
           "children"
         ]
       },
+      "StoreProductFilterListResponse": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductFilter"
+            }
+          }
+        },
+        "required": [
+          "filters"
+        ]
+      },
+      "StoreProductFilter": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductFilterValue"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "values"
+        ]
+      },
+      "StoreProductFilterValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "count"
+        ]
+      },
       "StoreProductTagValueListResponse": {
         "type": "object",
         "properties": {
@@ -4377,6 +4428,122 @@
         }
       }
     },
+    "/store/product-filters": {
+      "get": {
+        "operationId": "listStoreProductFilters",
+        "summary": "List the metafield filters over the products in view, with counts",
+        "tags": [
+          "Products"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "collection",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[^:]+:.+$/s"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[^:]+:.+$/s"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProductFilterListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
     "/store/product-tags": {
       "get": {
         "operationId": "listStoreProductTagValues",
@@ -4538,6 +4705,26 @@
             },
             "required": false,
             "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[^:]+:.+$/s"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[^:]+:.+$/s"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "filter",
             "in": "query"
           },
           {

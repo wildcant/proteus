@@ -34,6 +34,7 @@ import type {
   ProductImportSettingsDTO,
   ProductMetafieldDefinitionDTO,
   ProductMetafieldDTO,
+  ProductMetafieldFilterDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -303,6 +304,13 @@ export type IProductModuleService = {
   ): Promise<string[]>
 
   // Metafields
+  /**
+   * The storefront's filters over the products matching `filters`: each filterable definition, in rank
+   * order, with every value those products hold and how many would remain once it is chosen. The
+   * `metafields` and `tagValue` selections narrow the counts, never which values are offered, and a
+   * definition's own selection does not narrow its own counts.
+   */
+  listProductMetafieldFilters(filters: FilterableProductProps, context?: Context): Promise<ProductMetafieldFilterDTO[]>
   /** The live metafield definitions, by key. */
   listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]>
   /**

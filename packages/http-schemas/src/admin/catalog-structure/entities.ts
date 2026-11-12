@@ -6,9 +6,9 @@ export const AdminCatalogStructureError = z
   .openapi('AdminCatalogStructureError')
 export type AdminCatalogStructureError = z.input<typeof AdminCatalogStructureError>
 
-/** A metafield definition the file creates, renames or deletes. */
+/** A metafield definition the file creates, updates or deletes. `filterable` is its `filtro`. */
 export const AdminCatalogStructureMetafieldChange = z
-  .object({ key: z.string(), name: z.string() })
+  .object({ key: z.string(), name: z.string(), filterable: z.boolean() })
   .openapi('AdminCatalogStructureMetafieldChange')
 
 /** A Category the file creates, updates or deletes. `parentHandle` is where it ends up, or where it was for a delete. */
@@ -32,7 +32,7 @@ export type AdminNavigationEntry = z.input<typeof AdminNavigationEntry>
 
 /**
  * What a structure file does to the store: to the metafield definitions by key, where an update is a
- * new name, and to the groupings by handle, where an update is a new name, rule or rank, or an
+ * new name, filter switch or place, and to the groupings by handle, where an update is a new name, rule or rank, or an
  * inactive Category turned active, and a move is a new parent, listed only as a move. A file with
  * errors changes nothing and cannot be applied.
  */

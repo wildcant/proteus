@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveUniqueIndex } from '../../../core/db/indexes.js'
 import type { ProductMetafieldType } from '../../../core/types/product/common.js'
@@ -17,6 +17,10 @@ export const productMetafieldDefinitionTable = pgTable(
     key: text().notNull(),
     name: text().notNull(),
     type: text().$type<ProductMetafieldType>().default('list.single_line_text_field').notNull(),
+    /** Offered as a storefront filter on the product lists, as Shopify's per-definition "filter" switch. */
+    filterable: boolean().default(false).notNull(),
+    /** Place in the structure file's `campos`, which is the order the storefront's filters show in. */
+    rank: integer().default(0).notNull(),
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_product_metafield_definition_namespace_key').on(table.namespace, table.key)],

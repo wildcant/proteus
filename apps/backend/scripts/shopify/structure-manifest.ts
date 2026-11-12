@@ -19,10 +19,17 @@ import { parseCatalogStructure } from '../../src/modules/product/utils/catalog-s
  */
 
 /**
- * A product metafield definition. Every one is created as a collection condition and a storefront
- * filter, which is what Proteus' rules and facets read it for.
+ * A product metafield definition. Every one is created as a collection condition, which is what
+ * Proteus' rules read it for; `filter` is its `filtro`, whether Search & Discovery offers it as a
+ * storefront filter.
  */
-type ShopifyMetafieldDefinition = { name: string; namespace: 'custom'; key: string; type: ProductMetafieldType }
+type ShopifyMetafieldDefinition = {
+  name: string
+  namespace: 'custom'
+  key: string
+  type: ProductMetafieldType
+  filter: boolean
+}
 
 /** One metafield condition: the product's `metafield` (`custom.genero`) list holds `value`. */
 type ShopifyCollectionCondition = { metafield: string; value: string }
@@ -89,11 +96,12 @@ export function buildStructureManifest(structure: CatalogStructureDTO): ShopifyS
   })
 
   const metafields = structure.metafields.map(
-    ({ name, key }): ShopifyMetafieldDefinition => ({
+    ({ name, key, filterable }): ShopifyMetafieldDefinition => ({
       name,
       namespace: 'custom',
       key,
       type: 'list.single_line_text_field',
+      filter: filterable,
     }),
   )
 

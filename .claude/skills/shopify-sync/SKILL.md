@@ -165,15 +165,20 @@ Done when the menu tree equals the manifest's `menu`, item for item and level fo
 The Search & Discovery app (`/apps/search-and-discovery/filters`) holds the storefront's collection
 filters. Its pages render inside an iframe; snapshots reach into it.
 
+Add one filter per manifest `metafields[]` entry with `filter: true`, in manifest order, skipping any
+already listed.
+
 1. Open `/apps/search-and-discovery/filters/new`.
 2. Click "Seleccionar fuente". A dialog lists the sources, each as a button "<name>, n de m, botón"
    with its kind ("Metacampo de producto", "Opción de producto", or "Brand · Origen: Proveedor ·
-   Estándar" for Vendor). Click "Género".
+   Estándar" for Vendor). Click the entry's name ("Género").
 3. "Etiqueta del filtro" fills with the metafield name; keep it. Keep "Condición OR" (a shopper's
    selections widen the list). Click "Guardar".
-4. Repeat for "Tipo". Colecciones is not a filter; it only builds collections.
+4. Repeat for every other manifest `metafields[]` entry with `filter: true`, in manifest order. An
+   entry with `filter: false` (Colecciones) is not a filter; it only builds collections.
 
-Done when a collection page on the live storefront shows "Género" and "Tipo" as separate filters.
+Done when a collection page on the live storefront shows each `filter: true` entry ("Género", "Tipo")
+as a separate filter.
 
 ## 7. Verify
 

@@ -9,4 +9,5 @@
 export interface AdminCatalogStructureMetafieldChange {
   key: string;
   name: string;
+  filterable: boolean;
 }
