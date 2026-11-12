@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { buildComponents, type ComponentsContext } from '../components/build.ts'
-import type { ComponentSet, Layer } from '../components/snapshot.ts'
+import { type ComponentSet, exportCandidates, type Layer } from '../components/snapshot.ts'
 import { componentsConfig, fill, frame, text, tokenSnapshot } from './fixtures.ts'
 
 const context: ComponentsContext = {
@@ -9,7 +9,6 @@ const context: ComponentsContext = {
   variables: tokenSnapshot.variables,
   textStyles: tokenSnapshot.textStyles,
   textStylePrefix: 'type-',
-  textStyleVariants: true,
 }
 
 const variantProperty = (name: string, options: string[]) => ({
@@ -220,5 +219,149 @@ describe('components', () => {
       ],
     })
     expect(() => buildComponents([badge], context)).toThrow('Badge › dot: fill #ff0000 is not bound to a Theme colour')
+  })
+
+  it('exports a component outside any set, which FigCraft also lists with a folder', () => {
+    const pages = new Map([['1', 'components/ui']])
+    const candidates = exportCandidates(
+      [
+        {
+          id: '10',
+          name: 'variant=primary',
+          type: 'COMPONENT',
+          page: 1,
+          folder: ['components/ui', 'Button', 'Button'],
+        },
+        { id: '11', name: 'Button', type: 'COMPONENT_SET', page: 1, folder: ['components/ui', 'Button'] },
+        { id: '12', name: 'Label', type: 'COMPONENT', page: 1, folder: ['components/ui', 'Label'] },
+      ],
+      pages,
+    )
+    expect(candidates.map((c) => [c.name, c.page])).toEqual([
+      ['Button', 'components/ui'],
+      ['Label', 'components/ui'],
+    ])
+  })
+
+  it('leaves out example children, stretches children that all fill the cross axis, and makes a listed set inline', () => {
+    const exampleInput = { ...frame('exampleInput', 'vertical'), sizing: { horizontal: 'fill' as const } }
+    const fieldSet = single('Field', 'components/ui', {
+      variants: [
+        {
+          ...frame('Field', 'vertical'),
+          type: 'COMPONENT',
+          layout: { mode: 'vertical', crossAlign: 'min', gap: 8, padding: [0, 0, 0, 0] },
+          boundVariables: { gap: 's:2' },
+          children: [exampleInput, text('hint', 'body', 'c:ink', { sizing: { horizontal: 'fill' } })],
+        },
+      ],
+    })
+    const chip = single('Chip', 'components/ui', {
+      variants: [
+        {
+          ...frame('Chip', 'horizontal'),
+          type: 'COMPONENT',
+          layout: { mode: 'horizontal', crossAlign: 'min', gap: 0, padding: [0, 0, 0, 0] },
+          children: [text('label', 'body', 'c:ink')],
+        },
+      ],
+    })
+    const { files } = buildComponents([fieldSet, chip], {
+      ...context,
+      config: { ...componentsConfig, notStyledLayers: { 'Field › exampleInput': 'example content' }, inline: ['Chip'] },
+    })
+    const field = files.get('/shop/src/components/ui/field/field.variants.ts')
+    // Every child fills across the stack, the caller's example included: the children stretch, so none says so.
+    expect(field).toContain("export const field = cva('flex flex-col items-stretch gap-2')")
+    expect(field).toContain("export const fieldHint = cva('type-body text-ink')")
+    expect(field).not.toContain('exampleInput')
+    // A hugging child keeps the cross alignment drawn.
+    expect(files.get('/shop/src/components/ui/chip/chip.variants.ts')).toContain(
+      "export const chip = cva('inline-flex items-start')",
+    )
+  })
+
+  it('makes the design-only interaction property state classes: rest as the base, each state only what differs', () => {
+    const states = ['rest', 'hover', 'disabled'] as const
+    const variant = (tone: 'solid' | 'quiet', state: (typeof states)[number], viewport: 'mobile' | 'md'): Layer => ({
+      ...frame(`tone=${tone}, interaction=${state}, viewport=${viewport}`, 'horizontal'),
+      type: 'COMPONENT',
+      ...(state === 'disabled' ? { opacity: 0.5 } : {}),
+      fills: [{ type: 'solid', color: '#000000', ...(state === 'hover' && tone === 'solid' ? { opacity: 0.8 } : {}) }],
+      // A stroke drawn transparent keeps every variant the box of a bordered one.
+      strokes: [{ type: 'solid', color: '#00000000' }],
+      strokeWeight: 1,
+      strokeAlign: 'inside',
+      boundVariables: {
+        fill: tone === 'solid' ? 'c:accent' : 'c:surface',
+        paddingHorizontal: viewport === 'md' ? 's:6' : 's:4',
+      },
+      layout: {
+        mode: 'horizontal',
+        gap: 0,
+        padding: [0, viewport === 'md' ? 24 : 16, 0, viewport === 'md' ? 24 : 16],
+        strokesIncluded: true,
+      },
+      children: [
+        text('label', 'body', state === 'hover' && viewport === 'md' ? 'c:accent' : 'c:ink'),
+        // A glyph in a slot draws in currentColor: its colour is the slot's text colour.
+        {
+          ...frame('icon', 'horizontal'),
+          slot: true,
+          children: [
+            {
+              name: 'glyph',
+              type: 'VECTOR',
+              strokes: [{ type: 'solid', color: '#fff' }],
+              boundVariables: { stroke: 'c:surface' },
+            },
+          ],
+        },
+      ],
+    })
+    const pill: ComponentSet = {
+      name: 'Pill',
+      page: 'components/ui',
+      properties: [
+        variantProperty('tone', ['solid', 'quiet']),
+        variantProperty('interaction', [...states]),
+        variantProperty('viewport', ['mobile', 'md']),
+      ],
+      variants: (['solid', 'quiet'] as const).flatMap((tone) =>
+        states.flatMap((state) =>
+          // Hover is drawn at md too, where the label turns accent; disabled only at mobile.
+          (state === 'disabled' ? (['mobile'] as const) : (['mobile', 'md'] as const)).map((vp) =>
+            variant(tone, state, vp),
+          ),
+        ),
+      ),
+    }
+    const { files } = buildComponents([pill], {
+      ...context,
+      config: { ...componentsConfig, interactionPrefixes: { Pill: { disabled: 'data-disabled' } } },
+    })
+    const source = files.get('/shop/src/components/ui/pill/pill.variants.ts')
+    expect(source).not.toContain('interaction')
+    expect(source).toContain(
+      "export const pill = cva('group/pill flex px-4 md:px-6 border border-transparent data-disabled:opacity-50', {\n  variants: {\n    tone: {\n      solid: 'bg-accent hover:bg-accent/80',\n      quiet: 'bg-surface',\n    },\n  },",
+    )
+    // A part follows its component's state through the named group; breakpoint and state prefixes compose.
+    expect(source).toContain("export const pillLabel = cva('type-body text-ink md:group-hover/pill:text-accent')")
+    expect(source).toContain("export const pillIcon = cva('flex text-surface')")
+  })
+
+  it('lets the text style change at a breakpoint', () => {
+    const tag = single('Tag', 'components/ui', {
+      properties: [variantProperty('viewport', ['mobile', 'md'])],
+      variants: (['mobile', 'md'] as const).map((viewport) => ({
+        ...frame(`viewport=${viewport}`, 'horizontal'),
+        type: 'COMPONENT',
+        children: [text('label', viewport === 'md' ? 'heading' : 'body', 'c:ink')],
+      })),
+    })
+    const { files } = buildComponents([tag], context)
+    expect(files.get('/shop/src/components/ui/tag/tag.variants.ts')).toContain(
+      "export const tagLabel = cva('type-body md:type-heading text-ink')",
+    )
   })
 })

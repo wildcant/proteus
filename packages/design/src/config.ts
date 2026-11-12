@@ -77,6 +77,13 @@ type ComponentsSection = {
   runtimeSizes?: Record<string, 'horizontal' | 'vertical'>
   /** Fills that are data, which the design shows one example of: `Set › layer`. The component passes the colour. */
   runtimeFills?: string[]
+  /** Sets whose component sits in a line of text: its root is `inline-flex`, not `flex`. */
+  inline?: string[]
+  /**
+   * The Tailwind variant an `interaction` value maps to, per set, where it isn't the value itself: a Base UI
+   * part that marks its state with a data attribute, `{ "Checkbox": { "disabled": "data-disabled" } }`.
+   */
+  interactionPrefixes?: Record<string, Partial<Record<'hover' | 'focus-visible' | 'active' | 'disabled', string>>>
 }
 
 type DesignMdSection = {
@@ -177,6 +184,8 @@ export function loadConfig(path: string): ResolvedConfig {
       notStyledLayers: components.notStyledLayers ?? {},
       runtimeSizes: components.runtimeSizes ?? {},
       runtimeFills: components.runtimeFills ?? [],
+      inline: components.inline ?? [],
+      interactionPrefixes: components.interactionPrefixes ?? {},
     },
     designMd: designMd && { ...designMd, output: fromRoot(designMd.output) },
     flow: flow && {

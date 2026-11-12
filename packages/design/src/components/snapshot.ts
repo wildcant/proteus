@@ -119,6 +119,18 @@ type ListedComponent = {
   folder?: string[]
   description?: string
 }
+/**
+ * The sets, and the components outside any set, each with its page's name. component.list gives every component a
+ * folder (page, section, and for a variant its set), so a component is in a set when its last folder names one.
+ * @internal exported for its test
+ */
+export function exportCandidates(list: ListedComponent[], pages: Map<string, string>) {
+  const setNames = new Set(list.filter((c) => c.type === 'COMPONENT_SET').map((c) => c.name))
+  return list
+    .filter((c) => c.type === 'COMPONENT_SET' || (c.type === 'COMPONENT' && !setNames.has(c.folder?.at(-1) ?? '')))
+    .map((c) => ({ ...c, page: pages.get(String(c.page)) ?? String(c.page) }))
+}
+
 type FigCraftNode = Record<string, unknown> & {
   id: string
   name: string
@@ -141,9 +153,7 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
       { command: 'page.list', params: {} },
     ]) as [ListedComponent[], { id: string | number; name: string }[]]
     const pages = new Map(pageList.map((page) => [String(page.id), page.name]))
-    const candidates = list
-      .filter((c) => c.type === 'COMPONENT_SET' || (c.type === 'COMPONENT' && !c.folder?.length))
-      .map((c) => ({ ...c, page: pages.get(String(c.page)) ?? String(c.page) }))
+    const candidates = exportCandidates(list, pages)
     const chosen =
       names.length === 0
         ? candidates.filter((c) => !notExportedBecause(c, components))

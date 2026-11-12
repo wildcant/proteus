@@ -40,6 +40,9 @@ export type TextStyle = {
     case: 'original' | 'upper' | 'lower' | 'title' | 'smallCaps'
     letterSpacing: { unit: 'percent' | 'pixels'; value: number }
     lineHeight: { unit: 'percent' | 'pixels' | 'auto'; value?: number }
+    decoration?: 'none' | 'underline' | 'strikethrough'
+    /** The underline's distance below the baseline in px; undefined when auto. */
+    decorationOffset?: number
   }
 }
 
@@ -97,8 +100,19 @@ function fromFigCraft({ style, ...textStyle }: RawTextStyle): TextStyle {
       case: style.case as TextStyle['style']['case'],
       letterSpacing: style.letter_spacing as TextStyle['style']['letterSpacing'],
       lineHeight: style.line_height as TextStyle['style']['lineHeight'],
+      decoration: style.decoration as TextStyle['style']['decoration'],
+      decorationOffset: decorationOffset(style.decoration_look as DecorationLook | undefined),
     },
   }
+}
+
+type DecorationLook = { offset?: { unit: string; value?: number } }
+
+function decorationOffset(look: DecorationLook | undefined) {
+  const offset = look?.offset
+  if (!offset || offset.unit === 'auto') return undefined
+  if (offset.unit !== 'pixels') throw new Error(`a text decoration offset in ${offset.unit} is not mapped; use pixels`)
+  return offset.value
 }
 
 /** Refreshes the token half of the snapshot from the design file. */

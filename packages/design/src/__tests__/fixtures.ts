@@ -98,6 +98,8 @@ export const componentsConfig: ComponentsConfig = {
   notStyledLayers: {},
   runtimeSizes: {},
   runtimeFills: [],
+  inline: [],
+  interactionPrefixes: {},
 }
 
 /** A solid fill bound to a Theme role. */

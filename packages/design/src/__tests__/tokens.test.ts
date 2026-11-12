@@ -228,8 +228,21 @@ describe('tokens', () => {
     expect(css).toContain(
       '@media (min-width: 64rem) {\n  :root {\n    --type-display-size: 3rem;\n    --layout-margin: 3rem;\n  }\n}',
     )
-    expect(css).toContain('@layer utilities {\n  .type-display.type-display {')
-    expect(css).not.toContain('@utility')
+    // `&&` doubles the selector (`.type-display.type-display`) inside a utility, so it still takes variants:
+    // `md:type-display` is `.md\:type-display.md\:type-display` under the breakpoint.
+    expect(css).toContain('@utility type-display {\n  && {\n    font-family: var(--font-sans);')
+    expect(css).not.toContain('@layer utilities')
+  })
+
+  it('carries a text style decoration and its underline offset into the class', () => {
+    const link: TextStyle = {
+      ...display,
+      id: 'S:link',
+      name: 'type/link',
+      style: { ...display.style, case: 'original', decoration: 'underline', decorationOffset: 4 },
+    }
+    const css = renderCss(buildTokens(snapshot([link]), config()), config())
+    expect(css).toContain('  text-decoration-line: underline;\n  text-underline-offset: 4px;\n}')
   })
 
   it('refuses a text style whose font is not bound to a font/* variable', () => {

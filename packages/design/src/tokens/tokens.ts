@@ -47,6 +47,9 @@ export type TypeToken = {
   /** em */
   letterSpacing: number
   textTransform: 'uppercase' | 'lowercase' | 'capitalize' | undefined
+  textDecoration: 'underline' | 'line-through' | undefined
+  /** px */
+  underlineOffset: number | undefined
 }
 
 export type Tokens = {
@@ -324,6 +327,10 @@ function typeToken(
     textTransform: ({ upper: 'uppercase', lower: 'lowercase', title: 'capitalize' } as const)[
       s.case as 'upper' | 'lower' | 'title'
     ],
+    textDecoration: ({ underline: 'underline', strikethrough: 'line-through' } as const)[
+      s.decoration as 'underline' | 'strikethrough'
+    ],
+    underlineOffset: s.decoration === 'underline' ? s.decorationOffset : undefined,
   }
 }
 

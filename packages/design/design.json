@@ -51,7 +51,15 @@
     "root": "../../apps/store/src",
     "notExported": {
       "Icon": "exported by the icons exporter"
-    }
+    },
+    "notStyledLayers": {
+      "Field › exampleInput": "example content: the children are the caller's",
+      "Field › exampleError": "example content: the children are the caller's",
+      "Field › exampleCheckbox": "example content: the children are the caller's",
+      "Field › exampleLabel": "example content: the children are the caller's",
+      "RadioGroup › exampleItem": "example content: the children are the caller's"
+    },
+    "inline": ["Button"]
   },
   "designMd": {
     "output": "../../DESIGN.md",

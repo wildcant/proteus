@@ -59,6 +59,23 @@ A set may have a design-only `viewport` variant property with the values `mobile
 classes, and each larger one only the classes that differ from the next one down, under its prefix
 (`md:flex-row`). Draw an intermediate value only where the set changes there.
 
+A set may also have a design-only `interaction` variant property with the values `rest`, `hover`,
+`focus-visible`, `active`, `disabled`; draw `rest` and only the states that look different. It never
+becomes a `cva` prop either: `rest` gives the base classes, and each other value only the classes that
+differ from `rest` at the same viewport, under its Tailwind variant (`hover:bg-ink/80`,
+`disabled:opacity-50`). On a layer inside the component the state is the component's, read through a
+named group: the root gets `group/<set-name>` and the layer `group-hover/<set-name>:`. Breakpoint and
+state compose (`md:hover:`). Where a Base UI part marks its state with a data attribute instead, map the
+value in `components.interactionPrefixes` (`{ "Checkbox": { "disabled": "data-disabled" } }`).
+
+Read beyond tokens: layer opacity is `opacity-*`; a stroke drawn transparent (`#RRGGBB00` or paint
+opacity 0) is `border-transparent`, so variants keep a bordered one's box; an auto layout whose in-flow
+children all fill across it is `items-stretch`, and those children carry no `self-stretch`; a vector
+draws in `currentColor`, so its Theme colour is `text-*` on its layer, or on the slot that holds it. A set
+on `components.inline` has an `inline-flex` root (a button that sits in a sentence); every other root is
+`flex`. A text style's decoration and underline offset are part of the style (`type/link`): setting a
+decoration on a text layer detaches its style in FigCraft.
+
 Only token-bound values become classes. A raw colour, an unbound padding or a layer kind the build
 does not map stops the build with the layer named, so the design is fixed rather than guessed.
 
@@ -234,7 +251,7 @@ Committed and shared, one section per exporter. The machine paths are in `design
       "modes": [{ "mode": "Mobile", "width": 375 }, { "mode": "Desktop", "width": 1440 }],
       "scale": "fluid"                                // or "steps": each later mode applies from its width up
     },
-    "textStyles": { "prefix": "type-", "form": "doubled" }, // "utility" (default) supports variants
+    "textStyles": { "prefix": "type-", "form": "doubled" }, // or "utility" (default); both take variants
     "paletteInTheme": false,
     "rootFontSize": 16
   },
@@ -244,7 +261,9 @@ Committed and shared, one section per exporter. The machine paths are in `design
     "skippedPages": [],                               // besides app/* and flows
     "notStyledLayers": {},                            // "Set › layer" -> why
     "runtimeSizes": {},                               // "Set › layer" -> "horizontal" | "vertical", sized in code
-    "runtimeFills": []                                // "Set › layer" whose fill is data
+    "runtimeFills": [],                               // "Set › layer" whose fill is data
+    "inline": ["Button"],                             // sets whose root is inline-flex
+    "interactionPrefixes": {}                         // set -> { interaction value -> Tailwind variant }
   },
   "designMd": {                                       // optional
     "output": "../../DESIGN.md",
@@ -262,11 +281,14 @@ Committed and shared, one section per exporter. The machine paths are in `design
 ```
 
 `tokens.textStyles.form` chooses between two forms:
-- `utility` (the default) gives `@utility type-x`, which works with variants such as `lg:type-x`.
-- `doubled` gives `.type-x.type-x`, which beats a single utility a component hardcodes (`text-base`)
-  whatever the order. tailwind-merge can't relate the two, so both reach the element. The cost is
-  that variants don't work, so a component set whose text style changes across viewports stops the
-  components build.
+- `utility` (the default) gives `@utility type-x`, a single class.
+- `doubled` gives `@utility type-x { && { … } }`, which compiles to `.type-x.type-x` and beats a single
+  utility a component hardcodes (`text-base`) whatever the order. tailwind-merge can't relate the two,
+  so both reach the element.
+
+Both take variants (`md:type-input` is `.md\:type-input.md\:type-input` under the breakpoint), so a set
+whose text style changes across viewports exports. A style's decoration exports as
+`text-decoration-line`, its underline offset as `text-underline-offset` in px.
 
 If you add a `ts` output, also add `"./tokens": "./tokens/tokens.gen.ts"` to `exports` in
 `package.json`.

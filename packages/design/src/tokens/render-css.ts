@@ -6,7 +6,7 @@
 //   :root         --<role> in the first Theme mode, plus the responsive sizes at their base viewport
 //   <selector>    --<role> in each other Theme mode (and under its media query, if it has one)
 //   @media        the responsive sizes from each later viewport mode up (`steps` scale only)
-//   type-<name>   one class per text style
+//   type-<name>   one utility per text style (`doubled`: its selector doubled, `.type-x.type-x`)
 //
 // Colour roles go through an indirection (`--color-ink: var(--ink)`) so a mode only swaps the raw
 // variable, and every utility (`text-ink`, `bg-ink/40`) follows without a dark: variant.
@@ -127,11 +127,13 @@ export function renderCss(tokens: Tokens, config: TokensConfig): string {
     ...[...overrides.entries()]
       .sort(([a], [b]) => a - b)
       .map(([width, declarations]) => `@media (min-width: ${rem(width)}) {\n${indent(rule(':root', declarations))}\n}`),
-    ...(config.textStyles.form === 'doubled'
-      ? [
-          `@layer utilities {\n${typeClasses.map((c) => indent(rule(`.${c.name}.${c.name}`, c.declarations))).join('\n\n')}\n}`,
-        ]
-      : typeClasses.map((c) => rule(`@utility ${c.name}`, c.declarations))),
+    // `&&` doubles the selector inside the utility (`.type-x.type-x`, `.md\:type-x.md\:type-x`): it outranks a
+    // single utility and still takes variants.
+    ...typeClasses.map((c) =>
+      config.textStyles.form === 'doubled'
+        ? `@utility ${c.name} {\n${indent(rule('&&', c.declarations))}\n}`
+        : rule(`@utility ${c.name}`, c.declarations),
+    ),
   ]
   return `${blocks.filter((block) => block !== '').join('\n\n')}\n`
 }
@@ -152,6 +154,9 @@ function typeClass(
   if (lineHeight.kind === 'ratio') declarations.push(['line-height', String(round(lineHeight.value, 4))])
   if (style.letterSpacing) declarations.push(['letter-spacing', `${style.letterSpacing}em`])
   if (style.textTransform) declarations.push(['text-transform', style.textTransform])
+  if (style.textDecoration) declarations.push(['text-decoration-line', style.textDecoration])
+  // In px, as Tailwind's underline-offset-* writes it.
+  if (style.underlineOffset !== undefined) declarations.push(['text-underline-offset', `${style.underlineOffset}px`])
   return { name: `${config.textStyles.prefix}${style.name}`, declarations }
 }
 

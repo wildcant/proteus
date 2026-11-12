@@ -12,7 +12,6 @@ export function componentsContext(config: ResolvedConfig): ComponentsContext {
     variables: tokens.variables,
     textStyles: tokens.textStyles,
     textStylePrefix: config.tokens.textStyles.prefix,
-    textStyleVariants: config.tokens.textStyles.form === 'utility',
   }
 }
 

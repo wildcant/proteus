@@ -40,12 +40,19 @@ const button: ComponentSet = {
   ],
 }
 
-// The viewport property is design-only: one entry per cva variant, read at mobile.
+// The viewport and interaction properties are design-only: one entry per cva variant, read at mobile and rest.
 const promoBanner: ComponentSet = {
   name: 'PromoBanner',
   page: 'components/store',
-  properties: [{ name: 'viewport', type: 'variant', default: 'mobile', options: ['mobile', 'lg'] }],
-  variants: [variant('viewport=mobile', 'c:accent', 'c:surface'), variant('viewport=lg', 'c:ink', 'c:surface')],
+  properties: [
+    { name: 'viewport', type: 'variant', default: 'mobile', options: ['mobile', 'lg'] },
+    { name: 'interaction', type: 'variant', default: 'rest', options: ['rest', 'hover'] },
+  ],
+  variants: [
+    variant('viewport=mobile, interaction=rest', 'c:accent', 'c:surface'),
+    variant('viewport=mobile, interaction=hover', 'c:ink', 'c:surface'),
+    variant('viewport=lg, interaction=rest', 'c:ink', 'c:surface'),
+  ],
 }
 
 const homeScreen: ComponentSet = {
@@ -66,7 +73,6 @@ describe('DESIGN.md frontmatter', () => {
       variables: tokenSnapshot.variables,
       textStyles: tokenSnapshot.textStyles,
       textStylePrefix: 'type-',
-      textStyleVariants: true,
     },
   })
 

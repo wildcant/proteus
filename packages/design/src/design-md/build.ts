@@ -4,7 +4,8 @@
 //   colors       each Theme role, in the first (default) Theme mode
 //   typography   each type/* text style at the base viewport
 //   rounded      radius/*        spacing   space/*
-//   components   one entry per variant of each exported set (the design-only viewport read at mobile): its
+//   components   one entry per variant of each exported set (the design-only viewport read at mobile, interaction
+//                at rest): its
 //                fill, the colour and text style of its first text, and its token-bound size, as references
 //                (`{colors.accent}`)
 import type { ComponentsContext } from '../components/build.ts'
@@ -67,13 +68,15 @@ function components(sets: ComponentSet[], context: ComponentsContext) {
   const textStyleNames = Object.fromEntries(context.textStyles.map((s) => [s.id, s.name]))
   const entries: [string, Record<string, Value>][] = []
   for (const set of sets.filter((s) => !notExportedBecause(s, context.config))) {
-    const variantProps = set.properties.filter((p) => p.type === 'variant' && p.name !== 'viewport')
+    const variantProps = set.properties.filter(
+      (p) => p.type === 'variant' && p.name !== 'viewport' && p.name !== 'interaction',
+    )
     const textProps = new Set(set.properties.filter((p) => p.type === 'text').map((p) => p.name))
     for (const variant of set.variants) {
       const props = Object.fromEntries(
         set.properties.some((p) => p.type === 'variant') ? variant.name.split(', ').map((pair) => pair.split('=')) : [],
       ) as Record<string, string>
-      if ((props.viewport ?? 'mobile') !== 'mobile') continue
+      if ((props.viewport ?? 'mobile') !== 'mobile' || (props.interaction ?? 'rest') !== 'rest') continue
       // Named after the set and the values that are not its defaults: button, button-secondary.
       const key = [set.name, ...variantProps.filter((p) => props[p.name] !== p.default).map((p) => props[p.name])]
         .map((part) => kebab(part ?? ''))
