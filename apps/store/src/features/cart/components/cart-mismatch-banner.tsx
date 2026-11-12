@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { CircleAlertIcon } from 'lucide-react'
-import { Button } from '#/components/button'
+import { Button } from '#/components/ui/button/button'
 import { useCart, useTransferCart } from '#/entities/cart/api/cart'
 
 /**

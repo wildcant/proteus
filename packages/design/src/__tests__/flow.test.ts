@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import { buildFlow, type RouteNode, routeProblems, type ScreenTable } from '../flow/build.ts'
-import type { FlowSnapshot, FlowTransition } from '../flow/snapshot.ts'
+import type { FlowSnapshot } from '../flow/snapshot.ts'
+
+type FlowTransition = FlowSnapshot['flows'][number]['transitions'][number]
 
 function transition(event: string, from: string, to: string, condition = ''): FlowTransition {
   const [fromScreen = '', fromState = ''] = from.split('/')

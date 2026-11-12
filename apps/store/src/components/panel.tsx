@@ -1,4 +1,4 @@
-import { useRender } from '@proteus/ui'
+import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@proteus/ui-core'
 import { ChevronRightIcon } from 'lucide-react'
 import type { ReactNode } from 'react'

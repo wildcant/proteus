@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ButtonLink } from '#/components/button'
 import { Form } from '#/components/form/form.tsx'
+import { ButtonLink } from '#/components/ui/button/button'
 import type { LoginFormParams } from '#/features/auth/hooks/use-login-form'
 import { useLoginForm } from '#/features/auth/hooks/use-login-form'
 

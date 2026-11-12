@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { NativeSelectOption } from '@proteus/ui'
 import { useId } from 'react'
 import { CountryOptions } from '#/components/form/country-options'
+import { NativeSelectOption } from '#/components/ui/native-select/native-select'
 import { withForm } from '#/lib/form-hook'
 import { checkoutFormOpts } from '../../hooks/use-checkout-form'
 

@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 
 /** Shown after signing up, or signing in to an account that has not confirmed its email yet. */

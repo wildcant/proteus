@@ -19,16 +19,6 @@ import {
  */
 type QuantityStepperSize = 'xs' | 'lg'
 
-/**
- * The buttons' own states, which the design draws on the set rather than per button. The boxed
- * control can fill its cell because the frame contains the fill; an unframed button painting a grey
- * square just draws the frame back on at the worst moment.
- */
-const buttonStates: Record<QuantityStepperSize, string> = {
-  lg: 'hover:bg-surface-subtle disabled:hover:bg-transparent',
-  xs: 'hover:text-ink-muted disabled:hover:text-ink',
-}
-
 type QuantityStepperProps = {
   value: number
   onChange: (next: number) => void
@@ -76,7 +66,7 @@ export function QuantityStepper({
         label={removesAtMin ? t`Remove ${label}` : t`Decrease quantity for ${label}`}
         disabled={disabled || (!removesAtMin && value <= min)}
         onClick={() => (removesAtMin ? onRemove() : onChange(value - 1))}
-        className={cn(quantityStepperDecrement({ size }), buttonStates[size])}
+        className={quantityStepperDecrement({ size })}
       >
         <DecrementIcon isRemoving={isRemoving} className={quantityStepperDecrementIcon({ size })} />
       </StepperButton>
@@ -89,7 +79,7 @@ export function QuantityStepper({
         label={t`Increase quantity for ${label}`}
         disabled={disabled || value >= max}
         onClick={() => onChange(value + 1)}
-        className={cn(quantityStepperIncrement({ size }), buttonStates[size])}
+        className={quantityStepperIncrement({ size })}
       >
         <PlusIcon className={quantityStepperIncrementIcon({ size })} />
       </StepperButton>
@@ -125,7 +115,7 @@ function StepperButton({ label, disabled, onClick, className, children }: Steppe
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={cn('-outline-offset-2 focus-visible:outline focus-visible:outline-ink disabled:opacity-30', className)}
+      className={cn('-outline-offset-2 focus-visible:outline focus-visible:outline-ink', className)}
     >
       {children}
     </button>

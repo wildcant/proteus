@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
-import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '#/components/ui/dropdown-menu/dropdown-menu'
+import { DropdownMenuItem } from '#/components/ui/dropdown-menu-item/dropdown-menu-item'
 import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
 
@@ -40,31 +40,20 @@ export function MarketSelect() {
 
       {/* Above, because this lives on the footer's last bar and there is nothing below it, and
           aligned to the trigger's own edge so the panel stays inside the footer's gutter rather
-          than being pushed against the viewport. The store's popover edge — a border rather than
-          the primitive's ring — from `popover.tsx`. */}
-      <DropdownMenuContent side="top" align="end" sideOffset={8} className="w-56 border p-2 shadow-xl ring-0">
+          than being pushed against the viewport. */}
+      <DropdownMenuContent side="top" align="end" sideOffset={8}>
         {markets.map((market) => (
           <DropdownMenuItem
             key={market.localeCode}
-            data-current={market.localeCode === current.localeCode ? '' : undefined}
+            current={market.localeCode === current.localeCode}
+            icon={<MarketFlag iso2={market.iso2} />}
             // A document navigation, not `navigate({ to })`. The rewrite is fixed when the router is
             // created, so a client-side navigation would re-apply the market the page is already in
             // and land the shopper back where they started. The full load is also what re-renders
             // the SSR'd prices in the new currency, and what lets the request middleware write the
             // market cookie — the whole switch is this one line plus the response to it.
             onClick={() => window.location.assign(marketHref(market.localeCode, window.location, markets))}
-            className={cn(
-              'h-11 cursor-pointer gap-3 px-3 font-bold text-base text-ink',
-              // A rule between rows, and none against the filled one: the fill is already the
-              // edge there, and a line running into it reads as a row split in two.
-              'border-line border-t first:border-transparent data-current:border-transparent [[data-current]+&]:border-transparent',
-              'data-current:bg-ink data-current:text-surface',
-              // The primitive highlights with `--accent`, which the store points at the one hue it
-              // has. A market is not a call to action; it takes the neutral surface instead.
-              'focus:bg-surface-subtle focus:text-ink data-current:focus:bg-ink data-current:focus:text-surface',
-            )}
           >
-            <MarketFlag iso2={market.iso2} />
             {market.displayName}
           </DropdownMenuItem>
         ))}

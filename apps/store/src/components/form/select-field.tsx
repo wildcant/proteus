@@ -1,7 +1,7 @@
-import { Field } from '@proteus/ui'
 import { useId } from 'react'
 import { TranslatedFieldError } from '#/components/form/field-errors.tsx'
 import { FloatingLabelSelect } from '#/components/form/select.tsx'
+import { Field } from '#/components/ui/field/field'
 import { useFieldContext } from '#/lib/form-context.ts'
 import { isFieldRequired } from '#/lib/schema-required.ts'
 

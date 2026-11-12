@@ -1,4 +1,4 @@
-import { Skeleton } from '@proteus/ui'
+import { Skeleton } from '#/components/ui/skeleton/skeleton'
 
 export function AccountSkeleton() {
   return (

@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { useCart } from '#/entities/cart/api/cart'
 import { usePaymentProviders } from '../../api/checkout'
 import { useCompleteOrder } from '../../hooks/use-complete-order'

@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { SearchIcon } from 'lucide-react'
-import { Button } from '#/components/button'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
 import { SearchControl } from '#/components/header/search-control'
+import { Button } from '#/components/ui/button/button'
 import { useModal } from '#/lib/modal-state'
 
 /**

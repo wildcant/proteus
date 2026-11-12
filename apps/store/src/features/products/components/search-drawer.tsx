@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@proteus/ui'
 import { ChevronLeftIcon, XIcon } from 'lucide-react'
 import { type CSSProperties, useEffect, useState } from 'react'
-import { Button } from '#/components/button'
 import { SearchForm } from '#/components/header/search-form'
+import { Button } from '#/components/ui/button/button'
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '#/components/ui/drawer/drawer'
 import { SearchResults } from '#/features/products/components/search-results'
 import { useModal } from '#/lib/modal-state'
 

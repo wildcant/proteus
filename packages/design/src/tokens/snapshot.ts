@@ -46,7 +46,7 @@ export type TextStyle = {
   }
 }
 
-export type Shadow = {
+type Shadow = {
   type: 'dropShadow' | 'innerShadow' | (string & {})
   color: Rgba
   offset: [number, number]

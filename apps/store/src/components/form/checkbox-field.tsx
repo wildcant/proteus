@@ -1,5 +1,7 @@
-import { Checkbox, Field, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
+import { Checkbox } from '#/components/ui/checkbox/checkbox'
+import { Field } from '#/components/ui/field/field'
+import { FieldLabel } from '#/components/ui/field-label/field-label'
 import { useFieldContext } from '#/lib/form-context.ts'
 
 type CheckboxFieldProps = {

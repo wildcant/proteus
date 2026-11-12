@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { ShoppingBagIcon } from '@proteus/icons'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/components/ui/collapsible/collapsible'
 import { useFormatters } from '#/hooks/use-formatters'
 
 type CheckoutSummaryProps = {

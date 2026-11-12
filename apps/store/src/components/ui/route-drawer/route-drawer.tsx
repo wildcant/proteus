@@ -118,7 +118,7 @@ RouteDrawer.Header = ({
 )
 
 RouteDrawer.Body = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn(routeDrawerBody(), 'min-h-0 overflow-y-auto', className)} {...props} />
+  <div className={cn(routeDrawerBody(), 'min-h-0', className)} {...props} />
 )
 
 RouteDrawer.Footer = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (

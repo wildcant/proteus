@@ -13,7 +13,7 @@ export function Checkbox({ className, ...props }: CheckboxProps) {
       className={(state) =>
         cn(
           checkbox({ checked: state.checked }),
-          'peer relative shrink-0 outline-none transition-colors after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed',
+          'peer relative shrink-0 outline-none transition-colors after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed',
           className,
         )
       }

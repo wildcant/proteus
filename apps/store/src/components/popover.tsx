@@ -1,52 +1,65 @@
-import {
-  Popover as BasePopover,
-  PopoverContent as BasePopoverContent,
-  PopoverTrigger as BasePopoverTrigger,
-  PopoverArrow,
-} from '@proteus/ui'
+import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { cn } from '@proteus/ui-core'
-import type { ComponentProps } from 'react'
+
+export function Popover(props: PopoverPrimitive.Root.Props) {
+  return <PopoverPrimitive.Root data-slot="popover" {...props} />
+}
+
+export function PopoverTrigger(props: PopoverPrimitive.Trigger.Props) {
+  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+}
+
+type PopoverContentProps = PopoverPrimitive.Popup.Props &
+  Pick<PopoverPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'>
 
 /**
- * The store's popover: a short menu, so `w-auto` over the primitive's `w-72`, a `border` edge
- * instead of the ring, and `p-0 gap-0` because the items are full-width buttons carrying their own
- * `h-10 px-3`. The arrow is built in rather than left to a call site that can forget it.
+ * The store's popover: a short menu, so it sizes to its items, which are full-width buttons carrying
+ * their own `h-10 px-3`. The arrow is built in rather than left to a call site that can forget it.
+ *
+ * The arrow is a window with `overflow-clip` and a rotated square inside it, rather than a triangle:
+ * a square can carry a border on the two edges the window exposes, so the arrow keeps the popup's
+ * outline instead of floating in front of it.
  */
 export function PopoverContent({
   align = 'center',
+  alignOffset = 0,
+  side = 'bottom',
+  // Clears the arrow's own height, so the tip stops short of the trigger rather than into it.
   sideOffset = 18,
   className,
   children,
   ...props
-}: ComponentProps<typeof BasePopoverContent>) {
+}: PopoverContentProps) {
   return (
-    <BasePopoverContent
-      align={align}
-      // Clears the arrow's own height, so the tip stops short of the trigger rather than into it.
-      sideOffset={sideOffset}
-      className={cn('w-auto gap-0 border p-0 shadow-xl ring-0', className)}
-      {...props}
-    >
-      <PopoverArrow
-        className={cn(
-          'block h-4 w-8 overflow-clip',
-          'data-[side=bottom]:-top-3.75 data-[side=top]:-bottom-3.75 data-[side=bottom]:rotate-0 data-[side=top]:rotate-180',
-          'data-[side=inline-start]:-right-5.75 data-[side=left]:-right-5.75 data-[side=inline-start]:rotate-90 data-[side=left]:rotate-90',
-          'data-[side=inline-end]:-left-5.75 data-[side=right]:-left-5.75 data-[side=inline-end]:-rotate-90 data-[side=right]:-rotate-90',
-          "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(16px*sqrt(2))] before:-translate-x-1/2 before:translate-y-1/2 before:rotate-45 before:rounded-tl-[3px] before:border before:border-foreground/10 before:bg-popover before:content-['']",
-        )}
-      />
-      {children}
-    </BasePopoverContent>
+    <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Positioner
+        align={align}
+        alignOffset={alignOffset}
+        side={side}
+        sideOffset={sideOffset}
+        className="isolate z-50"
+      >
+        <PopoverPrimitive.Popup
+          data-slot="popover-content"
+          className={cn(
+            'data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 z-50 flex w-auto origin-(--transform-origin) flex-col border bg-popover text-popover-foreground text-sm shadow-xl outline-hidden duration-100 data-closed:animate-out data-open:animate-in',
+            className,
+          )}
+          {...props}
+        >
+          <PopoverPrimitive.Arrow
+            data-slot="popover-arrow"
+            className={cn(
+              'relative block h-4 w-8 overflow-clip',
+              'data-[side=bottom]:-top-3.75 data-[side=top]:-bottom-3.75 data-[side=bottom]:rotate-0 data-[side=top]:rotate-180',
+              'data-[side=inline-start]:-right-5.75 data-[side=left]:-right-5.75 data-[side=inline-start]:rotate-90 data-[side=left]:rotate-90',
+              'data-[side=inline-end]:-left-5.75 data-[side=right]:-left-5.75 data-[side=inline-end]:-rotate-90 data-[side=right]:-rotate-90',
+              "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(16px*sqrt(2))] before:-translate-x-1/2 before:translate-y-1/2 before:rotate-45 before:rounded-tl-[3px] before:border before:border-foreground/10 before:bg-popover before:content-['']",
+            )}
+          />
+          {children}
+        </PopoverPrimitive.Popup>
+      </PopoverPrimitive.Positioner>
+    </PopoverPrimitive.Portal>
   )
-}
-
-/* Passed through so a call site takes all three parts from one import. Re-exporting the bindings
-   directly trips `useComponentExportOnlyModules`, which cannot see that they are components. */
-export function Popover(props: ComponentProps<typeof BasePopover>) {
-  return <BasePopover {...props} />
-}
-
-export function PopoverTrigger(props: ComponentProps<typeof BasePopoverTrigger>) {
-  return <BasePopoverTrigger {...props} />
 }

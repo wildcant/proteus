@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 
 /**
  * What the detail route shows when it has no product to show: the route's `errorComponent` when the

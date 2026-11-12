@@ -1,8 +1,11 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Field, FieldLabel, RadioGroupItem, usePrompt } from '@proteus/ui'
 import { PencilIcon, Trash2Icon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
-import { Button, ButtonLink } from '#/components/button'
+import { Button, ButtonLink } from '#/components/ui/button/button'
+import { Field } from '#/components/ui/field/field'
+import { FieldLabel } from '#/components/ui/field-label/field-label'
+import { usePrompt } from '#/components/ui/prompt/prompt'
+import { RadioGroupItem } from '#/components/ui/radio-group-item/radio-group-item'
 import { useDeleteAddress } from '#/entities/address/api/addresses'
 import { AddressLines } from '#/entities/address/ui/address-lines/address-lines'
 

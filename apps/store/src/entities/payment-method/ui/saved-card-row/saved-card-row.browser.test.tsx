@@ -1,8 +1,8 @@
-import { RadioGroup } from '@proteus/ui'
 import { expect, test, vi } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreSavedMethod } from '#/api/generated/model'
+import { RadioGroup } from '#/components/ui/radio-group/radio-group'
 import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { SavedCardRow } from './saved-card-row'
 

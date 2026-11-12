@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { ShoppingBagIcon } from 'lucide-react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 
 /**
  * The panel's empty state. The link needs no `onClick`: a plain `<Link>` drops the search params,

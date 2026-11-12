@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { RouteDrawer } from '@proteus/ui'
-import { Button } from '#/components/button'
 import { Form } from '#/components/form/form.tsx'
+import { Button } from '#/components/ui/button/button'
+import { RouteDrawer } from '#/components/ui/route-drawer/route-drawer'
 import { addressFormOpts } from '#/features/address/utils/form-values'
 import { withForm } from '#/lib/form-hook'
 
@@ -31,7 +31,7 @@ export const AddressForm = withForm({
         <Form onSubmit={form.handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <form.AppForm>
             <RouteDrawer.Header>
-              <RouteDrawer.Title className="type-heading text-ink">{title}</RouteDrawer.Title>
+              <RouteDrawer.Title>{title}</RouteDrawer.Title>
             </RouteDrawer.Header>
 
             <RouteDrawer.Body className="flex flex-col gap-4">

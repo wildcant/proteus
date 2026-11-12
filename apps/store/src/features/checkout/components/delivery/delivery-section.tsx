@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Skeleton } from '@proteus/ui'
+import { Skeleton } from '#/components/ui/skeleton/skeleton'
 import { ShppingAddressPicker } from '#/features/checkout/components/delivery/shipping-address-picker'
 import type { CheckoutData } from '#/features/checkout/hooks/use-checkout-data'
 import type { CheckoutForm } from '../../hooks/use-checkout-form'

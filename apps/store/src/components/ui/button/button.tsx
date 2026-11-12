@@ -8,7 +8,7 @@ import { button, buttonLabel } from '#/components/ui/button/button.variants'
 type ButtonStyleProps = VariantProps<typeof button> & { className?: string }
 
 const BEHAVIOUR =
-  "shrink-0 select-none whitespace-nowrap bg-clip-padding outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+  "shrink-0 select-none whitespace-nowrap bg-clip-padding outline-none transition-all active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
 
 /**
  * The label layer's type and colour go on the root, where the caller's text inherits them: a button's

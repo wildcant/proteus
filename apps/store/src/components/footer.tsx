@@ -1,10 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { MenuLink } from '#/components/header/menu'
 import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
 import { MarketSelect } from '#/components/market-select'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
 
 /**
  * Every slot the storefront can actually back. A column is two or three real routes or it is
@@ -79,17 +79,11 @@ export function Footer({ menu }: { menu: MenuSource }) {
             `display: none` keeps the hidden one out of the accessibility tree. Five links stacked
             flat push the copyright most of a screen down, and the accordion cannot be talked into
             staying open above `sm` without fighting its own height variable. */}
-        <Accordion className="sm:hidden">
+        <Accordion variant="footer" className="sm:hidden">
           {footerColumns.map((column) => (
-            <AccordionItem
-              key={column.title}
-              value={column.title}
-              className="border-line border-t not-last:border-b-0 last:border-b"
-            >
-              <AccordionTrigger className="items-center py-5 text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink">
-                <span className="type-heading">{column.title}</span>
-              </AccordionTrigger>
-              <AccordionContent className="pb-5 [&_a]:no-underline">
+            <AccordionItem key={column.title} value={column.title}>
+              <AccordionTrigger>{column.title}</AccordionTrigger>
+              <AccordionContent>
                 <FooterLinks column={column} />
               </AccordionContent>
             </AccordionItem>

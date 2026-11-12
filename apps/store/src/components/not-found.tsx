@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
-import { ButtonLink } from '#/components/button'
 import { Wordmark } from '#/components/header/wordmark'
+import { ButtonLink } from '#/components/ui/button/button'
 
 /**
  * What every unmatched URL answers with, wired to the router as `defaultNotFoundComponent`.

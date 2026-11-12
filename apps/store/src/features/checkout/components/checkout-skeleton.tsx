@@ -1,4 +1,4 @@
-import { Skeleton } from '@proteus/ui'
+import { Skeleton } from '#/components/ui/skeleton/skeleton'
 
 /**
  * The split, drawn empty. It mirrors `CheckoutContent`'s two panes rather than being a generic

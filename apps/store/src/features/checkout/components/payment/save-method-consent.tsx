@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/react/macro'
-import { Checkbox, FieldLabel } from '@proteus/ui'
 import { useId } from 'react'
+import { Checkbox } from '#/components/ui/checkbox/checkbox'
+import { FieldLabel } from '#/components/ui/field-label/field-label'
 
 /**
  * Consent to keep the card, inside the card panel.

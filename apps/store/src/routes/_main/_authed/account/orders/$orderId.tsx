@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { orderQueryOptions } from '#/entities/order/api/orders'
 import { OrderContent } from '#/features/orders/components/order-content'
 import { OrderContentSkeleton } from '#/features/orders/components/order-content-skeleton'

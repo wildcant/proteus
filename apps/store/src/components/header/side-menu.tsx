@@ -1,23 +1,14 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerTitle,
-} from '@proteus/ui'
-import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
-import { Button } from '#/components/button'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
 import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger } from '#/components/header/search-triggers'
 import { ThemeToggle } from '#/components/theme-toggle'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
+import { Button } from '#/components/ui/button/button'
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '#/components/ui/drawer/drawer'
 import { useModal } from '#/lib/modal-state'
 
 const rowClassName =
@@ -104,14 +95,12 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
  */
 function SideMenuGroup({ group }: { group: MenuGroup }) {
   const childClassName = 'block py-3 text-base text-ink-muted no-underline hover:text-ink'
-  const triggerClassName =
-    'items-center font-normal text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink'
 
   return (
     <Accordion>
-      <AccordionItem value={group.key} className="not-last:border-b-0">
-        <AccordionTrigger className={cn(triggerClassName, 'py-4 text-base')}>{group.label}</AccordionTrigger>
-        <AccordionContent className="pb-2 [&_a]:no-underline">
+      <AccordionItem value={group.key}>
+        <AccordionTrigger>{group.label}</AccordionTrigger>
+        <AccordionContent>
           <ul className="m-0 flex list-none flex-col p-0 pl-4">
             {[group.shopAll, ...group.links].map((link) => (
               <li key={link.key}>
@@ -120,12 +109,10 @@ function SideMenuGroup({ group }: { group: MenuGroup }) {
             ))}
             {group.sections.map((section) => (
               <li key={section.key}>
-                <Accordion>
-                  <AccordionItem value={section.key} className="not-last:border-b-0">
-                    <AccordionTrigger className={cn(triggerClassName, 'py-3 text-base')}>
-                      {section.title}
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-2 [&_a]:no-underline">
+                <Accordion variant="section">
+                  <AccordionItem value={section.key}>
+                    <AccordionTrigger>{section.title}</AccordionTrigger>
+                    <AccordionContent>
                       <ul className="m-0 flex list-none flex-col p-0 pl-4">
                         {section.links.map((link) => (
                           <li key={link.key}>

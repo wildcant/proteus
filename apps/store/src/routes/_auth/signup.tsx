@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui-core'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 import { RegisterForm } from '#/features/auth/components/register-form'
 import { VerifyPending } from '#/features/auth/components/verify-pending'

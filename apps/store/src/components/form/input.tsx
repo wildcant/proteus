@@ -1,5 +1,4 @@
 import { useLingui } from '@lingui/react/macro'
-import { Input } from '@proteus/ui'
 import { cn } from '@proteus/ui-core'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { type ComponentProps, useState } from 'react'
@@ -7,6 +6,7 @@ import { FieldHelp } from '#/components/form/field-help.tsx'
 import { FloatingLabel } from '#/components/form/floating-label.tsx'
 import { LabelText } from '#/components/form/label-text.tsx'
 import { TRAILING_CONTROL } from '#/components/form/trailing-control.ts'
+import { Input } from '#/components/ui/input/input'
 
 type FloatingInputProps = Omit<ComponentProps<typeof Input>, 'placeholder'>
 
@@ -16,18 +16,7 @@ type FloatingInputProps = Omit<ComponentProps<typeof Input>, 'placeholder'>
  * the browser autofills.
  */
 function FloatingInput({ className, ...props }: FloatingInputProps) {
-  return (
-    <Input
-      placeholder=" "
-      className={cn(
-        // 16px on small screens so iOS does not zoom the page on focus.
-        'peer h-14 px-4 pt-5 pb-1 text-base md:text-sm',
-        'border-line focus-visible:border-ink focus-visible:ring-0 aria-invalid:border-sale aria-invalid:ring-0',
-        className,
-      )}
-      {...props}
-    />
-  )
+  return <Input placeholder=" " className={cn('peer', className)} {...props} />
 }
 
 type FloatingLabelInputProps = FloatingInputProps & {

@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Button } from '#/components/button'
 import { Panel } from '#/components/panel'
+import { Button } from '#/components/ui/button/button'
 import { useRequestPasswordReset } from '#/entities/customer/api/auth'
 
 /**

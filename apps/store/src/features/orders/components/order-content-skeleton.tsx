@@ -1,4 +1,4 @@
-import { Skeleton } from '@proteus/ui'
+import { Skeleton } from '#/components/ui/skeleton/skeleton'
 import { OrderDetailsSkeleton } from './order-details-skeleton'
 
 export function OrderContentSkeleton() {

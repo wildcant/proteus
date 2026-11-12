@@ -1,7 +1,7 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@proteus/ui'
 import { CircleHelpIcon } from 'lucide-react'
 import { useState } from 'react'
 import { TRAILING_CONTROL } from '#/components/form/trailing-control.ts'
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip/tooltip'
 
 /**
  * The `?` at the end of a field, and the note it reveals.

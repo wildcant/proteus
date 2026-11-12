@@ -3,7 +3,7 @@ import { toast } from '@proteus/ui-core'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { AuthHeading } from '#/features/auth/components/auth-heading'
 import { ResetPasswordForm } from '#/features/auth/components/reset-password-form'
 

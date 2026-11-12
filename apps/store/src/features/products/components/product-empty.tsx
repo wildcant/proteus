@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import type { ProductListSearch } from '#/features/products/utils/product-list-search'
 
 /**

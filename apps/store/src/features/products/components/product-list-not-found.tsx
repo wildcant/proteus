@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { PackageIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 
 /**
  * What a scoped list page — a category, a collection — shows when its handle names nothing the

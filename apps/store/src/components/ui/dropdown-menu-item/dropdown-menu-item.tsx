@@ -19,10 +19,7 @@ type DropdownMenuItemProps = Omit<MenuPrimitive.Item.Props, 'className' | 'child
 /**
  * `highlighted` is Base UI's keyboard and pointer highlight, read from the item's state rather than
  * `:focus`, so the drawn variant is the one that renders.
- *
- * The rule between rows is the set's top border; it stops against the first row and either side of
- * the current one, because the fill is already the edge there and a line running into it reads as a
- * row split in two. That is position, which the design can't draw per instance.
+ * `data-current` is what the set's positional rule reads to drop the rule under the current row.
  */
 export function DropdownMenuItem({ className, current = false, icon, children, ...props }: DropdownMenuItemProps) {
   return (
@@ -32,7 +29,7 @@ export function DropdownMenuItem({ className, current = false, icon, children, .
       className={({ highlighted }) =>
         cn(
           dropdownMenuItem({ current, highlighted }),
-          'cursor-pointer select-none outline-none first:border-transparent data-disabled:pointer-events-none [[data-current]+&]:border-transparent',
+          'cursor-pointer select-none outline-none data-disabled:pointer-events-none',
           className,
         )
       }

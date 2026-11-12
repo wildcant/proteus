@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import type { CheckoutData } from '../../hooks/use-checkout-data'
 import type { CheckoutForm } from '../../hooks/use-checkout-form'
 import { CheckoutSection } from '../checkout-section'

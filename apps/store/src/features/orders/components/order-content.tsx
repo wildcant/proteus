@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { getRouteApi } from '@tanstack/react-router'
 import { ChevronLeftIcon } from 'lucide-react'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { useSuspenseOrder } from '#/entities/order/api/orders'
 import { OrderDetails } from '#/features/orders/components/order-details'
 import { OrderProgressTrack } from '#/features/orders/components/order-progress-track'

@@ -11,8 +11,8 @@ import {
   accordionTrigger,
 } from '#/components/ui/accordion/accordion.variants'
 
-/** `menu` is the side menu's rows, `footer` the phone footer's link columns. */
-type AccordionVariant = 'menu' | 'footer'
+/** `menu` is the side menu's rows, `section` a row nested inside one, `footer` the phone footer's link columns. */
+type AccordionVariant = 'menu' | 'footer' | 'section'
 
 /** Set once on the root, so an item, its trigger and its panel cannot disagree. */
 const AccordionVariantContext = createContext<AccordionVariant>('menu')
@@ -27,14 +27,13 @@ export function Accordion({ className, variant = 'menu', ...props }: AccordionPr
   )
 }
 
-/** The footer's columns close with a rule under the last one; between items each top rule is the edge. */
 export function AccordionItem({ className, ...props }: AccordionPrimitive.Item.Props) {
   const variant = useContext(AccordionVariantContext)
 
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
-      className={cn(accordionItem({ variant }), variant === 'footer' && 'last:border-b', className)}
+      className={cn(accordionItem({ variant }), className)}
       {...props}
     />
   )

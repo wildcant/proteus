@@ -13,7 +13,7 @@ import { join } from 'node:path'
 import type { ResolvedConfig } from '../config.ts'
 import { withFigCraft } from '../figcraft.ts'
 
-export type FlowTransition = {
+type FlowTransition = {
   event: string
   from: string
   fromState: string

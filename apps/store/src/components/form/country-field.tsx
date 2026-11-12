@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
-import { Field } from '@proteus/ui'
 import { useId } from 'react'
 import { useCountryName } from '#/api/countries'
 import { FloatingLabelInput } from '#/components/form/input.tsx'
+import { Field } from '#/components/ui/field/field'
 import { useMarket } from '#/hooks/use-market'
 import { useFieldContext } from '#/lib/form-context.ts'
 

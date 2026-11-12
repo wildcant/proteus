@@ -1,4 +1,4 @@
-import { Skeleton } from '@proteus/ui'
+import { Skeleton } from '#/components/ui/skeleton/skeleton'
 
 /**
  * The panel grid, at the shape it resolves into. Both routes are SPA-only — neither is

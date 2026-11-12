@@ -32,10 +32,6 @@ function Drawer({ modal = true, swipeDirection = 'down', ...props }: DrawerPrimi
   )
 }
 
-function DrawerTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
-  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />
-}
-
 function DrawerPortal({ ...props }: DrawerPrimitive.Portal.Props) {
   return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />
 }
@@ -159,16 +155,4 @@ function DrawerDescription({ ...props }: DrawerPrimitive.Description.Props) {
   return <DrawerPrimitive.Description data-slot="drawer-description" {...props} />
 }
 
-export {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerPopup,
-  DrawerPortal,
-  DrawerTitle,
-  DrawerTrigger,
-}
+export { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerPopup, DrawerTitle }

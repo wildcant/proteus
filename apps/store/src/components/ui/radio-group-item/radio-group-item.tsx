@@ -16,7 +16,7 @@ export function RadioGroupItem({ className, ...props }: RadioGroupItemProps) {
       className={(state) =>
         cn(
           radioGroupItem({ checked: state.checked }),
-          'peer relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed',
+          'peer relative shrink-0 outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed',
           className,
         )
       }

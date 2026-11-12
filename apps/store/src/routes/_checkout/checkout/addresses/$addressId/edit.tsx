@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router'
-import { StoreDrawer } from '#/components/store-drawer'
+import { RouteDrawer } from '#/components/ui/route-drawer/route-drawer'
 import { useSuspenseAddresses } from '#/entities/address/api/addresses'
 import { UpdateAddressForm } from '#/features/address/components/update-address-form'
 
@@ -17,8 +17,8 @@ function EditAddressRoute() {
   if (!address) return <Navigate to="/checkout" replace />
 
   return (
-    <StoreDrawer prev="/checkout">
+    <RouteDrawer prev="/checkout">
       <UpdateAddressForm address={address} />
-    </StoreDrawer>
+    </RouteDrawer>
   )
 }
