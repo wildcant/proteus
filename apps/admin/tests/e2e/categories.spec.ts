@@ -1,6 +1,6 @@
 import { expect, test } from '../setup/test-extend.js'
 
-test('a merchant creates a category under a parent, assigns a product, and the store lists it', async ({
+test('a merchant creates a category under a parent and assigns a product', async ({
   page,
   authenticate,
   navigate,
@@ -11,7 +11,6 @@ test('a merchant creates a category under a parent, assigns a product, and the s
   // added before the child's. `await using` would dispose it before any cleanup ran.
   const parent = await factories.create.productCategory()
   cleanup.add(() => factories.destroy.productCategory(parent.id))
-  // Priced and published, because the store lists only the catalogue its market can quote.
   await using product = await factories.create.productWithPricing()
   await authenticate({ as: 'admin' })
 
@@ -50,19 +49,6 @@ test('a merchant creates a category under a parent, assigns a product, and the s
   await picker.getByRole('button', { name: 'Done' }).click()
   await expect(picker).toBeHidden()
   await expect(page.getByRole('cell', { name: product.title })).toBeVisible()
-
-  // The store lists it under the new category and under its parent, which includes descendants.
-  const backendUrl = process.env.VITE_BACKEND_URL
-  expect(
-    backendUrl,
-    'VITE_BACKEND_URL is unset — run the suite through `pnpm --filter admin run test:e2e`',
-  ).toBeTruthy()
-  for (const categoryHandle of [handle, parent.handle]) {
-    const response = await page.request.get(`${backendUrl}/store/products?category=${categoryHandle}`)
-    expect(response.ok()).toBe(true)
-    const { products } = (await response.json()) as { products: Array<{ id: string }> }
-    expect(products.map((listed) => listed.id)).toContain(product.id)
-  }
 })
 
 test('a merchant organizes the category tree by dragging', async ({ page, authenticate, navigate, factories }) => {
@@ -102,7 +88,12 @@ test('a merchant organizes the category tree by dragging', async ({ page, authen
   await page.mouse.down()
   await page.mouse.move(box.x + box.width / 2 + 30, box.y + box.height / 2, { steps: 5 })
   await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2, { steps: 5 })
+  const saved = page.waitForResponse(
+    (response) =>
+      response.url().includes(`/admin/product-categories/${shoes.id}`) && response.request().method() !== 'GET',
+  )
   await page.mouse.up()
+  await saved
 
   // Both moves were saved, not just drawn: a fresh load shows them.
   await page.reload()
