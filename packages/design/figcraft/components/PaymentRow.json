@@ -1,0 +1,825 @@
+{
+  "name": "PaymentRow",
+  "page": "components/store",
+  "properties": [
+    {
+      "default": "default",
+      "name": "state",
+      "options": [
+        "default",
+        "muted",
+        "open",
+        "selected"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "rest",
+      "name": "interaction",
+      "options": [
+        "rest",
+        "hover"
+      ],
+      "type": "variant"
+    },
+    {
+      "layers": [
+        948,
+        964,
+        960,
+        956,
+        952
+      ],
+      "name": "content",
+      "preferred": [],
+      "type": "slot"
+    }
+  ],
+  "variants": [
+    {
+      "name": "state=default, interaction=rest",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "gap": "VariableID:38",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:41",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "RadioGroupItem",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#DEE0E300",
+                  "type": "solid"
+                }
+              ],
+              "strokes": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1,
+              "strokeAlign": "inside",
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:120",
+                "height": "VariableID:41",
+                "stroke": "VariableID:24",
+                "width": "VariableID:41"
+              },
+              "mainComponentName": "checked=false, interaction=rest",
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": false
+              },
+              "width": 16,
+              "height": 16,
+              "mainSet": "RadioGroupItem"
+            },
+            {
+              "name": "exampleLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "state=default, interaction=hover",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "gap": "VariableID:38",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:41",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "RadioGroupItem",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#DEE0E300",
+                  "type": "solid"
+                }
+              ],
+              "strokes": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1,
+              "strokeAlign": "inside",
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:120",
+                "height": "VariableID:41",
+                "stroke": "VariableID:24",
+                "width": "VariableID:41"
+              },
+              "mainComponentName": "checked=false, interaction=rest",
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": false
+              },
+              "width": 16,
+              "height": 16,
+              "mainSet": "RadioGroupItem"
+            },
+            {
+              "name": "exampleLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "state=muted, interaction=rest",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "gap": "VariableID:38",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:41",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "RadioGroupItem",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#DEE0E300",
+                  "type": "solid"
+                }
+              ],
+              "strokes": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1,
+              "strokeAlign": "inside",
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:120",
+                "height": "VariableID:41",
+                "stroke": "VariableID:24",
+                "width": "VariableID:41"
+              },
+              "mainComponentName": "checked=false, interaction=rest",
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": false
+              },
+              "width": 16,
+              "height": 16,
+              "mainSet": "RadioGroupItem"
+            },
+            {
+              "name": "exampleLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "state=open, interaction=rest",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "gap": "VariableID:38",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:41",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "RadioGroupItem",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#DEE0E300",
+                  "type": "solid"
+                }
+              ],
+              "strokes": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1,
+              "strokeAlign": "inside",
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:120",
+                "height": "VariableID:41",
+                "stroke": "VariableID:24",
+                "width": "VariableID:41"
+              },
+              "mainComponentName": "checked=false, interaction=rest",
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": false
+              },
+              "width": 16,
+              "height": 16,
+              "mainSet": "RadioGroupItem"
+            },
+            {
+              "name": "exampleLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "state=selected, interaction=rest",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "effects/0/color": "VariableID:18",
+        "fill": "VariableID:23",
+        "gap": "VariableID:38",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:41",
+        "stroke": "VariableID:18"
+      },
+      "effects": [
+        {
+          "blend": "normal",
+          "color": {
+            "a": 1,
+            "b": 0.07058823853731155,
+            "g": 0.062745101749897,
+            "r": 0.05098039284348488
+          },
+          "offset": [
+            0,
+            0
+          ],
+          "radius": 0,
+          "showBehind": false,
+          "spread": 1,
+          "type": "innerShadow",
+          "visible": false
+        }
+      ],
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "RadioGroupItem",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "strokes": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1,
+              "strokeAlign": "inside",
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:18",
+                "height": "VariableID:41",
+                "stroke": "VariableID:18",
+                "width": "VariableID:41"
+              },
+              "mainComponentName": "checked=true, interaction=rest",
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": false
+              },
+              "width": 16,
+              "height": 16,
+              "mainSet": "RadioGroupItem",
+              "children": [
+                {
+                  "name": "indicator",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "height": "VariableID:41",
+                    "width": "VariableID:41"
+                  },
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "center",
+                    "crossAlign": "center",
+                    "gap": 0,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "width": 16,
+                  "height": 16,
+                  "children": [
+                    {
+                      "name": "dot",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#FFFFFF",
+                          "type": "solid"
+                        }
+                      ],
+                      "cornerRadius": 9999,
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "cornerRadius": "VariableID:83",
+                        "fill": "VariableID:22",
+                        "height": "VariableID:35",
+                        "width": "VariableID:35"
+                      },
+                      "width": 8,
+                      "height": 8
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "exampleLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

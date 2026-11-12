@@ -1,0 +1,594 @@
+{
+  "name": "Nav",
+  "page": "components/store",
+  "properties": [
+    {
+      "default": "rest",
+      "name": "interaction",
+      "options": [
+        "rest",
+        "hover"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "Shop all",
+      "name": "link",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "interaction=rest",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:46"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 32,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "link",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:9"
+        },
+        {
+          "name": "trigger",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.333,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "trigger",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:9"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.333,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "trigger",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:9"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.333,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "interaction=hover",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:46"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 32,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "link",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:9"
+        },
+        {
+          "name": "trigger",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.333,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "trigger",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:9"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.333,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "trigger",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:9"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.333,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

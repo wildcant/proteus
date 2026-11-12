@@ -58,17 +58,21 @@
       "Field › exampleCheckbox": "example content: the children are the caller's",
       "Field › exampleLabel": "example content: the children are the caller's",
       "RadioGroup › exampleItem": "example content: the children are the caller's",
-      "Button › icon": "the caller's icon: the Button sizes any <svg> in it ([&_svg]:size-4) and colours it through currentColor"
+      "Button › icon": "the caller's icon: the Button sizes any <svg> in it ([&_svg]:size-4) and colours it through currentColor",
+      "Popover › tip": "the arrow's ::before square: size calc(16px*sqrt(2)), rotate-45, rounded-tl-arrow, border-popup-ring, bg-surface, centred on the box's bottom edge; hand-written"
     },
     "inline": ["Button"],
     "fullWidth": ["Input", "NativeSelect", "Field", "RadioGroup"],
-    "runtimePositions": ["Tooltip › arrow"],
+    "runtimePositions": ["Tooltip › arrow", "Popover › arrow"],
     "inheritedText": {
       "Drawer": "type/body-compact"
     },
     "interactionParts": {
       "QuantityStepper": ["decrement", "increment"],
-      "Accordion": ["item"]
+      "Accordion": ["item"],
+      "Pagination": ["previous", "next"],
+      "Nav": ["link", "trigger"],
+      "RailPanel": ["shopAll", "link"]
     },
     "interactionPrefixes": {
       "QuantityStepper": {

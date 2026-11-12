@@ -1,0 +1,137 @@
+{
+  "name": "AddressLines",
+  "page": "entities/address",
+  "properties": [
+    {
+      "default": true,
+      "name": "hasPhone",
+      "type": "boolean"
+    },
+    {
+      "default": "5551234567",
+      "name": "phone",
+      "type": "text"
+    },
+    {
+      "default": "123 Main St, Austin, TX, 78701, US",
+      "name": "postal",
+      "type": "text"
+    },
+    {
+      "default": "Joe Doe",
+      "name": "recipient",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "AddressLines",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 310,
+      "children": [
+        {
+          "name": "recipient",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:8"
+        },
+        {
+          "name": "postal",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:8"
+        },
+        {
+          "name": "phone",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingTop": "VariableID:35"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "phoneText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

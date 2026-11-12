@@ -533,5 +533,33 @@
       "link": null
     },
     "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "",
+    "id": "S:23",
+    "name": "type/label-caps",
+    "style": {
+      "case": "upper",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "SemiBold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 2.5
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
   }
 ]

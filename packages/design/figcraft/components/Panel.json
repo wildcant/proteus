@@ -1,0 +1,423 @@
+{
+  "name": "Panel",
+  "page": "components/store",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "lg"
+      ],
+      "type": "variant"
+    },
+    {
+      "layers": [
+        936,
+        944
+      ],
+      "name": "body",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "layers": [
+        932,
+        940
+      ],
+      "name": "chevron",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "default": "We email you a link rather than asking for your current password.",
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "default": true,
+      "name": "hasChevron",
+      "type": "boolean"
+    },
+    {
+      "default": true,
+      "name": "hasDescription",
+      "type": "boolean"
+    },
+    {
+      "default": "Password",
+      "name": "title",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "paddingHorizontal": "VariableID:44",
+        "paddingVertical": "VariableID:44"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          24,
+          24,
+          24,
+          24
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "header",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "spaceBetween",
+            "crossAlign": "center",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:heading"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "slot": "chevron",
+              "width": 20,
+              "height": 20,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.667,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingTop": "VariableID:35"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "descriptionText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "body",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "slot": "body",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "viewport=lg",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "paddingHorizontal": "VariableID:48",
+        "paddingVertical": "VariableID:48"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          40,
+          40,
+          40,
+          40
+        ],
+        "strokesIncluded": true
+      },
+      "width": 435,
+      "children": [
+        {
+          "name": "header",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "spaceBetween",
+            "crossAlign": "center",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:heading"
+            },
+            {
+              "name": "chevron",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "slot": "chevron",
+              "width": 20,
+              "height": 20,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.667,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "description",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingTop": "VariableID:35"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "descriptionText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "body",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "slot": "body",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    }
+  ]
+}

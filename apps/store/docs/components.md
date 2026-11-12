@@ -51,7 +51,7 @@ The components the storefront ships, grouped by where they live in `apps/store/s
 
 Primitives the store takes from `@proteus/ui` today. Each moves into `src/components/ui/<name>/` on `@base-ui/react` in the primitives slice, in this order.
 
-**Drawn** on page `components/ui` (sets, variants, text properties): `Button` (`variant` × `size`, design-only `interaction` hover/focus-visible/disabled; `label`), `Input` (`invalid`, `interaction`, `viewport` md; `value`), `Label`, `FieldLabel`, `FieldError`, `Field` (`orientation`), `Checkbox` / `RadioGroupItem` (`checked`, `interaction`), `RadioGroup`, `NativeSelect` (`value`), `Skeleton`, `Tooltip` (`label`), `QuantityStepper` (`size` xs/lg, `interaction` hover/disabled per button; `value`), `Toast` (`title`, `description`, `hasDescription`), `DropdownMenu` and `DropdownMenuItem` (`current`, `highlighted`, `position` first/afterCurrent; `label`), `AlertDialog` (`viewport` mobile/sm; `title`, `description`, `confirmText`, `cancelText`), `AlertDialogOverlay`, `Drawer` (`side` right/left/up, `viewport`), `DrawerOverlay`, `DrawerTitle` (`label`), `RouteDrawer` (`viewport` mobile/sm; `title`, slots `body`, `footer`), `Accordion` (`variant` menu/footer/section, `position` last; `label`). Not drawn: `Collapsible` (no classes of its own; its look is `CheckoutSummary`'s), `Toaster` (positioning only), `FieldSet`, `FieldGroup`. Animations and the classes listed under "Hand-written" above stay in code.
+**Drawn** on page `components/ui` (sets, variants, text properties): `Button` (`variant` × `size`, design-only `interaction` hover/focus-visible/disabled; `label`), `Input` (`invalid`, `interaction`, `viewport` md; `value`), `Label`, `FieldLabel`, `FieldError`, `Field` (`orientation`), `Checkbox` / `RadioGroupItem` (`checked`, `interaction`), `RadioGroup`, `NativeSelect` (`value`), `Skeleton`, `Tooltip` (`label`), `QuantityStepper` (`size` xs/lg, `interaction` hover/disabled per button; `value`), `Toast` (`title`, `description`, `hasDescription`), `DropdownMenu` and `DropdownMenuItem` (`current`, `highlighted`, `position` first/afterCurrent; `label`), `AlertDialog` (`viewport` mobile/sm; `title`, `description`, `confirmText`, `cancelText`), `AlertDialogOverlay`, `Drawer` (`side` right/left/up, `viewport`), `DrawerOverlay`, `DrawerTitle` (`label`), `RouteDrawer` (`viewport` mobile/sm; `title`, slots `body`, `footer`), `Accordion` (`variant` menu/footer/section, `position` last; `label`), `Popover` (slot `content`; arrow placed at run time, its tip hand-written). Not drawn: `Collapsible` (no classes of its own; its look is `CheckoutSummary`'s), `Toaster` (positioning only), `FieldSet`, `FieldGroup`. Animations and the classes listed under "Hand-written" above stay in code.
 
 - `Button` (and `ButtonLink`): today `src/components/button.tsx`, wrapping the shared button with the store's sizes (52 px) and variants `default`, `outline`, `ghost`, `link`.
 - Forms: `Field`, `FieldLabel`, `FieldSet`, `FieldGroup`, `FieldError`, `Input`, `Label`, `Checkbox`, `RadioGroup` / `RadioGroupItem`, `NativeSelect` / `NativeSelectOption`.
@@ -63,16 +63,18 @@ Primitives the store takes from `@proteus/ui` today. Each moves into `src/compon
 
 ## src/components (store blocks)
 
-Page `components/store`. All **not yet drawn**.
+Page `components/store`; each set exports to `src/components/store/<name>/`.
 
-- `Header` (`header/`): the bar with `Nav`, `Wordmark`, `SearchControl`, `SearchForm`, the search triggers, `SideMenu` and its `Menu`.
-- `Footer`, `MarketSelect`, `ThemeToggle`.
-- Form fields (`form/`): `TextField`, `SelectField`, `CountryField`, `CheckboxField`, `Input`, `Select`, `FloatingLabel`, `LabelText`, `FieldHelp`, `FieldErrors`, `SubmitButton`, `Form`.
-- `Panel`, `Pagination`, `Popover`, `StoreDrawer`, `NotFound`, `PaymentRow`, `PaymentNetwork`.
+**Drawn** (sets, variants, text properties): `Wordmark` (`interaction` hover; `label`), `ThemeToggle` (`label`), `Pagination` (`interaction` hover/disabled on each button; `previous`, `page`, `next`), `SearchControl` (slot `icon`; `placeholder`), `MarketSelect` (the trigger; slots `flag`, `chevron`; `label`, style `type/label-caps`), `Panel` (`viewport` mobile/lg; slots `chevron`, `body`; `title`, `description`, `hasChevron`, `hasDescription`), `PaymentRow` (`state` default/selected/open/muted, `interaction` hover; slot `content`), `Nav` (`interaction` hover per link/trigger; `link`), `RailPanel` (`interaction` hover per link; `shopAll`), `Header` (`viewport` mobile/sm/lg; slot `actions`), `SideMenu` (`viewport` mobile/sm), `Footer` (`viewport` mobile/sm/lg; slot `payments`), `NotFound` (`viewport` mobile/sm; `code`, `title`, `description`), `FloatingLabel` (`label`), `FloatingLabelInput` (`invalid`; `hasReveal`, `hasHelp`). `Popover` is a primitive, on page `components/ui`.
+
+**Not drawn**: `SelectField` / `FloatingLabelSelect`, `CountryField`, `FieldHelp`'s open tooltip (the Tooltip primitive), `NetworkMark` / `AcceptedNetworks` (reachable only with a saved card), `SearchForm` (the SearchControl with an input). No own look: `Form`, `SubmitButton`, `CheckboxField`, `LabelText`, `TranslatedFieldError`, `CountryOptions`, `MenuLink`, `StoreDrawer` (the RouteDrawer as drawn).
 
 ## src/entities
 
-Page `entities/<entity>`. An entity exists once two features use its code (`docs/adr/0034-store-entities-layer-replaces-the-feature-graph.md`). Display components move here when they are that entity's display. **Not yet drawn**; candidates from the inventory: `address` (`AddressLines`), `payment-method` (`SavedCardRow`).
+Page `entities/<entity>`. An entity exists once two features use its code (`docs/adr/0034-store-entities-layer-replaces-the-feature-graph.md`).
+
+- `address`: **`AddressLines`** drawn (`recipient`, `postal`, `phone`, `hasPhone`), exports to `src/entities/address/ui/address-lines/`.
+- `payment-method`: `SavedCardRow` **not yet drawn** (no seeded customer has a saved card, so it can't be copied from the running store).
 
 ## src/features
 

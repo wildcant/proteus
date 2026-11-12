@@ -950,12 +950,13 @@ function instanceSlots(node: Layer, ctx: SlotContext): Slots {
     return s
   }
   // Text inside it is the child's text prop; an instance swapped inside it the child's instance-swap prop. The
-  // colour of an icon inside it follows the child's own variant.
+  // colour of an icon inside it follows the child's own variant. Content put in one of its slots is the child's
+  // children in code (the glyph a Button shows), not a change to its look.
   const iconGlyphs = new Set(inside.filter((child) => child.mainSet === 'Icon').flatMap(descendants))
   const changed = inside.filter((child) =>
     (child.overrides ?? []).some(
       (group) =>
-        !['name', 'characters', 'component', 'visible', 'props'].includes(group) &&
+        !['name', 'characters', 'component', 'visible', 'props', 'slot'].includes(group) &&
         !(iconGlyphs.has(child) && ['fills', 'strokes'].includes(group)),
     ),
   )

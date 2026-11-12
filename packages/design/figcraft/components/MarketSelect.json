@@ -1,0 +1,150 @@
+{
+  "name": "MarketSelect",
+  "page": "components/store",
+  "properties": [
+    {
+      "layers": [
+        926
+      ],
+      "name": "chevron",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "layers": [
+        923
+      ],
+      "name": "flag",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "default": "United States",
+      "name": "label",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "MarketSelect",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35",
+        "height": "VariableID:49"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "height": 44,
+      "children": [
+        {
+          "name": "flag",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "slot": "flag",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "exampleFlag",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#000000",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "textAlign": "left"
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:23"
+        },
+        {
+          "name": "chevron",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:41",
+            "width": "VariableID:41"
+          },
+          "slot": "chevron",
+          "width": 16,
+          "height": 16,
+          "children": [
+            {
+              "name": "glyph",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.333,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:18"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
