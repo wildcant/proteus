@@ -30,6 +30,7 @@ The components the storefront ships, grouped by where they live in `apps/store/s
   - the press offset, `active:not-aria-[haspopup]:translate-y-px`: it moves the component itself, and a variant's place in its set is the set's layout, not a property;
   - `QuantityStepper`'s focus outline, `-outline-offset-2 focus-visible:outline focus-visible:outline-ink`: a line inset from the edge, and FigCraft has no stroke offset;
   - where Base UI places a part: the `Tooltip` arrow's side and offset (`data-[side=top]:-bottom-2.5`, the translate), on `components.runtimePositions` so its preview position never reaches code;
+  - line wrapping, which FigCraft has no property for: the `AlertDialog` description's `text-balance md:text-pretty`;
   - motion: `transition-*`, the drawer, toast and popup transitions and the `animate-*` keyframes (accordion height, tw-animate fades and zooms, skeleton pulse), listed in the plan's "Drawer animation";
   - a box whose height follows its width or data: the `aspect-4/5` photographs (product cards, gallery slides, swatches, bag rows) and fractional skeleton widths, on `components.runtimeSizes`; their photographs are data (`components.runtimeFills`);
   - box behaviour: `shrink-0`, `whitespace-nowrap`, `bg-clip-padding`, `min-w-0`, `min-h-0`, `appearance-none`, a hit area (`after:absolute after:-inset-x-3 after:-inset-y-2`), and sizing the caller's `<svg>` (`[&_svg]:size-4`; `Button › icon` is on `components.notStyledLayers`, so the icon slot exports no cva).

@@ -41,7 +41,7 @@ export function CartDrawer() {
         {/* 88px, and no rule: the title is separated from the body by space rather than a line. */}
         <div className="flex h-22 shrink-0 items-center justify-between gap-4 px-4 lg:px-6">
           {/* The visible heading is also the dialog's accessible name. */}
-          <DrawerTitle className="type-heading text-ink">
+          <DrawerTitle>
             <Trans>Your Bag</Trans>
           </DrawerTitle>
 

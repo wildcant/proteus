@@ -13,11 +13,13 @@ const BEHAVIOUR =
 /**
  * The label layer's type and colour go on the root, where the caller's text inherits them: a button's
  * children are its own (text, a glyph, or both with the caller's `gap-*`), so wrapping them in a layer
- * would split that gap. The layer's `size` axis only hides the label on an icon button, which has none,
- * so it is read without it; the icon layer's 16 px glyph is the `[&_svg]` sizing above.
+ * would split that gap. On the root, the label's `hidden` for an icon button would hide the button, and an
+ * icon button has no label, so it reads the label at the default size; the icon layer's 16 px glyph is the
+ * `[&_svg]` sizing above.
  */
 function buttonStyles({ variant, size, className }: ButtonStyleProps) {
-  return cn(button({ variant, size }), buttonLabel({ variant }), BEHAVIOUR, className)
+  const labelSize = size === 'icon' ? 'default' : size
+  return cn(button({ variant, size }), buttonLabel({ variant, size: labelSize }), BEHAVIOUR, className)
 }
 
 export type ButtonProps = Omit<ButtonPrimitive.Props, 'className'> & ButtonStyleProps

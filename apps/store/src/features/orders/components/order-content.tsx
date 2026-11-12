@@ -23,7 +23,7 @@ export function OrderContent() {
 
   return (
     <main className="mx-auto w-full max-w-350 px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-      <ButtonLink variant="link" to="/account" className="font-medium text-ink-muted no-underline">
+      <ButtonLink variant="muted" to="/account">
         <ChevronLeftIcon />
         <Trans>Account</Trans>
       </ButtonLink>

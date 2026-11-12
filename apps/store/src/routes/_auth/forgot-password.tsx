@@ -20,7 +20,7 @@ function ForgotPasswordPage() {
         <AuthHeading title={t`Check your email`}>
           <Trans>If an account exists with that email, we've sent a link to reset your password.</Trans>
         </AuthHeading>
-        <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+        <ButtonLink variant="outline" to="/login" size="lg" className="mt-10 w-full">
           <Trans>Back to sign in</Trans>
         </ButtonLink>
       </main>
@@ -40,7 +40,7 @@ function ForgotPasswordPage() {
           onError={(error) => toast.add({ type: 'error', title: error })}
         />
       </div>
-      <ButtonLink variant="link" to="/login" className="mt-6 text-sm">
+      <ButtonLink variant="link" to="/login" className="mt-6">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>

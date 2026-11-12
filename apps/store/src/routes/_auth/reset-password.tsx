@@ -27,7 +27,7 @@ function ResetPasswordPage() {
         <AuthHeading title={t`Password updated`}>
           <Trans>Your password has been reset. Sign in with your new password to pick up where you left off.</Trans>
         </AuthHeading>
-        <ButtonLink to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+        <ButtonLink to="/login" size="lg" className="mt-10 w-full">
           <Trans>Sign in</Trans>
         </ButtonLink>
       </main>
@@ -46,7 +46,7 @@ function ResetPasswordPage() {
           onError={(error) => toast.add({ type: 'error', title: error })}
         />
       </div>
-      <ButtonLink variant="link" to="/login" className="mt-6 text-sm">
+      <ButtonLink variant="link" to="/login" className="mt-6">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>

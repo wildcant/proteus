@@ -35,7 +35,7 @@ function SignupPage() {
           </div>
           <p className="mt-6 text-center text-ink-muted text-sm">
             <Trans>Already have an account?</Trans>{' '}
-            <ButtonLink variant="link" to="/login" className="align-baseline text-sm">
+            <ButtonLink variant="link" to="/login" className="align-baseline">
               <Trans>Sign in</Trans>
             </ButtonLink>
           </p>

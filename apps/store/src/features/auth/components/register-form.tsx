@@ -29,7 +29,7 @@ export function RegisterForm(props: RegisterFormParams) {
         </span>
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => (
-            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+            <form.SubmitButton size="lg" className="mt-6 w-full">
               {isSubmitting ? <Trans>Creating account...</Trans> : <Trans>Create account</Trans>}
             </form.SubmitButton>
           )}

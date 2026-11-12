@@ -19,12 +19,12 @@ export function LoginForm(props: LoginFormParams) {
             {(field) => <field.TextField label={t`Password`} type="password" autoComplete="current-password" />}
           </form.AppField>
         </div>
-        <ButtonLink variant="link" to="/forgot-password" className="mt-6 w-full justify-center text-base">
+        <ButtonLink variant="link" size="lg" to="/forgot-password" className="mt-6 w-full justify-center">
           <Trans>Forgot password?</Trans>
         </ButtonLink>
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => (
-            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+            <form.SubmitButton size="lg" className="mt-6 w-full">
               {isSubmitting ? <Trans>Signing in...</Trans> : <Trans>Sign in</Trans>}
             </form.SubmitButton>
           )}

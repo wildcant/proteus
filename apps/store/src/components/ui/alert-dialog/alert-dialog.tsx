@@ -1,5 +1,6 @@
 import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog'
 import { cn } from '@proteus/ui-core'
+import type { VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
 import {
   alertDialog,
@@ -14,9 +15,9 @@ import {
 } from '#/components/ui/alert-dialog/alert-dialog.variants'
 import { alertDialogOverlay } from '#/components/ui/alert-dialog-overlay/alert-dialog-overlay.variants'
 
-/** The buttons' mechanics; their look is the set's `action` and `cancel` layers. */
+/** The buttons' mechanics; their look, focus included, is the set's `action` and `cancel` layers. */
 const buttonBehaviour =
-  'shrink-0 select-none whitespace-nowrap bg-clip-padding outline-none transition-all focus-visible:ring-3 focus-visible:ring-focus-ring active:translate-y-px disabled:pointer-events-none'
+  'shrink-0 select-none whitespace-nowrap bg-clip-padding outline-none transition-all active:translate-y-px disabled:pointer-events-none'
 
 function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
@@ -82,22 +83,26 @@ function AlertDialogTitle({ className, ...props }: AlertDialogPrimitive.Title.Pr
   )
 }
 
+/** Balanced lines: FigCraft has no text-wrap property, so the phone's line breaks are set here. */
 function AlertDialogDescription({ className, ...props }: AlertDialogPrimitive.Description.Props) {
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn(alertDialogDescription(), className)}
+      className={cn(alertDialogDescription(), 'text-balance md:text-pretty', className)}
       {...props}
     />
   )
 }
 
-function AlertDialogAction({ className, type = 'button', ...props }: React.ComponentProps<'button'>) {
+type AlertDialogActionProps = React.ComponentProps<'button'> & VariantProps<typeof alertDialogAction>
+
+/** `destructive` for a prompt that deletes; `default` for one that only moves on (discarding a draft). */
+function AlertDialogAction({ className, type = 'button', variant, ...props }: AlertDialogActionProps) {
   return (
     <button
       data-slot="alert-dialog-action"
       type={type}
-      className={cn(alertDialogAction(), alertDialogActionLabel(), buttonBehaviour, className)}
+      className={cn(alertDialogAction({ variant }), alertDialogActionLabel({ variant }), buttonBehaviour, className)}
       {...props}
     />
   )

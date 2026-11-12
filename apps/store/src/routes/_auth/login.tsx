@@ -48,7 +48,7 @@ function LoginPage() {
           </div>
           <p className="mt-6 text-center text-ink-muted text-sm">
             <Trans>Don't have an account?</Trans>{' '}
-            <ButtonLink variant="link" to="/signup" className="align-baseline text-sm">
+            <ButtonLink variant="link" to="/signup" className="align-baseline">
               <Trans>Sign up</Trans>
             </ButtonLink>
           </p>

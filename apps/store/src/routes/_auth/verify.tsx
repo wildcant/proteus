@@ -43,7 +43,7 @@ function VerifyError() {
       <AuthHeading title={t`Invalid link`}>
         <Trans>This verification link is invalid or has expired. Request a new one from your account.</Trans>
       </AuthHeading>
-      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink variant="outline" to="/login" size="lg" className="mt-10 w-full">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>
@@ -60,7 +60,7 @@ function VerifyPage() {
         <AuthHeading title={t`Email verified`}>
           <Trans>Your email is confirmed. Sign in to pick up where you left off.</Trans>
         </AuthHeading>
-        <ButtonLink to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+        <ButtonLink to="/login" size="lg" className="mt-10 w-full">
           <Trans>Sign in</Trans>
         </ButtonLink>
       </main>
@@ -75,7 +75,7 @@ function VerifyPage() {
           <Trans>Open this link in the same browser you signed up with.</Trans>
         </p>
       )}
-      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink variant="outline" to="/login" size="lg" className="mt-10 w-full">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>

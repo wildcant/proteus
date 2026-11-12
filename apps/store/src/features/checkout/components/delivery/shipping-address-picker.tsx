@@ -86,7 +86,7 @@ export const ShppingAddressPicker = withForm({
                     })}
                   </RadioGroup>
 
-                  <ButtonLink variant="link" to="/checkout/addresses/new" className="mt-4 gap-2 text-sm">
+                  <ButtonLink variant="link" to="/checkout/addresses/new" className="mt-4 gap-2">
                     <PlusIcon className="size-4" />
                     <Trans>Use a different address</Trans>
                   </ButtonLink>

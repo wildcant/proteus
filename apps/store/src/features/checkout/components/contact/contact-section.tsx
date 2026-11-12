@@ -24,7 +24,7 @@ export function ContactSection(props: ContactSectionProps) {
     <CheckoutSection
       title={t`Contact`}
       action={
-        <ButtonLink variant="link" to="/login" search={{ redirect: '/checkout' }} className="text-sm">
+        <ButtonLink variant="link" to="/login" search={{ redirect: '/checkout' }}>
           <Trans>Sign in</Trans>
         </ButtonLink>
       }

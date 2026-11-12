@@ -104,12 +104,7 @@ RouteDrawer.Header = ({
     <div className={routeDrawerTitleGroup()}>{children}</div>
     <div className={routeDrawerActions()}>
       <kbd className={cn(routeDrawerKbd(), routeDrawerKey())}>esc</kbd>
-      <DrawerClose
-        className={cn(
-          routeDrawerClose(),
-          'shrink-0 cursor-pointer outline-none transition-all focus-visible:ring-3 focus-visible:ring-focus-ring',
-        )}
-      >
+      <DrawerClose className={cn(routeDrawerClose(), 'shrink-0 cursor-pointer outline-none transition-all')}>
         <XIcon aria-hidden="true" className={routeDrawerCloseIcon()} />
         <span className="sr-only">{closeLabel}</span>
       </DrawerClose>
@@ -187,7 +182,9 @@ function RouteDrawerForm({ form, blockSearchParams = false, copy, children }: Ro
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => blocker.reset()}>{copy.cancel}</AlertDialogCancel>
-              <AlertDialogAction onClick={() => blocker.proceed()}>{copy.confirm}</AlertDialogAction>
+              <AlertDialogAction variant="default" onClick={() => blocker.proceed()}>
+                {copy.confirm}
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

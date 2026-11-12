@@ -26,9 +26,7 @@ export function FieldHelp({ children, className }: { children: string; className
         <CircleHelpIcon aria-hidden="true" className="size-5" />
         <span className="sr-only">{children}</span>
       </TooltipTrigger>
-      <TooltipContent className="max-w-56 px-4 py-3 text-center font-extrabold text-surface text-xs uppercase leading-tight">
-        {children}
-      </TooltipContent>
+      <TooltipContent>{children}</TooltipContent>
     </Tooltip>
   )
 }

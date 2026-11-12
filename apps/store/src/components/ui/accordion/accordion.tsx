@@ -49,7 +49,7 @@ export function AccordionTrigger({ className, children, ...props }: AccordionPri
         data-slot="accordion-trigger"
         className={cn(
           accordionTrigger({ variant }),
-          'group/accordion-trigger flex-1 text-left outline-none transition-all focus-visible:ring-3 focus-visible:ring-ring/50 aria-disabled:pointer-events-none',
+          'group/accordion-trigger flex-1 text-left outline-none transition-all aria-disabled:pointer-events-none',
           className,
         )}
         {...props}

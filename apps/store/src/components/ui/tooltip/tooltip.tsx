@@ -17,9 +17,12 @@ type TooltipContentProps = Omit<TooltipPrimitive.Popup.Props, 'children'> &
   }
 
 /**
- * The arrow's place along the edge is Base UI's: it measures the trigger and writes `left` (or
- * `top`) inline, which beats the drawn position. Only its offset across the edge is the design's.
+ * Where the arrow sits is Base UI's: it measures the trigger and writes `left` (or `top`) inline, and
+ * marks the side the popup took. Each side puts the arrow half outside that edge, pointing at the trigger.
  */
+const arrowPlacement =
+  'z-50 translate-y-[calc(-50%-2px)] data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-start]:top-1/2! data-[side=left]:top-1/2! data-[side=right]:top-1/2! data-[side=inline-start]:-right-1 data-[side=left]:-right-1 data-[side=top]:-bottom-2.5 data-[side=inline-end]:-left-1 data-[side=right]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:-translate-y-1/2 data-[side=right]:-translate-y-1/2'
+
 export function TooltipContent({
   className,
   side = 'top',
@@ -48,7 +51,7 @@ export function TooltipContent({
           {...props}
         >
           <span className={tooltipLabel()}>{children}</span>
-          <TooltipPrimitive.Arrow className={tooltipArrow()} />
+          <TooltipPrimitive.Arrow className={cn(tooltipArrow(), arrowPlacement)} />
         </TooltipPrimitive.Popup>
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>

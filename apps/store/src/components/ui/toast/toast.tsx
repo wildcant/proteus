@@ -64,7 +64,7 @@ function ToastList({ closeLabel }: { closeLabel: string }) {
           aria-label={closeLabel}
           className={cn(
             toastClose(),
-            "relative shrink-0 cursor-pointer outline-none transition-all after:absolute after:-inset-2 after:content-[''] focus-visible:ring-3 focus-visible:ring-focus-ring",
+            "relative shrink-0 cursor-pointer outline-none transition-all after:absolute after:-inset-2 after:content-['']",
           )}
         >
           <XIcon aria-hidden="true" className={toastCloseIcon()} />

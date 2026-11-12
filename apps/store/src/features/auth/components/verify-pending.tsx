@@ -12,7 +12,7 @@ export function VerifyPending() {
           We sent a verification link to your email. Click it to confirm your account, then come back and sign in.
         </Trans>
       </AuthHeading>
-      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink variant="outline" to="/login" size="lg" className="mt-10 w-full">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </>

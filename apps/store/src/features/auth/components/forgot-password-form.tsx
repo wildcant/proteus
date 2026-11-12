@@ -17,7 +17,7 @@ export function ForgotPasswordForm(props: ForgotPasswordFormParams) {
         </div>
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => (
-            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+            <form.SubmitButton size="lg" className="mt-6 w-full">
               {isSubmitting ? <Trans>Sending...</Trans> : <Trans>Send reset link</Trans>}
             </form.SubmitButton>
           )}

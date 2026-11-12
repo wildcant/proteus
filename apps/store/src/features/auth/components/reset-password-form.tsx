@@ -19,7 +19,7 @@ export function ResetPasswordForm(props: ResetPasswordFormParams) {
         </div>
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => (
-            <form.SubmitButton className="mt-6 h-14 w-full font-semibold text-base">
+            <form.SubmitButton size="lg" className="mt-6 w-full">
               {isSubmitting ? <Trans>Updating...</Trans> : <Trans>Set new password</Trans>}
             </form.SubmitButton>
           )}
