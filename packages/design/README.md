@@ -154,10 +154,11 @@ build doesn't map stops the build with the glyph named. Without the set, no file
 
 Each direct child frame of the `export` section on page `brand` is one image file
 (`docs/design/brand-marks.md`): its pluginData `{kind: "brandExport", file, px}` names the file inside
-`brand.output` (`.png` or `.svg`) and its pixel size; the frame is named like the file and sized at 1×.
-`brand:export` writes the files through FigCraft's CLI, removes the ones no frame exports any more,
+`brand.output` (`.png`, `.svg` or `.ico`) and its pixel size; the frame is named like the file and sized
+at 1×. An `.ico` takes one frame per size it holds (all named like the file, each at its own `px`): each is
+exported as a PNG and packed, smallest first. `brand:export` writes the files through FigCraft's CLI, removes the ones no frame exports any more,
 and records each file's size and hash in `figcraft/brand.json`. There is nothing to regenerate:
-`brand:check` says whether each recorded file is still there, at its size and unchanged. Without a
+`brand:check` says whether each recorded file is still there, at its size (an `.ico`'s sizes) and unchanged. Without a
 `brand` page nothing is exported.
 
 ## Set up this machine

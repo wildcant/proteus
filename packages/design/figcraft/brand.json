@@ -1,0 +1,29 @@
+[
+  {
+    "name": "favicon",
+    "file": "favicon.ico",
+    "px": 64,
+    "format": "ico",
+    "sizes": [
+      16,
+      24,
+      32,
+      64
+    ],
+    "sha256": "e8962016c0f4bdad8f52824de7b7af5cdbd5f2f1cc770963e74bbd5f6583a09c"
+  },
+  {
+    "name": "logo192",
+    "file": "logo192.png",
+    "px": 192,
+    "format": "png",
+    "sha256": "560e375719c035a0e72c361394cf29c5019ffa83dfa19b971088ed6d0059f8bb"
+  },
+  {
+    "name": "logo512",
+    "file": "logo512.png",
+    "px": 512,
+    "format": "png",
+    "sha256": "1ef4ae97112864fb9fbaa949add17f0c2a5f6a2b830ba28965c4cd98b40da678"
+  }
+]

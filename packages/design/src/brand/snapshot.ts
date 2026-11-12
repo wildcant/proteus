@@ -1,10 +1,11 @@
 // The brand half of the snapshot: `figcraft/brand.json`, what the last brand:export wrote into the public folder.
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import type { ResolvedConfig } from '../config.ts'
 import { withFigCraft } from '../figcraft.ts'
-import { type BrandEntry, type BrandFrame, hash, readBrandFrames } from './build.ts'
+import { type BrandEntry, type BrandFrame, hash, packIco, readBrandFrames } from './build.ts'
 
 const BRAND_FILE = 'brand.json'
 const PAGE = 'brand'
@@ -44,10 +45,25 @@ export function exportBrandSnapshot(config: ResolvedConfig) {
     for (const old of readBrandSnapshot(config.snapshot)) {
       if (!entries.some((entry) => entry.file === old.file)) rmSync(join(brand.output, old.file), { force: true })
     }
-    const recorded: BrandEntry[] = entries.map(({ id, ...entry }) => {
+    const recorded: BrandEntry[] = entries.map(({ id, parts, ...entry }) => {
       const path = join(brand.output, entry.file)
-      exportNode(id, path, entry.format)
-      return { ...entry, sha256: hash(readFileSync(path)) }
+      if (!parts) {
+        exportNode(id, path, entry.format === 'svg' ? 'svg' : 'png')
+        return { ...entry, sha256: hash(readFileSync(path)) }
+      }
+      // Each size of an .ico is its own frame, exported as a PNG and packed.
+      const work = mkdtempSync(join(tmpdir(), 'brand-'))
+      try {
+        const pngs = parts.map((part) => {
+          const png = join(work, `${part.px}.png`)
+          exportNode(part.id, png, 'png')
+          return readFileSync(png)
+        })
+        writeFileSync(path, packIco(pngs))
+      } finally {
+        rmSync(work, { recursive: true, force: true })
+      }
+      return { ...entry, sizes: parts.map((part) => part.px), sha256: hash(readFileSync(path)) }
     })
     const manifest = join(config.snapshot, BRAND_FILE)
     if (recorded.length) writeFileSync(manifest, `${JSON.stringify(recorded, null, 2)}\n`)
