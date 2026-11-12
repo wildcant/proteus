@@ -34,7 +34,7 @@ export function CartTrigger() {
           button's own corner land six pixels inside the bag, burying it under the counter.
           `h-5 w-5` over the drawn 16px glyph: the bag renders at 20px in the running store. */}
       <span className={cartTrigger()}>
-        <ShoppingBagIcon className={cn(cartTriggerGlyph(), cartTriggerBag(), 'h-5 w-5')} />
+        <ShoppingBagIcon className={cn(cartTriggerGlyph(), cartTriggerBag())} />
         {itemCount > 0 && <CartBadge count={itemCount} className={cartTriggerBadge()} />}
       </span>
     </Button>

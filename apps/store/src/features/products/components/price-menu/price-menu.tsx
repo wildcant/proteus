@@ -6,6 +6,7 @@ import { FilterTrigger } from '#/features/products/components/filter-trigger/fil
 import {
   priceMenu,
   priceMenuApply,
+  priceMenuForm,
   priceMenuFrom,
   priceMenuRange,
   priceMenuTo,
@@ -45,8 +46,7 @@ export function PriceMenu({
         {label}
       </FilterTrigger>
       <PopoverContent align="start" aria-label={t`Price`} className={priceMenu()}>
-        {/* The set's frame is the popup; the form between it and the fields stacks them the same way. */}
-        <Form onSubmit={form.handleSubmit} className="flex flex-col gap-3">
+        <Form onSubmit={form.handleSubmit} className={priceMenuForm()}>
           <form.AppForm>
             <div className={priceMenuRange()}>
               <form.AppField name="minPrice">

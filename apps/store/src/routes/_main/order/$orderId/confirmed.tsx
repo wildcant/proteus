@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ButtonLink } from '#/components/ui/button/button'
 import { orderQueryOptions } from '#/entities/order/api/orders'
-import { OrderConfirmedContent } from '#/features/orders/components/order-confirmed-content'
+import { OrderConfirmedContent } from '#/features/orders/components/order-confirmed-content/order-confirmed-content'
 import { OrderConfirmedSkeleton } from '#/features/orders/components/order-confirmed-skeleton'
 import { OrderError } from '#/features/orders/components/order-error'
 

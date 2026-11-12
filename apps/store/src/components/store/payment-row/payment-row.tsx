@@ -26,11 +26,11 @@ const ROW_BEHAVIOUR = 'relative -mt-px first:mt-0 has-[:focus-visible]:z-3'
 
 type PaymentRowState = NonNullable<VariantProps<typeof paymentRow>['state']>
 
-/** The z-index stack per state, and the selected ring the design file cannot export yet. */
+/** The z-index stack per state: which row's border sits over its neighbour's. */
 const STATE_BEHAVIOUR: Record<PaymentRowState, string> = {
   default: '',
   /** The radio on this row is on. A full ink border, no layout shift. */
-  selected: 'z-2 ring-1 ring-ink ring-inset',
+  selected: 'z-2',
   /**
    * This row's *own* surface is open beneath it, so the real choice is made further down.
    *

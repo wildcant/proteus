@@ -31,15 +31,8 @@ import { useModal } from '#/lib/modal-state'
 /** A row's text is its own children, so the row carries the label's type. */
 const rowClassName = cn(sideMenuRow(), sideMenuLabel())
 
-/**
- * The chevron follows its row's hover fade (the global link colour in `styles.css`); the design
- * file draws the menu without an interaction property.
- */
-const chevronClassName = cn(
-  sideMenuChevron(),
-  sideMenuGlyph(),
-  'shrink-0 transition-[color] ease-[ease] in-[a:hover]:text-ink-muted',
-)
+/** The chevron fades with its row's hover (the row is `group/side-menu-row`). */
+const chevronClassName = cn(sideMenuChevron(), sideMenuGlyph(), 'shrink-0 transition-[color] ease-[ease]')
 
 /** The drawer is reachable above `lg` only by URL; the design file draws it up to `sm`. */
 const LG_GUTTER = 'lg:px-8'

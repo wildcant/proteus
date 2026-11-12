@@ -29,14 +29,6 @@ const ARROW_PLACEMENT = [
 ].join(' ')
 
 /**
- * Where the running store differs from the drawn set, kept so the popover renders as it always has:
- * content stretches to the popup's width (the set draws it start-aligned), the text inside inherits
- * the 14/20 `text-sm`, and the popup stays unpositioned, so Base UI places the arrow from the
- * positioner's edge rather than 1px inside the popup's border.
- */
-const RUNNING_LAYOUT = 'static items-stretch text-sm'
-
-/**
  * The store's popover: a short menu, so it sizes to its items, which are full-width buttons carrying
  * their own `h-10 px-3`. The arrow is built in rather than left to a call site that can forget it.
  * The caller's content is the set's `content` slot.
@@ -62,11 +54,11 @@ export function PopoverContent({
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
-          className={cn(popover(), RUNNING_LAYOUT, POPUP_MOTION, 'z-50 outline-hidden', className)}
+          className={cn(popover(), POPUP_MOTION, 'z-50 outline-hidden', className)}
           {...props}
         >
           <PopoverPrimitive.Arrow data-slot="popover-arrow" className={cn(popoverArrow(), ARROW_PLACEMENT)} />
-          <div className={cn(popoverContent(), 'items-stretch')}>{children}</div>
+          <div className={popoverContent()}>{children}</div>
         </PopoverPrimitive.Popup>
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>

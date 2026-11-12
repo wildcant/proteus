@@ -2,9 +2,9 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui-core'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ButtonLink } from '#/components/ui/button/button'
-import { AuthHeading } from '#/features/auth/components/auth-heading'
-import { RegisterForm } from '#/features/auth/components/register-form'
-import { VerifyPending } from '#/features/auth/components/verify-pending'
+import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
+import { RegisterForm } from '#/features/auth/components/register-form/register-form'
+import { VerifyPending } from '#/features/auth/components/verify-pending/verify-pending'
 import { useAuthSuccess } from '#/features/auth/hooks/use-auth-success'
 import { isRegistered } from '#/lib/auth-token'
 
@@ -24,7 +24,7 @@ function SignupPage() {
   return (
     <main className="mt-10 flex w-full max-w-md flex-col items-center">
       {isVerifyPending ? (
-        <VerifyPending />
+        <VerifyPending className="w-full" />
       ) : (
         <>
           <AuthHeading title={t`Sign up`}>

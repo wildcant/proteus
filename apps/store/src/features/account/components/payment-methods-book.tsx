@@ -3,7 +3,7 @@ import {
   useRemovePaymentMethod,
   useSetDefaultPaymentMethod,
 } from '#/entities/payment-method/api/payment-methods'
-import { PaymentMethodsBookView } from './payment-methods-book-view'
+import { PaymentMethodsBookView } from '#/features/account/components/payment-methods-book-view/payment-methods-book-view'
 
 /**
  * The account wallet.
