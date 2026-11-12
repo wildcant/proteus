@@ -1,10 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@proteus/ui/styles.css";
+/* Colour roles, the font and the type-* roles, generated from the design file. Change them there,
+   then `pnpm --filter @proteus/design-tokens run tokens:export` (see packages/design-tokens). */
+@import "@proteus/design-tokens/tokens.css";
 @source "../../../packages/ui/src";
 
 @font-face {
-  font-family: "Manrope Variable";
+  font-family: "Manrope";
   font-style: normal;
   font-display: swap;
   font-weight: 200 800;
@@ -12,21 +15,6 @@
 }
 
 @theme {
-  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
-
-  /* Colours are registered as indirections so the values themselves can be themed
-     on :root below. */
-  --color-ink: var(--ink);
-  --color-ink-muted: var(--ink-muted);
-  --color-ink-subtle: var(--ink-subtle);
-  --color-ink-disabled: var(--ink-disabled);
-  --color-surface: var(--surface);
-  --color-surface-subtle: var(--surface-subtle);
-  --color-line: var(--line);
-  --color-accent: var(--accent);
-  --color-sale: var(--sale);
-  --color-positive: var(--positive);
-
   /* Kept so the ~25 existing `text-foreground-muted` usages keep resolving. */
   --color-foreground-muted: var(--foreground-muted);
 
@@ -40,79 +28,22 @@
   --shadow-panel: 0 -8px 24px -8px color-mix(in oklab, var(--ink) 20%, transparent);
 }
 
-/* Display type roles. These are whole roles, not sizes: weight, leading, tracking and
-   case travel together, which is what lets one typeface cover both the display and the
-   body voice.
-
-   Deliberately not named `text-*`. tailwind-merge classifies an unrecognised `text-x`
-   as a colour, so a custom `text-display` would be dropped whenever cn() also saw a
-   text colour on the same element. Body and meta need no role at all — 14px and 12px
-   are exactly Tailwind's stock `text-sm` and `text-xs`.
-
-   The doubled class is what makes a role stick. cn() cannot relate `type-heading` to
-   `text-base`, so when a primitive hardcodes one — `DrawerTitle` ships
-   `font-medium text-base` — both survive the merge and only the cascade separates them,
-   which the core utility was winning. Doubling lifts the role to specificity 0,2,0 and it
-   outranks any single utility regardless of emission order. Written as plain rules rather
-   than `@utility` because that is the only way to double the selector; the cost is variant
-   support (`lg:type-heading`), which nothing uses. */
-@layer utilities {
-  .type-display.type-display {
-    font-size: clamp(2rem, 1.65rem + 1.5vw, 3rem);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  .type-title.type-title {
-    font-size: clamp(1.5rem, 1.32rem + 0.75vw, 2rem);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  .type-heading.type-heading {
-    font-size: 1.25rem;
-    font-weight: 800;
-    line-height: 0.94;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-  }
-}
-
 :root {
-  /* Ink is #0d1012, not pure black. True black reads harsh against product
-     photography, and every neutral below is tuned against this one. */
-  --ink: #0d1012;
-  --ink-muted: #767a7f;
-  --ink-subtle: #9fa3a8;
-  --ink-disabled: #bec2c6;
-  --surface: #ffffff;
-  --surface-subtle: #f4f5f6;
-  --line: #dee0e3;
-  /* The only hue in the system. It exists so a count badge can separate itself from the
-     cluster of ink-coloured icons it sits in; everything else stays neutral. Pair it with
-     text-surface, never text-white — the token inverts per scheme, and white numerals on
-     the lifted dark blue fall under 4.5:1.
+  /* The colour roles themselves (--ink, --surface, --accent…, light and dark) come from
+     design-tokens. What follows wires them into shadcn and the store's older names.
 
-     This shadows shadcn's own --accent, which is a near-white hover surface paired with a
-     near-black --accent-foreground. Only DropdownMenu and Combobox consume that pair, and
-     the footer's market menu is the first of them to land in the store, so the foreground
-     is repointed below — left at shadcn's near-black, a focused item reads as near-black
-     on brand blue. */
-  --accent: #004eba;
+     --accent shadows shadcn's own, which is a near-white hover surface paired with a near-black
+     --accent-foreground. Only DropdownMenu and Combobox consume that pair, and the footer's market
+     menu is the first of them in the store, so the foreground is repointed here: left at shadcn's
+     near-black, a focused item reads as near-black on brand blue. */
   --accent-foreground: var(--surface);
-  --sale: #dc0428;
-  --positive: #009966;
 
   /* Square is the system, not an override. packages/ui derives --radius-sm through
      --radius-4xl with calc() off this, so zeroing it squares every shadcn primitive
      at once. */
   --radius: 0rem;
 
-  /* shadcn base, repointed at the palette above so untouched primitives inherit it. */
+  /* shadcn base, repointed at the colour roles so untouched primitives inherit it. */
   --primary: var(--ink);
   --primary-foreground: var(--surface);
   --border: var(--line);
@@ -122,7 +53,7 @@
   --muted-foreground: var(--ink-muted);
   /* Checkout's account menu is the store's first popover. Repointed here rather than overridden
      on the component so the next one inherits it, and through --surface/--ink rather than the
-     literals, so both schemes are covered by the blocks below. */
+     literals, so both schemes are covered by the generated mode blocks. */
   --popover: var(--surface);
   --popover-foreground: var(--ink);
 
@@ -130,36 +61,6 @@
   --foreground: var(--ink);
   --foreground-muted: var(--ink-muted);
   --bg-subtle: var(--surface-subtle);
-}
-
-/* The palette is designed light-first; these are the high-contrast counterparts.
-   --sale and --positive lift rather than invert, so they stay legible on dark. */
-:root[data-theme="dark"] {
-  --ink: #f4f5f6;
-  --ink-muted: #9fa3a8;
-  --ink-subtle: #767a7f;
-  --ink-disabled: #575b60;
-  --surface: #0d1012;
-  --surface-subtle: #1b1d22;
-  --line: #2e3238;
-  --accent: #7aa9ff;
-  --sale: #ff8fa5;
-  --positive: #00e890;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ink: #f4f5f6;
-    --ink-muted: #9fa3a8;
-    --ink-subtle: #767a7f;
-    --ink-disabled: #575b60;
-    --surface: #0d1012;
-    --surface-subtle: #1b1d22;
-    --line: #2e3238;
-    --accent: #7aa9ff;
-    --sale: #ff8fa5;
-    --positive: #00e890;
-  }
 }
 
 * {

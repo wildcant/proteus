@@ -14,6 +14,7 @@
       "!**/*.gen.css",
       "!**/src/api/generated",
       "!apps/backend/openapi/openapi-*.json",
+      "!packages/design-tokens/figcraft",
       "!apps/backend/structure/dependency-graph.svg",
       "!apps/backend/worker-configuration.d.ts",
       "!apps/store/worker-configuration.d.ts"

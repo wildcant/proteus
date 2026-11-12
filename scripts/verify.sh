@@ -121,6 +121,9 @@ job_generated() {
   # The Worker's workflow list is generated from src/workflows/ rather than typed by hand, so this
   # is the step that notices when the two have drifted. See scripts/generate-workflow-registry.ts.
   pnpm --silent --filter backend run check:workflow-registry || code=1
+  # The theme the store imports is generated from the committed FigCraft snapshot. Read-only: it
+  # regenerates in memory and compares. See packages/design-tokens/README.md.
+  pnpm --silent --filter @proteus/design-tokens run tokens:check || code=1
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   pnpm --silent --filter backend run check:subscriber-registry || code=1
@@ -265,7 +268,13 @@ job_workerd() { ./scripts/checks/workerd-smoke.sh; }
 # The shared formatters. They are the one place a change lands on both applications at once — the
 # storefront asks them for a market's punctuation, the admin asks them for none — so the claim they
 # carry is that omitting a locale still prints exactly what it printed before.
-job_packages() { pnpm --filter @proteus/utils run test; }
+job_packages() {
+  local code=0
+  pnpm --filter @proteus/utils run test || code=1
+  # The token generator's naming contract and output shape, on a hand-built snapshot.
+  pnpm --filter @proteus/design-tokens run test || code=1
+  return $code
+}
 
 # The translations, one catalog per workspace that has a lingui.config.ts. Decided during the
 # prologue, for the same reason as REGEN_DRIFT: establishing it runs `lingui extract` and `lingui
