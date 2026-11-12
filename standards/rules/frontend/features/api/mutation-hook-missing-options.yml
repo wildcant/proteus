@@ -5,6 +5,7 @@ message: This mutation hook takes no `options`, so a caller cannot set `retry`, 
 note: 'Give it `options?: UseMutationOptions<TData, Error, TVariables>` as its last parameter. standards/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 
 utils:
   # Both spellings of a hook. Which one a file uses is a style question, and answering it here would

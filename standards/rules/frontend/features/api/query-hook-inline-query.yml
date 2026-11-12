@@ -5,6 +5,7 @@ message: This query is defined inline at the hook, so no route loader can prefet
 note: 'Move `queryKey`/`queryFn` into an exported `*QueryOptions` factory and have the hook call it. standards/rules/frontend/features/api/__docs__/query-hooks.md'
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   pattern:
     context: "{ queryFn: $FN }"

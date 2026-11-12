@@ -5,6 +5,7 @@ message: This hook spreads the caller's options after its own handlers, which si
 note: Move `...rest` to the first property, so the hook's own cache handling survives. standards/rules/frontend/features/api/__docs__/mutation-hooks.md
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   kind: spread_element
   inside:

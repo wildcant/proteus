@@ -5,6 +5,7 @@ message: This `options` type lets a caller redefine the query's own key or fetch
 note: "Use `Omit<UseQueryOptions<TData, Error, TData>, 'queryFn' | 'queryKey'>`, aliased once per file. standards/rules/frontend/features/api/__docs__/query-hooks.md"
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   kind: optional_parameter
   all:
