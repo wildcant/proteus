@@ -62,6 +62,12 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
    * column, as `tagId`.
    */
   metafields?: Record<string, string[]>
+  /**
+   * Products offering any of the values listed for an option, by the option's title, for every
+   * option listed — `{ Talla: ['42', '43'], Color: ['Negro'] }`. An unknown title matches nothing.
+   * Not a column, as `tagId`.
+   */
+  optionValues?: Record<string, string[]>
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
@@ -364,16 +370,19 @@ export type ProductMetafieldDefinitionDTO = {
 }
 
 /** One value of a storefront filter, with how many products in view would hold it. */
-export type ProductMetafieldFilterValueDTO = {
+export type ProductFilterValueDTO = {
   value: string
   count: number
 }
 
-/** A filterable metafield over the products in view: every value they hold, sorted. */
-export type ProductMetafieldFilterDTO = {
+/**
+ * A storefront filter over the products in view, every value they hold: a filterable metafield keyed
+ * by its key, or a product option keyed `option.<title>`.
+ */
+export type ProductFilterDTO = {
   key: string
   name: string
-  values: ProductMetafieldFilterValueDTO[]
+  values: ProductFilterValueDTO[]
 }
 
 /** One of a product's metafields with its values, in the order they were written. */

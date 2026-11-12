@@ -29,6 +29,7 @@ import type {
   ProductCollectionDTO,
   ProductDTO,
   ProductFieldSource,
+  ProductFilterDTO,
   ProductGroupingRuleDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
@@ -39,7 +40,6 @@ import type {
   ProductImportSettingsDTO,
   ProductMetafieldDefinitionDTO,
   ProductMetafieldDTO,
-  ProductMetafieldFilterDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -83,6 +83,7 @@ import type {
   VariantImageInput,
 } from '../../../core/types/product/mutations.js'
 import type { IProductModuleService } from '../../../core/types/product/service.js'
+import { OPTION_FILTER_PREFIX } from '../../../core/utils/product-filter-key.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
@@ -968,22 +969,26 @@ export class ProductModuleService implements IProductModuleService {
 
   // ── Metafields ────────────────────────────────────────────────────────
 
-  async listProductMetafieldFilters(
-    filters: FilterableProductProps,
-    context?: Context,
-  ): Promise<ProductMetafieldFilterDTO[]> {
-    const definitions = await this.productMetafieldDefinitionRepository.find(
-      { filterable: true },
-      { order: { rank: 'ASC', key: 'ASC' } },
-      context,
-    )
-    return Promise.all(
-      definitions.map(async (definition) => ({
-        key: definition.key,
-        name: definition.name,
-        values: await this.productRepository.findMetafieldValueCounts(definition, filters, context),
-      })),
-    )
+  async listProductFilters(filters: FilterableProductProps, context?: Context): Promise<ProductFilterDTO[]> {
+    const [definitions, options] = await Promise.all([
+      this.productMetafieldDefinitionRepository.find(
+        { filterable: true },
+        { order: { rank: 'ASC', key: 'ASC' } },
+        context,
+      ),
+      this.productRepository.findOfferedOptions(filters, context),
+    ])
+    const metafieldFilters = definitions.map(async (definition) => ({
+      key: definition.key,
+      name: definition.name,
+      values: await this.productRepository.findMetafieldValueCounts(definition, filters, context),
+    }))
+    const optionFilters = options.map(async (option) => ({
+      key: `${OPTION_FILTER_PREFIX}${option.title}`,
+      name: option.title,
+      values: await this.productRepository.findOptionValueCounts(option, filters, context),
+    }))
+    return Promise.all([...metafieldFilters, ...optionFilters])
   }
 
   async listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]> {

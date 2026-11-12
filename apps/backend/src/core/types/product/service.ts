@@ -25,6 +25,7 @@ import type {
   ProductCategoryTreeNodeDTO,
   ProductCollectionDTO,
   ProductDTO,
+  ProductFilterDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
   ProductImportDTO,
@@ -34,7 +35,6 @@ import type {
   ProductImportSettingsDTO,
   ProductMetafieldDefinitionDTO,
   ProductMetafieldDTO,
-  ProductMetafieldFilterDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -306,11 +306,12 @@ export type IProductModuleService = {
   // Metafields
   /**
    * The storefront's filters over the products matching `filters`: each filterable definition, in rank
-   * order, with every value those products hold and how many would remain once it is chosen. The
-   * `metafields` and `tagValue` selections narrow the counts, never which values are offered, and a
-   * definition's own selection does not narrow its own counts.
+   * order, then each option those products offer, by title, keyed `option.<title>` — each with every
+   * value those products hold and how many would remain once it is chosen. The `metafields`,
+   * `optionValues` and `tagValue` selections narrow the counts, never which values are offered, and a
+   * filter's own selection does not narrow its own counts.
    */
-  listProductMetafieldFilters(filters: FilterableProductProps, context?: Context): Promise<ProductMetafieldFilterDTO[]>
+  listProductFilters(filters: FilterableProductProps, context?: Context): Promise<ProductFilterDTO[]>
   /**
    * The distinct values of the field `key` — a metafield, or the brand for the vendor field, filterable
    * or not — on the products matching `filters`, sorted. Empty for a key no definition has.

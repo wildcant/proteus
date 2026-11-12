@@ -12,6 +12,7 @@ import {
   isPurchasable,
   variantStockProjection,
 } from '@workflows/product/utils/build-variant-stock.js'
+import { productsPricedWithin } from '@workflows/product/utils/products-priced-within.js'
 import { listSellableProducts, setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
@@ -28,25 +29,26 @@ export const GET = async (
 
   const { pagination, filters } = req.validatedQuery
   const { offset, limit } = pagination
-  const { category, collection, tag, filter, ...columnFilters } = filters
+  const { category, collection, tag, filter, minPrice, maxPrice, ...columnFilters } = filters
 
-  const {
-    productIds: sellableProductIds,
-    variants,
-    priceByVariantId,
-    startingPriceByProductId,
-  } = await listSellableProducts(req.scope, req.pricingContext)
+  const { variants, priceByVariantId, startingPriceByProductId } = await listSellableProducts(
+    req.scope,
+    req.pricingContext,
+  )
+
+  // Every product priced in the range is sellable here, so the range narrows the catalogue itself.
+  const listedProductIds = productsPricedWithin(variants, priceByVariantId, { minPrice, maxPrice })
 
   // An empty filter array would reach the query builder as `inArray(column, [])`, and a market
   // that can price nothing has no page to draw either way.
-  if (sellableProductIds.length === 0) return { status: 200, json: { products: [], count: 0, offset, limit } }
+  if (listedProductIds.length === 0) return { status: 200, json: { products: [], count: 0, offset, limit } }
 
   const [products, count] = await productService.listAndCountProducts(
     {
       ...columnFilters,
       ...buildStoreGroupingFilters({ category, collection, tag, filter }),
       status: 'published',
-      id: sellableProductIds,
+      id: listedProductIds,
     },
     pagination,
   )

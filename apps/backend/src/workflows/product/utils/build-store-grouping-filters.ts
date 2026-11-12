@@ -1,4 +1,5 @@
 import type { FilterableProductProps } from '@core/types/product/common.js'
+import { OPTION_FILTER_PREFIX } from '@core/utils/product-filter-key.js'
 
 type StoreGroupingParams = {
   category?: string
@@ -23,8 +24,21 @@ export function buildStoreGroupingFilters({
     ...(category === undefined ? {} : { categoryHandle: category, includeDescendants: true, visibleOnly: true }),
     ...(collection === undefined ? {} : { collectionHandle: collection }),
     ...(tag === undefined ? {} : { tagValue: tag }),
-    ...(filter === undefined ? {} : { metafields: groupSelectionsByKey(filter) }),
+    ...(filter === undefined ? {} : splitSelections(groupSelectionsByKey(filter))),
   }
+}
+
+/** The `option.<title>` keys are options, by title; every other key is a metafield's. */
+function splitSelections(
+  selections: Record<string, string[]>,
+): Pick<FilterableProductProps, 'metafields' | 'optionValues'> {
+  const metafields: Record<string, string[]> = {}
+  const optionValues: Record<string, string[]> = {}
+  for (const [key, values] of Object.entries(selections)) {
+    if (key.startsWith(OPTION_FILTER_PREFIX)) optionValues[key.slice(OPTION_FILTER_PREFIX.length)] = values
+    else metafields[key] = values
+  }
+  return { metafields, optionValues }
 }
 
 /** `['genero:women', 'tipo:tops', 'tipo:shoes']` → `{ genero: ['women'], tipo: ['tops', 'shoes'] }`. */

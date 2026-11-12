@@ -3,16 +3,20 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import type { Context } from '../../../core/types/context.js'
 import type {
   FilterableProductProps,
+  ProductFilterValueDTO,
   ProductMetafieldDefinitionDTO,
-  ProductMetafieldFilterValueDTO,
 } from '../../../core/types/product/common.js'
 import { BaseRepository } from '../../../core/utils/base-repository.js'
 import { productTable } from '../models/product.js'
 import { productCollectionTable } from '../models/product-collection.js'
 import { productMetafieldTable } from '../models/product-metafield.js'
 import { productMetafieldDefinitionTable } from '../models/product-metafield-definition.js'
+import { productOptionTable } from '../models/product-option.js'
+import { productOptionValueTable } from '../models/product-option-value.js'
 import { productProductCategoryTable } from '../models/product-product-category.js'
 import { productProductCollectionTable } from '../models/product-product-collection.js'
+import { productProductOptionTable } from '../models/product-product-option.js'
+import { productProductOptionValueTable } from '../models/product-product-option-value.js'
 import { productProductTagTable } from '../models/product-product-tag.js'
 import { productTagTable } from '../models/product-tag.js'
 import { visibleCategoriesQuery } from './product-category.js'
@@ -67,11 +71,11 @@ export class ProductRepository extends BaseRepository(productTable) {
    */
   async findMetafieldValueCounts(
     definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'key' | 'source'>,
-    { tagValue, metafields, ...scope }: FilterableProductProps,
+    { tagValue, metafields, optionValues, ...scope }: FilterableProductProps,
     context?: Context,
-  ): Promise<ProductMetafieldFilterValueDTO[]> {
+  ): Promise<ProductFilterValueDTO[]> {
     const { [definition.key]: _own, ...otherMetafields } = metafields ?? {}
-    const narrowed = this.extraWhere({ tagValue, metafields: otherMetafields }) ?? sql`TRUE`
+    const narrowed = this.extraWhere({ tagValue, optionValues, metafields: otherMetafields }) ?? sql`TRUE`
     const count = sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number)
     const client = this.getClient(context)
     if (definition.source === 'vendor') {
@@ -102,6 +106,61 @@ export class ProductRepository extends BaseRepository(productTable) {
       .orderBy(asc(productMetafieldTable.value))
   }
 
+  /** The options the products `filters` match offer, by title. Only `filters`' scope applies: its selections narrow counts, not this. */
+  async findOfferedOptions(
+    { tagValue: _tag, metafields: _metafields, optionValues: _options, ...scope }: FilterableProductProps,
+    context?: Context,
+  ): Promise<Array<{ id: string; title: string }>> {
+    const client = this.getClient(context)
+    return client
+      .selectDistinct({ id: productOptionTable.id, title: productOptionTable.title })
+      .from(productProductOptionTable)
+      .innerJoin(productOptionTable, eq(productOptionTable.id, productProductOptionTable.optionId))
+      .innerJoin(this.table, eq(this.table.id, productProductOptionTable.productId))
+      .where(
+        and(isNull(productProductOptionTable.deletedAt), isNull(productOptionTable.deletedAt), this.buildWhere(scope)),
+      )
+      .orderBy(asc(productOptionTable.title))
+  }
+
+  /**
+   * Every value of `option` the products `filters` match offer, in the option's own order (sizes
+   * small to large), each with how many would remain once it is chosen — counted as
+   * `findMetafieldValueCounts` counts, every selection applying but this option's own.
+   */
+  async findOptionValueCounts(
+    option: { id: string; title: string },
+    { tagValue, metafields, optionValues, ...scope }: FilterableProductProps,
+    context?: Context,
+  ): Promise<ProductFilterValueDTO[]> {
+    const { [option.title]: _own, ...otherOptions } = optionValues ?? {}
+    const narrowed = this.extraWhere({ tagValue, metafields, optionValues: otherOptions }) ?? sql`TRUE`
+    const client = this.getClient(context)
+    return client
+      .select({
+        value: productOptionValueTable.value,
+        count: sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number),
+      })
+      .from(productProductOptionValueTable)
+      .innerJoin(
+        productProductOptionTable,
+        eq(productProductOptionTable.id, productProductOptionValueTable.productProductOptionId),
+      )
+      .innerJoin(productOptionValueTable, eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId))
+      .innerJoin(this.table, eq(this.table.id, productProductOptionTable.productId))
+      .where(
+        and(
+          eq(productProductOptionTable.optionId, option.id),
+          isNull(productProductOptionValueTable.deletedAt),
+          isNull(productProductOptionTable.deletedAt),
+          isNull(productOptionValueTable.deletedAt),
+          this.buildWhere(scope),
+        ),
+      )
+      .groupBy(productOptionValueTable.value)
+      .orderBy(sql`MIN(${productOptionValueTable.rank})`, asc(productOptionValueTable.value))
+  }
+
   /** The grouping filters: each one an `EXISTS`, ANDed with the column filters and each other. */
   protected override extraWhere(filters?: FilterableProductProps): SQL | undefined {
     if (!filters) return undefined
@@ -113,6 +172,7 @@ export class ProductRepository extends BaseRepository(productTable) {
       tagId,
       tagValue,
       metafields = {},
+      optionValues = {},
       includeDescendants = false,
       visibleOnly = false,
     } = filters
@@ -129,6 +189,9 @@ export class ProductRepository extends BaseRepository(productTable) {
     if (tagValue !== undefined) clauses.push(this.inGroupings(tagPivot, productTagTable.value, tagValue))
     for (const [key, values] of Object.entries(metafields)) {
       if (values.length > 0) clauses.push(this.holdsMetafield(key, values))
+    }
+    for (const [title, values] of Object.entries(optionValues)) {
+      if (values.length > 0) clauses.push(this.offersOptionValue(title, values))
     }
     return clauses.length > 0 ? and(...clauses) : undefined
   }
@@ -188,6 +251,36 @@ export class ProductRepository extends BaseRepository(productTable) {
             inArray(column, asArray(values)),
             isNull(pivot.deletedAt),
             isNull(grouping.deletedAt),
+          ),
+        ),
+    )
+  }
+
+  /** Products offering any of `values` of the live option titled `title`. */
+  private offersOptionValue(title: string, values: string[]): SQL {
+    const client = this.getClient()
+    return exists(
+      client
+        .select({ id: productProductOptionValueTable.id })
+        .from(productProductOptionValueTable)
+        .innerJoin(
+          productProductOptionTable,
+          eq(productProductOptionTable.id, productProductOptionValueTable.productProductOptionId),
+        )
+        .innerJoin(productOptionTable, eq(productOptionTable.id, productProductOptionTable.optionId))
+        .innerJoin(
+          productOptionValueTable,
+          eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId),
+        )
+        .where(
+          and(
+            eq(productProductOptionTable.productId, this.table.id),
+            eq(productOptionTable.title, title),
+            inArray(productOptionValueTable.value, values),
+            isNull(productProductOptionValueTable.deletedAt),
+            isNull(productProductOptionTable.deletedAt),
+            isNull(productOptionTable.deletedAt),
+            isNull(productOptionValueTable.deletedAt),
           ),
         ),
     )

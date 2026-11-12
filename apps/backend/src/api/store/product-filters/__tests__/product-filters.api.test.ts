@@ -1,3 +1,4 @@
+import { BigNumber } from '@core/bignumber.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import adminCategoryDefinitions from '../../../admin/product-categories/definitions.js'
@@ -195,5 +196,118 @@ test.describe('Filter by brand', () => {
       marca: ['Adidas 0', 'Nike 1'],
       genero: ['kids 1', 'men 2', 'women 2'],
     })
+  })
+})
+
+test.describe('Filter by option and price', () => {
+  test('options filter and count like metafields, in their own order, and a price range narrows by any variant', async ({
+    expect,
+    service,
+  }) => {
+    await service.create.metafieldDefinitions(api.container, [{ key: 'genero', name: 'Género', filterable: true }])
+    // Ranks out of alphabetical order: sizes are listed small to large, not as strings.
+    const talla = await service.create.productOption(api.container, {
+      title: 'Talla',
+      values: [
+        { value: '9', rank: 0 },
+        { value: '10', rank: 1 },
+        { value: '11', rank: 2 },
+      ],
+    })
+    const color = await service.create.productOption(api.container, {
+      title: 'Color',
+      values: [
+        { value: 'Negro', rank: 0 },
+        { value: 'Blanco', rank: 1 },
+      ],
+    })
+    const valueId = (option: typeof talla, value: string) => {
+      const found = option.values.find((candidate) => candidate.value === value)
+      if (!found) throw new Error(`No value ${value}`)
+      return found.id
+    }
+
+    /** A product offering `colorValue` in each size of `prices`, each size its own variant at its own price. */
+    const product = async (colorValue: string, prices: Record<string, number>, genero: string) => {
+      const { product } = await service.create.product(api.container, {
+        status: 'published',
+        metafields: { genero: [genero] },
+      })
+      const sizes = Object.keys(prices)
+      await service.update.productOptions(api.container, product.id, {
+        options: [
+          { optionId: talla.id, valueIds: sizes.map((size) => valueId(talla, size)) },
+          { optionId: color.id, valueIds: [valueId(color, colorValue)] },
+        ],
+      })
+      const variants = await service.create.productVariants(
+        api.container,
+        product.id,
+        sizes.map((size) => ({
+          optionValues: { [talla.id]: valueId(talla, size), [color.id]: valueId(color, colorValue) },
+        })),
+      )
+      await Promise.all(
+        variants.map((variant, index) =>
+          service.create.variantPrices(api.container, [variant.id], {
+            prices: [{ currencyCode: 'usd', amount: new BigNumber(prices[sizes[index] ?? ''] ?? 0) }],
+          }),
+        ),
+      )
+      return product
+    }
+    const runner = await product('Negro', { '9': 100, '10': 150 }, 'men')
+    const court = await product('Blanco', { '10': 300, '11': 300 }, 'women')
+    const boot = await product('Negro', { '11': 500 }, 'men')
+
+    const listOf = async (query: string) => {
+      const response = await api.get<typeof productRoutes.GetOutput>(`/store/products?${query}`)
+      expect(response.status).toBe(200)
+      return response.body.products.map((item) => item.id).sort()
+    }
+    const filtersOf = async (query: string) => {
+      const response = await api.get<typeof productFilterRoutes.GetOutput>(`/store/product-filters?${query}`)
+      expect(response.status).toBe(200)
+      return Object.fromEntries(
+        response.body.filters.map((filter) => [
+          `${filter.name} (${filter.key})`,
+          filter.values.map(({ value, count }) => `${value} ${count}`),
+        ]),
+      )
+    }
+    const sorted = (...ids: string[]) => ids.sort()
+
+    // Sizes of one option widen (OR); another option or a metafield narrows (AND).
+    expect(await listOf('filter=option.Talla:9')).toEqual([runner.id])
+    expect(await listOf('filter=option.Talla:9&filter=option.Talla:11')).toEqual(sorted(runner.id, court.id, boot.id))
+    expect(await listOf('filter=option.Talla:11&filter=option.Color:Negro')).toEqual([boot.id])
+    expect(await listOf('filter=option.Talla:10&filter=genero:women')).toEqual([court.id])
+    expect(await listOf('filter=option.Talla:12')).toEqual([])
+
+    // After the metafields, each option by title, its values in the option's order.
+    expect(await filtersOf('')).toEqual({
+      'Género (genero)': ['men 2', 'women 1'],
+      'Color (option.Color)': ['Negro 2', 'Blanco 1'],
+      'Talla (option.Talla)': ['9 1', '10 2', '11 2'],
+    })
+    // An option's choice narrows the others' counts, not its own.
+    expect(await filtersOf('filter=option.Color:Negro')).toEqual({
+      'Género (genero)': ['men 2', 'women 0'],
+      'Color (option.Color)': ['Negro 2', 'Blanco 1'],
+      'Talla (option.Talla)': ['9 1', '10 1', '11 1'],
+    })
+
+    // A product is in the range when any variant is; either end may be left open.
+    expect(await listOf('minPrice=120&maxPrice=300')).toEqual(sorted(runner.id, court.id))
+    expect(await listOf('minPrice=301')).toEqual([boot.id])
+    expect(await listOf('maxPrice=99')).toEqual([])
+    expect(await listOf('maxPrice=150&filter=option.Color:Negro')).toEqual([runner.id])
+    // The range narrows the products the filters count over.
+    expect(await filtersOf('minPrice=301')).toEqual({
+      'Género (genero)': ['men 1'],
+      'Color (option.Color)': ['Negro 1'],
+      'Talla (option.Talla)': ['11 1'],
+    })
+    expect(await filtersOf('maxPrice=99')).toEqual({})
   })
 })
