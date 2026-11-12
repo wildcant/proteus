@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Panel } from '#/components/panel'
+import { Panel } from '#/components/store/panel/panel'
 import { Button } from '#/components/ui/button/button'
 import { useRequestPasswordReset } from '#/entities/customer/api/auth'
 

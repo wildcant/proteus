@@ -1,5 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
+import { cn } from '@proteus/ui-core'
 import { useEffect, useState } from 'react'
+import { themeToggle, themeToggleLabel } from '#/components/store/theme-toggle/theme-toggle.variants'
 
 type ThemeMode = 'light' | 'dark' | 'auto'
 
@@ -32,7 +34,7 @@ function applyThemeMode(mode: ThemeMode) {
   document.documentElement.style.colorScheme = resolved
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { t } = useLingui()
   const [mode, setMode] = useState<ThemeMode>('auto')
 
@@ -76,7 +78,7 @@ export function ThemeToggle() {
       onClick={toggleMode}
       aria-label={label}
       title={label}
-      className="rounded-full border border-border bg-(--bg-subtle) px-3 py-1.5 font-medium text-foreground text-sm"
+      className={cn(themeToggle(), themeToggleLabel(), className)}
     >
       {mode === 'auto' ? t`Auto` : mode === 'dark' ? t`Dark` : t`Light`}
     </button>

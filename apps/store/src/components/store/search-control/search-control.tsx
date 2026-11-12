@@ -1,6 +1,7 @@
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@proteus/ui-core'
 import { SearchIcon } from 'lucide-react'
+import { searchControl, searchControlIcon } from '#/components/store/search-control/search-control.variants'
 
 type SearchControlProps = useRender.ComponentProps<'div'>
 
@@ -15,6 +16,8 @@ type SearchControlProps = useRender.ComponentProps<'div'>
  * `useRender` is base-ui's public render-prop hook, the same mechanism every primitive in
  * `@proteus/ui` already exposes. It merges className, style, refs and event handlers
  * rather than clobbering them, which hand-rolled `cloneElement` does not.
+ *
+ * Its width is the caller's: the bar fixes it, the side menu stretches it.
  */
 export function SearchControl({ render, className, children, ...props }: SearchControlProps) {
   return useRender({
@@ -23,13 +26,13 @@ export function SearchControl({ render, className, children, ...props }: SearchC
     props: {
       ...props,
       className: cn(
-        'relative flex h-11 w-full items-center bg-surface-subtle pr-3 pl-9 text-left',
+        searchControl(),
         'focus-within:outline-2 focus-within:outline-ink focus-within:outline-offset-2',
         className,
       ),
       children: (
         <>
-          <SearchIcon className="pointer-events-none absolute left-3 size-4 shrink-0 text-ink-muted" />
+          <SearchIcon className={cn(searchControlIcon(), 'pointer-events-none shrink-0')} />
           {children}
         </>
       ),

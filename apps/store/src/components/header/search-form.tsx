@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { XIcon } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
-import { SearchControl } from '#/components/header/search-control'
+import { SearchControl } from '#/components/store/search-control/search-control'
 
 type SearchFormProps = {
   className?: string

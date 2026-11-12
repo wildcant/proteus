@@ -1,7 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { SearchIcon } from 'lucide-react'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
-import { SearchControl } from '#/components/header/search-control'
+import { SearchControl } from '#/components/store/search-control/search-control'
+import { searchControlPlaceholder } from '#/components/store/search-control/search-control.variants'
 import { Button } from '#/components/ui/button/button'
 import { useModal } from '#/lib/modal-state'
 
@@ -29,7 +30,7 @@ export function SearchBarTrigger({ className }: SearchBarTriggerProps) {
       aria-label={t`Search products`}
       render={<button type="button" onClick={() => setOpen(true)} />}
     >
-      <span className="text-ink-muted">{t(SEARCH_PLACEHOLDER)}</span>
+      <span className={searchControlPlaceholder()}>{t(SEARCH_PLACEHOLDER)}</span>
     </SearchControl>
   )
 }

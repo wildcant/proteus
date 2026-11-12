@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Panel } from '#/components/panel'
+import { Panel } from '#/components/store/panel/panel'
 
 type DetailsPanelProps = {
   /** Both halves are nullable on the customer record — a guest checkout never asks for them. */

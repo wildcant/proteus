@@ -1,8 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { MoreVerticalIcon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
-import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
 import { Button, ButtonLink } from '#/components/ui/button/button'
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover/popover'
 import { usePrompt } from '#/components/ui/prompt/prompt'
 import { useDeleteAddress } from '#/entities/address/api/addresses'
 

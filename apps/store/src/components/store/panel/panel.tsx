@@ -2,6 +2,15 @@ import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@proteus/ui-core'
 import { ChevronRightIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import {
+  panel,
+  panelBody,
+  panelChevron,
+  panelDescription,
+  panelDescriptionText,
+  panelHeader,
+  panelTitle,
+} from '#/components/store/panel/panel.variants'
 
 type PanelProps = useRender.ComponentProps<'div'> & {
   title: string
@@ -29,15 +38,19 @@ export function Panel({ render, title, description, chevron, className, children
     defaultTagName: 'div',
     props: {
       ...props,
-      className: cn('flex flex-col bg-surface-subtle p-6 lg:p-10', className),
+      className: cn(panel(), className),
       children: (
         <>
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="type-heading text-ink">{title}</h2>
-            {chevron ? <ChevronRightIcon className="size-5 shrink-0 text-ink" /> : null}
+          <div className={panelHeader()}>
+            <h2 className={panelTitle()}>{title}</h2>
+            {chevron ? <ChevronRightIcon className={cn(panelChevron(), 'shrink-0')} /> : null}
           </div>
-          {description ? <p className="mt-2 text-ink-muted text-sm">{description}</p> : null}
-          {children}
+          {description ? (
+            <div className={panelDescription()}>
+              <p className={panelDescriptionText()}>{description}</p>
+            </div>
+          ) : null}
+          {children == null ? null : <div className={panelBody()}>{children}</div>}
         </>
       ),
     },

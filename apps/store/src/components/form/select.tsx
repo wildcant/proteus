@@ -1,8 +1,8 @@
 import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
-import { FloatingLabel } from '#/components/form/floating-label.tsx'
 import { LabelText } from '#/components/form/label-text.tsx'
+import { FloatingLabel } from '#/components/store/floating-label/floating-label'
 
 type FloatingLabelSelectProps = Omit<ComponentProps<'select'>, 'size'> & {
   id: string

@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { MoreVerticalIcon } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
 import { Button } from '#/components/ui/button/button'
+import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover/popover'
 
 type CheckoutAccountProps = {
   /** The cart's email, which for a signed-in shopper is the customer's: `carts/route.ts` copies it

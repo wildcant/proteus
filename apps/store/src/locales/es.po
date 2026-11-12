@@ -64,7 +64,7 @@ msgstr "{total} reservado por tu banco; se cobra cuando se envíe tu pedido"
 msgid "{total} was not charged"
 msgstr "No se cobraron {total}"
 
-#: src/components/footer.tsx:145
+#: src/components/store/footer/footer.tsx:174
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
@@ -84,9 +84,9 @@ msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu com
 msgid "A–Z"
 msgstr "A–Z"
 
-#: src/components/footer.tsx:34
-#: src/components/header/header.tsx:64
-#: src/components/header/side-menu.tsx:76
+#: src/components/store/footer/footer.tsx:53
+#: src/components/store/header/header.tsx:78
+#: src/components/store/side-menu/side-menu.tsx:115
 #: src/features/account/components/account-detail.tsx:21
 #: src/features/orders/components/order-content.tsx:28
 msgid "Account"
@@ -154,7 +154,7 @@ msgstr "Aplicar"
 msgid "Are you sure you want to leave? Your unsaved changes will be lost."
 msgstr "¿Estás seguro de que quieres salir? Se perderán los cambios que no guardaste."
 
-#: src/components/theme-toggle.tsx:81
+#: src/components/store/theme-toggle/theme-toggle.tsx:83
 msgid "Auto"
 msgstr "Automático"
 
@@ -185,7 +185,7 @@ msgstr "Volver al carrito"
 msgid "Back to checkout"
 msgstr "Volver al pago"
 
-#: src/components/not-found.tsx:33
+#: src/components/store/not-found/not-found.tsx:53
 msgid "Back to home"
 msgstr "Volver al inicio"
 
@@ -293,7 +293,7 @@ msgstr "Borrar búsqueda"
 msgid "Close cart"
 msgstr "Cerrar carrito"
 
-#: src/components/header/side-menu.tsx:47
+#: src/components/store/side-menu/side-menu.tsx:82
 msgid "Close menu"
 msgstr "Cerrar menú"
 
@@ -338,7 +338,7 @@ msgstr "Seguir comprando"
 msgid "Country"
 msgstr "País"
 
-#: src/components/footer.tsx:37
+#: src/components/store/footer/footer.tsx:56
 #: src/features/auth/components/register-form.tsx:33
 msgid "Create account"
 msgstr "Crear cuenta"
@@ -351,7 +351,7 @@ msgstr "Crea una cuenta para seguir tus pedidos, guardar tus datos y pagar más 
 msgid "Creating account..."
 msgstr "Creando cuenta..."
 
-#: src/components/theme-toggle.tsx:81
+#: src/components/store/theme-toggle/theme-toggle.tsx:83
 msgid "Dark"
 msgstr "Oscuro"
 
@@ -541,7 +541,7 @@ msgstr "Hola"
 msgid "Hello, {firstName}"
 msgstr "Hola, {firstName}"
 
-#: src/components/form/input.tsx:73
+#: src/components/store/floating-label-input/floating-label-input.tsx:89
 msgid "Hide password"
 msgstr "Ocultar contraseña"
 
@@ -593,7 +593,7 @@ msgstr "Nombre (p. ej., Casa)"
 msgid "Last name"
 msgstr "Apellido"
 
-#: src/components/theme-toggle.tsx:81
+#: src/components/store/theme-toggle/theme-toggle.tsx:83
 msgid "Light"
 msgstr "Claro"
 
@@ -623,7 +623,7 @@ msgstr "Usar como principal"
 msgid "Make this my main address"
 msgstr "Usar como mi dirección principal"
 
-#: src/components/market-select.tsx:33
+#: src/components/store/market-select/market-select.tsx:40
 msgid "Market: {marketName}"
 msgstr "Mercado: {marketName}"
 
@@ -631,7 +631,7 @@ msgstr "Mercado: {marketName}"
 msgid "Material"
 msgstr "Material"
 
-#: src/components/header/side-menu.tsx:41
+#: src/components/store/side-menu/side-menu.tsx:71
 msgid "Menu"
 msgstr "Menú"
 
@@ -647,7 +647,7 @@ msgstr "Nueva contraseña"
 msgid "Newest"
 msgstr "Más recientes"
 
-#: src/components/pagination.tsx:46
+#: src/components/store/pagination/pagination.tsx:57
 msgid "Next"
 msgstr "Siguiente"
 
@@ -700,7 +700,7 @@ msgstr "No tienes tarjetas guardadas"
 msgid "No shipping options available for your address."
 msgstr "No hay opciones de envío disponibles para tu dirección."
 
-#: src/components/header/header.tsx:44
+#: src/components/store/header/header.tsx:58
 msgid "Open menu"
 msgstr "Abrir menú"
 
@@ -727,7 +727,7 @@ msgstr "Resumen del pedido"
 msgid "Orders"
 msgstr "Pedidos"
 
-#: src/components/pagination.tsx:25
+#: src/components/store/pagination/pagination.tsx:35
 msgid "Pagination"
 msgstr "Paginación"
 
@@ -799,7 +799,7 @@ msgstr "Código postal"
 msgid "Preparing"
 msgstr "En preparación"
 
-#: src/components/pagination.tsx:35
+#: src/components/store/pagination/pagination.tsx:44
 msgid "Previous"
 msgstr "Anterior"
 
@@ -892,14 +892,14 @@ msgstr "Guardar"
 msgid "Save this card for next time"
 msgstr "Guardar esta tarjeta para la próxima vez"
 
-#: src/components/header/search-triggers.tsx:47
+#: src/components/header/search-triggers.tsx:48
 #: src/features/products/components/product-list-header.tsx:42
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Búsqueda"
 
 #: src/components/header/search-form.tsx:54
-#: src/components/header/search-triggers.tsx:29
+#: src/components/header/search-triggers.tsx:30
 msgid "Search products"
 msgstr "Buscar productos"
 
@@ -958,13 +958,13 @@ msgstr "Envío"
 msgid "Shipping method"
 msgstr "Método de envío"
 
-#: src/components/footer.tsx:27
+#: src/components/store/footer/footer.tsx:46
 #: src/features/products/components/product-list-header.tsx:42
 msgid "Shop"
 msgstr "Tienda"
 
-#: src/components/footer.tsx:29
 #: src/components/header/menu.tsx:36
+#: src/components/store/footer/footer.tsx:48
 #: src/features/products/components/category-breadcrumb.tsx:20
 #: src/features/products/components/product-empty.tsx:55
 #: src/features/products/components/product-list-not-found.tsx:20
@@ -983,11 +983,11 @@ msgstr "Ver todos los productos"
 msgid "Show image {position}"
 msgstr "Mostrar imagen {position}"
 
-#: src/components/form/input.tsx:73
+#: src/components/store/floating-label-input/floating-label-input.tsx:89
 msgid "Show password"
 msgstr "Mostrar contraseña"
 
-#: src/components/footer.tsx:36
+#: src/components/store/footer/footer.tsx:55
 #: src/features/auth/components/login-form.tsx:28
 #: src/features/checkout/components/contact/contact-section.tsx:28
 #: src/routes/_auth/login.tsx:43
@@ -1068,7 +1068,7 @@ msgstr "Esa tarjeta guardada ya no está disponible. Elige otra tarjeta o ingres
 msgid "That saved card is no longer available. Please start the checkout again."
 msgstr "Esa tarjeta guardada ya no está disponible. Vuelve a iniciar el pago."
 
-#: src/components/not-found.tsx:30
+#: src/components/store/not-found/not-found.tsx:46
 msgid "The link may be old, or the address slightly off."
 msgstr "Puede que el enlace sea antiguo o que la dirección tenga un error."
 
@@ -1076,15 +1076,15 @@ msgstr "Puede que el enlace sea antiguo o que la dirección tenga un error."
 msgid "The payment form is still loading. Please try again."
 msgstr "El formulario de pago aún está cargando. Inténtalo de nuevo."
 
-#: src/components/theme-toggle.tsx:68
+#: src/components/store/theme-toggle/theme-toggle.tsx:70
 msgid "Theme mode: auto (system). Click to switch to light mode."
 msgstr "Tema: automático (sistema). Haz clic para cambiar al modo claro."
 
-#: src/components/theme-toggle.tsx:70
+#: src/components/store/theme-toggle/theme-toggle.tsx:72
 msgid "Theme mode: dark. Click to switch mode."
 msgstr "Tema: oscuro. Haz clic para cambiar de modo."
 
-#: src/components/theme-toggle.tsx:71
+#: src/components/store/theme-toggle/theme-toggle.tsx:73
 msgid "Theme mode: light. Click to switch mode."
 msgstr "Tema: claro. Haz clic para cambiar de modo."
 
@@ -1194,7 +1194,7 @@ msgstr "No pudimos retomar tu pedido después del pago. Si se te cobró, no se h
 msgid "We could not process your payment. Please try again or use a different card."
 msgstr "No pudimos procesar tu pago. Inténtalo de nuevo o usa otra tarjeta."
 
-#: src/components/not-found.tsx:27
+#: src/components/store/not-found/not-found.tsx:41
 msgid "We couldn’t find that page"
 msgstr "No encontramos esa página"
 

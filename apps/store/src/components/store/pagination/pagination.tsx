@@ -1,5 +1,16 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import {
+  pagination,
+  paginationNext,
+  paginationNextLabel,
+  paginationPage,
+  paginationPrevious,
+  paginationPreviousLabel,
+} from '#/components/store/pagination/pagination.variants'
+
+/** The label's own colour turns on its button's hover, so it carries the fade the button's text has. */
+const LABEL_FADE = 'transition-[color] ease-[ease]'
 
 type PaginationProps = {
   /** Index of the first item on the current page, as the API reports it. */
@@ -21,29 +32,30 @@ export function Pagination({ offset, limit, count, onOffsetChange, className }: 
   if (count <= limit) return null
 
   return (
-    <nav
-      aria-label={t`Pagination`}
-      className={cn('flex items-center justify-center gap-6 text-ink-muted text-sm', className)}
-    >
+    <nav aria-label={t`Pagination`} className={cn(pagination(), className)}>
       <button
         type="button"
         // h-11 is the 44px tap target; the pager is thumb-reachable on a phone.
-        className="h-11 hover:text-ink disabled:opacity-40"
+        className={paginationPrevious()}
         disabled={offset === 0}
         onClick={() => onOffsetChange(Math.max(0, offset - limit))}
       >
-        <Trans>Previous</Trans>
+        <span className={cn(paginationPreviousLabel(), LABEL_FADE)}>
+          <Trans>Previous</Trans>
+        </span>
       </button>
-      <span>
+      <span className={paginationPage()}>
         {Math.floor(offset / limit) + 1} / {Math.ceil(count / limit)}
       </span>
       <button
         type="button"
-        className="h-11 hover:text-ink disabled:opacity-40"
+        className={paginationNext()}
         disabled={offset + limit >= count}
         onClick={() => onOffsetChange(offset + limit)}
       >
-        <Trans>Next</Trans>
+        <span className={cn(paginationNextLabel(), LABEL_FADE)}>
+          <Trans>Next</Trans>
+        </span>
       </button>
     </nav>
   )

@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useId } from 'react'
 import { useCountryName } from '#/api/countries'
-import { FloatingLabelInput } from '#/components/form/input.tsx'
+import { FloatingLabelInput } from '#/components/store/floating-label-input/floating-label-input'
 import { Field } from '#/components/ui/field/field'
 import { useMarket } from '#/hooks/use-market'
 import { useFieldContext } from '#/lib/form-context.ts'

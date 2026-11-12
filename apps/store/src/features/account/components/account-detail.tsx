@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import { LogOutIcon } from 'lucide-react'
-import { Panel } from '#/components/panel'
+import { Panel } from '#/components/store/panel/panel'
 import { Button } from '#/components/ui/button/button'
 import { useLogout } from '#/entities/customer/api/auth'
 import { useSuspenseMe } from '#/entities/customer/api/customer'

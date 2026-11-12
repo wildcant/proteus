@@ -1,5 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
+import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
+import {
+  marketSelect,
+  marketSelectChevron,
+  marketSelectFlag,
+  marketSelectLabel,
+} from '#/components/store/market-select/market-select.variants'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '#/components/ui/dropdown-menu/dropdown-menu'
 import { DropdownMenuItem } from '#/components/ui/dropdown-menu-item/dropdown-menu-item'
 import { useMarket } from '#/hooks/use-market'
@@ -20,7 +27,7 @@ const REGIONAL_INDICATOR_A = 0x1f1e6
  * shopper is already in, and an `<option>` is drawn by the browser — it can hold neither. The cost
  * is the phone's bottom sheet, which is why the rows are 44px and the trigger is one too.
  */
-export function MarketSelect() {
+export function MarketSelect({ className }: { className?: string }) {
   const { t } = useLingui()
   const { current, markets } = useMarket()
   const marketName = current.displayName
@@ -31,11 +38,11 @@ export function MarketSelect() {
           the button announces a country with no indication of what choosing one would do. */}
       <DropdownMenuTrigger
         aria-label={t`Market: ${marketName}`}
-        className="flex h-11 cursor-pointer items-center gap-2 font-semibold text-ink text-sm uppercase tracking-wide outline-none"
+        className={cn(marketSelect(), marketSelectLabel(), 'cursor-pointer outline-none', className)}
       >
-        <MarketFlag iso2={current.iso2} />
+        <MarketFlag iso2={current.iso2} className={marketSelectFlag()} />
         {current.displayName}
-        <ChevronDownIcon aria-hidden="true" className="size-4" />
+        <ChevronDownIcon aria-hidden="true" className={marketSelectChevron()} />
       </DropdownMenuTrigger>
 
       {/* Above, because this lives on the footer's last bar and there is nothing below it, and
@@ -69,13 +76,13 @@ export function MarketSelect() {
  * Decorative, and deliberately never the only thing a row carries: Windows has no flag glyphs and
  * renders the letter pair instead, which is a country the shopper has to decode rather than read.
  */
-function MarketFlag({ iso2 }: { iso2: string }) {
+function MarketFlag({ iso2, className }: { iso2: string; className?: string }) {
   const flag = [...iso2.toUpperCase()]
     .map((letter) => String.fromCodePoint(REGIONAL_INDICATOR_A + letter.charCodeAt(0) - 'A'.charCodeAt(0)))
     .join('')
 
   return (
-    <span aria-hidden="true" className="text-lg leading-none">
+    <span aria-hidden="true" className={cn('text-lg leading-none', className)}>
       {flag}
     </span>
   )

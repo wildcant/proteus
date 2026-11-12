@@ -1,15 +1,29 @@
 import { useLingui } from '@lingui/react/macro'
 import { UserIcon } from '@proteus/icons'
+import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { MenuIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { MenuSource } from '#/components/header/menu-items'
-import { Nav } from '#/components/header/nav'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
-import { Wordmark } from '#/components/header/wordmark'
+import {
+  header,
+  headerAccountButton,
+  headerActions,
+  headerBar,
+  headerEnd,
+  headerMenuButton,
+  headerNav,
+  headerSearchBar,
+  headerSearchButton,
+  headerStart,
+  headerWordmark,
+} from '#/components/store/header/header.variants'
+import { Nav } from '#/components/store/nav/nav'
+import { SideMenu } from '#/components/store/side-menu/side-menu'
+import { Wordmark } from '#/components/store/wordmark/wordmark'
 import { Button } from '#/components/ui/button/button'
 import { useModal } from '#/lib/modal-state'
-import { SideMenu } from './side-menu'
 
 /**
  * The bar itself: nav, wordmark, search triggers, account link.
@@ -31,42 +45,42 @@ export function Header({
   const { setOpen: setMenuOpen } = useModal('menu')
 
   return (
-    <header className="sticky top-0 z-50 border-line border-b bg-surface">
-      {/* Three columns rather than a flex row with an absolutely positioned wordmark:
-          with a rail on the left and a 280px search control on the right, an absolute
-          wordmark overlaps both. Equal 1fr flanks centre it on the bar instead. */}
-      <div className="mx-auto grid h-14 w-full max-w-350 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:h-20 lg:px-8">
-        <div className="flex items-center">
+    <header className={cn(header(), 'sticky top-0 z-50')}>
+      {/* Two equal flex-1 flanks rather than an absolutely positioned wordmark: with a rail on
+          the left and a 280px search control on the right, an absolute wordmark overlaps both.
+          `mx-auto w-full` centres the capped bar, which the design file draws as stretched. */}
+      <div className={cn(headerBar(), 'mx-auto w-full')}>
+        <div className={headerStart()}>
           {/* The rail replaces the menu above lg, where it would be duplicate navigation. */}
           <Button
             variant="ghost"
             size="icon"
             aria-label={t`Open menu`}
-            className="-ml-2 lg:hidden"
+            className={cn(headerMenuButton(), '-ml-2')}
             onClick={() => setMenuOpen(true)}
           >
             <MenuIcon className="h-5 w-5" />
           </Button>
 
-          <SearchIconTrigger className="lg:hidden" />
+          <SearchIconTrigger className={headerSearchButton()} />
 
-          <Nav menu={menu} />
+          <Nav menu={menu} className={headerNav()} />
         </div>
 
-        <Wordmark />
+        <Wordmark className={headerWordmark()} />
 
-        <div className="flex items-center gap-1 justify-self-end">
-          <SearchBarTrigger className="hidden w-70 lg:flex" />
+        <div className={headerEnd()}>
+          <SearchBarTrigger className={headerSearchBar()} />
 
           {/* Account before bag, as the reference has it — the bag is the last thing on the
               bar because it is the one the shopper reaches for mid-task. */}
           <Link to="/account">
-            <Button variant="ghost" size="icon" aria-label={t`Account`}>
+            <Button variant="ghost" size="icon" aria-label={t`Account`} className={headerAccountButton()}>
               <UserIcon className="h-5 w-5" />
             </Button>
           </Link>
 
-          {actions}
+          <div className={headerActions()}>{actions}</div>
         </div>
       </div>
 

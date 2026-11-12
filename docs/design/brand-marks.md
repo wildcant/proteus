@@ -6,7 +6,7 @@ The blueprint carries no brand (`PRODUCT.md`, "Brand Commitments"). Its marks ar
 
 ## Wordmark
 
-- The store's name set in `type/heading` (Manrope ExtraBold, uppercase), `color/ink`, hover `color/ink-muted`. One component, `Wordmark` (`apps/store/src/components/header/wordmark.tsx`), used by every layout that renders chrome.
+- The store's name set in `type/heading` (Manrope ExtraBold, uppercase), `color/ink`, hover `color/ink-muted`. One component, `Wordmark` (`apps/store/src/components/store/wordmark/wordmark.tsx`), used by every layout that renders chrome.
 - It is a component, so its set lives on `components/store`, not on `brand`. The `brand` page holds an instance of it as a reference only.
 - A fork with a drawn wordmark draws it on `components/store` and the exporter's icon or vector support decides how it reaches code; that is a coding-session item.
 

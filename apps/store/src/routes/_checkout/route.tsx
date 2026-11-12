@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
-import { Wordmark } from '#/components/header/wordmark'
+import { Wordmark } from '#/components/store/wordmark/wordmark'
 
 export const Route = createFileRoute('/_checkout')({
   component: CheckoutLayout,

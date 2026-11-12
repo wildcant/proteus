@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import { SpanishI18nTestProvider } from '#/lib/i18n/test-i18n'
-import { FloatingLabelInput } from './input'
+import { FloatingLabelInput } from './floating-label-input'
 
 /**
  * The reveal toggle names the action it takes, so its accessible name changes with every press —

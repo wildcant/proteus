@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Panel } from '#/components/panel'
+import { Panel } from '#/components/store/panel/panel'
 import { useSuspenseAddresses } from '#/entities/address/api/addresses'
 import { AddressLines } from '#/entities/address/ui/address-lines/address-lines'
 

@@ -1,9 +1,28 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
+import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { MenuLink } from '#/components/header/menu'
 import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
-import { MarketSelect } from '#/components/market-select'
+import {
+  footer,
+  footerAccordion,
+  footerAccordionItem,
+  footerAccordionLastItem,
+  footerBottom,
+  footerColumn,
+  footerColumns,
+  footerContainer,
+  footerCopyright,
+  footerLink,
+  footerLinkLabel,
+  footerLinks,
+  footerMarketSelect,
+  footerMarks,
+  footerPayments,
+  footerTitle,
+} from '#/components/store/footer/footer.variants'
+import { MarketSelect } from '#/components/store/market-select/market-select'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
 
 /**
@@ -67,21 +86,27 @@ const socialLinks: { label: string; href: string; mark: Icon }[] = []
 
 /** `menu` is read by the layout route: shared chrome may not import the feature. */
 export function Footer({ menu }: { menu: MenuSource }) {
-  const footerColumns = useFooterColumns(menu)
+  const columns = useFooterColumns(menu)
   const year = new Date().getFullYear()
 
   return (
-    <footer className="mt-20 border-line border-t bg-surface">
-      <div className="mx-auto w-full max-w-350 px-4 pt-10 pb-14 sm:px-6 lg:px-8">
+    // `mt-20` is the gap above it on every page; `mx-auto w-full` centres the capped container,
+    // which the design file draws as stretched.
+    <footer className={cn(footer(), 'mt-20')}>
+      <div className={cn(footerContainer(), 'mx-auto w-full')}>
         {/* Two trees for the same links, switched by CSS alone. `spec.md` warns off structural
             breakpoint switches, and this is the sanctioned exception: the server renders both and
             the browser picks with no viewport detection and no first-paint flash, while
             `display: none` keeps the hidden one out of the accessibility tree. Five links stacked
             flat push the copyright most of a screen down, and the accordion cannot be talked into
             staying open above `sm` without fighting its own height variable. */}
-        <Accordion variant="footer" className="sm:hidden">
-          {footerColumns.map((column) => (
-            <AccordionItem key={column.title} value={column.title}>
+        <Accordion variant="footer" className={footerAccordion()}>
+          {columns.map((column, index) => (
+            <AccordionItem
+              key={column.title}
+              value={column.title}
+              className={index === columns.length - 1 ? footerAccordionLastItem() : footerAccordionItem()}
+            >
               <AccordionTrigger>{column.title}</AccordionTrigger>
               <AccordionContent>
                 <FooterLinks column={column} />
@@ -90,11 +115,15 @@ export function Footer({ menu }: { menu: MenuSource }) {
           ))}
         </Accordion>
 
-        <div className="hidden gap-8 sm:grid sm:grid-cols-2 lg:grid-cols-4">
-          {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h3 className="type-heading m-0 mb-4 text-ink">{column.title}</h3>
-              <FooterLinks column={column} />
+        <div className={footerColumns()}>
+          {columns.map((column) => (
+            <div key={column.title} className={footerColumn()}>
+              <h3 className={cn(footerTitle(), 'm-0')}>{column.title}</h3>
+              <FooterLinks
+                column={column}
+                className={footerLinks()}
+                linkClassName={cn(footerLink(), footerLinkLabel())}
+              />
             </div>
           ))}
         </div>
@@ -102,7 +131,7 @@ export function Footer({ menu }: { menu: MenuSource }) {
         {/* Social above payment on a phone, then the two on one baseline at opposite ends above
             `lg` — the reference's order, not the desktop row flowed narrow. `order` rather than
             `flex-row-reverse` so the payment strip still sits inline-start when social is empty. */}
-        <div className="mt-10 flex flex-col items-center gap-6 lg:mt-14 lg:flex-row lg:justify-between">
+        <div className={footerMarks()}>
           {socialLinks.length > 0 && (
             <ul className="order-1 m-0 flex list-none flex-wrap items-center justify-center p-0 lg:order-2">
               {socialLinks.map(({ label, href, mark: Mark }) => (
@@ -125,7 +154,7 @@ export function Footer({ menu }: { menu: MenuSource }) {
 
           {/* Decorative — no `title`, so `@proteus/icons` renders each `aria-hidden`. They wrap
               rather than shrink; 24px is already the floor for a legible mark. */}
-          <ul className="order-2 m-0 flex list-none flex-wrap items-center justify-center gap-3 p-0 lg:order-1">
+          <ul className={cn(footerPayments(), 'order-2 m-0 list-none flex-wrap justify-center p-0 lg:order-1')}>
             {paymentMarks.map(({ label, mark: Mark }) => (
               <li key={label} className="flex">
                 <Mark size={28} />
@@ -139,28 +168,36 @@ export function Footer({ menu }: { menu: MenuSource }) {
 
             The market control lives on this bar rather than in the header because it belongs with
             the store's other standing facts, and because it is the one place that renders at every
-            width without competing for the header's three columns. */}
-        <div className="mt-10 flex flex-col items-center gap-4 border-line border-t pt-6 lg:flex-row lg:justify-between">
-          <p className="m-0 text-center text-ink-muted lg:text-left">
+            width without competing for the header's flanks. */}
+        <div className={footerBottom()}>
+          <p className={cn(footerCopyright(), 'm-0')}>
             <Trans>&copy; {year} Proteus. All rights reserved.</Trans>
           </p>
-          <MarketSelect />
+          <MarketSelect className={footerMarketSelect()} />
         </div>
       </div>
     </footer>
   )
 }
 
-function FooterLinks({ column }: { column: FooterColumn }) {
-  const className = 'block py-1.5 text-ink-muted no-underline hover:text-ink'
+/** The accordion's links are the accordion set's content; the columns' are the footer's own layers. */
+function FooterLinks({
+  column,
+  className = 'flex flex-col',
+  linkClassName = 'block py-1.5 text-ink-muted no-underline hover:text-ink',
+}: {
+  column: FooterColumn
+  className?: string
+  linkClassName?: string
+}) {
   return (
-    <ul className="m-0 flex list-none flex-col p-0">
+    <ul className={cn('m-0 list-none p-0', className)}>
       {column.links.map((link) => (
         <li key={link.key}>
           {'target' in link ? (
-            <MenuLink destination={link} className={className} />
+            <MenuLink destination={link} className={linkClassName} />
           ) : (
-            <Link to={link.to} className={className}>
+            <Link to={link.to} className={linkClassName}>
               {link.label}
             </Link>
           )}

@@ -9,7 +9,7 @@ The components the storefront ships, grouped by where they live in `apps/store/s
 | FigCraft page | Code folder |
 |---|---|
 | `components/ui` | `src/components/ui/<name>/` (store primitives, on `@base-ui/react`) |
-| `components/store` | `src/components/<name>/` (store-wide blocks: header, footer, form fields, panel, pagination) |
+| `components/store` | `src/components/store/<name>/` (store-wide blocks: header, footer, form fields, panel, pagination) |
 | `entities/<entity>` | `src/entities/<entity>/ui/<name>/` |
 | `features/<feature>` | `src/features/<feature>/components/<name>/` |
 | `app/<group>` | none: screen sets are composed by hand in the routes from the parts above |

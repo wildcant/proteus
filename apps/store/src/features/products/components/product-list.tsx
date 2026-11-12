@@ -1,5 +1,5 @@
 import { useRouterState } from '@tanstack/react-router'
-import { Pagination } from '#/components/pagination'
+import { Pagination } from '#/components/store/pagination/pagination'
 import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
 import type { ProductListView } from '#/features/products/utils/product-list-search'
 import { useMarket } from '#/hooks/use-market'

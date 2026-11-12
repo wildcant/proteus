@@ -1,18 +1,48 @@
 import { Trans, useLingui } from '@lingui/react/macro'
+import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
 import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger } from '#/components/header/search-triggers'
-import { ThemeToggle } from '#/components/theme-toggle'
+import {
+  sideMenu,
+  sideMenuChevron,
+  sideMenuCloseButton,
+  sideMenuCopyright,
+  sideMenuFooter,
+  sideMenuGlyph,
+  sideMenuGroup,
+  sideMenuLabel,
+  sideMenuNav,
+  sideMenuRow,
+  sideMenuSearch,
+  sideMenuSearchBar,
+  sideMenuThemeToggle,
+  sideMenuTop,
+} from '#/components/store/side-menu/side-menu.variants'
+import { ThemeToggle } from '#/components/store/theme-toggle/theme-toggle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
 import { Button } from '#/components/ui/button/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '#/components/ui/drawer/drawer'
 import { useModal } from '#/lib/modal-state'
 
-const rowClassName =
-  'flex w-full items-center justify-between gap-3 py-4 text-base text-ink no-underline hover:text-ink-muted'
+/** A row's text is its own children, so the row carries the label's type. */
+const rowClassName = cn(sideMenuRow(), sideMenuLabel())
+
+/**
+ * The chevron follows its row's hover fade (the global link colour in `styles.css`); the design
+ * file draws the menu without an interaction property.
+ */
+const chevronClassName = cn(
+  sideMenuChevron(),
+  sideMenuGlyph(),
+  'shrink-0 transition-[color] ease-[ease] in-[a:hover]:text-ink-muted',
+)
+
+/** The drawer is reachable above `lg` only by URL; the design file draws it up to `sm`. */
+const LG_GUTTER = 'lg:px-8'
 
 /**
  * The mobile navigation, as a drawer off the left edge — same primitive as the search panel,
@@ -31,7 +61,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
   return (
     <Drawer open={isOpen} onOpenChange={setOpen} swipeDirection="left">
       <DrawerContent
-        className="bg-surface data-[swipe-direction=left]:rounded-none"
+        className={cn(sideMenu(), 'data-[swipe-direction=left]:rounded-none')}
         // Inline rather than a class: the primitive sets this variable behind a
         // `data-[swipe-axis=x]:` variant, whose attribute selector outranks a bare utility, so
         // a className override loses and the drawer stays at the default 75%.
@@ -43,21 +73,30 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
 
         {/* Close sits inline-start, mirroring the hamburger it replaces rather than landing
             in the far corner the way the primitive's default close does. */}
-        <div className="flex shrink-0 items-center px-4 pt-6 pb-3 sm:px-6 lg:px-8">
-          <DrawerClose render={<Button variant="ghost" size="icon" aria-label={t`Close menu`} className="-ml-2" />}>
+        <div className={cn(sideMenuTop(), 'shrink-0', LG_GUTTER)}>
+          <DrawerClose
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t`Close menu`}
+                className={cn(sideMenuCloseButton(), '-ml-2')}
+              />
+            }
+          >
             <XIcon className="h-5 w-5" />
           </DrawerClose>
         </div>
 
-        <div className="shrink-0 px-4 pb-3 sm:px-6 lg:px-8">
-          <SearchBarTrigger />
+        <div className={cn(sideMenuSearch(), 'shrink-0', LG_GUTTER)}>
+          <SearchBarTrigger className={sideMenuSearchBar()} />
         </div>
 
         {/* The rail's destinations, from the same menu, nested: a Category with children expands in
             place, where the rail opens a panel. No `Cart` entry: the bag sits in
             the header at every width, and a nav link that opens a modal is a weaker copy of a
             control already on screen. */}
-        <nav className="flex-1 overflow-y-auto px-4 pt-2 sm:px-6 lg:px-8">
+        <nav className={cn(sideMenuNav(), LG_GUTTER)}>
           <ul className="m-0 flex list-none flex-col p-0">
             {entries.map((entry) => (
               <li key={entry.key}>
@@ -66,7 +105,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
                 ) : (
                   <MenuLink destination={entry} className={rowClassName}>
                     {entry.label}
-                    <ChevronRightIcon className="size-5 shrink-0" />
+                    <ChevronRightIcon className={chevronClassName} />
                   </MenuLink>
                 )}
               </li>
@@ -74,15 +113,15 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
             <li>
               <Link to="/account" className={rowClassName}>
                 <Trans>Account</Trans>
-                <ChevronRightIcon className="size-5 shrink-0" />
+                <ChevronRightIcon className={chevronClassName} />
               </Link>
             </li>
           </ul>
         </nav>
 
-        <div className="mt-auto flex shrink-0 items-center justify-between border-line border-t px-4 py-4 sm:px-6 lg:px-8">
-          <ThemeToggle />
-          <p className="m-0 text-ink-muted text-xs">&copy; {new Date().getFullYear()} Proteus</p>
+        <div className={cn(sideMenuFooter(), 'mt-auto shrink-0', LG_GUTTER)}>
+          <ThemeToggle className={sideMenuThemeToggle()} />
+          <p className={cn(sideMenuCopyright(), 'm-0')}>&copy; {new Date().getFullYear()} Proteus</p>
         </div>
       </DrawerContent>
     </Drawer>
@@ -97,7 +136,7 @@ function SideMenuGroup({ group }: { group: MenuGroup }) {
   const childClassName = 'block py-3 text-base text-ink-muted no-underline hover:text-ink'
 
   return (
-    <Accordion>
+    <Accordion className={sideMenuGroup()}>
       <AccordionItem value={group.key}>
         <AccordionTrigger>{group.label}</AccordionTrigger>
         <AccordionContent>

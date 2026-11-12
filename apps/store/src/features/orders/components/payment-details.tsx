@@ -2,7 +2,7 @@ import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
-import { Panel } from '#/components/panel'
+import { Panel } from '#/components/store/panel/panel'
 import { useFormatters } from '#/hooks/use-formatters'
 
 /**

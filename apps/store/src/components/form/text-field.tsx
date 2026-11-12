@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { TranslatedFieldError } from '#/components/form/field-errors.tsx'
-import { FloatingLabelInput } from '#/components/form/input.tsx'
+import { FloatingLabelInput } from '#/components/store/floating-label-input/floating-label-input'
 import { Field } from '#/components/ui/field/field'
 import { useFieldContext } from '#/lib/form-context.ts'
 import { isFieldRequired } from '#/lib/schema-required.ts'

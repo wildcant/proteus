@@ -4,7 +4,7 @@ import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
 import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
 import type { MenuSource } from '#/components/header/menu-items'
-import { Nav } from '#/components/header/nav'
+import { Nav } from '#/components/store/nav/nav'
 import { I18nTestProvider } from '#/lib/i18n/test-i18n'
 import { stringifySearch } from '#/lib/search-params'
 
