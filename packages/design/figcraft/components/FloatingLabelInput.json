@@ -326,7 +326,7 @@
             "paddingBottom": "VariableID:33",
             "paddingHorizontal": "VariableID:41",
             "paddingTop": "VariableID:42",
-            "stroke": "VariableID:26"
+            "stroke": "VariableID:137"
           },
           "mainComponentName": "invalid=true, interaction=rest, viewport=mobile",
           "overrides": [

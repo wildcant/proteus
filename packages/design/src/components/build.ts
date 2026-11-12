@@ -687,7 +687,10 @@ function layerSlots(node: Layer, parentLayout: string | undefined, ctx: SlotCont
   const flex = ctx.isRoot && ctx.config.inline.includes(ctx.setName) ? 'inline-flex' : 'flex'
   const display = node.layout?.mode === 'grid' ? 'grid' : node.layout ? flex : ''
   const s: Slots = { display: node.visible === false ? 'hidden' : display }
-  if (node.opacity != null && node.opacity < 1) s.opacity = `opacity-${Math.round(node.opacity * 100)}`
+  // A nested instance's opacity is its main's: the child's own look (a faded variant), not this layer's. An override of
+  // it is caught with the other visual overrides.
+  if (node.type !== 'INSTANCE' && node.opacity != null && node.opacity < 1)
+    s.opacity = `opacity-${Math.round(node.opacity * 100)}`
   s.width =
     ctx.isRoot && ctx.config.fullWidth.includes(ctx.setName)
       ? 'w-full'
@@ -922,7 +925,7 @@ function instanceSlots(node: Layer, ctx: SlotContext): Slots {
   // Its box (size, position) is styled here and the instance-swap prop picks the component; any other override
   // (colours, text, nested props) changes the child's look, which is not mapped yet.
   const visual = (node.overrides ?? []).filter(
-    (group) => !['size', 'position', 'name', 'component', 'visible', 'props'].includes(group),
+    (group) => !['size', 'resizing', 'position', 'name', 'component', 'visible', 'props'].includes(group),
   )
   if (visual.length) fail(`${visual.join(', ')} overridden inside a nested instance; not mapped yet`)
   const inside = descendants(node)
@@ -951,13 +954,27 @@ function instanceSlots(node: Layer, ctx: SlotContext): Slots {
   }
   // Text inside it is the child's text prop; an instance swapped inside it the child's instance-swap prop. The
   // colour of an icon inside it follows the child's own variant. Content put in one of its slots is the child's
-  // children in code (the glyph a Button shows), not a change to its look.
+  // children in code (the glyph a Button shows), not a change to its look. A layer whose fill comes from data at run
+  // time (runtimeFills: a product photograph) may show another one: that is the child's data, not its look.
   const iconGlyphs = new Set(inside.filter((child) => child.mainSet === 'Icon').flatMap(descendants))
+  // Each layer inside belongs to its nearest instance (a card inside a grid inside this one).
+  const ownerOf = new Map<Layer, string | undefined>()
+  const own = (parent: Layer, owner: string | undefined) => {
+    for (const child of parent.children ?? []) {
+      ownerOf.set(child, owner)
+      own(child, child.type === 'INSTANCE' ? (child.mainSet ?? child.mainComponentName) : owner)
+    }
+  }
+  own(node, node.mainSet ?? node.mainComponentName)
+  const dataFills = ctx.config.runtimeFills.map((key) => key.split(' › '))
+  const isDataFill = (child: Layer) =>
+    dataFills.some(([set, layer]) => set === ownerOf.get(child) && layer === child.name)
   const changed = inside.filter((child) =>
     (child.overrides ?? []).some(
       (group) =>
         !['name', 'characters', 'component', 'visible', 'props', 'slot'].includes(group) &&
-        !(iconGlyphs.has(child) && ['fills', 'strokes'].includes(group)),
+        !(iconGlyphs.has(child) && ['fills', 'strokes'].includes(group)) &&
+        !(group === 'fills' && isDataFill(child)),
     ),
   )
   if (changed.length) {
@@ -1115,10 +1132,13 @@ function borderSlots(node: Layer, strokes: number, { token, fail }: SlotContext)
   const bound = node.boundVariables ?? {}
   const name = token(bound.stroke ?? bound['strokes/0/color'], 'color/')
   // A stroke drawn transparent keeps the box of a bordered variant without showing.
-  const borderColor = transparent((node.strokes ?? []).find((f) => f.visible !== false))
+  const paint = (node.strokes ?? []).find((f) => f.visible !== false)
+  // A paint's own opacity survives the binding (border-sale/40), as a fill's does.
+  const alpha = paint?.opacity != null && paint.opacity < 1 ? `/${Math.round(paint.opacity * 100)}` : ''
+  const borderColor = transparent(paint)
     ? 'border-transparent'
     : name
-      ? `border-${name}`
+      ? `border-${name}${alpha}`
       : fail('stroke is not bound to a Theme colour')
   // strokeSides [top, right, bottom, left] when only some sides have the stroke.
   const sides = node.strokeSides ?? [1, 1, 1, 1]

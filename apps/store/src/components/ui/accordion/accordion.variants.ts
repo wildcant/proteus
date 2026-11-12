@@ -14,12 +14,12 @@ export const accordionItem = cva('flex flex-col items-stretch', {
   defaultVariants: { variant: 'menu' },
 })
 
-export const accordionTrigger = cva('flex items-center justify-between border border-transparent', {
+export const accordionTrigger = cva('flex items-center justify-between border', {
   variants: {
     variant: {
-      menu: 'py-4',
-      footer: 'py-5',
-      section: 'py-3',
+      menu: 'border-transparent py-4 focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+      footer: 'border-transparent py-5 focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+      section: 'border-transparent py-3',
     },
   },
   defaultVariants: { variant: 'menu' },

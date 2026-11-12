@@ -1,0 +1,135 @@
+{
+  "name": "CartTrigger",
+  "page": "features/cart",
+  "properties": [],
+  "variants": [
+    {
+      "name": "CartTrigger",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "glyph",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:41",
+            "width": "VariableID:41"
+          },
+          "width": 16,
+          "height": 16,
+          "children": [
+            {
+              "name": "bag",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.333,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:18"
+              }
+            }
+          ]
+        },
+        {
+          "name": "badge",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#004EBA",
+              "type": "solid"
+            }
+          ],
+          "cornerRadius": 9999,
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "cornerRadius": "VariableID:83",
+            "fill": "VariableID:25",
+            "height": "VariableID:41",
+            "minWidth": "VariableID:41",
+            "paddingHorizontal": "VariableID:33"
+          },
+          "mainComponentName": "CartBadge",
+          "overrides": [
+            "name"
+          ],
+          "minWidth": 16,
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              4,
+              0,
+              4
+            ],
+            "strokesIncluded": true
+          },
+          "height": 16,
+          "absolute": {
+            "horizontal": "right",
+            "vertical": "top",
+            "left": 6,
+            "top": -6,
+            "right": -6,
+            "bottom": 6,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "count",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:22"
+              },
+              "textAlign": "left",
+              "textStyle": "S:16"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

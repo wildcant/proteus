@@ -132,7 +132,7 @@
         "paddingBottom": "VariableID:33",
         "paddingHorizontal": "VariableID:41",
         "paddingTop": "VariableID:42",
-        "stroke": "VariableID:26"
+        "stroke": "VariableID:137"
       },
       "layout": {
         "mode": "vertical",
@@ -401,7 +401,7 @@
         "paddingBottom": "VariableID:33",
         "paddingHorizontal": "VariableID:41",
         "paddingTop": "VariableID:42",
-        "stroke": "VariableID:26"
+        "stroke": "VariableID:137"
       },
       "layout": {
         "mode": "vertical",

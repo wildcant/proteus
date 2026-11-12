@@ -10,14 +10,19 @@ export const button = cva(
         outline: 'border-outline bg-field hover:bg-outline-hover focus-visible:border-ink',
         ghost: 'border-transparent hover:bg-ghost-hover focus-visible:border-ink',
         link: 'border-transparent focus-visible:border-ink',
+        muted: 'border-transparent focus-visible:border-ink',
       },
       size: {
         default: 'gap-1.5',
         sm: 'h-7 gap-1 px-2.5',
         icon: 'h-8 w-8',
+        lg: 'gap-1.5',
       },
     },
-    compoundVariants: [{ variant: ['default', 'outline', 'ghost'], size: 'default', class: 'h-13 px-6' }],
+    compoundVariants: [
+      { variant: ['default', 'outline', 'ghost'], size: 'default', class: 'h-13 px-6' },
+      { variant: ['default', 'outline'], size: 'lg', class: 'h-14 px-6' },
+    ],
     defaultVariants: { variant: 'default', size: 'default' },
   },
 )
@@ -25,16 +30,24 @@ export const button = cva(
 export const buttonLabel = cva('', {
   variants: {
     variant: {
-      default: 'type-label text-surface',
-      outline: 'type-label text-ink',
+      default: 'text-surface',
+      outline: 'text-ink',
       ghost: 'type-label text-ink',
-      link: 'type-link text-ink',
+      link: 'text-ink',
+      muted: 'type-label text-ink-muted',
     },
     size: {
       default: '',
       sm: '',
       icon: 'hidden',
+      lg: '',
     },
   },
+  compoundVariants: [
+    { variant: ['default', 'outline'], size: ['default', 'sm'], class: 'type-label' },
+    { variant: ['default', 'outline'], size: 'lg', class: 'type-button-lg' },
+    { variant: 'link', size: 'default', class: 'type-link' },
+    { variant: 'link', size: 'lg', class: 'type-link-lg' },
+  ],
   defaultVariants: { variant: 'default', size: 'default' },
 })

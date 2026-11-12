@@ -1,0 +1,260 @@
+{
+  "name": "ProductGallery",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "lg"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 390,
+      "children": [
+        {
+          "name": "slides",
+          "type": "FRAME",
+          "clip": true,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "overflow": "horizontal",
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "slide",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "height": 487,
+              "children": [
+                {
+                  "name": "image",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "blend": "normal",
+                      "crop": null,
+                      "filters": {
+                        "contrast": 0,
+                        "exposure": 0,
+                        "highlights": 0,
+                        "saturation": 0,
+                        "shadows": 0,
+                        "temperature": 0,
+                        "tint": 0
+                      },
+                      "image": "51c261c46d67d3ae4f82b330d8ce7a6ce80ef935fbc925ef67e33ccd46ed86b4",
+                      "opacity": 1,
+                      "rotation": 0,
+                      "scale": 1,
+                      "scale_mode": "fill",
+                      "type": "image",
+                      "visible": true
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "fill"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=lg",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 774,
+      "children": [
+        {
+          "name": "slides",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "crossGap": "VariableID:33",
+            "gap": "VariableID:33"
+          },
+          "layout": {
+            "mode": "grid",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 4,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true,
+            "crossGap": 4,
+            "gridColumns": 2,
+            "columnTracks": [],
+            "rowTracks": []
+          },
+          "children": [
+            {
+              "name": "slide",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "height": 967,
+              "children": [
+                {
+                  "name": "image",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "blend": "normal",
+                      "crop": null,
+                      "filters": {
+                        "contrast": 0,
+                        "exposure": 0,
+                        "highlights": 0,
+                        "saturation": 0,
+                        "shadows": 0,
+                        "temperature": 0,
+                        "tint": 0
+                      },
+                      "image": "51c261c46d67d3ae4f82b330d8ce7a6ce80ef935fbc925ef67e33ccd46ed86b4",
+                      "opacity": 1,
+                      "rotation": 0,
+                      "scale": 1,
+                      "scale_mode": "fill",
+                      "type": "image",
+                      "visible": true
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "fill"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

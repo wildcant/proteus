@@ -5,7 +5,7 @@ export const input = cva('flex h-14 w-full flex-col items-stretch justify-center
   variants: {
     invalid: {
       false: 'border-line bg-field focus-visible:border-ink disabled:bg-field-disabled disabled:opacity-50',
-      true: 'border-sale bg-field',
+      true: 'border-field-invalid bg-field',
     },
   },
   defaultVariants: { invalid: false },

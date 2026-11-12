@@ -1,0 +1,118 @@
+{
+  "name": "CategoryBreadcrumb",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "Men",
+      "name": "ancestor",
+      "type": "text"
+    },
+    {
+      "default": "Shop all",
+      "name": "root",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "CategoryBreadcrumb",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "crossGap": "VariableID:34",
+        "gap": "VariableID:34"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 6,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true,
+        "wrap": true,
+        "crossGap": 6
+      },
+      "children": [
+        {
+          "name": "link",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:8"
+        },
+        {
+          "name": "separator",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:39",
+            "width": "VariableID:39"
+          },
+          "width": 14,
+          "height": 14,
+          "children": [
+            {
+              "name": "chevron",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.167,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:20"
+              }
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:8"
+        }
+      ]
+    }
+  ]
+}

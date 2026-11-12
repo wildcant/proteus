@@ -1,0 +1,281 @@
+{
+  "name": "TextValue",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "default",
+      "name": "state",
+      "options": [
+        "default",
+        "selected",
+        "unavailable"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "rest",
+      "name": "interaction",
+      "options": [
+        "rest",
+        "hover"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "Medium",
+      "name": "label",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "state=default, interaction=rest",
+      "type": "COMPONENT",
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:52",
+        "paddingHorizontal": "VariableID:35",
+        "paddingVertical": "VariableID:33",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "max",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          4,
+          8,
+          4,
+          8
+        ],
+        "strokesIncluded": true
+      },
+      "width": 90,
+      "height": 52,
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:25"
+        }
+      ]
+    },
+    {
+      "name": "state=default, interaction=hover",
+      "type": "COMPONENT",
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:52",
+        "paddingHorizontal": "VariableID:35",
+        "paddingVertical": "VariableID:33",
+        "stroke": "VariableID:18"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "max",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          4,
+          8,
+          4,
+          8
+        ],
+        "strokesIncluded": true
+      },
+      "width": 90,
+      "height": 52,
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:25"
+        }
+      ]
+    },
+    {
+      "name": "state=selected, interaction=rest",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#0D1012",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:18",
+        "height": "VariableID:52",
+        "paddingHorizontal": "VariableID:35",
+        "paddingVertical": "VariableID:33",
+        "stroke": "VariableID:18"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "max",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          4,
+          8,
+          4,
+          8
+        ],
+        "strokesIncluded": true
+      },
+      "width": 90,
+      "height": 52,
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#FFFFFF",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:22"
+          },
+          "textAlign": "left",
+          "overrides": [
+            "characters"
+          ],
+          "textStyle": "S:26"
+        }
+      ]
+    },
+    {
+      "name": "state=unavailable, interaction=rest",
+      "type": "COMPONENT",
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:52",
+        "paddingHorizontal": "VariableID:35",
+        "paddingVertical": "VariableID:33",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "max",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          4,
+          8,
+          4,
+          8
+        ],
+        "strokesIncluded": true
+      },
+      "width": 90,
+      "height": 52,
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "overrides": [
+            "characters"
+          ],
+          "textStyle": "S:27"
+        }
+      ]
+    }
+  ]
+}

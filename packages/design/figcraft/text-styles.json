@@ -540,7 +540,7 @@
       "fontSize": "VariableID:92",
       "lineHeight": "VariableID:93"
     },
-    "description": "",
+    "description": "Uppercase labels: the market trigger (text-sm font-semibold uppercase tracking-wide).",
     "id": "S:23",
     "name": "type/label-caps",
     "style": {
@@ -557,6 +557,225 @@
       "line_height": {
         "unit": "pixels",
         "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92"
+    },
+    "description": "Prices on the product page (font-bold in the 14 px body at 1.4).",
+    "id": "S:24",
+    "name": "type/body-bold",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 140
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90",
+      "lineHeight": "VariableID:91"
+    },
+    "description": "Size cells in the variant picker (text-xs uppercase).",
+    "id": "S:25",
+    "name": "type/caption-caps",
+    "style": {
+      "case": "upper",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90",
+      "lineHeight": "VariableID:91"
+    },
+    "description": "The chosen size cell in the variant picker (text-xs uppercase font-bold).",
+    "id": "S:26",
+    "name": "type/caption-caps-bold",
+    "style": {
+      "case": "upper",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90",
+      "lineHeight": "VariableID:91"
+    },
+    "description": "A size no variant offers with the current pick (text-xs uppercase line-through).",
+    "id": "S:27",
+    "name": "type/caption-caps-struck",
+    "style": {
+      "case": "upper",
+      "decoration": "strikethrough",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "Text buttons in a row of controls: Clear all (text-sm underline underline-offset-4).",
+    "id": "S:28",
+    "name": "type/link-subtle",
+    "style": {
+      "case": "original",
+      "decoration": "underline",
+      "decoration_look": {
+        "color": null,
+        "offset": {
+          "unit": "pixels",
+          "value": 4
+        },
+        "skip_ink": false,
+        "style": "solid",
+        "thickness": {
+          "unit": "auto"
+        }
+      },
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "The search panel's View all links (text-sm font-medium underline).",
+    "id": "S:29",
+    "name": "type/link-medium",
+    "style": {
+      "case": "original",
+      "decoration": "underline",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Medium",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "The auth pages' link buttons (Forgot password?: text-base font-bold underline underline-offset-4).",
+    "id": "S:30",
+    "name": "type/link-lg",
+    "style": {
+      "case": "original",
+      "decoration": "underline",
+      "decoration_look": {
+        "color": null,
+        "offset": {
+          "unit": "pixels",
+          "value": 4
+        },
+        "skip_ink": false,
+        "style": "solid",
+        "thickness": {
+          "unit": "auto"
+        }
+      },
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
       },
       "link": null
     },

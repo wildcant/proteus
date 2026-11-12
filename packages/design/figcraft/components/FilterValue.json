@@ -1,0 +1,485 @@
+{
+  "name": "FilterValue",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "false",
+      "name": "disabled",
+      "options": [
+        "false",
+        "true"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "rest",
+      "name": "interaction",
+      "options": [
+        "rest",
+        "hover"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "(18)",
+      "name": "count",
+      "type": "text"
+    },
+    {
+      "default": "Green",
+      "name": "value",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "disabled=false, interaction=rest",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "gap": "VariableID:38",
+        "height": "VariableID:48",
+        "paddingHorizontal": "VariableID:41"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          0,
+          16,
+          0,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 222,
+      "height": 40,
+      "children": [
+        {
+          "name": "checkbox",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DEE0E3",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "height": "VariableID:41",
+            "stroke": "VariableID:24",
+            "width": "VariableID:41"
+          },
+          "mainComponentName": "checked=false, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": false
+          },
+          "width": 16,
+          "height": 16,
+          "mainSet": "Checkbox"
+        },
+        {
+          "name": "label",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "baseline",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            },
+            {
+              "name": "count",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "disabled=false, interaction=hover",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "gap": "VariableID:38",
+        "height": "VariableID:48",
+        "paddingHorizontal": "VariableID:41"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          0,
+          16,
+          0,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 222,
+      "height": 40,
+      "children": [
+        {
+          "name": "checkbox",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DEE0E3",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "height": "VariableID:41",
+            "stroke": "VariableID:24",
+            "width": "VariableID:41"
+          },
+          "mainComponentName": "checked=false, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": false
+          },
+          "width": 16,
+          "height": 16,
+          "mainSet": "Checkbox"
+        },
+        {
+          "name": "label",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "baseline",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            },
+            {
+              "name": "count",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "disabled=true, interaction=rest",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "gap": "VariableID:38",
+        "height": "VariableID:48",
+        "paddingHorizontal": "VariableID:41"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 12,
+        "padding": [
+          0,
+          16,
+          0,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 222,
+      "height": 40,
+      "children": [
+        {
+          "name": "checkbox",
+          "type": "INSTANCE",
+          "opacity": 0.5,
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DEE0E3",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "height": "VariableID:41",
+            "stroke": "VariableID:24",
+            "width": "VariableID:41"
+          },
+          "mainComponentName": "checked=false, interaction=disabled",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": false
+          },
+          "width": 16,
+          "height": 16,
+          "mainSet": "Checkbox"
+        },
+        {
+          "name": "label",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "baseline",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:8"
+            },
+            {
+              "name": "count",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "overrides": [
+                "characters"
+              ],
+              "textStyle": "S:11"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

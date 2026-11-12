@@ -1,0 +1,197 @@
+{
+  "name": "ProductEmpty",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": true,
+      "name": "hasAction",
+      "type": "boolean"
+    },
+    {
+      "default": "No products match “zzzz”.",
+      "name": "message",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "ProductEmpty",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:44",
+        "paddingVertical": "VariableID:57"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "center",
+        "crossAlign": "center",
+        "gap": 24,
+        "padding": [
+          80,
+          0,
+          80,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "icon",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:46",
+            "width": "VariableID:46"
+          },
+          "width": 32,
+          "height": 32,
+          "children": [
+            {
+              "name": "package",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 2,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:20"
+              }
+            }
+          ]
+        },
+        {
+          "name": "body",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:46"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 32,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "message",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19",
+                "maxWidth": "VariableID:70"
+              },
+              "textAlign": "center",
+              "maxWidth": 280,
+              "textStyle": "S:8"
+            },
+            {
+              "name": "action",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "strokes": [
+                {
+                  "color": "#0D1012",
+                  "opacity": 0,
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1,
+              "strokeAlign": "inside",
+              "clip": false,
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18",
+                "gap": "VariableID:34",
+                "height": "VariableID:52",
+                "paddingHorizontal": "VariableID:44"
+              },
+              "mainComponentName": "variant=default, size=default, interaction=rest",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 6,
+                "padding": [
+                  0,
+                  24,
+                  0,
+                  24
+                ],
+                "strokesIncluded": true
+              },
+              "height": 52,
+              "mainSet": "Button",
+              "children": [
+                {
+                  "name": "label",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#FFFFFF",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:22"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:9"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

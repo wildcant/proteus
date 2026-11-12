@@ -15,7 +15,9 @@ export const routeDrawerKbd = cva('flex h-5 items-center rounded-kbd border bord
 
 export const routeDrawerKey = cva('type-kbd text-ink-muted')
 
-export const routeDrawerClose = cva('flex h-7 w-7 items-center justify-center border border-transparent')
+export const routeDrawerClose = cva(
+  'flex h-7 w-7 items-center justify-center border border-transparent focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+)
 
 export const routeDrawerCloseIcon = cva('h-4 w-4 text-ink')
 

@@ -131,7 +131,7 @@
                     "horizontal": "fill",
                     "vertical": "hug"
                   },
-                  "mainComponentName": "variant=footer, position=default",
+                  "mainComponentName": "variant=footer, position=default, interaction=rest",
                   "overrides": [
                     "name"
                   ],
@@ -424,7 +424,7 @@
                     "horizontal": "fill",
                     "vertical": "hug"
                   },
-                  "mainComponentName": "variant=footer, position=last",
+                  "mainComponentName": "variant=footer, position=last, interaction=rest",
                   "overrides": [
                     "name"
                   ],

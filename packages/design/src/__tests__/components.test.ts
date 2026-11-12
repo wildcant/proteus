@@ -553,6 +553,115 @@ describe('components', () => {
     expect(sheetSource).toContain("export const sheetContent = cva('flex flex-col items-stretch')")
   })
 
+  it('lets an instance show its own photograph in a layer whose fill comes from data', () => {
+    const photo = (overrides: string[]): Layer => ({
+      name: 'image',
+      type: 'FRAME',
+      fills: [{ type: 'image' }],
+      overrides,
+    })
+    // A lone component (not a set) names its instances' main by mainComponentName.
+    const list = (overrides: string[], main: Partial<Layer> = { mainSet: 'Card' }) =>
+      single('List', 'features/shop', {
+        variants: [
+          {
+            ...frame('List', 'vertical'),
+            type: 'COMPONENT',
+            children: [{ name: 'card', type: 'INSTANCE', ...main, overrides: ['name'], children: [photo(overrides)] }],
+          },
+        ],
+      })
+    const config = { ...componentsConfig, runtimeFills: ['Card › image'] }
+    const { files } = buildComponents([list(['fills'])], { ...context, config })
+    expect(files.get('/shop/src/features/shop/components/list/list.variants.ts')).toContain(
+      "export const list = cva('flex flex-col')",
+    )
+    expect(() => buildComponents([list(['fills', 'strokes'])], { ...context, config })).toThrow(
+      'image overridden inside Card',
+    )
+    expect(() => buildComponents([list(['fills'])], context)).toThrow('image overridden inside Card')
+    expect(() =>
+      buildComponents([list(['fills'], { mainComponentName: 'Card' })], { ...context, config }),
+    ).not.toThrow()
+    // A card nested in a grid instance shows its own photograph too.
+    const shelf = single('Shelf', 'features/shop', {
+      variants: [
+        {
+          ...frame('Shelf', 'vertical'),
+          type: 'COMPONENT',
+          children: [
+            {
+              name: 'grid',
+              type: 'INSTANCE',
+              mainSet: 'Grid',
+              overrides: ['name'],
+              children: [{ name: 'card', type: 'INSTANCE', mainSet: 'Card', children: [photo(['fills'])] }],
+            },
+          ],
+        },
+      ],
+    })
+    expect(() => buildComponents([shelf], { ...context, config })).not.toThrow()
+    expect(() => buildComponents([shelf], context)).toThrow('image overridden inside Grid')
+  })
+
+  it("leaves a nested instance's own opacity to the child", () => {
+    const row = (overrides: string[]) =>
+      single('Row', 'features/shop', {
+        variants: [
+          {
+            ...frame('Row', 'horizontal'),
+            type: 'COMPONENT',
+            children: [{ name: 'tile', type: 'INSTANCE', mainSet: 'Tile', opacity: 0.4, overrides }],
+          },
+        ],
+      })
+    const path = '/shop/src/features/shop/components/row/row.variants.ts'
+    expect(buildComponents([row(['name'])], context).files.get(path)).not.toContain('opacity-40')
+    expect(() => buildComponents([row(['name', 'opacity'])], context)).toThrow('opacity overridden')
+  })
+
+  it("keeps a stroke paint's opacity on its border colour", () => {
+    const tinted = single('Tinted', 'components/ui', {
+      variants: [
+        {
+          ...frame('Tinted', 'horizontal'),
+          type: 'COMPONENT',
+          strokes: [{ type: 'solid', color: '#000000', opacity: 0.4 }],
+          strokeWeight: 1,
+          strokeAlign: 'inside',
+          boundVariables: { stroke: 'c:accent' },
+        },
+      ],
+    })
+    expect(buildComponents([tinted], context).files.get('/shop/src/components/ui/tinted/tinted.variants.ts')).toContain(
+      'border-accent/40',
+    )
+  })
+
+  it('sizes a nested instance the caller resized to fill, as its own box', () => {
+    const bar = single('Bar', 'features/shop', {
+      variants: [
+        {
+          ...frame('Bar', 'horizontal'),
+          type: 'COMPONENT',
+          children: [
+            {
+              name: 'field',
+              type: 'INSTANCE',
+              mainSet: 'Field',
+              overrides: ['name', 'resizing'],
+              sizing: { horizontal: 'fill' },
+            },
+          ],
+        },
+      ],
+    })
+    expect(
+      buildComponents([bar], context).files.get('/shop/src/features/shop/components/bar/bar.variants.ts'),
+    ).toContain("export const barField = cva('flex-1')")
+  })
+
   it('formats the generated file with its classes in the order the repo lint sorts them', () => {
     const path = join(repo, 'apps/store/src/components/ui/x/x.variants.ts')
     const formatted = formatTs(

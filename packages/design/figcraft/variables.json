@@ -79,7 +79,9 @@
           "VariableID:128",
           "VariableID:129",
           "VariableID:131",
-          "VariableID:134"
+          "VariableID:134",
+          "VariableID:137",
+          "VariableID:138"
         ]
       },
       "VariableCollectionId:3": {
@@ -177,7 +179,9 @@
           "VariableID:78",
           "VariableID:79",
           "VariableID:132",
-          "VariableID:133"
+          "VariableID:133",
+          "VariableID:136",
+          "VariableID:139"
         ]
       },
       "VariableCollectionId:5": {
@@ -1154,6 +1158,94 @@
           "VariableCollectionId:1/mode1": "Menlo"
         },
         "variableCollectionId": "VariableCollectionId:1"
+      },
+      "VariableID:136": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:136",
+        "key": "VariableID:136",
+        "name": "space/102.5",
+        "remote": false,
+        "resolvedType": "FLOAT",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:4/mode1": 410.0
+        },
+        "variableCollectionId": "VariableCollectionId:4"
+      },
+      "VariableID:137": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:137",
+        "key": "VariableID:137",
+        "name": "color/field-invalid",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "id": "VariableID:14",
+            "type": "VARIABLE_ALIAS"
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.501960813999176,
+            "b": 0.6470588445663452,
+            "g": 0.5607843399047852,
+            "r": 1.0
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:138": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:138",
+        "key": "VariableID:138",
+        "name": "color/sale-ring",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.20000000298023224,
+            "b": 0.1568627506494522,
+            "g": 0.01568627543747425,
+            "r": 0.8627451062202454
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.4000000059604645,
+            "b": 0.6470588445663452,
+            "g": 0.5607843399047852,
+            "r": 1.0
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:139": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:139",
+        "key": "VariableID:139",
+        "name": "space/128",
+        "remote": false,
+        "resolvedType": "FLOAT",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:4/mode1": 512.0
+        },
+        "variableCollectionId": "VariableCollectionId:4"
       },
       "VariableID:14": {
         "codeSyntax": {},

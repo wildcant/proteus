@@ -13,14 +13,30 @@ export const alertDialogFooter = cva(
   'flex flex-col-reverse items-stretch gap-2 border-line border-t bg-surface-muted/50 px-4 py-4 sm:flex-row sm:items-start sm:justify-end',
 )
 
-export const alertDialogAction = cva(
-  'flex h-8 items-center justify-center gap-1.5 border border-transparent bg-sale-wash px-2.5',
-)
+export const alertDialogAction = cva('flex h-8 items-center justify-center gap-1.5 border px-2.5', {
+  variants: {
+    variant: {
+      destructive:
+        'border-transparent bg-sale-wash focus-visible:border-sale/40 focus-visible:ring-3 focus-visible:ring-sale-ring',
+      default:
+        'border-transparent bg-ink focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+    },
+  },
+  defaultVariants: { variant: 'destructive' },
+})
 
-export const alertDialogActionLabel = cva('type-label text-sale')
+export const alertDialogActionLabel = cva('type-label', {
+  variants: {
+    variant: {
+      destructive: 'text-sale',
+      default: 'text-surface',
+    },
+  },
+  defaultVariants: { variant: 'destructive' },
+})
 
 export const alertDialogCancel = cva(
-  'flex h-8 items-center justify-center gap-1.5 border border-line bg-control px-2.5',
+  'flex h-8 items-center justify-center gap-1.5 border border-line bg-control px-2.5 focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
 )
 
 export const alertDialogCancelLabel = cva('type-label text-ink')

@@ -422,7 +422,7 @@
                 "horizontal": "fill",
                 "vertical": "hug"
               },
-              "mainComponentName": "variant=menu, position=default",
+              "mainComponentName": "variant=menu, position=default, interaction=rest",
               "overrides": [
                 "name"
               ],
@@ -698,7 +698,7 @@
                 "horizontal": "fill",
                 "vertical": "hug"
               },
-              "mainComponentName": "variant=menu, position=default",
+              "mainComponentName": "variant=menu, position=default, interaction=rest",
               "overrides": [
                 "name"
               ],
@@ -974,7 +974,7 @@
                 "horizontal": "fill",
                 "vertical": "hug"
               },
-              "mainComponentName": "variant=menu, position=default",
+              "mainComponentName": "variant=menu, position=default, interaction=rest",
               "overrides": [
                 "name"
               ],
@@ -1862,7 +1862,7 @@
                 "horizontal": "fill",
                 "vertical": "hug"
               },
-              "mainComponentName": "variant=menu, position=default",
+              "mainComponentName": "variant=menu, position=default, interaction=rest",
               "overrides": [
                 "name"
               ],
@@ -2138,7 +2138,7 @@
                 "horizontal": "fill",
                 "vertical": "hug"
               },
-              "mainComponentName": "variant=menu, position=default",
+              "mainComponentName": "variant=menu, position=default, interaction=rest",
               "overrides": [
                 "name"
               ],
@@ -2414,7 +2414,7 @@
                 "horizontal": "fill",
                 "vertical": "hug"
               },
-              "mainComponentName": "variant=menu, position=default",
+              "mainComponentName": "variant=menu, position=default, interaction=rest",
               "overrides": [
                 "name"
               ],

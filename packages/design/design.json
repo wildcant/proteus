@@ -59,20 +59,27 @@
       "Field › exampleLabel": "example content: the children are the caller's",
       "RadioGroup › exampleItem": "example content: the children are the caller's",
       "Button › icon": "the caller's icon: the Button sizes any <svg> in it ([&_svg]:size-4) and colours it through currentColor",
-      "Popover › tip": "the arrow's ::before square: size calc(16px*sqrt(2)), rotate-45, rounded-tl-arrow, border-popup-ring, bg-surface, centred on the box's bottom edge; hand-written"
+      "Popover › tip": "the arrow's ::before square: size calc(16px*sqrt(2)), rotate-45, rounded-tl-arrow, border-popup-ring, bg-surface, centred on the box's bottom edge; hand-written",
+      "CartDrawer › noticeText": "rich text: a <strong> lead (font-bold) inside the sentence; a text layer holds one text style, so its classes are hand-written (text-ink text-sm, the lead font-bold)",
+      "ProductListHeader › exampleIntro": "example content: the intro is the route's (CategoryIntro, CollectionHero)",
+      "SearchDrawer › exampleResults": "example content: the results region holds SearchResults or SearchBestSellers"
     },
     "inline": ["Button"],
     "fullWidth": ["Input", "NativeSelect", "Field", "RadioGroup"],
-    "runtimePositions": ["Tooltip › arrow", "Popover › arrow"],
+    "runtimePositions": ["Tooltip › arrow", "Popover › arrow", "SearchDrawer › close"],
     "inheritedText": {
       "Drawer": "type/body-compact"
     },
     "interactionParts": {
       "QuantityStepper": ["decrement", "increment"],
-      "Accordion": ["item"],
+      "Accordion": ["item", "trigger"],
       "Pagination": ["previous", "next"],
       "Nav": ["link", "trigger"],
-      "RailPanel": ["shopAll", "link"]
+      "RailPanel": ["shopAll", "link"],
+      "ProductFilters": ["clear"],
+      "AlertDialog": ["action", "cancel"],
+      "RouteDrawer": ["close"],
+      "Toast": ["close"]
     },
     "interactionPrefixes": {
       "QuantityStepper": {
@@ -81,7 +88,21 @@
       "DropdownMenuItem": {
         "afterCurrent": "[[data-current]+&]"
       }
-    }
+    },
+    "runtimeSizes": {
+      "CartItem › thumbnail": "vertical",
+      "CartDrawerSkeleton › thumbnail": "vertical",
+      "CartDrawerSkeleton › titleLine": "horizontal",
+      "CartDrawerSkeleton › optionsLine": "horizontal",
+      "ProductCard › media": "vertical",
+      "ProductListSkeleton › media": "vertical",
+      "ProductListSkeleton › titleLine": "horizontal",
+      "ProductListSkeleton › subtitleLine": "horizontal",
+      "ProductListSkeleton › priceLine": "horizontal",
+      "SwatchValue › image": "vertical",
+      "ProductGallery › slide": "vertical"
+    },
+    "runtimeFills": ["CartItem › image", "ProductCard › image", "SwatchValue › image", "ProductGallery › image"]
   },
   "designMd": {
     "output": "../../DESIGN.md",

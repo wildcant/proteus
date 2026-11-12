@@ -1,0 +1,758 @@
+{
+  "name": "CartDrawerSkeleton",
+  "page": "features/cart",
+  "properties": [],
+  "variants": [
+    {
+      "name": "CartDrawerSkeleton",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:44"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 24,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 357,
+      "children": [
+        {
+          "name": "row",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "thumbnail",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#F5F5F5",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:123",
+                "width": "VariableID:56"
+              },
+              "mainComponentName": "Skeleton",
+              "overrides": [
+                "name",
+                "size"
+              ],
+              "width": 68,
+              "height": 85
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:38"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "spaceBetween",
+                "crossAlign": "min",
+                "gap": 12,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:34"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 6,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:39"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 185,
+                      "height": 14
+                    },
+                    {
+                      "name": "optionsLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:39"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 92,
+                      "height": 14
+                    }
+                  ]
+                },
+                {
+                  "name": "footer",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:38",
+                    "paddingTop": "VariableID:38"
+                  },
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "spaceBetween",
+                    "crossAlign": "center",
+                    "gap": 12,
+                    "padding": [
+                      12,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "priceLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:41",
+                        "width": "VariableID:53"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 56,
+                      "height": 16
+                    },
+                    {
+                      "name": "stepperLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:46",
+                        "width": "VariableID:58"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 88,
+                      "height": 32
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "row",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "thumbnail",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#F5F5F5",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:123",
+                "width": "VariableID:56"
+              },
+              "mainComponentName": "Skeleton",
+              "overrides": [
+                "name",
+                "size"
+              ],
+              "width": 68,
+              "height": 85
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:38"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "spaceBetween",
+                "crossAlign": "min",
+                "gap": 12,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:34"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 6,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:39"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 185,
+                      "height": 14
+                    },
+                    {
+                      "name": "optionsLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:39"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 92,
+                      "height": 14
+                    }
+                  ]
+                },
+                {
+                  "name": "footer",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:38",
+                    "paddingTop": "VariableID:38"
+                  },
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "spaceBetween",
+                    "crossAlign": "center",
+                    "gap": 12,
+                    "padding": [
+                      12,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "priceLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:41",
+                        "width": "VariableID:53"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 56,
+                      "height": 16
+                    },
+                    {
+                      "name": "stepperLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:46",
+                        "width": "VariableID:58"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 88,
+                      "height": 32
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "row",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "thumbnail",
+              "type": "INSTANCE",
+              "fills": [
+                {
+                  "color": "#F5F5F5",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:123",
+                "width": "VariableID:56"
+              },
+              "mainComponentName": "Skeleton",
+              "overrides": [
+                "name",
+                "size"
+              ],
+              "width": 68,
+              "height": 85
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:38"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "spaceBetween",
+                "crossAlign": "min",
+                "gap": 12,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:34"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 6,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:39"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 185,
+                      "height": 14
+                    },
+                    {
+                      "name": "optionsLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:39"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 92,
+                      "height": 14
+                    }
+                  ]
+                },
+                {
+                  "name": "footer",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:38",
+                    "paddingTop": "VariableID:38"
+                  },
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "spaceBetween",
+                    "crossAlign": "center",
+                    "gap": 12,
+                    "padding": [
+                      12,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "priceLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:41",
+                        "width": "VariableID:53"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 56,
+                      "height": 16
+                    },
+                    {
+                      "name": "stepperLine",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#F5F5F5",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:123",
+                        "height": "VariableID:46",
+                        "width": "VariableID:58"
+                      },
+                      "mainComponentName": "Skeleton",
+                      "overrides": [
+                        "name",
+                        "size"
+                      ],
+                      "width": 88,
+                      "height": 32
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
