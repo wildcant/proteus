@@ -6,8 +6,9 @@ import { CategoryPicker } from '#/features/categories/components/category-picker
 import { useFieldContext } from '#/lib/form-context.ts'
 
 /**
- * The product form's Categories, through the category picker. Rendered inside the `form.AppField`
- * that holds the chosen ids.
+ * The product form's hand-picked Categories, through the category picker. Rendered inside the
+ * `form.AppField` that holds the chosen ids. A ruled Category is browsable but not choosable: its
+ * rule alone decides its products.
  */
 export function ProductCategoriesPicker({ description }: { description?: string }) {
   const field = useFieldContext<string[]>()
@@ -25,8 +26,12 @@ export function ProductCategoriesPicker({ description }: { description?: string 
         tree={tree.productCategories}
         value={field.state.value}
         onValueChange={field.handleChange}
+        canChoose={(category) => !category.rule}
       />
       {!!description && <FieldDescription>{description}</FieldDescription>}
+      <FieldDescription>
+        <Trans>Categories with a rule list the products whose metafields match.</Trans>
+      </FieldDescription>
     </Field>
   )
 }

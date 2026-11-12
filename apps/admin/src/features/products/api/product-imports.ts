@@ -9,7 +9,6 @@ import {
   createProductImport,
   getProductImport,
 } from '#/api/generated/products/products'
-import { productIdKeys, productKeys } from '#/features/products/api/products'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
@@ -18,24 +17,27 @@ const productImportKeys = queryKeysFactory('productImports')
 /** How often a running import is re-read while the merchant watches it. */
 const IMPORT_POLL_INTERVAL_MS = 1500
 
-const refreshImportedProducts = () => {
-  queryClient.invalidateQueries({ queryKey: productKeys.lists() })
-  // Imported products may already sit in Categories and Collections.
-  queryClient.invalidateQueries({ queryKey: productIdKeys.all })
-}
+/**
+ * Everything but the import jobs: an import writes products, their variants, prices and images, and
+ * creates the Tags, Types, options and values the file names. Groupings follow by their rules.
+ */
+const refreshImportedCatalogue = () =>
+  queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== productImportKeys.all[0] })
+
+const isFinished = (response: AdminProductImportResponse | undefined) =>
+  response?.productImport.status === 'completed' || response?.productImport.status === 'failed'
 
 /**
  * One import job. Polls for as long as it is importing; the read that sees it finish refreshes the
- * product list, since that is the moment the catalogue the list shows has changed.
+ * catalogue, once, since that is the moment the catalogue changed.
  */
 export const productImportQueryOptions = (id: string) =>
   queryOptions({
     queryKey: productImportKeys.detail(id),
     queryFn: async () => {
+      const previous = queryClient.getQueryData<AdminProductImportResponse>(productImportKeys.detail(id))
       const response = await getProductImport(id)
-      if (response.productImport.status === 'completed' || response.productImport.status === 'failed') {
-        refreshImportedProducts()
-      }
+      if (isFinished(response) && !isFinished(previous)) refreshImportedCatalogue()
       return response
     },
     refetchInterval: (query) =>

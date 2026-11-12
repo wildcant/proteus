@@ -133,10 +133,14 @@ msgstr "Acceso denegado"
 msgid "Account"
 msgstr "Cuenta"
 
+#: src/features/products/components/product-group-section.tsx:49
+msgid "Actions"
+msgstr "Acciones"
+
 #: src/features/categories/components/category-tree-list.tsx:51
 #: src/features/categories/components/create-category-form.tsx:64
 #: src/features/categories/components/edit-category-form.tsx:32
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:82
 msgid "Active"
 msgstr "Activa"
 
@@ -194,11 +198,11 @@ msgstr "Agrega imágenes al producto para mostrarlo en tu tienda."
 msgid "Add product images to the variant. To add new images, add them to the product first."
 msgstr "Agrega imágenes del producto a la variante. Para agregar imágenes nuevas, primero agrégalas al producto."
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:85
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:102
 msgid "Add products to list them in this category."
 msgstr "Añade productos para listarlos en esta categoría."
 
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:80
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:92
 msgid "Add products to list them in this collection."
 msgstr "Añade productos para listarlos en esta colección."
 
@@ -325,7 +329,7 @@ msgstr "Asigna imágenes del producto a esta variante."
 
 #: src/features/categories/components/create-category-form.tsx:70
 #: src/features/categories/components/edit-category-form.tsx:38
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:79
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:85
 msgid "Assignable to products here, never shown on the store."
 msgstr "Se puede asignar a productos aquí, nunca se muestra en la tienda."
 
@@ -445,7 +449,7 @@ msgstr "Capturar pagos"
 
 #: src/components/layout/use-sidebar-label.ts:14
 #: src/features/categories/components/category-tree-list.tsx:19
-#: src/features/categories/components/product-categories-picker.tsx:20
+#: src/features/categories/components/product-categories-picker.tsx:21
 #: src/features/products/components/product-organization-section.tsx:32
 #: src/routes/_authed/_shell/categories/route.tsx:5
 msgid "Categories"
@@ -467,6 +471,10 @@ msgstr "Categorías por mover"
 msgid "Categories to update"
 msgstr "Categorías por actualizar"
 
+#: src/features/categories/components/product-categories-picker.tsx:33
+msgid "Categories with a rule list the products whose metafields match."
+msgstr "Las categorías con regla muestran los productos cuyos metacampos coinciden."
+
 #: src/features/products/components/import-structure/structure-upload-step.tsx:54
 msgid "Categories, collections and menu from a YAML file"
 msgstr "Categorías, colecciones y menú desde un archivo YAML"
@@ -479,7 +487,7 @@ msgstr "Marca un producto para añadirlo y desmárcalo para quitarlo."
 msgid "Check that the first product reads the way you expect before importing the whole file."
 msgstr "Comprueba que el primer producto se ve como esperas antes de importar el archivo completo."
 
-#: src/features/categories/components/category-picker.tsx:96
+#: src/features/categories/components/category-picker.tsx:104
 msgid "Choose a category"
 msgstr "Elegir una categoría"
 
@@ -491,11 +499,11 @@ msgstr "Elige un archivo CSV para importar."
 msgid "Choose a structure file to import."
 msgstr "Elige un archivo de estructura para importar."
 
-#: src/features/categories/components/category-picker.tsx:96
+#: src/features/categories/components/category-picker.tsx:104
 msgid "Choose categories"
 msgstr "Elegir categorías"
 
-#: src/features/collections/components/collections-combobox.tsx:17
+#: src/features/collections/components/collections-combobox.tsx:20
 msgid "Choose collections"
 msgstr "Elige colecciones"
 
@@ -517,7 +525,7 @@ msgid "Code"
 msgstr "Código"
 
 #: src/components/layout/use-sidebar-label.ts:15
-#: src/features/collections/components/collections-combobox.tsx:15
+#: src/features/collections/components/collections-combobox.tsx:16
 #: src/features/products/components/product-organization-section.tsx:33
 #: src/routes/_authed/_shell/collections/index.tsx:24
 #: src/routes/_authed/_shell/collections/route.tsx:5
@@ -796,20 +804,20 @@ msgstr "Región predeterminada"
 #: src/features/products/components/variant/variant-row-actions.tsx:26
 #: src/features/users/components/invite-row-actions.tsx:40
 #: src/features/users/components/invite-row-actions.tsx:70
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:48
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:68
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:41
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:61
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:54
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:42
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:62
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:37
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:58
 msgid "Delete"
 msgstr "Eliminar"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:46
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:52
 msgid "Delete category"
 msgstr "Eliminar categoría"
 
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:39
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:40
 msgid "Delete collection"
 msgstr "Eliminar colección"
 
@@ -889,7 +897,7 @@ msgstr "Descendente"
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:36
 #: src/features/products/components/import-products/import-preview-step.tsx:194
 #: src/features/products/components/product-general-section.tsx:50
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:74
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:80
 msgid "Description"
 msgstr "Descripción"
 
@@ -1005,8 +1013,8 @@ msgstr "La configuración regional de cada país es el segmento de URL de su tie
 #: src/features/products/components/variant/variant-general-section.tsx:36
 #: src/features/products/components/variant/variant-row-actions.tsx:23
 #: src/features/regions/components/region-row-actions.tsx:23
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:67
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:60
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:61
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:57
 #: src/routes/_authed/settings/regions/$id/_detail/route.tsx:33
 #: src/routes/_authed/settings/store/route.tsx:63
@@ -1176,7 +1184,7 @@ msgstr "No se pudo archivar el pedido"
 msgid "Failed to cancel order"
 msgstr "No se pudo cancelar el pedido"
 
-#: src/features/products/api/product-imports.ts:108
+#: src/features/products/api/product-imports.ts:110
 msgid "Failed to cancel the import"
 msgstr "No se pudo cancelar la importación"
 
@@ -1284,7 +1292,7 @@ msgstr "No se pudo marcar como entregado"
 msgid "Failed to move category"
 msgstr "No se pudo mover la categoría"
 
-#: src/features/products/api/product-imports.ts:65
+#: src/features/products/api/product-imports.ts:67
 msgid "Failed to read the CSV file"
 msgstr "No se pudo leer el archivo CSV"
 
@@ -1312,7 +1320,7 @@ msgstr "No se pudo enviar la invitación"
 msgid "Failed to set product options"
 msgstr "No se pudieron configurar las opciones del producto"
 
-#: src/features/products/api/product-imports.ts:87
+#: src/features/products/api/product-imports.ts:89
 msgid "Failed to start the import"
 msgstr "No se pudo iniciar la importación"
 
@@ -1500,8 +1508,8 @@ msgstr "Elige a mano productos para una campaña o una temporada."
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:33
 #: src/features/products/components/product-general-section.tsx:52
 #: src/features/products/hooks/use-product-table.tsx:29
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:73
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:66
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:79
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:67
 msgid "Handle"
 msgstr "Identificador"
 
@@ -1571,7 +1579,7 @@ msgstr "La importación <0>no sobrescribirá ningún producto existente</0> con 
 msgid "Importing will <0>overwrite existing products</0> that have the same product handle."
 msgstr "La importación <0>sobrescribirá los productos existentes</0> con el mismo handle."
 
-#: src/features/categories/components/category-picker.tsx:111
+#: src/features/categories/components/category-picker.tsx:119
 msgid "in {ancestors}"
 msgstr "en {ancestors}"
 
@@ -1582,7 +1590,7 @@ msgstr "Inactiva"
 #: src/features/categories/components/category-tree-list.tsx:60
 #: src/features/categories/components/create-category-form.tsx:69
 #: src/features/categories/components/edit-category-form.tsx:37
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:78
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:84
 msgid "Internal"
 msgstr "Interna"
 
@@ -1884,16 +1892,16 @@ msgstr "Siguiente"
 #: src/components/data-table/config.tsx:19
 #: src/features/products/hooks/use-variant-table.tsx:49
 #: src/features/products/hooks/use-variant-table.tsx:57
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:80
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:82
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:86
 msgid "No"
 msgstr "No"
 
-#: src/features/categories/components/category-picker.tsx:107
+#: src/features/categories/components/category-picker.tsx:115
 msgid "No categories found"
 msgstr "No se encontraron categorías"
 
-#: src/features/categories/components/category-picker.tsx:131
+#: src/features/categories/components/category-picker.tsx:140
 msgid "No categories yet"
 msgstr "Aún no hay categorías"
 
@@ -1910,7 +1918,7 @@ msgstr "No se encontraron colecciones"
 msgid "No collections yet"
 msgstr "Aún no hay colecciones"
 
-#: src/features/collections/components/collections-combobox.tsx:18
+#: src/features/collections/components/collections-combobox.tsx:21
 msgid "No collections yet."
 msgstr "Aún no hay colecciones."
 
@@ -2015,6 +2023,14 @@ msgstr "No hay invitaciones pendientes"
 #: src/features/access-control/components/permission-grid.tsx:92
 msgid "No permissions registered."
 msgstr "No hay permisos registrados."
+
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:101
+msgid "No product matches this category's rule yet."
+msgstr "Ningún producto coincide todavía con la regla de esta categoría."
+
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:91
+msgid "No product matches this collection's rule yet."
+msgstr "Ningún producto coincide todavía con la regla de esta colección."
 
 #: src/features/product-options/components/option-value-selector.tsx:63
 msgid "No product options available. Create one first."
@@ -2123,7 +2139,7 @@ msgstr "No se encontraron variantes"
 msgid "No variants yet"
 msgstr "Aún no hay variantes"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:41
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:47
 msgid "None — top-level"
 msgstr "Ninguna — nivel superior"
 
@@ -2234,7 +2250,7 @@ msgid "Paid Total"
 msgstr "Total pagado"
 
 #: src/features/categories/components/create-category-form.tsx:48
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:75
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:81
 msgid "Parent"
 msgstr "Categoría superior"
 
@@ -2357,6 +2373,11 @@ msgstr "Productos"
 msgid "Products in {groupName}"
 msgstr "Productos en {groupName}"
 
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:91
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:81
+msgid "Products whose metafields match are listed here."
+msgstr "Aquí aparecen los productos cuyos metacampos coinciden."
+
 #: src/features/store/components/store-currency-row-actions.tsx:41
 msgid "Products will no longer carry a {currencyName} price, and no region will be able to settle in it."
 msgstr "Los productos ya no tendrán precio en {currencyName} y ninguna región podrá liquidar en esa moneda."
@@ -2433,7 +2454,7 @@ msgid "Remove"
 msgstr "Quitar"
 
 #: src/components/multi-select-combobox.tsx:80
-#: src/features/categories/components/category-picker.tsx:79
+#: src/features/categories/components/category-picker.tsx:87
 msgid "Remove {name}"
 msgstr "Quitar {name}"
 
@@ -2453,11 +2474,11 @@ msgstr "Quitar monedas"
 msgid "Remove currency"
 msgstr "Quitar moneda"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:88
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:109
 msgid "Remove from category"
 msgstr "Quitar de la categoría"
 
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:83
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:99
 msgid "Remove from collection"
 msgstr "Quitar de la colección"
 
@@ -2530,6 +2551,11 @@ msgstr "Los roles definen qué acciones pueden realizar los usuarios. Asigna per
 msgid "Roles define what actions users can perform. Assign permissions to control access."
 msgstr "Los roles definen qué acciones pueden realizar los usuarios. Asigna permisos para controlar el acceso."
 
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:90
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:80
+msgid "Rule"
+msgstr "Regla"
+
 #: src/components/value-entity/create-value-form.tsx:44
 #: src/components/value-entity/edit-value-form.tsx:38
 #: src/features/access-control/components/create-role-form.tsx:55
@@ -2575,8 +2601,8 @@ msgstr "Al guardar se eliminarán variantes"
 msgid "Saving..."
 msgstr "Guardando..."
 
-#: src/features/categories/components/category-picker.tsx:102
-#: src/features/categories/components/category-picker.tsx:103
+#: src/features/categories/components/category-picker.tsx:110
+#: src/features/categories/components/category-picker.tsx:111
 msgid "Search categories"
 msgstr "Buscar categorías"
 
@@ -2696,7 +2722,7 @@ msgstr "enviado"
 msgid "Shipping Subtotal"
 msgstr "Subtotal de envío"
 
-#: src/features/categories/components/category-picker.tsx:175
+#: src/features/categories/components/category-picker.tsx:190
 msgid "Show categories in {name}"
 msgstr "Ver categorías en {name}"
 
@@ -2706,7 +2732,7 @@ msgstr "Se muestra en la parte superior de la página de la colección."
 
 #: src/features/categories/components/create-category-form.tsx:64
 #: src/features/categories/components/edit-category-form.tsx:32
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:82
 msgid "Shown on the store."
 msgstr "Se muestra en la tienda."
 
@@ -2896,7 +2922,7 @@ msgstr "Este orden afectará el orden de las variantes en tu tienda."
 #: src/features/products/components/variant/variant-media-section.tsx:42
 #: src/features/products/components/variant/variant-media-section.tsx:46
 #: src/features/products/hooks/use-image-variants-table.tsx:35
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:68
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:69
 msgid "Thumbnail"
 msgstr "Miniatura"
 
@@ -3201,8 +3227,8 @@ msgstr "Ancho"
 #: src/components/data-table/config.tsx:19
 #: src/features/products/hooks/use-variant-table.tsx:48
 #: src/features/products/hooks/use-variant-table.tsx:56
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:76
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:80
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:82
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:86
 msgid "Yes"
 msgstr "Sí"
 
@@ -3210,11 +3236,11 @@ msgstr "Sí"
 msgid "Yes, this is a product with variants"
 msgstr "Sí, este producto tiene variantes"
 
-#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:47
+#: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:53
 msgid "You are about to delete the category {name}."
 msgstr "Vas a eliminar la categoría {name}."
 
-#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:40
+#: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:41
 msgid "You are about to delete the collection {title}."
 msgstr "Vas a eliminar la colección {title}."
 

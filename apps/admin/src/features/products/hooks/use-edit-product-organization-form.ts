@@ -9,7 +9,10 @@ import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 export type EditProductOrganizationFormParams = SubmitFormParams<AdminUpdateProductResponse>
 
-/** What the product is grouped under. Saving sends the whole set, which replaces the product's own. */
+/**
+ * What the product is grouped under. Saving sends the whole set, which replaces the product's own.
+ * Only hand-picked Categories and Collections are in it: the server puts the ruled ones back.
+ */
 export function useEditProductOrganizationForm(
   product: AdminGroupedProduct,
   params?: EditProductOrganizationFormParams,
@@ -18,8 +21,8 @@ export function useEditProductOrganizationForm(
 
   const defaultValues: z.input<typeof organizationSchema> = {
     type: product.type ? toValueOption(product.type) : null,
-    categoryIds: product.categories.map((category) => category.id),
-    collectionIds: product.collections.map((collection) => collection.id),
+    categoryIds: product.categories.filter((category) => !category.rule).map((category) => category.id),
+    collectionIds: product.collections.filter((collection) => !collection.rule).map((collection) => collection.id),
     tagIds: product.tags.map((tag) => tag.id),
   }
 

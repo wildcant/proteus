@@ -13,6 +13,7 @@ import {
   useSuspenseCollection,
 } from '#/features/collections/api/collections'
 import { ProductGroupSection } from '#/features/products/components/product-group-section'
+import { formatGroupingRule } from '#/features/products/utils/grouping-rule'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export const Route = createFileRoute('/_authed/_shell/collections/$id/_detail')({
@@ -74,15 +75,31 @@ function CollectionDetailLayout() {
             )
           }
         />
+        {!!collection.rule && (
+          <SectionRow
+            title={t`Rule`}
+            description={t`Products whose metafields match are listed here.`}
+            value={formatGroupingRule(collection.rule)}
+          />
+        )}
       </Card>
+      {/* A rule alone decides a ruled Collection's products, so its list is read-only. */}
       <ProductGroupSection
         filter={{ collectionId: id }}
-        emptyDescription={t`Add products to list them in this collection.`}
-        membership={{
-          editTo: `/collections/${id}/products`,
-          removeLabel: t`Remove from collection`,
-          onRemove: (productId) => setProducts({ remove: [productId] }),
-        }}
+        emptyDescription={
+          collection.rule
+            ? t`No product matches this collection's rule yet.`
+            : t`Add products to list them in this collection.`
+        }
+        membership={
+          collection.rule
+            ? undefined
+            : {
+                editTo: `/collections/${id}/products`,
+                removeLabel: t`Remove from collection`,
+                onRemove: (productId) => setProducts({ remove: [productId] }),
+              }
+        }
       />
     </PageLayout.SingleColumn>
   )

@@ -7,6 +7,7 @@ import { SectionRow } from '#/components/common/section-row'
 import { SingleColumnPageSkeleton } from '#/components/common/skeleton'
 import { PageLayout } from '#/components/layout/page-layout'
 import {
+  categoryQueryOptions,
   categoryTreeQueryOptions,
   useDeleteCategory,
   useSetCategoryProducts,
@@ -15,11 +16,16 @@ import {
 } from '#/features/categories/api/categories'
 import { categoryPath, flattenCategoryTree } from '#/features/categories/utils/flatten-category-tree'
 import { ProductGroupSection } from '#/features/products/components/product-group-section'
+import { formatGroupingRule } from '#/features/products/utils/grouping-rule'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
 export const Route = createFileRoute('/_authed/_shell/categories/$id/_detail')({
   // The tree names the parent; the Category itself carries only its id.
-  loader: ({ context }) => context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
+  loader: ({ context, params }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(categoryQueryOptions(params.id)),
+      context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
+    ]),
   pendingComponent: () => <SingleColumnPageSkeleton sections={2} />,
   component: CategoryDetailLayout,
 })
@@ -79,15 +85,31 @@ function CategoryDetailLayout() {
           description={t`Assignable to products here, never shown on the store.`}
           value={category.isInternal ? t`Yes` : t`No`}
         />
+        {!!category.rule && (
+          <SectionRow
+            title={t`Rule`}
+            description={t`Products whose metafields match are listed here.`}
+            value={formatGroupingRule(category.rule)}
+          />
+        )}
       </Card>
+      {/* A rule alone decides a ruled Category's products, so its list is read-only. */}
       <ProductGroupSection
         filter={{ categoryId: id }}
-        emptyDescription={t`Add products to list them in this category.`}
-        membership={{
-          editTo: `/categories/${id}/products`,
-          removeLabel: t`Remove from category`,
-          onRemove: (productId) => setProducts({ remove: [productId] }),
-        }}
+        emptyDescription={
+          category.rule
+            ? t`No product matches this category's rule yet.`
+            : t`Add products to list them in this category.`
+        }
+        membership={
+          category.rule
+            ? undefined
+            : {
+                editTo: `/categories/${id}/products`,
+                removeLabel: t`Remove from category`,
+                onRemove: (productId) => setProducts({ remove: [productId] }),
+              }
+        }
       />
     </PageLayout.SingleColumn>
   )

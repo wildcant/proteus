@@ -43,9 +43,10 @@ export function ProductGroupSection({ filter, emptyDescription, membership }: Pr
 }
 
 function RemoveFromGroupMenu({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const { t } = useLingui()
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" />}>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-xs" aria-label={t`Actions`} />}>
         <EllipsisIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

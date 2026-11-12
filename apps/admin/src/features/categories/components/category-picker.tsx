@@ -15,6 +15,8 @@ type CategoryPickerProps = CategoryPickerSelection & {
   tree: AdminProductCategoryTreeNode[]
   id?: string
   'aria-invalid'?: boolean
+  /** Leaves the other Categories browsable but not choosable. */
+  canChoose?: (category: AdminProductCategoryTreeNode) => boolean
 }
 
 /**
@@ -24,7 +26,13 @@ type CategoryPickerProps = CategoryPickerSelection & {
  * whole tree, each with its path ("Tops in Men"), because names repeat between branches. Choosing
  * in single mode replaces the choice and closes the list.
  */
-export function CategoryPicker({ tree, id, 'aria-invalid': ariaInvalid, ...selection }: CategoryPickerProps) {
+export function CategoryPicker({
+  tree,
+  id,
+  'aria-invalid': ariaInvalid,
+  canChoose = () => true,
+  ...selection
+}: CategoryPickerProps) {
   const { t } = useLingui()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -111,6 +119,7 @@ export function CategoryPicker({ tree, id, 'aria-invalid': ariaInvalid, ...selec
                 return { category: row.category, detail: row.ancestors.length > 0 ? t`in ${ancestors}` : undefined }
               })}
               selected={selected}
+              canChoose={canChoose}
               onToggle={toggle}
             />
           ) : (
@@ -131,6 +140,7 @@ export function CategoryPicker({ tree, id, 'aria-invalid': ariaInvalid, ...selec
                 empty={t`No categories yet`}
                 rows={level.map((category) => ({ category }))}
                 selected={selected}
+                canChoose={canChoose}
                 onToggle={toggle}
                 onOpen={(category) => setTrail([...trail, category])}
               />
@@ -145,13 +155,14 @@ export function CategoryPicker({ tree, id, 'aria-invalid': ariaInvalid, ...selec
 type CategoryListProps = {
   rows: { category: AdminProductCategoryTreeNode; detail?: string }[]
   selected: Set<string>
+  canChoose: (category: AdminProductCategoryTreeNode) => boolean
   onToggle: (categoryId: string) => void
   /** Set while browsing: a Category with children can be opened to its next level. */
   onOpen?: (category: AdminProductCategoryTreeNode) => void
   empty: string
 }
 
-function CategoryList({ rows, selected, onToggle, onOpen, empty }: CategoryListProps) {
+function CategoryList({ rows, selected, canChoose, onToggle, onOpen, empty }: CategoryListProps) {
   const { t } = useLingui()
   if (rows.length === 0) return <p className="px-2 py-4 text-center text-muted-foreground">{empty}</p>
 
@@ -163,7 +174,11 @@ function CategoryList({ rows, selected, onToggle, onOpen, empty }: CategoryListP
           <li key={category.id} className="flex items-center gap-x-1 rounded-md hover:bg-muted">
             {/* biome-ignore lint/a11y/noLabelWithoutControl: the Checkbox inside renders the control */}
             <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-x-2 px-2 py-1.5">
-              <Checkbox checked={selected.has(category.id)} onCheckedChange={() => onToggle(category.id)} />
+              <Checkbox
+                checked={selected.has(category.id)}
+                disabled={!canChoose(category)}
+                onCheckedChange={() => onToggle(category.id)}
+              />
               <span className="truncate">{name}</span>
               {!!detail && <span className="truncate text-muted-foreground text-xs">{detail}</span>}
             </label>
