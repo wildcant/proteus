@@ -461,7 +461,7 @@ test.describe('product CSV import', () => {
     expect(refused.body.message).toContain('expired')
   })
 
-  test('overwriting needs permission to edit products', async ({ expect, service }) => {
+  test('overwriting needs permission to edit products, at preview and at confirm', async ({ expect, service }) => {
     const creator = await service.create.operator(api.container, ['product.create', 'file.create'])
     const creatorHeaders = authHeader('user', creator.id)
     const fileId = await upload([HEADER, 'Mug,mug,,,,,active,MUG-1,,,9,,,,,,'], creatorHeaders)
@@ -469,7 +469,16 @@ test.describe('product CSV import', () => {
     const overwrite = await api.post('/admin/product-imports', { fileId, overwrite: true }, { headers: creatorHeaders })
     const plain = await api.post('/admin/product-imports', { fileId }, { headers: creatorHeaders })
 
+    // An overwrite previewed by an editor is not confirmed by an operator who may only create.
+    const editorPreview = await preview([HEADER, 'Mug,mug,,,,,active,MUG-1,,,9,,,,,,'], { overwrite: true })
+    const confirm = await api.post(
+      `/admin/product-imports/${editorPreview.response.body.productImport.id}/confirm`,
+      undefined,
+      { headers: creatorHeaders },
+    )
+
     expect(overwrite.status).toBe(403)
     expect(plain.status).toBe(201)
+    expect(confirm.status).toBe(403)
   })
 })

@@ -23,6 +23,7 @@ test.describe('the expire-product-imports job', () => {
 
     expect((await service.read.productImport(container, stale.id)).status).toBe('expired')
     expect(await service.read.fileExists(container, stale.fileId)).toBe(false)
+    expect(stale.chunks).toHaveLength(1)
     expect(await service.read.fileExists(container, stale.chunks[0] ?? '')).toBe(false)
     expect((await service.read.productImport(container, fresh.id)).status).toBe('previewed')
     expect(await service.read.fileExists(container, fresh.fileId)).toBe(true)

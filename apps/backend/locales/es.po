@@ -66,7 +66,7 @@ msgid "The structure file has errors. Preview it to see them, fix them and uploa
 msgstr "El archivo de estructura tiene errores. Previsualízalo para verlos, corrígelos y vuelve a subirlo."
 
 #. js-lingui-explicit-id
-#: src/workflows/product/import-product.ts:291
+#: src/workflows/product/import-product.ts:297
 msgid "The image \"{url}\" could not be downloaded."
 msgstr "No se pudo descargar la imagen \"{url}\"."
 
@@ -1026,6 +1026,7 @@ msgid "Unauthorized: registration required"
 msgstr "No autorizado: se requiere registro"
 
 #. js-lingui-explicit-id
+#: src/api/admin/product-imports/[id]/confirm/route.ts:23
 #: src/api/admin/product-imports/route.ts:15
 #: src/framework/http/middlewares/authorize.ts:27
 #: src/framework/http/middlewares/authorize.ts:37

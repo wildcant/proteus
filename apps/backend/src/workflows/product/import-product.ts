@@ -47,9 +47,9 @@ const IMAGE_EXTENSIONS: Record<string, string> = {
 }
 
 /**
- * One product of a CSV import: its groupings and options resolved (created where missing), then
- * created — or, with overwrite on, updated in place — then its images downloaded into file storage
- * and its stock set.
+ * One product of a CSV import: its groupings and options resolved (created where missing), its
+ * images downloaded into file storage, then the product created — or, with overwrite on, updated in
+ * place — its stock set and its images attached.
  *
  * A run imports products one workflow each, so a product that fails unwinds itself and nothing
  * else. On the create path that means the new product goes again. The overwrite path is not
@@ -78,6 +78,24 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
       const productService = container.resolve(Modules.PRODUCT)
       return productService.resolveProductImportReferences(input.product)
     })
+
+    // Downloading is what fails most — a host down, a URL that is not an image — so it runs before
+    // anything is written, and a product whose images cannot be had is left as it was.
+    const files = await ctx.step<Array<{ id: string | null; url: string }>>(
+      'store-imported-images',
+      async ({ container }) => {
+        const { product } = input
+        const writes = !references.existingProductId || input.overwrite
+        if (!writes || product.imageUrls.length === 0) return []
+        if (input.hostedImages) return product.imageUrls.map((url) => ({ id: null, url }))
+        return storeImages(container.resolve(Modules.FILE), product)
+      },
+      async (stored, { container }) => {
+        const fileIds = stored.flatMap((file) => (file.id ? [file.id] : []))
+        if (fileIds.length === 0) return
+        await container.resolve(Modules.FILE).deleteFiles(fileIds)
+      },
+    )
 
     const created = await ctx.step<WrittenProduct>(
       'create-imported-product',
@@ -168,42 +186,6 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
       }
     })
 
-    await ctx.step<string[]>(
-      'attach-imported-images',
-      async ({ container }) => {
-        const written = created ?? updated
-        const { product } = input
-        if (!written || product.imageUrls.length === 0) return []
-        const productService = container.resolve(Modules.PRODUCT)
-
-        const files = input.hostedImages
-          ? product.imageUrls.map((url) => ({ id: null, url }))
-          : await storeImages(container.resolve(Modules.FILE), product)
-        const urlBySource = new Map(product.imageUrls.map((url, index) => [url, files[index]?.url ?? '']))
-
-        await productService.updateProduct(written.productId, {
-          images: files.map((file) => ({ url: file.url })),
-          thumbnail: files[0]?.url ?? null,
-        })
-
-        const images = await productService.listProductImages({ productId: written.productId })
-        const imageIdByUrl = new Map(images.map((image) => [image.url, image.id]))
-        const variantLines = new Map(written.variants.map((entry) => [entry.line, entry.variantId]))
-        const links = product.variants.flatMap((variant) => {
-          const variantId = variantLines.get(variant.line)
-          const imageId = variant.imageUrl ? imageIdByUrl.get(urlBySource.get(variant.imageUrl) ?? '') : undefined
-          return variantId && imageId ? [{ variantId, imageId }] : []
-        })
-        if (links.length > 0) await productService.addImageToVariant(links)
-
-        return files.flatMap((file) => (file.id ? [file.id] : []))
-      },
-      async (fileIds, { container }) => {
-        if (fileIds.length === 0) return
-        await container.resolve(Modules.FILE).deleteFiles(fileIds)
-      },
-    )
-
     await ctx.step<Array<{ inventoryItemId: string; locationId: string; stockedQuantity: number }>>(
       'set-imported-stock',
       async ({ container }) => {
@@ -259,6 +241,30 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
         }
       },
     )
+
+    // Last, so no later step can fail and leave the product on images it no longer has.
+    await ctx.step('attach-imported-images', async ({ container }) => {
+      const written = created ?? updated
+      const { product } = input
+      if (!written || files.length === 0) return
+      const productService = container.resolve(Modules.PRODUCT)
+      const urlBySource = new Map(product.imageUrls.map((url, index) => [url, files[index]?.url ?? '']))
+
+      await productService.updateProduct(written.productId, {
+        images: files.map((file) => ({ url: file.url })),
+        thumbnail: files[0]?.url ?? null,
+      })
+
+      const images = await productService.listProductImages({ productId: written.productId })
+      const imageIdByUrl = new Map(images.map((image) => [image.url, image.id]))
+      const variantLines = new Map(written.variants.map((entry) => [entry.line, entry.variantId]))
+      const links = product.variants.flatMap((variant) => {
+        const variantId = variantLines.get(variant.line)
+        const imageId = variant.imageUrl ? imageIdByUrl.get(urlBySource.get(variant.imageUrl) ?? '') : undefined
+        return variantId && imageId ? [{ variantId, imageId }] : []
+      })
+      if (links.length > 0) await productService.addImageToVariant(links)
+    })
 
     return { created, updated }
   },

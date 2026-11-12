@@ -36,6 +36,7 @@ test.describe('the run-product-import subscriber', () => {
     expect(finished).toMatchObject({ status: 'completed', created: 1, skipped: 0, failed: 0 })
     expect(await service.read.products(container, { handle })).toHaveLength(1)
     expect(await service.read.notifications(container, { to: operator.email })).toHaveLength(1)
+    expect(finished.chunks).toHaveLength(1)
     expect(await service.read.fileExists(container, finished.chunks[0] ?? '')).toBe(false)
   })
 

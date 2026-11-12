@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { faker } from '@faker-js/faker'
+import { AppError, ErrorTypes } from '../../../src/core/errors/app-error.js'
 import type { AppContainer } from '../../../src/core/types/container.js'
 import type { ImportedProductDTO, ProductImportDTO } from '../../../src/core/types/product/common.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
@@ -79,5 +80,9 @@ export async function fileExists(container: AppContainer, id: string): Promise<b
     .resolve(Modules.FILE)
     .retrieveFile(id)
     .then(() => true)
-    .catch(() => false)
+    .catch((error: unknown) => {
+      // Only a missing file is an answer; anything else fails the test rather than reading as gone.
+      if (error instanceof AppError && error.type === ErrorTypes.NOT_FOUND) return false
+      throw error
+    })
 }
