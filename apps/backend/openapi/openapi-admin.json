@@ -3067,11 +3067,152 @@
           },
           "handle": {
             "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminNavigationSection"
+            }
           }
         },
         "required": [
           "type",
-          "handle"
+          "handle",
+          "sections"
+        ]
+      },
+      "AdminNavigationSection": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "subcategories"
+                ]
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "name"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "values"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "limit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "key",
+              "limit"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "links"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminNavigationLink"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "links"
+            ]
+          }
+        ]
+      },
+      "AdminNavigationLink": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "filter"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "filter": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "filter"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "category",
+                  "collection"
+                ]
+              },
+              "handle": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "handle",
+              "name"
+            ]
+          }
         ]
       },
       "AdminApplyCatalogStructure": {

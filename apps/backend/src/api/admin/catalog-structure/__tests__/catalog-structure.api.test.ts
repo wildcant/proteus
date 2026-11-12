@@ -37,7 +37,9 @@ test.beforeEach(async ({ createApi, factories }) => {
       ...storeNavigationDefinitions,
     ],
   })
-  await factories.create.store()
+  // The store menu is read for a market, so the store needs a default one.
+  const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
+  await factories.create.store({ defaultRegionId: region.id })
 })
 
 /** Uploads the file the way the admin does — private, through the multipart fallback. */
@@ -132,9 +134,9 @@ test.describe('Structure files', () => {
     expect(plan.menu).toEqual({
       current: [],
       next: [
-        { type: 'category', handle: 'men' },
-        { type: 'category', handle: 'women' },
-        { type: 'category', handle: 'unisex' },
+        { type: 'category', handle: 'men', sections: [] },
+        { type: 'category', handle: 'women', sections: [] },
+        { type: 'category', handle: 'unisex', sections: [] },
       ],
     })
 

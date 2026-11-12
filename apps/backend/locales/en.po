@@ -623,12 +623,12 @@ msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1231
+#: src/modules/product/services/product-module-service.ts:1239
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1330
+#: src/modules/product/services/product-module-service.ts:1338
 msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 msgstr "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 

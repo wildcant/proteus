@@ -8,6 +8,7 @@ import { CartTrigger } from '#/features/cart/components/cart-trigger'
 import { navigationQueryOptions, useSuspenseNavigation } from '#/features/products/api/navigation'
 import { categoryTreeQueryOptions, useSuspenseCategoryTree } from '#/features/products/api/product-categories'
 import { SearchDrawer } from '#/features/products/components/search-drawer'
+import { useMarket } from '#/hooks/use-market'
 import { marketHeadLinksFor } from '#/lib/seo/market-links'
 
 export const Route = createFileRoute('/_main')({
@@ -19,7 +20,7 @@ export const Route = createFileRoute('/_main')({
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(categoryTreeQueryOptions()),
-      context.queryClient.ensureQueryData(navigationQueryOptions()),
+      context.queryClient.ensureQueryData(navigationQueryOptions(context.market.current.iso2)),
     ])
   },
   component: MainLayout,
@@ -36,7 +37,7 @@ function MainLayout() {
   // drawers and the mismatch banner are wired together here rather than inside the header.
   const { customer } = useMe()
   // Read here and handed down, because the header and footer are shared chrome and the menu is a feature's.
-  const menu = { categories: useSuspenseCategoryTree(), ...useSuspenseNavigation() }
+  const menu = { categories: useSuspenseCategoryTree(), ...useSuspenseNavigation(useMarket().current.iso2) }
 
   return (
     <div className="flex min-h-screen flex-col">

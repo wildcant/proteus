@@ -6,8 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreNavigationEntryType } from './storeNavigationEntryType.ts';
+import type { StoreNavigationSection } from './storeNavigationSection.ts';
 
 export interface StoreNavigationEntry {
   type: StoreNavigationEntryType;
   handle: string;
+  sections: StoreNavigationSection[];
 }

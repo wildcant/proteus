@@ -311,6 +311,11 @@ export type IProductModuleService = {
    * definition's own selection does not narrow its own counts.
    */
   listProductMetafieldFilters(filters: FilterableProductProps, context?: Context): Promise<ProductMetafieldFilterDTO[]>
+  /**
+   * The distinct values of the field `key` — a metafield, or the brand for the vendor field, filterable
+   * or not — on the products matching `filters`, sorted. Empty for a key no definition has.
+   */
+  listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]>
   /** The live metafield definitions, by key. */
   listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]>
   /**

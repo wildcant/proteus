@@ -172,16 +172,25 @@ function MenuEntries({ entries }: { entries: AdminNavigationEntry[] }) {
   }
   return (
     <ol className="flex flex-wrap gap-x-2">
-      {entries.map(({ type, handle }, index) => (
-        <li key={`${type}:${handle}`}>
-          {index > 0 && (
-            <span className="pr-2 text-muted-foreground" aria-hidden="true">
-              ·
-            </span>
-          )}
-          {type === 'collection' ? <Trans>{handle} (collection)</Trans> : <span>{handle}</span>}
-        </li>
-      ))}
+      {entries.map(({ type, handle, sections }, index) => {
+        const sectionNames = sections.map((section) => section.name).join(', ')
+        return (
+          <li key={`${type}:${handle}`}>
+            {index > 0 && (
+              <span className="pr-2 text-muted-foreground" aria-hidden="true">
+                ·
+              </span>
+            )}
+            {type === 'collection' ? <Trans>{handle} (collection)</Trans> : <span>{handle}</span>}
+            {/* The panel's columns, so a change to a section shows up as a change to the menu. */}
+            {sections.length > 0 && (
+              <span className="pl-1 text-muted-foreground">
+                <Trans>(sections: {sectionNames})</Trans>
+              </span>
+            )}
+          </li>
+        )
+      })}
     </ol>
   )
 }

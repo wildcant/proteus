@@ -986,6 +986,14 @@ export class ProductModuleService implements IProductModuleService {
     )
   }
 
+  async listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]> {
+    const [definition] = await this.productMetafieldDefinitionRepository.find({ key }, undefined, context)
+    if (!definition) return []
+    // The facet query with no selection: every count is the value's share of the scope, so none is 0.
+    const values = await this.productRepository.findMetafieldValueCounts(definition, filters, context)
+    return values.map(({ value }) => value)
+  }
+
   async listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]> {
     return this.productMetafieldDefinitionRepository.find(undefined, { order: { rank: 'ASC', key: 'ASC' } }, context)
   }

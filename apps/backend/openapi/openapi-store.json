@@ -1388,11 +1388,81 @@
           },
           "handle": {
             "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationSection"
+            }
           }
         },
         "required": [
           "type",
-          "handle"
+          "handle",
+          "sections"
+        ]
+      },
+      "StoreNavigationSection": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationLink"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "links"
+        ]
+      },
+      "StoreNavigationLink": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "collection"
+            ]
+          },
+          "handle": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationFilter"
+            }
+          }
+        },
+        "required": [
+          "label",
+          "type",
+          "handle",
+          "filters"
+        ]
+      },
+      "StoreNavigationFilter": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
         ]
       },
       "StoreOrderListResponse": {
@@ -3970,11 +4040,36 @@
       "get": {
         "operationId": "getStoreNavigation",
         "summary": "Retrieve the store's menu",
-        "description": "The menu entries in order, each a Category (shown with its children) or a Collection by handle. A handle naming no visible grouping is skipped by the storefront.",
+        "description": "The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront.",
         "tags": [
           "Store"
         ],
         "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful response",

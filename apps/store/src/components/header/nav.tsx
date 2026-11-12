@@ -41,9 +41,10 @@ export function Nav({ menu, className }: NavProps) {
 }
 
 /**
- * A Category with children opens a panel rather than navigating, its "Shop all" first and set
- * apart, since the trigger no longer goes there. Controlled so that following a link closes it — a
- * navigation leaves a popover open otherwise.
+ * A Category with children, or an entry with sections, opens a panel rather than navigating, its
+ * "Shop all" first and set apart, since the trigger no longer goes there. Sections lay out as one
+ * titled column each, side by side. Controlled so that following a link closes it — a navigation
+ * leaves a popover open otherwise.
  */
 function RailPanel({ group }: { group: MenuGroup }) {
   const [open, setOpen] = useState(false)
@@ -56,9 +57,9 @@ function RailPanel({ group }: { group: MenuGroup }) {
         {group.label}
         <ChevronDownIcon className="size-4" />
       </PopoverTrigger>
-      <PopoverContent align="start" className="min-w-56 py-2">
+      <PopoverContent align="start" className={cn('py-2', group.sections.length > 0 ? 'w-auto max-w-4xl' : 'min-w-56')}>
         <ul className="m-0 list-none p-0">
-          {group.links.map((link, index) => (
+          {[group.shopAll, ...group.links].map((link, index) => (
             <li key={link.key}>
               <MenuLink
                 destination={link}
@@ -68,6 +69,22 @@ function RailPanel({ group }: { group: MenuGroup }) {
             </li>
           ))}
         </ul>
+        {group.sections.length > 0 && (
+          <div className="flex gap-6 py-2">
+            {group.sections.map((section) => (
+              <section key={section.key} className="min-w-40">
+                <h3 className="m-0 px-4 py-2 font-medium text-ink-muted text-xs uppercase">{section.title}</h3>
+                <ul className="m-0 list-none p-0">
+                  {section.links.map((link) => (
+                    <li key={link.key}>
+                      <MenuLink destination={link} onClick={close} className={panelLinkClassName} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   )

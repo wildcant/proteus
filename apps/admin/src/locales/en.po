@@ -13,6 +13,10 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/products/components/import-structure/structure-preview-step.tsx:188
+msgid "(sections: {sectionNames})"
+msgstr "(sections: {sectionNames})"
+
 #: src/features/regions/components/region-countries-card.tsx:30
 msgid "{count, plural, one {# country will stop being sold to, and their storefronts will no longer resolve.} other {# countries will stop being sold to, and their storefronts will no longer resolve.}}"
 msgstr "{count, plural, one {# country will stop being sold to, and their storefronts will no longer resolve.} other {# countries will stop being sold to, and their storefronts will no longer resolve.}}"
@@ -37,7 +41,7 @@ msgstr "{create} new, {update} to update, {skip} skipped."
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} is not a supported file type. Supported file types are: {extensions}."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:182
+#: src/features/products/components/import-structure/structure-preview-step.tsx:184
 msgid "{handle} (collection)"
 msgstr "{handle} (collection)"
 

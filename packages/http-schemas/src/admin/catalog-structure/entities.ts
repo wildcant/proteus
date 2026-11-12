@@ -27,9 +27,37 @@ export const AdminCatalogStructureCollectionChange = z
   .object({ handle: z.string(), name: z.string() })
   .openapi('AdminCatalogStructureCollectionChange')
 
-/** One entry of the store's menu: a Category, which brings its children, or a Collection. */
+const AdminNavigationTargetType = z.enum(['category', 'collection'])
+
+/**
+ * A link a menu section names by hand: the entry's own list filtered by field values (`filter`, by
+ * clave), or a Category or Collection by handle, labelled by `name` or, when null, by its own.
+ */
+const AdminNavigationLink = z
+  .discriminatedUnion('type', [
+    z.object({ type: z.literal('filter'), name: z.string(), filter: z.record(z.string(), z.array(z.string())) }),
+    z.object({ type: AdminNavigationTargetType, handle: z.string(), name: z.string().nullable() }),
+  ])
+  .openapi('AdminNavigationLink')
+
+/**
+ * One section of a menu entry's panel as the file writes it: the entry's child Categories, each value
+ * of one field among its products (at most `limit`), or fixed links.
+ */
+const AdminNavigationSection = z
+  .discriminatedUnion('type', [
+    z.object({ type: z.literal('subcategories'), name: z.string() }),
+    z.object({ type: z.literal('values'), name: z.string(), key: z.string(), limit: z.number().int().nullable() }),
+    z.object({ type: z.literal('links'), name: z.string(), links: z.array(AdminNavigationLink) }),
+  ])
+  .openapi('AdminNavigationSection')
+
+/**
+ * One entry of the store's menu: a Category or a Collection. Without `sections` a Category brings its
+ * children; with them the entry opens a panel of those sections.
+ */
 export const AdminNavigationEntry = z
-  .object({ type: z.enum(['category', 'collection']), handle: z.string() })
+  .object({ type: AdminNavigationTargetType, handle: z.string(), sections: z.array(AdminNavigationSection) })
   .openapi('AdminNavigationEntry')
 export type AdminNavigationEntry = z.input<typeof AdminNavigationEntry>
 

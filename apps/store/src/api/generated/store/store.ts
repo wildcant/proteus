@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  GetStoreNavigationParams,
   StoreNavigationResponse
 } from '../model';
 
@@ -14,14 +15,15 @@ import { fetcher } from '../../fetcher.ts';
 
 
   /**
- * The menu entries in order, each a Category (shown with its children) or a Collection by handle. A handle naming no visible grouping is skipped by the storefront.
+ * The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront.
  * @summary Retrieve the store's menu
  */
 export const getStoreNavigation = (
-
+    params?: GetStoreNavigationParams,
  ) => {
       return fetcher<StoreNavigationResponse>(
-      {url: `/store/navigation`, method: 'GET'
+      {url: `/store/navigation`, method: 'GET',
+        params
     },
       );
     }

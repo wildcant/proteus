@@ -5,6 +5,11 @@ import type {
   CatalogStructureDTO,
   CatalogStructureErrorDTO,
 } from '../../../../core/types/product/common.js'
+import type {
+  StoreNavigationEntryDTO,
+  StoreNavigationLinkDTO,
+  StoreNavigationSectionDTO,
+} from '../../../../core/types/store/common.js'
 
 /** A structure file is a page of YAML; anything near this is not one. */
 export const MAX_STRUCTURE_FILE_BYTES = 1024 * 1024
@@ -83,9 +88,48 @@ const collection = z.strictObject(
   { error: ifWrongType('Must be a collection with nombre and handle.') },
 )
 
-const menuEntry = z.union([z.strictObject({ categoria: handle }), z.strictObject({ coleccion: handle })], {
-  error: ifWrongType('Must be one of "categoria: <handle>" or "coleccion: <handle>".'),
+/** `limite` on a `valores` section: how many values the column shows at most. */
+const limit = z
+  .number({ error: ifWrongType('Must be a positive whole number.') })
+  .int('Must be a positive whole number.')
+  .positive('Must be a positive whole number.')
+
+const show = z.union([z.literal('subcategorias'), z.strictObject({ valores: key, limite: limit.optional() })], {
+  error: ifWrongType('Must be "subcategorias" or "{ valores: <clave>, limite: <n> }".'),
 })
+
+/**
+ * One fixed link: `nombre` with a `filtro` (the entry's list filtered), or a `categoria` or `coleccion`
+ * by handle with an optional `nombre`. One object rather than a union so a problem inside one is
+ * reported at its own key; which keys go together is checked after the shape.
+ */
+const link = z.strictObject(
+  { nombre: name.optional(), filtro: rule.optional(), categoria: handle.optional(), coleccion: handle.optional() },
+  { error: ifWrongType('Must be a link with nombre and filtro, or a categoria or coleccion.') },
+)
+
+type RawLink = z.infer<typeof link>
+
+const section = z.strictObject(
+  {
+    nombre: name,
+    mostrar: show.optional(),
+    enlaces: z.array(link, { error: ifWrongType('Must be a list of links.') }).optional(),
+  },
+  { error: ifWrongType('Must be a section with nombre and one of mostrar or enlaces.') },
+)
+
+type RawSection = z.infer<typeof section>
+
+/** Like `link`, one object whose key pairing is checked after the shape. */
+const menuEntry = z.strictObject(
+  {
+    categoria: handle.optional(),
+    coleccion: handle.optional(),
+    secciones: z.array(section, { error: ifWrongType('Must be a list of sections.') }).optional(),
+  },
+  { error: ifWrongType('Must be one of "categoria: <handle>" or "coleccion: <handle>".') },
+)
 
 const structureFile = z.strictObject(
   {
@@ -109,7 +153,8 @@ export type ParsedCatalogStructure =
  * (`categorias[0].hijos[1].handle`). Beyond the shape: a clave is declared once, at most one campo
  * is the vendor (`origen: vendor`), every rule names
  * only declared claves, a handle is used once among the Categories and once among the Collections,
- * and every menu entry names one the file declares.
+ * and every menu entry names one the file declares. A menu entry's `secciones` read only declared
+ * claves (`valores`, `filtro`) and link only declared handles; only a Category has `subcategorias`.
  */
 export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const document = parseDocument(text, { prettyErrors: false })
@@ -153,11 +198,12 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       source: raw.origen ?? ('metafield' as const),
     }
   })
-  const toRule = (raw: RawRule | undefined, path: string) => {
+  /** A rule, or a link's `filtro`, which is written the same way: `at` is the key it sits under. */
+  const toRule = (raw: RawRule | undefined, path: string, at = 'regla') => {
     if (!raw) return null
     for (const ruleKey of Object.keys(raw)) {
       if (!keys.has(ruleKey)) {
-        errors.push({ path: `${path}.regla.${ruleKey}`, message: `No campo in the file has the clave "${ruleKey}".` })
+        errors.push({ path: `${path}.${at}.${ruleKey}`, message: `No campo in the file has the clave "${ruleKey}".` })
       }
     }
     return raw
@@ -190,23 +236,85 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     return { name: raw.nombre, handle: raw.handle, rule: toRule(raw.regla, `colecciones[${index}]`) }
   })
 
-  const navigation = menu.map((entry, index) => {
-    if ('categoria' in entry) {
-      if (!categoryHandles.has(entry.categoria)) {
+  /** A Category or Collection named by handle, reported at `path` when the file declares no such one. */
+  const toTarget = (raw: { categoria?: string; coleccion?: string }, path: string) => {
+    if (raw.categoria !== undefined) {
+      if (!categoryHandles.has(raw.categoria)) {
         errors.push({
-          path: `menu[${index}].categoria`,
-          message: `No category in the file has the handle "${entry.categoria}".`,
+          path: `${path}.categoria`,
+          message: `No category in the file has the handle "${raw.categoria}".`,
         })
       }
-      return { type: 'category' as const, handle: entry.categoria }
+      return { type: 'category' as const, handle: raw.categoria }
     }
-    if (!collectionHandles.has(entry.coleccion)) {
+    const collectionHandle = raw.coleccion ?? ''
+    if (!collectionHandles.has(collectionHandle)) {
       errors.push({
-        path: `menu[${index}].coleccion`,
-        message: `No collection in the file has the handle "${entry.coleccion}".`,
+        path: `${path}.coleccion`,
+        message: `No collection in the file has the handle "${collectionHandle}".`,
       })
     }
-    return { type: 'collection' as const, handle: entry.coleccion }
+    return { type: 'collection' as const, handle: collectionHandle }
+  }
+  const hasOneTarget = (raw: { categoria?: string; coleccion?: string }) =>
+    (raw.categoria === undefined) !== (raw.coleccion === undefined)
+
+  const toLink = (raw: RawLink, path: string): StoreNavigationLinkDTO | null => {
+    if (raw.filtro) {
+      if (raw.categoria !== undefined || raw.coleccion !== undefined) {
+        errors.push({ path, message: 'Must have exactly one of filtro, categoria or coleccion.' })
+        return null
+      }
+      if (raw.nombre === undefined) {
+        errors.push({ path, message: 'A link with a filtro must have a nombre.' })
+        return null
+      }
+      return { type: 'filter', name: raw.nombre, filter: toRule(raw.filtro, path, 'filtro') ?? {} }
+    }
+    if (!hasOneTarget(raw)) {
+      errors.push({ path, message: 'Must have exactly one of filtro, categoria or coleccion.' })
+      return null
+    }
+    return { ...toTarget(raw, path), name: raw.nombre ?? null }
+  }
+
+  const toSection = (
+    raw: RawSection,
+    path: string,
+    entryType: StoreNavigationEntryDTO['type'],
+  ): StoreNavigationSectionDTO | null => {
+    if ((raw.mostrar === undefined) === (raw.enlaces === undefined)) {
+      errors.push({ path, message: 'Must have exactly one of mostrar or enlaces.' })
+      return null
+    }
+    if (raw.enlaces) {
+      const links = raw.enlaces.map((rawLink, index) => toLink(rawLink, `${path}.enlaces[${index}]`))
+      return { type: 'links', name: raw.nombre, links: links.filter((found) => found !== null) }
+    }
+    if (raw.mostrar === 'subcategorias') {
+      if (entryType === 'collection') {
+        errors.push({ path: `${path}.mostrar`, message: 'A collection has no subcategorias.' })
+      }
+      return { type: 'subcategories', name: raw.nombre }
+    }
+    const { valores, limite } = raw.mostrar ?? { valores: '' }
+    if (!keys.has(valores)) {
+      errors.push({ path: `${path}.mostrar.valores`, message: `No campo in the file has the clave "${valores}".` })
+    }
+    return { type: 'values', name: raw.nombre, key: valores, limit: limite ?? null }
+  }
+
+  const navigation = menu.flatMap((entry, index): StoreNavigationEntryDTO[] => {
+    const path = `menu[${index}]`
+    if (!hasOneTarget(entry)) {
+      errors.push({ path, message: 'Must be one of "categoria: <handle>" or "coleccion: <handle>".' })
+      return []
+    }
+    const target = toTarget(entry, path)
+    const sections = (entry.secciones ?? [])
+      .map((raw, sectionIndex) => toSection(raw, `${path}.secciones[${sectionIndex}]`, target.type))
+      .filter((found) => found !== null)
+    return [{ ...target, sections }]
   })
 
   if (errors.length > 0) return fail(errors)

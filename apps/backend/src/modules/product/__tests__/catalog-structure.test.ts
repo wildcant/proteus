@@ -44,6 +44,19 @@ test.describe('parseCatalogStructure', () => {
         '  - categoria: mujer',
         '  - coleccion: seleccion-de-don-juan',
         '  - categoria: hombre',
+        '    secciones:',
+        '      - nombre: Estilos',
+        '        mostrar: subcategorias',
+        '      - nombre: Marcas',
+        '        mostrar: { valores: marca }',
+        '      - nombre: Modelos',
+        '        mostrar: { valores: estilo, limite: 8 }',
+        '      - nombre: Destacados',
+        '        enlaces:',
+        '          - nombre: Clásicos Nike',
+        '            filtro: { marca: [Nike], estilo: [clasicos] }',
+        '          - coleccion: seleccion-de-don-juan',
+        '          - { nombre: Rebajas, categoria: hombre-ofertas }',
       ]),
     )
 
@@ -83,9 +96,29 @@ test.describe('parseCatalogStructure', () => {
         },
       ],
       menu: [
-        { type: 'category', handle: 'mujer' },
-        { type: 'collection', handle: 'seleccion-de-don-juan' },
-        { type: 'category', handle: 'hombre' },
+        // No secciones: the entry brings its children, as it always has.
+        { type: 'category', handle: 'mujer', sections: [] },
+        { type: 'collection', handle: 'seleccion-de-don-juan', sections: [] },
+        {
+          type: 'category',
+          handle: 'hombre',
+          sections: [
+            { type: 'subcategories', name: 'Estilos' },
+            // `limite` left out shows every value.
+            { type: 'values', name: 'Marcas', key: 'marca', limit: null },
+            { type: 'values', name: 'Modelos', key: 'estilo', limit: 8 },
+            {
+              type: 'links',
+              name: 'Destacados',
+              links: [
+                { type: 'filter', name: 'Clásicos Nike', filter: { marca: ['Nike'], estilo: ['clasicos'] } },
+                // No nombre: the store labels it with the Collection's own.
+                { type: 'collection', handle: 'seleccion-de-don-juan', name: null },
+                { type: 'category', handle: 'hombre-ofertas', name: 'Rebajas' },
+              ],
+            },
+          ],
+        },
       ],
     })
   })
@@ -138,6 +171,17 @@ test.describe('parseCatalogStructure', () => {
         '    regla: [[genero:hombre]]',
         'menu:',
         '  - pagina: inicio',
+        '  - categoria: hombre',
+        '    secciones:',
+        '      - mostrar: subcategorias',
+        '      - nombre: Marcas',
+        '        mostrar: { valores: marca, limite: 0 }',
+        '      - nombre: Modelos',
+        '        mostrar: todos',
+        '      - nombre: Destacados',
+        '        enlaces:',
+        '          - nombre: Superstar',
+        '            filtro: { modelo: Superstar }',
       ]),
     )
 
@@ -157,7 +201,79 @@ test.describe('parseCatalogStructure', () => {
       { path: 'categorias[0].hijos[1].regla.genero', message: 'Must be a list of values, any one of which matches.' },
       { path: 'categorias[0].hijos[1]', message: 'Unrecognized key: "orden"' },
       { path: 'colecciones[0].regla', message: 'Must be a mapping of claves to lists of values.' },
-      { path: 'menu[0]', message: 'Must be one of "categoria: <handle>" or "coleccion: <handle>".' },
+      { path: 'menu[0]', message: 'Unrecognized key: "pagina"' },
+      { path: 'menu[1].secciones[0].nombre', message: 'Must be a name.' },
+      { path: 'menu[1].secciones[1].mostrar.limite', message: 'Must be a positive whole number.' },
+      {
+        path: 'menu[1].secciones[2].mostrar',
+        message: 'Must be "subcategorias" or "{ valores: <clave>, limite: <n> }".',
+      },
+      {
+        path: 'menu[1].secciones[3].enlaces[0].filtro.modelo',
+        message: 'Must be a list of values, any one of which matches.',
+      },
+    ])
+  })
+
+  test('refuses a menu section that names an undeclared clave or handle, or mixes its keys', async ({ expect }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'campos:',
+        '  - { nombre: Marca, clave: marca, origen: vendor }',
+        'categorias:',
+        '  - { nombre: Hombre, handle: hombre }',
+        'colecciones:',
+        '  - { nombre: Rebajas, handle: rebajas }',
+        'menu:',
+        '  - categoria: hombre',
+        '    coleccion: rebajas',
+        '  - {}',
+        '  - categoria: hombre',
+        '    secciones:',
+        '      - nombre: Modelos',
+        '        mostrar: { valores: modelo }',
+        '      - nombre: Vacía',
+        '      - nombre: Las dos',
+        '        mostrar: subcategorias',
+        '        enlaces: []',
+        '      - nombre: Destacados',
+        '        enlaces:',
+        '          - nombre: Superstar',
+        '            filtro: { modelo: [Superstar] }',
+        '          - filtro: { marca: [Nike] }',
+        '          - { categoria: mujer }',
+        '          - { coleccion: ofertas }',
+        '          - { nombre: Dos destinos, categoria: hombre, coleccion: rebajas }',
+        '          - { nombre: Ninguno }',
+        '  - coleccion: rebajas',
+        '    secciones:',
+        '      - nombre: Estilos',
+        '        mostrar: subcategorias',
+      ]),
+    )
+
+    expect(structure).toBeNull()
+    const either = 'Must be one of "categoria: <handle>" or "coleccion: <handle>".'
+    const oneTarget = 'Must have exactly one of filtro, categoria or coleccion.'
+    expect(errors).toEqual([
+      { path: 'menu[0]', message: either },
+      { path: 'menu[1]', message: either },
+      { path: 'menu[2].secciones[0].mostrar.valores', message: 'No campo in the file has the clave "modelo".' },
+      { path: 'menu[2].secciones[1]', message: 'Must have exactly one of mostrar or enlaces.' },
+      { path: 'menu[2].secciones[2]', message: 'Must have exactly one of mostrar or enlaces.' },
+      {
+        path: 'menu[2].secciones[3].enlaces[0].filtro.modelo',
+        message: 'No campo in the file has the clave "modelo".',
+      },
+      { path: 'menu[2].secciones[3].enlaces[1]', message: 'A link with a filtro must have a nombre.' },
+      { path: 'menu[2].secciones[3].enlaces[2].categoria', message: 'No category in the file has the handle "mujer".' },
+      {
+        path: 'menu[2].secciones[3].enlaces[3].coleccion',
+        message: 'No collection in the file has the handle "ofertas".',
+      },
+      { path: 'menu[2].secciones[3].enlaces[4]', message: oneTarget },
+      { path: 'menu[2].secciones[3].enlaces[5]', message: oneTarget },
+      { path: 'menu[3].secciones[0].mostrar', message: 'A collection has no subcategorias.' },
     ])
   })
 

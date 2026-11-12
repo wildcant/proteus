@@ -32,8 +32,15 @@ describe('resolveMenuItems', () => {
         children: [
           { key: 'id-men-classics', label: 'Name men-classics', target: { type: 'category', handle: 'men-classics' } },
         ],
+        sections: [],
       },
-      { key: 'id-women', label: 'Name women', target: { type: 'category', handle: 'women' }, children: [] },
+      {
+        key: 'id-women',
+        label: 'Name women',
+        target: { type: 'category', handle: 'women' },
+        children: [],
+        sections: [],
+      },
     ])
   })
 
@@ -42,9 +49,9 @@ describe('resolveMenuItems', () => {
     const items = resolveMenuItems({
       categories,
       navigation: [
-        { type: 'collection', handle: 'featured' },
-        { type: 'category', handle: 'men-classics' },
-        { type: 'category', handle: 'men' },
+        { type: 'collection', handle: 'featured', sections: [] },
+        { type: 'category', handle: 'men-classics', sections: [] },
+        { type: 'category', handle: 'men', sections: [] },
       ],
       collections: [featured],
     })
@@ -63,14 +70,59 @@ describe('resolveMenuItems', () => {
     const items = resolveMenuItems({
       categories,
       navigation: [
-        { type: 'category', handle: 'hidden' },
+        { type: 'category', handle: 'hidden', sections: [] },
         // A Collection handle that the Category tree happens to hold is still not a Collection.
-        { type: 'collection', handle: 'women' },
-        { type: 'category', handle: 'women' },
+        { type: 'collection', handle: 'women', sections: [] },
+        { type: 'category', handle: 'women', sections: [] },
       ],
       collections: [],
     })
 
     expect(items.map((item) => item.label)).toEqual(['Name women'])
+  })
+
+  it('lays out an entry with sections as its columns instead of its children, each link carrying its filter', () => {
+    const [item] = resolveMenuItems({
+      categories,
+      navigation: [
+        {
+          type: 'category',
+          handle: 'men',
+          sections: [
+            {
+              name: 'Brands',
+              links: [
+                { label: 'Nike', type: 'category', handle: 'men', filters: [{ key: 'marca', value: 'Nike' }] },
+                {
+                  label: 'Nike Cortez',
+                  type: 'category',
+                  handle: 'men',
+                  filters: [
+                    { key: 'marca', value: 'Nike' },
+                    { key: 'modelo', value: 'Cortez' },
+                  ],
+                },
+              ],
+            },
+            { name: 'Picks', links: [{ label: 'Featured', type: 'collection', handle: 'featured', filters: [] }] },
+          ],
+        },
+      ],
+      collections: [],
+    })
+
+    // The sections are the whole panel: `subcategorias` would be one of them, so the children are not added.
+    expect(item?.children).toEqual([])
+    expect(item?.sections.map(({ title, links }) => ({ title, targets: links.map((link) => link.target) }))).toEqual([
+      {
+        title: 'Brands',
+        targets: [
+          { type: 'category', handle: 'men', filter: ['marca:Nike'] },
+          { type: 'category', handle: 'men', filter: ['marca:Nike', 'modelo:Cortez'] },
+        ],
+      },
+      // An unfiltered link has no `filter`, so it links exactly as a plain menu entry does.
+      { title: 'Picks', targets: [{ type: 'collection', handle: 'featured' }] },
+    ])
   })
 })
