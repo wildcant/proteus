@@ -32,6 +32,9 @@ import type {
   ProductImportPlanDTO,
   ProductImportReferencesDTO,
   ProductImportSettingsDTO,
+  ProductMetafieldDefinitionDTO,
+  ProductMetafieldDTO,
+  ProductMetafieldFilterDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -68,6 +71,7 @@ import type {
   UpdateProductTagDTO,
   UpdateProductTypeDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   UpsertProductVariantDTO,
   VariantImageInput,
 } from './mutations.js'
@@ -299,10 +303,36 @@ export type IProductModuleService = {
     context?: Context,
   ): Promise<string[]>
 
+  // Metafields
   /**
-   * Makes every ruled Category and Collection in scope hold exactly the scoped products its tag rule
-   * matches, in one transaction. Manual groupings are never touched. Product, rule and Tag writes
-   * call it themselves; it is public for writes that change many groupings at once.
+   * The storefront's filters over the products matching `filters`: each filterable definition, in rank
+   * order, with every value those products hold and how many would remain once it is chosen. The
+   * `metafields` and `tagValue` selections narrow the counts, never which values are offered, and a
+   * definition's own selection does not narrow its own counts.
+   */
+  listProductMetafieldFilters(filters: FilterableProductProps, context?: Context): Promise<ProductMetafieldFilterDTO[]>
+  /**
+   * The distinct values of the field `key` — a metafield, or the brand for the vendor field, filterable
+   * or not — on the products matching `filters`, sorted. Empty for a key no definition has.
+   */
+  listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]>
+  /** The live metafield definitions, by key. */
+  listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]>
+  /**
+   * Creates each definition whose key is new and renames the ones that exist. Deletes nothing: the
+   * structure file, which is the source, deletes the ones it leaves out when it is applied.
+   */
+  upsertMetafieldDefinitions(
+    data: UpsertProductMetafieldDefinitionDTO[],
+    context?: Context,
+  ): Promise<ProductMetafieldDefinitionDTO[]>
+  /** A product's metafields that hold values, by key. */
+  retrieveProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]>
+
+  /**
+   * Makes every ruled Category and Collection in scope hold exactly the scoped products its rule
+   * matches, in one transaction. Manual groupings are never touched. Product and rule writes call
+   * it themselves; it is public for writes that change many groupings at once.
    */
   syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void>
 
@@ -313,9 +343,10 @@ export type IProductModuleService = {
    */
   planCatalogStructure(source: AsyncIterable<Uint8Array | string>, context?: Context): Promise<CatalogStructurePlanDTO>
   /**
-   * Makes the Categories and Collections exactly the structure's, by handle, in one transaction:
-   * named ones written as declared (Categories active, at their file rank), absent ones deleted, then
-   * every ruled grouping re-matched. Answers with what changed. The menu is not this module's.
+   * Makes the metafield definitions (by key), Categories and Collections (by handle) exactly the
+   * structure's, in one transaction: named ones written as declared (Categories active, at their file
+   * rank), absent ones deleted, then every ruled grouping re-matched. Answers with what changed. The
+   * menu is not this module's.
    */
   applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO>
 

@@ -72,6 +72,7 @@ const product: StoreProductResponseProduct = {
   width: null,
   originCountry: null,
   material: null,
+  brand: null,
   images: [],
   options: [size],
   variants: [small, medium, large],

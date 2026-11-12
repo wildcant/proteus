@@ -132,8 +132,15 @@ test.describe('product CSV import', () => {
         products: { create: 3, update: 0, skip: 0 },
         skus: 4,
         images: 2,
-        ignoredColumns: ['Vendor'],
-        firstProduct: { handle: 'hoodie', title: 'Hoodie', options: [{ title: 'Size', values: ['S', 'M'] }] },
+        // Vendor is read, as the brand; with no vendor campo declared the store has no name for it.
+        ignoredColumns: [],
+        brandName: null,
+        firstProduct: {
+          handle: 'hoodie',
+          title: 'Hoodie',
+          brand: 'Proteus',
+          options: [{ title: 'Size', values: ['S', 'M'] }],
+        },
       },
     })
     // A prefixed tag is a tag like any other: the file names no groupings to create.
@@ -158,7 +165,7 @@ test.describe('product CSV import', () => {
     expect(await service.read.products(api.container, { handle: 'mug' })).toHaveLength(1)
     const [hoodie] = await service.read.products(api.container, { handle: 'hoodie' })
     if (!hoodie) throw new Error('Expected the hoodie to be imported')
-    expect(hoodie).toMatchObject({ title: 'Hoodie', description: '<p>Warm</p>', status: 'published' })
+    expect(hoodie).toMatchObject({ title: 'Hoodie', description: '<p>Warm</p>', status: 'published', brand: 'Proteus' })
 
     const detail = await api.get<typeof productByIdRoutes.GetOutput>(`/admin/products/${hoodie.id}`, undefined, {
       headers,
@@ -227,11 +234,16 @@ test.describe('product CSV import', () => {
     expect(retried).toMatchObject({ status: 'completed', created: 1, failed: 0, errors: [] })
   })
 
-  test('places imported products in the ruled Categories their tags match, and moves them on overwrite', async ({
+  test('places imported products in the ruled Categories their metafields match, and moves them on overwrite', async ({
     expect,
     http,
     service,
   }) => {
+    // The structure comes first: its campos define the metafields, its rules read them.
+    await service.create.metafieldDefinitions(api.container, [
+      { key: 'genero', name: 'Género' },
+      { key: 'estilo', name: 'Estilo' },
+    ])
     const createCategory = async (body: Partial<AdminCreateProductCategoryBody>) => {
       const response = await api.post<typeof categoryRoutes.PostOutput>(
         '/admin/product-categories',
@@ -241,46 +253,137 @@ test.describe('product CSV import', () => {
       expect(response.status).toBe(201)
       return response.body.productCategory
     }
-    // The structure comes first; the tags it reads do not exist until the import creates them.
-    const men = await createCategory({ name: 'Hombre', handle: 'hombre', rule: [['genero:hombre']] })
+    const men = await createCategory({ name: 'Hombre', handle: 'hombre', rule: { genero: ['hombre'] } })
     const menClassics = await createCategory({
       name: 'Clásicos',
       handle: 'hombre-clasicos',
       parentId: men.id,
-      rule: [['genero:hombre'], ['estilo:clasicos']],
+      rule: { genero: ['hombre'], estilo: ['clasicos'] },
     })
-    const women = await createCategory({ name: 'Mujer', handle: 'mujer', rule: [['genero:mujer']] })
+    const women = await createCategory({ name: 'Mujer', handle: 'mujer', rule: { genero: ['mujer'] } })
 
-    const loafer = (tags: string) => [HEADER, `Loafer,loafer,,,,"${tags}",active,LOAFER-1,,,90,360000,,,,,`]
+    const generoColumn = 'Género (product.metafields.custom.genero)'
+    const estiloColumn = 'Estilo (product.metafields.custom.estilo)'
+    const loafer = (columns: Record<string, string>) => [
+      `${HEADER},${Object.keys(columns).join(',')}`,
+      `Loafer,loafer,,,,leather,active,LOAFER-1,,,90,360000,,,,,,${Object.values(columns)
+        .map((cell) => `"${cell}"`)
+        .join(',')}`,
+    ]
     const listedIn = async (handle: string) => {
       const response = await api.get<typeof storeProductRoutes.GetOutput>(`/store/products?category=${handle}`)
       expect(response.status).toBe(200)
       return response.body.products.map((product) => product.handle)
     }
-    const placement = async () => {
+    const detail = async () => {
       const [product] = await service.read.products(api.container, { handle: 'loafer' })
-      const detail = await api.get<typeof productByIdRoutes.GetOutput>(
+      const response = await api.get<typeof productByIdRoutes.GetOutput>(
         `/admin/products/${product?.id ?? ''}`,
         undefined,
         { headers },
       )
-      return detail.body.product.categories.map((category) => category.handle).sort()
+      return response.body.product
     }
+    const placement = async () => (await detail()).categories.map((category) => category.handle).sort()
 
-    const created = await runImport(loafer('genero:hombre, estilo:clasicos'))
+    // A list cell holds one value per line.
+    const created = await runImport(loafer({ [generoColumn]: 'hombre\nunisex', [estiloColumn]: 'clasicos' }))
 
-    expect(created).toMatchObject({ status: 'completed', created: 1, failed: 0 })
+    expect(created).toMatchObject({
+      status: 'completed',
+      created: 1,
+      failed: 0,
+      summary: {
+        metafields: [
+          { key: 'genero', name: 'Género' },
+          { key: 'estilo', name: 'Estilo' },
+        ],
+      },
+    })
     expect(await placement()).toEqual([men.handle, menClassics.handle].sort())
     expect(await listedIn('hombre')).toEqual(['loafer'])
     expect(await listedIn('hombre-clasicos')).toEqual(['loafer'])
     expect(await listedIn(women.handle)).toEqual([])
+    // Tags stay free words: the product is not placed by `leather`.
+    expect((await detail()).tags.map((tag) => tag.value)).toEqual(['leather'])
 
-    const moved = await runImport(loafer('genero:mujer, estilo:clasicos'), { overwrite: true })
+    // Overwriting with only the Género column re-classifies it and leaves Estilo as it was.
+    const moved = await runImport(loafer({ [generoColumn]: 'mujer' }), { overwrite: true })
 
     expect(moved).toMatchObject({ status: 'completed', updated: 1, failed: 0 })
     expect(await placement()).toEqual([women.handle])
     expect(await listedIn('hombre')).toEqual([])
     expect(await listedIn(women.handle)).toEqual(['loafer'])
+    expect((await detail()).metafields).toEqual([
+      { key: 'estilo', name: 'Estilo', values: ['clasicos'] },
+      { key: 'genero', name: 'Género', values: ['mujer'] },
+    ])
+
+    // An empty cell clears the metafield, taking the product out of the rule that read it.
+    await runImport(loafer({ [generoColumn]: '' }), { overwrite: true })
+    expect(await placement()).toEqual([])
+
+    // A column for a metafield the structure does not define refuses the file at the header.
+    const { response } = await preview(loafer({ 'Talla (product.metafields.custom.talla)': 'm' }))
+    expect(response.body.productImport.errors).toEqual([
+      {
+        line: 1,
+        handle: null,
+        message:
+          'The column "Talla (product.metafields.custom.talla)" is the metafield "talla", which the store does not define. Declare the campo "talla" in the structure file first.',
+      },
+    ])
+  })
+
+  test('reads Vendor as the brand, which the vendor campo rules on and an overwrite replaces', async ({
+    expect,
+    http,
+    service,
+  }) => {
+    await service.create.metafieldDefinitions(api.container, [{ key: 'marca', name: 'Marca', source: 'vendor' }])
+    const created = await api.post<typeof categoryRoutes.PostOutput>(
+      '/admin/product-categories',
+      http.admin.createProductCategory({ isActive: true, handle: 'nike', rule: { marca: ['Nike'] } }),
+      { headers },
+    )
+    expect(created.status).toBe(201)
+
+    const loafer = (vendor: string, extraColumns = '', extraCells = '') => [
+      `${HEADER}${extraColumns}`,
+      `Loafer,loafer,,${vendor},,,active,LOAFER-1,,,90,360000,,,,,${extraCells}`,
+    ]
+    const listedIn = async (handle: string) => {
+      const response = await api.get<typeof storeProductRoutes.GetOutput>(`/store/products?category=${handle}`)
+      expect(response.status).toBe(200)
+      return response.body.products.map((product) => [product.handle, product.brand])
+    }
+
+    // The preview names the brand as the store does.
+    const { response } = await preview(loafer(' Nike '))
+    expect(response.body.productImport.summary).toMatchObject({
+      ignoredColumns: [],
+      brandName: 'Marca',
+      firstProduct: { brand: 'Nike' },
+    })
+
+    await runImport(loafer('Nike'))
+    expect(await listedIn('nike')).toEqual([['loafer', 'Nike']])
+
+    // An overwrite replaces the brand, and the rule lets the product go.
+    const moved = await runImport(loafer('Adidas'), { overwrite: true })
+    expect(moved).toMatchObject({ status: 'completed', updated: 1, failed: 0 })
+    expect(await listedIn('nike')).toEqual([])
+    const [product] = await service.read.products(api.container, { handle: 'loafer' })
+    expect(product?.brand).toBe('Adidas')
+
+    // The vendor campo is no metafield: a metafield column for its clave is refused.
+    const metafieldColumn = await preview(loafer('Nike', ',Marca (product.metafields.custom.marca)', ',Nike'))
+    expect(metafieldColumn.response.body.productImport.errors).toEqual([
+      expect.objectContaining({
+        line: 1,
+        message: expect.stringContaining('"marca", which the store does not define'),
+      }),
+    ])
   })
 
   test('skips products whose handle exists, and with overwrite updates them, matching variants by SKU', async ({

@@ -9,6 +9,7 @@ import { marketHeadLinksFor } from '#/lib/seo/market-links'
 const productListLoaderDeps = ({ search }: { search: ProductListSearch }) => ({
   q: search.q,
   tag: search.tag,
+  filter: search.filter,
   sort: search.sort,
   offset: search.offset,
 })

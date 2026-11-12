@@ -13,15 +13,18 @@ import type { CreateProductImportDTO } from '../../../core/types/product/mutatio
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
 import type { ProductImportRepository } from '../repositories/product-import.js'
+import type { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import type { ProductTagRepository } from '../repositories/product-tag.js'
 import type { ProductTypeRepository } from '../repositories/product-type.js'
 import { chunkImportedProducts } from '../utils/shopify-csv/chunk-products.js'
+import { CUSTOM_METAFIELD_NAMESPACE } from '../utils/shopify-csv/columns.js'
 import { parseShopifyCsv } from '../utils/shopify-csv/parse-shopify-csv.js'
 
 type InjectedDependencies = {
   productImportRepository: ProductImportRepository
+  productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   productRepository: ProductRepository
   productTagRepository: ProductTagRepository
   productTypeRepository: ProductTypeRepository
@@ -42,6 +45,7 @@ const PRODUCT_IMPORT_TTL_MS = 60 * 60 * 1000
  */
 export class ProductImportService {
   private productImportRepository: ProductImportRepository
+  private productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   private productRepository: ProductRepository
   private productTagRepository: ProductTagRepository
   private productTypeRepository: ProductTypeRepository
@@ -51,6 +55,7 @@ export class ProductImportService {
 
   constructor(dependencies: InjectedDependencies) {
     this.productImportRepository = dependencies.productImportRepository
+    this.productMetafieldDefinitionRepository = dependencies.productMetafieldDefinitionRepository
     this.productRepository = dependencies.productRepository
     this.productTagRepository = dependencies.productTagRepository
     this.productTypeRepository = dependencies.productTypeRepository
@@ -64,7 +69,20 @@ export class ProductImportService {
     settings: ProductImportSettingsDTO,
     context?: Context,
   ): Promise<ProductImportPlanDTO> {
-    const { products, errors, ignoredColumns } = await parseShopifyCsv(source, settings)
+    const definitions = await this.productMetafieldDefinitionRepository.find(
+      { namespace: CUSTOM_METAFIELD_NAMESPACE },
+      undefined,
+      context,
+    )
+    const { products, errors, ignoredColumns, metafieldKeys } = await parseShopifyCsv(
+      source,
+      settings,
+      new Set(
+        definitions.filter((definition) => definition.source === 'metafield').map((definition) => definition.key),
+      ),
+    )
+    const nameOf = new Map(definitions.map((definition) => [definition.key, definition.name]))
+    const brandName = definitions.find((definition) => definition.source === 'vendor')?.name ?? null
 
     const handlesOf = (pick: (product: ImportedProductDTO) => string[]) => [...new Set(products.flatMap(pick))]
     const productHandles = handlesOf((product) => [product.handle])
@@ -101,6 +119,8 @@ export class ProductImportService {
           ),
         },
         ignoredColumns,
+        metafields: metafieldKeys.map((key) => ({ key, name: nameOf.get(key) ?? key })),
+        brandName,
         firstProduct: products[0] ?? null,
       },
       errors,
@@ -172,7 +192,7 @@ export class ProductImportService {
    * Finds what the product's names refer to and creates what is missing, in one transaction.
    *
    * Only types, tags and options: categories and collections come from the structure file, and the
-   * product joins the ruled ones when its tags are written.
+   * product joins the ruled ones when its metafields are written.
    */
   async resolveProductImportReferences(
     product: ImportedProductDTO,

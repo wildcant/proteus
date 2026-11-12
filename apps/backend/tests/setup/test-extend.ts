@@ -169,6 +169,7 @@ import {
 import { listPrices, priceVariants } from '../factories/services/pricing.js'
 import {
   addImageToVariant,
+  createMetafieldDefinitions,
   createProduct,
   createProductOption,
   createProducts,
@@ -183,7 +184,9 @@ import {
   listProductVariantImages,
   listProductVariants,
   retrieveProductVariant,
+  setProductMetafields,
   setProductOptions,
+  updateProduct,
   updateProductType,
   updateProductVariant,
 } from '../factories/services/product.js'
@@ -385,6 +388,7 @@ export type Fixtures = {
       confirmedProductImport: typeof createConfirmedProductImport
       productOption: typeof createProductOption
       productTag: typeof createProductTag
+      metafieldDefinitions: typeof createMetafieldDefinitions
       productType: typeof createProductType
       productVariant: typeof createProductVariant
       productVariants: typeof createProductVariants
@@ -397,6 +401,8 @@ export type Fixtures = {
     update: {
       inventoryLevel: typeof adjustInventoryLevel
       productOptions: typeof setProductOptions
+      productMetafields: typeof setProductMetafields
+      product: typeof updateProduct
       productType: typeof updateProductType
       deletedProductType: typeof deleteProductType
       productVariant: typeof updateProductVariant
@@ -617,6 +623,7 @@ export const test = testBase.extend<Fixtures>({
         confirmedProductImport: createConfirmedProductImport,
         productOption: createProductOption,
         productTag: createProductTag,
+        metafieldDefinitions: createMetafieldDefinitions,
         productType: createProductType,
         productVariant: createProductVariant,
         productVariants: createProductVariants,
@@ -629,6 +636,8 @@ export const test = testBase.extend<Fixtures>({
       update: {
         inventoryLevel: adjustInventoryLevel,
         productOptions: setProductOptions,
+        productMetafields: setProductMetafields,
+        product: updateProduct,
         productType: updateProductType,
         deletedProductType: deleteProductType,
         productVariant: updateProductVariant,

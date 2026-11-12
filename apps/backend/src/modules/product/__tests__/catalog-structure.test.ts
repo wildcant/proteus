@@ -6,17 +6,32 @@ import { parseCatalogStructure } from '../utils/catalog-structure/parse-catalog-
 const yaml = (lines: string[]) => `${lines.join('\n')}\n`
 
 test.describe('parseCatalogStructure', () => {
-  test('reads the nested tree, the collections and the menu, in file order', async ({ expect }) => {
+  test('reads the campos, the nested tree, the collections and the menu, in file order', async ({ expect }) => {
     const { structure, errors } = parseCatalogStructure(
       yaml([
+        'campos:',
+        '  - nombre: Género',
+        '    clave: genero',
+        '    filtro: true',
+        '  - nombre: Estilo',
+        '    clave: estilo',
+        '    filtro: false',
+        '  - nombre: Colecciones',
+        '    clave: colecciones',
+        '  - nombre: Marca',
+        '    clave: marca',
+        '    origen: vendor',
+        '    filtro: true',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
-        '    regla: [[genero:hombre, genero:unisex]]',
+        '    regla:',
+        '      genero: [hombre, unisex]',
+        '      marca: [Nike]',
         '    hijos:',
         '      - nombre: Clásicos',
         '        handle: hombre-clasicos',
-        '        regla: [[genero:hombre, genero:unisex], [estilo:clasicos]]',
+        '        regla: { genero: [hombre, unisex], estilo: [clasicos] }',
         '      - nombre: Ofertas',
         '        handle: hombre-ofertas',
         '  - nombre: Mujer',
@@ -24,26 +39,47 @@ test.describe('parseCatalogStructure', () => {
         'colecciones:',
         '  - nombre: Selección de Don Juan',
         '    handle: seleccion-de-don-juan',
-        '    regla: [[coleccion:seleccion-de-don-juan]]',
+        '    regla: { colecciones: [seleccion-de-don-juan] }',
         'menu:',
         '  - categoria: mujer',
         '  - coleccion: seleccion-de-don-juan',
         '  - categoria: hombre',
+        '    secciones:',
+        '      - nombre: Estilos',
+        '        mostrar: subcategorias',
+        '      - nombre: Marcas',
+        '        mostrar: { valores: marca }',
+        '      - nombre: Modelos',
+        '        mostrar: { valores: estilo, limite: 8 }',
+        '      - nombre: Destacados',
+        '        enlaces:',
+        '          - nombre: Clásicos Nike',
+        '            filtro: { marca: [Nike], estilo: [clasicos] }',
+        '          - coleccion: seleccion-de-don-juan',
+        '          - { nombre: Rebajas, categoria: hombre-ofertas }',
       ]),
     )
 
     expect(errors).toEqual([])
     expect(structure).toEqual({
+      metafields: [
+        // `filtro` left out is no filter; `origen` left out is a metafield.
+        { name: 'Género', key: 'genero', filterable: true, source: 'metafield' },
+        { name: 'Estilo', key: 'estilo', filterable: false, source: 'metafield' },
+        { name: 'Colecciones', key: 'colecciones', filterable: false, source: 'metafield' },
+        // The brand, named by its clave like any other campo.
+        { name: 'Marca', key: 'marca', filterable: true, source: 'vendor' },
+      ],
       categories: [
         {
           name: 'Hombre',
           handle: 'hombre',
-          rule: [['genero:hombre', 'genero:unisex']],
+          rule: { genero: ['hombre', 'unisex'], marca: ['Nike'] },
           children: [
             {
               name: 'Clásicos',
               handle: 'hombre-clasicos',
-              rule: [['genero:hombre', 'genero:unisex'], ['estilo:clasicos']],
+              rule: { genero: ['hombre', 'unisex'], estilo: ['clasicos'] },
               children: [],
             },
             // No rule: a manual Category.
@@ -53,12 +89,36 @@ test.describe('parseCatalogStructure', () => {
         { name: 'Mujer', handle: 'mujer', rule: null, children: [] },
       ],
       collections: [
-        { name: 'Selección de Don Juan', handle: 'seleccion-de-don-juan', rule: [['coleccion:seleccion-de-don-juan']] },
+        {
+          name: 'Selección de Don Juan',
+          handle: 'seleccion-de-don-juan',
+          rule: { colecciones: ['seleccion-de-don-juan'] },
+        },
       ],
       menu: [
-        { type: 'category', handle: 'mujer' },
-        { type: 'collection', handle: 'seleccion-de-don-juan' },
-        { type: 'category', handle: 'hombre' },
+        // No secciones: the entry brings its children, as it always has.
+        { type: 'category', handle: 'mujer', sections: [] },
+        { type: 'collection', handle: 'seleccion-de-don-juan', sections: [] },
+        {
+          type: 'category',
+          handle: 'hombre',
+          sections: [
+            { type: 'subcategories', name: 'Estilos' },
+            // `limite` left out shows every value.
+            { type: 'values', name: 'Marcas', key: 'marca', limit: null },
+            { type: 'values', name: 'Modelos', key: 'estilo', limit: 8 },
+            {
+              type: 'links',
+              name: 'Destacados',
+              links: [
+                { type: 'filter', name: 'Clásicos Nike', filter: { marca: ['Nike'], estilo: ['clasicos'] } },
+                // No nombre: the store labels it with the Collection's own.
+                { type: 'collection', handle: 'seleccion-de-don-juan', name: null },
+                { type: 'category', handle: 'hombre-ofertas', name: 'Rebajas' },
+              ],
+            },
+          ],
+        },
       ],
     })
   })
@@ -68,62 +128,176 @@ test.describe('parseCatalogStructure', () => {
     const { structure, errors } = parseCatalogStructure(text)
 
     expect(errors).toEqual([])
+    expect(structure?.metafields.map((metafield) => metafield.key)).toEqual(['genero', 'tipo', 'colecciones', 'marca'])
+    expect(structure?.metafields.find((metafield) => metafield.key === 'marca')).toMatchObject({
+      source: 'vendor',
+      filterable: false,
+    })
     expect(structure?.categories.map((category) => category.handle)).toEqual(['men', 'women', 'unisex'])
     expect(structure?.categories[0]?.children.map((child) => child.handle)).toEqual([
       'men-tops',
       'men-bottoms',
       'men-shoes',
-      'men-accessories',
     ])
   })
 
   test('reports every problem with the path it is at', async ({ expect }) => {
     const { structure, errors } = parseCatalogStructure(
       yaml([
+        'campos:',
+        '  - nombre: Género',
+        '    clave: Género',
+        '  - nombre: Estilo',
+        '  - nombre: Talla',
+        '    clave: talla',
+        '    filtro: si',
+        '  - nombre: Marca',
+        '    clave: marca',
+        '    origen: proveedor',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
+        '    regla: {}',
         '    hijos:',
         '      - nombre: Clásicos',
         '        handle: Hombre Clasicos',
+        '        regla: { genero: [] }',
         '      - handle: hombre-ofertas',
-        '        regla: [[]]',
+        '        regla: { genero: hombre }',
         '        orden: 2',
         'colecciones:',
         '  - nombre: Rebajas',
         '    handle: rebajas',
-        '    regla: genero:hombre',
+        '    regla: [[genero:hombre]]',
         'menu:',
         '  - pagina: inicio',
+        '  - categoria: hombre',
+        '    secciones:',
+        '      - mostrar: subcategorias',
+        '      - nombre: Marcas',
+        '        mostrar: { valores: marca, limite: 0 }',
+        '      - nombre: Modelos',
+        '        mostrar: todos',
+        '      - nombre: Destacados',
+        '        enlaces:',
+        '          - nombre: Superstar',
+        '            filtro: { modelo: Superstar }',
       ]),
     )
 
     expect(structure).toBeNull()
     expect(errors).toEqual([
+      { path: 'campos[0].clave', message: 'Must be 2 to 64 lowercase letters, digits, "-" or "_", like "genero".' },
+      { path: 'campos[1].clave', message: 'Must be a clave.' },
+      { path: 'campos[2].filtro', message: 'Must be true or false.' },
+      { path: 'campos[3].origen', message: 'Must be "vendor", or left out for a metafield.' },
+      { path: 'categorias[0].regla', message: 'Must hold at least one condition.' },
       {
         path: 'categorias[0].hijos[0].handle',
         message: 'Must be lowercase letters and digits joined by hyphens, like "hombre-clasicos".',
       },
+      { path: 'categorias[0].hijos[0].regla.genero', message: 'Must name at least one value.' },
       { path: 'categorias[0].hijos[1].nombre', message: 'Must be a name.' },
-      { path: 'categorias[0].hijos[1].regla[0]', message: 'Must name at least one tag.' },
+      { path: 'categorias[0].hijos[1].regla.genero', message: 'Must be a list of values, any one of which matches.' },
       { path: 'categorias[0].hijos[1]', message: 'Unrecognized key: "orden"' },
-      { path: 'colecciones[0].regla', message: 'Must be a list of conditions, each a list of tags.' },
-      { path: 'menu[0]', message: 'Must be one of "categoria: <handle>" or "coleccion: <handle>".' },
+      { path: 'colecciones[0].regla', message: 'Must be a mapping of claves to lists of values.' },
+      { path: 'menu[0]', message: 'Unrecognized key: "pagina"' },
+      { path: 'menu[1].secciones[0].nombre', message: 'Must be a name.' },
+      { path: 'menu[1].secciones[1].mostrar.limite', message: 'Must be a positive whole number.' },
+      {
+        path: 'menu[1].secciones[2].mostrar',
+        message: 'Must be "subcategorias" or "{ valores: <clave>, limite: <n> }".',
+      },
+      {
+        path: 'menu[1].secciones[3].enlaces[0].filtro.modelo',
+        message: 'Must be a list of values, any one of which matches.',
+      },
     ])
   })
 
-  test('refuses a handle used twice and a menu entry naming a handle the file does not declare', async ({ expect }) => {
+  test('refuses a menu section that names an undeclared clave or handle, or mixes its keys', async ({ expect }) => {
     const { structure, errors } = parseCatalogStructure(
       yaml([
+        'campos:',
+        '  - { nombre: Marca, clave: marca, origen: vendor }',
+        'categorias:',
+        '  - { nombre: Hombre, handle: hombre }',
+        'colecciones:',
+        '  - { nombre: Rebajas, handle: rebajas }',
+        'menu:',
+        '  - categoria: hombre',
+        '    coleccion: rebajas',
+        '  - {}',
+        '  - categoria: hombre',
+        '    secciones:',
+        '      - nombre: Modelos',
+        '        mostrar: { valores: modelo }',
+        '      - nombre: Vacía',
+        '      - nombre: Las dos',
+        '        mostrar: subcategorias',
+        '        enlaces: []',
+        '      - nombre: Destacados',
+        '        enlaces:',
+        '          - nombre: Superstar',
+        '            filtro: { modelo: [Superstar] }',
+        '          - filtro: { marca: [Nike] }',
+        '          - { categoria: mujer }',
+        '          - { coleccion: ofertas }',
+        '          - { nombre: Dos destinos, categoria: hombre, coleccion: rebajas }',
+        '          - { nombre: Ninguno }',
+        '  - coleccion: rebajas',
+        '    secciones:',
+        '      - nombre: Estilos',
+        '        mostrar: subcategorias',
+      ]),
+    )
+
+    expect(structure).toBeNull()
+    const either = 'Must be one of "categoria: <handle>" or "coleccion: <handle>".'
+    const oneTarget = 'Must have exactly one of filtro, categoria or coleccion.'
+    expect(errors).toEqual([
+      { path: 'menu[0]', message: either },
+      { path: 'menu[1]', message: either },
+      { path: 'menu[2].secciones[0].mostrar.valores', message: 'No campo in the file has the clave "modelo".' },
+      { path: 'menu[2].secciones[1]', message: 'Must have exactly one of mostrar or enlaces.' },
+      { path: 'menu[2].secciones[2]', message: 'Must have exactly one of mostrar or enlaces.' },
+      {
+        path: 'menu[2].secciones[3].enlaces[0].filtro.modelo',
+        message: 'No campo in the file has the clave "modelo".',
+      },
+      { path: 'menu[2].secciones[3].enlaces[1]', message: 'A link with a filtro must have a nombre.' },
+      { path: 'menu[2].secciones[3].enlaces[2].categoria', message: 'No category in the file has the handle "mujer".' },
+      {
+        path: 'menu[2].secciones[3].enlaces[3].coleccion',
+        message: 'No collection in the file has the handle "ofertas".',
+      },
+      { path: 'menu[2].secciones[3].enlaces[4]', message: oneTarget },
+      { path: 'menu[2].secciones[3].enlaces[5]', message: oneTarget },
+      { path: 'menu[3].secciones[0].mostrar', message: 'A collection has no subcategorias.' },
+    ])
+  })
+
+  test('refuses a clave or handle used twice, a second vendor campo, a rule naming an undeclared clave and a menu entry naming an undeclared handle', async ({
+    expect,
+  }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'campos:',
+        '  - { nombre: Género, clave: genero }',
+        '  - { nombre: Sexo, clave: genero }',
+        '  - { nombre: Marca, clave: marca, origen: vendor }',
+        '  - { nombre: Fabricante, clave: fabricante, origen: vendor }',
         'categorias:',
         '  - nombre: Hombre',
         '    handle: hombre',
+        '    regla: { genero: [hombre], estilo: [clasicos] }',
         '    hijos:',
         '      - nombre: Hombre',
         '        handle: hombre',
         'colecciones:',
         '  - nombre: Rebajas',
         '    handle: rebajas',
+        '    regla: { rebajas: [si] }',
         '  - nombre: Rebajas otra vez',
         '    handle: rebajas',
         'menu:',
@@ -136,7 +310,11 @@ test.describe('parseCatalogStructure', () => {
 
     expect(structure).toBeNull()
     expect(errors).toEqual([
+      { path: 'campos[1].clave', message: 'The clave "genero" is used more than once.' },
+      { path: 'campos[3].origen', message: 'Only one campo can be the vendor; "marca" already is.' },
+      { path: 'categorias[0].regla.estilo', message: 'No campo in the file has the clave "estilo".' },
       { path: 'categorias[0].hijos[0].handle', message: 'The category handle "hombre" is used more than once.' },
+      { path: 'colecciones[0].regla.rebajas', message: 'No campo in the file has the clave "rebajas".' },
       { path: 'colecciones[1].handle', message: 'The collection handle "rebajas" is used more than once.' },
       { path: 'menu[0].categoria', message: 'No category in the file has the handle "mujer".' },
       { path: 'menu[1].categoria', message: 'No category in the file has the handle "rebajas".' },
@@ -150,7 +328,7 @@ test.describe('parseCatalogStructure', () => {
     expect(broken.errors[0]?.message).toMatch(/^The file is not valid YAML: /)
 
     expect(parseCatalogStructure('- hombre\n').errors).toEqual([
-      { path: '', message: 'The file must be a mapping with categorias, colecciones and menu.' },
+      { path: '', message: 'The file must be a mapping with campos, categorias, colecciones and menu.' },
     ])
   })
 })

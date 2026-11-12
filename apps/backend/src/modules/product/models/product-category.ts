@@ -26,7 +26,7 @@ export const productCategoryTable = pgTable(
     isActive: boolean().default(false).notNull(),
     /** Assignable in the admin, never shown on the store. */
     isInternal: boolean().default(false).notNull(),
-    /** The tag rule that decides the members; `null` is a manual Category whose members are picked. */
+    /** The rule over metafields that decides the members; `null` is a manual Category whose members are picked. */
     rule: jsonb().$type<ProductGroupingRuleDTO | null>(),
     ...timestamps,
   },

@@ -27,9 +27,14 @@ export function ProductOrganizationSection({ product }: { product: AdminGroupedP
         </CardAction>
       </CardHeader>
       <SectionRow title={t`Type`} value={product.type?.value ?? '-'} />
+      {/* Read-only: the import's Vendor column is the source, so the organization form leaves it out. */}
+      <SectionRow title={t`Brand`} value={product.brand ?? '-'} />
       <SectionRow title={t`Categories`} value={categories || '-'} />
       <SectionRow title={t`Collections`} value={collections || '-'} />
       <SectionRow title={t`Tags`} value={tags || '-'} />
+      {product.metafields.map((metafield) => (
+        <SectionRow key={metafield.key} title={metafield.name} value={metafield.values.join(', ')} />
+      ))}
     </Card>
   )
 }

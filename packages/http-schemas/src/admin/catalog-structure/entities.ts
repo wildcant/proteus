@@ -6,6 +6,14 @@ export const AdminCatalogStructureError = z
   .openapi('AdminCatalogStructureError')
 export type AdminCatalogStructureError = z.input<typeof AdminCatalogStructureError>
 
+/**
+ * A metafield definition the file creates, updates or deletes. `filterable` is its `filtro`; `source`
+ * is its `origen`, `vendor` being the product's brand rather than a metafield.
+ */
+export const AdminCatalogStructureMetafieldChange = z
+  .object({ key: z.string(), name: z.string(), filterable: z.boolean(), source: z.enum(['metafield', 'vendor']) })
+  .openapi('AdminCatalogStructureMetafieldChange')
+
 /** A Category the file creates, updates or deletes. `parentHandle` is where it ends up, or where it was for a delete. */
 export const AdminCatalogStructureCategoryChange = z
   .object({ handle: z.string(), name: z.string(), parentHandle: z.string().nullable() })
@@ -19,20 +27,54 @@ export const AdminCatalogStructureCollectionChange = z
   .object({ handle: z.string(), name: z.string() })
   .openapi('AdminCatalogStructureCollectionChange')
 
-/** One entry of the store's menu: a Category, which brings its children, or a Collection. */
+const AdminNavigationTargetType = z.enum(['category', 'collection'])
+
+/**
+ * A link a menu section names by hand: the entry's own list filtered by field values (`filter`, by
+ * clave), or a Category or Collection by handle, labelled by `name` or, when null, by its own.
+ */
+const AdminNavigationLink = z
+  .discriminatedUnion('type', [
+    z.object({ type: z.literal('filter'), name: z.string(), filter: z.record(z.string(), z.array(z.string())) }),
+    z.object({ type: AdminNavigationTargetType, handle: z.string(), name: z.string().nullable() }),
+  ])
+  .openapi('AdminNavigationLink')
+
+/**
+ * One section of a menu entry's panel as the file writes it: the entry's child Categories, each value
+ * of one field among its products (at most `limit`), or fixed links.
+ */
+const AdminNavigationSection = z
+  .discriminatedUnion('type', [
+    z.object({ type: z.literal('subcategories'), name: z.string() }),
+    z.object({ type: z.literal('values'), name: z.string(), key: z.string(), limit: z.number().int().nullable() }),
+    z.object({ type: z.literal('links'), name: z.string(), links: z.array(AdminNavigationLink) }),
+  ])
+  .openapi('AdminNavigationSection')
+
+/**
+ * One entry of the store's menu: a Category or a Collection. Without `sections` a Category brings its
+ * children; with them the entry opens a panel of those sections.
+ */
 export const AdminNavigationEntry = z
-  .object({ type: z.enum(['category', 'collection']), handle: z.string() })
+  .object({ type: AdminNavigationTargetType, handle: z.string(), sections: z.array(AdminNavigationSection) })
   .openapi('AdminNavigationEntry')
 export type AdminNavigationEntry = z.input<typeof AdminNavigationEntry>
 
 /**
- * What a structure file does to the store, by handle. An update is a new name, rule or rank, or an
- * inactive Category turned active; a move is a new parent and is listed only as a move. A file with
+ * What a structure file does to the store: to the metafield definitions by key, where an update is a
+ * new name, filter switch, source or place, and to the groupings by handle, where an update is a new name, rule or rank, or an
+ * inactive Category turned active, and a move is a new parent, listed only as a move. A file with
  * errors changes nothing and cannot be applied.
  */
 export const AdminCatalogStructurePlan = z
   .object({
     errors: z.array(AdminCatalogStructureError),
+    metafields: z.object({
+      create: z.array(AdminCatalogStructureMetafieldChange),
+      update: z.array(AdminCatalogStructureMetafieldChange),
+      delete: z.array(AdminCatalogStructureMetafieldChange),
+    }),
     categories: z.object({
       create: z.array(AdminCatalogStructureCategoryChange),
       update: z.array(AdminCatalogStructureCategoryChange),

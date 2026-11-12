@@ -337,9 +337,10 @@ console.info(
 
 // --- Catalogue ---
 // Two committed files define it, the way they define a real store: `catalog-structure.yaml` holds
-// the Categories and Collections with their tag rules plus the menu, and `product-import.csv` the
-// products. Both go through what the admin runs — the structure apply, then the CSV's parse and one
-// `import-product` workflow per product — so membership comes from the rules, as it would there.
+// the metafield definitions, the Categories and Collections with their rules plus the menu, and
+// `product-import.csv` the products. Both go through what the admin runs — the structure apply, then
+// the CSV's parse and one `import-product` workflow per product — so membership comes from the
+// rules, as it would there.
 const CATALOG_STRUCTURE_PATH = path.join(import.meta.dirname, 'seed', 'catalog-structure.yaml')
 const CATALOG_CSV_PATH = path.join(import.meta.dirname, 'seed', 'product-import.csv')
 

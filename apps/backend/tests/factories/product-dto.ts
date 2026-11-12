@@ -9,6 +9,7 @@ import type {
   SetProductOptionsDTO,
   UpdateProductDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   VariantImageInput,
 } from '@core/types/product/mutations.js'
 import { faker } from '@faker-js/faker'
@@ -160,6 +161,17 @@ export function generateCreateProductTagDTO(overrides?: Partial<CreateProductTag
   }
 }
 
+export function generateUpsertProductMetafieldDefinitionDTO(
+  overrides?: Partial<UpsertProductMetafieldDefinitionDTO>,
+): UpsertProductMetafieldDefinitionDTO {
+  return {
+    // Unique among live definitions, so two generated keys in one test cannot collide.
+    key: `${faker.word.noun().toLowerCase()}_${faker.string.alphanumeric({ length: 6, casing: 'lower' })}`,
+    name: faker.word.noun(),
+    ...overrides,
+  }
+}
+
 /** A product as an import file would describe it: one untracked, option-less variant, no groupings, no images. */
 export function generateImportedProductDTO(overrides?: Partial<ImportedProductDTO>): ImportedProductDTO {
   const handle = `${faker.helpers.slugify(faker.commerce.productName()).toLowerCase()}-${faker.string.alphanumeric(6).toLowerCase()}`
@@ -172,6 +184,8 @@ export function generateImportedProductDTO(overrides?: Partial<ImportedProductDT
     status: 'published',
     type: null,
     tags: [],
+    metafields: {},
+    brand: null,
     options: [],
     variants: [
       {

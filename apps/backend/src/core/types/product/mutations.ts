@@ -1,4 +1,5 @@
 import type {
+  ProductFieldSource,
   ProductGroupingRuleDTO,
   ProductImportErrorDTO,
   ProductImportOptionsDTO,
@@ -38,6 +39,9 @@ export type CreateProductDTO = {
   images?: CreateProductImageInput[]
   /** The product's Product Type. */
   typeId?: string | null
+  /** The product's brand, which the vendor field reads. */
+  brand?: string | null
+  metafields?: ProductMetafieldValuesDTO
 } & ProductGroupingIdsDTO
 
 export type UpdateProductDTO = {
@@ -62,7 +66,27 @@ export type UpdateProductDTO = {
   images?: UpsertProductImageInput[]
   /** `null` clears the Product Type. Absent leaves it alone. */
   typeId?: string | null
+  /** `null` clears the brand. Absent leaves it alone. */
+  brand?: string | null
+  metafields?: ProductMetafieldValuesDTO
 } & ProductGroupingIdsDTO
+
+/**
+ * A product's metafield values by definition key, `{ genero: ['men', 'unisex'] }`. Each key named
+ * replaces that metafield's values, `[]` clears it, and keys left out are left alone. A key with no
+ * definition is refused.
+ */
+export type ProductMetafieldValuesDTO = Record<string, string[]>
+
+/** Creates the definition of `key`, or updates the one that exists. */
+export type UpsertProductMetafieldDefinitionDTO = {
+  key: string
+  name: string
+  /** Absent is not filterable. */
+  filterable?: boolean
+  /** Absent is a metafield. */
+  source?: ProductFieldSource
+}
 
 /** The pivot-backed groupings a product write sets. Each replaces the product's whole set; absent leaves it alone. */
 export type ProductGroupingIdsDTO = {

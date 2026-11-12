@@ -4,6 +4,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
+  cn,
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -97,21 +98,44 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
   )
 }
 
-/** Following any of its links closes the menu for free — see `SideMenu` — so this holds no state. */
+/**
+ * Following any of its links closes the menu for free — see `SideMenu` — so this holds no state.
+ * Sections nest as groups of their own inside the entry's, each expanding in place like the entry.
+ */
 function SideMenuGroup({ group }: { group: MenuGroup }) {
   const childClassName = 'block py-3 text-base text-ink-muted no-underline hover:text-ink'
+  const triggerClassName =
+    'items-center font-normal text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink'
 
   return (
     <Accordion>
       <AccordionItem value={group.key} className="not-last:border-b-0">
-        <AccordionTrigger className="items-center py-4 font-normal text-base text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink">
-          {group.label}
-        </AccordionTrigger>
+        <AccordionTrigger className={cn(triggerClassName, 'py-4 text-base')}>{group.label}</AccordionTrigger>
         <AccordionContent className="pb-2 [&_a]:no-underline">
           <ul className="m-0 flex list-none flex-col p-0 pl-4">
-            {group.links.map((link) => (
+            {[group.shopAll, ...group.links].map((link) => (
               <li key={link.key}>
                 <MenuLink destination={link} className={childClassName} />
+              </li>
+            ))}
+            {group.sections.map((section) => (
+              <li key={section.key}>
+                <Accordion>
+                  <AccordionItem value={section.key} className="not-last:border-b-0">
+                    <AccordionTrigger className={cn(triggerClassName, 'py-3 text-base')}>
+                      {section.title}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-2 [&_a]:no-underline">
+                      <ul className="m-0 flex list-none flex-col p-0 pl-4">
+                        {section.links.map((link) => (
+                          <li key={link.key}>
+                            <MenuLink destination={link} className={childClassName} />
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </li>
             ))}
           </ul>

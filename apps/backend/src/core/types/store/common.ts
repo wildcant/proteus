@@ -1,9 +1,33 @@
 import type { BaseFilterable, OperatorMap } from '../common.js'
 
-/** One entry of the store's menu: a Category, which brings its children, or a Collection, by handle. */
+type StoreNavigationTargetType = 'category' | 'collection'
+
+/**
+ * A link a menu section names by hand: the entry's own list filtered by field values (`filter`, keyed
+ * by clave, values ORed within a clave), or a Category or Collection by handle, labelled by `name` or,
+ * when that is null, by the grouping's own.
+ */
+export type StoreNavigationLinkDTO =
+  | { type: 'filter'; name: string; filter: Record<string, string[]> }
+  | { type: StoreNavigationTargetType; handle: string; name: string | null }
+
+/**
+ * One column of a menu entry's panel, as the structure file writes it: the entry's visible child
+ * Categories, each distinct value of one field among the entry's products (cut at `limit`), or fixed links.
+ */
+export type StoreNavigationSectionDTO =
+  | { type: 'subcategories'; name: string }
+  | { type: 'values'; name: string; key: string; limit: number | null }
+  | { type: 'links'; name: string; links: StoreNavigationLinkDTO[] }
+
+/**
+ * One entry of the store's menu: a Category or a Collection, by handle. With no `sections` a
+ * Category brings its children; with them, the entry opens a panel of those sections.
+ */
 export type StoreNavigationEntryDTO = {
-  type: 'category' | 'collection'
+  type: StoreNavigationTargetType
   handle: string
+  sections: StoreNavigationSectionDTO[]
 }
 
 export type StoreDTO = {

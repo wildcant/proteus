@@ -1,20 +1,27 @@
 import { useLingui } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
+import { type MenuSection, type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
 
 /** One destination: the catalogue when `target` is absent, otherwise that Category's or Collection's page. */
 type MenuDestination = { key: string; label: string; target?: MenuTarget }
 
 /**
- * A Category with children. It opens rather than navigates, so its own page is the first of
- * `links`, as "Shop all <name>".
+ * A menu entry that opens rather than navigates, so its own page is `shopAll`, "Shop all <name>".
+ * A Category with children lists them in `links`; an entry with sections lays them out as titled
+ * columns in `sections` instead, and has no `links`.
  */
-export type MenuGroup = { key: string; label: string; links: MenuDestination[] }
+export type MenuGroup = {
+  key: string
+  label: string
+  shopAll: MenuDestination
+  links: MenuDestination[]
+  sections: MenuSection[]
+}
 
 type MenuEntry = MenuDestination | MenuGroup
 
-export const isMenuGroup = (entry: MenuEntry): entry is MenuGroup => 'links' in entry
+export const isMenuGroup = (entry: MenuEntry): entry is MenuGroup => 'shopAll' in entry
 
 /**
  * The storefront's navigation as data, which the header rail and the side menu each render in
@@ -27,9 +34,9 @@ export function useMenuEntries(source: MenuSource): MenuEntry[] {
 
   return [
     { key: 'shop-all', label: t`Shop all` },
-    ...resolveMenuItems(source).map(({ key, label: name, target, children }): MenuEntry => {
-      if (children.length === 0) return { key, label: name, target }
-      return { key, label: name, links: [{ key, label: t`Shop all ${name}`, target }, ...children] }
+    ...resolveMenuItems(source).map(({ key, label: name, target, children, sections }): MenuEntry => {
+      if (children.length === 0 && sections.length === 0) return { key, label: name, target }
+      return { key, label: name, shopAll: { key, label: t`Shop all ${name}`, target }, links: children, sections }
     }),
   ]
 }
@@ -55,15 +62,29 @@ export function MenuLink({
       </Link>
     )
   }
+  // A sections link lands on the list already filtered, through the list's own `filter` param.
+  const search = target.filter ? { filter: target.filter } : undefined
   if (target.type === 'collection') {
     return (
-      <Link to="/collections/$handle" params={{ handle: target.handle }} onClick={onClick} className={className}>
+      <Link
+        to="/collections/$handle"
+        params={{ handle: target.handle }}
+        search={search}
+        onClick={onClick}
+        className={className}
+      >
         {content}
       </Link>
     )
   }
   return (
-    <Link to="/categories/$handle" params={{ handle: target.handle }} onClick={onClick} className={className}>
+    <Link
+      to="/categories/$handle"
+      params={{ handle: target.handle }}
+      search={search}
+      onClick={onClick}
+      className={className}
+    >
       {content}
     </Link>
   )

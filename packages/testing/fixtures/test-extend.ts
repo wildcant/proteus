@@ -19,6 +19,8 @@ import {
   createProductCategory,
   createProductCollection,
   createProductImage,
+  createProductMetafield,
+  createProductMetafieldDefinition,
   createProductOption,
   createProductOptionValue,
   createProductProductCategory,
@@ -230,6 +232,8 @@ export type Factories = {
     productCategory: typeof createProductCategory
     productCollection: typeof createProductCollection
     productImage: typeof createProductImage
+    productMetafield: typeof createProductMetafield
+    productMetafieldDefinition: typeof createProductMetafieldDefinition
     productVariant: typeof createProductVariant
     productVariantImage: typeof createProductVariantImage
     productOption: typeof createProductOption
@@ -357,6 +361,8 @@ export function createTest<RoutePath extends string = string>() {
         productCategory: createProductCategory,
         productCollection: createProductCollection,
         productImage: createProductImage,
+        productMetafield: createProductMetafield,
+        productMetafieldDefinition: createProductMetafieldDefinition,
         productVariant: createProductVariant,
         productVariantImage: createProductVariantImage,
         productOption: createProductOption,

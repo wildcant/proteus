@@ -5,6 +5,8 @@ import { productCategoryTable } from './models/product-category.js'
 import { productCollectionTable } from './models/product-collection.js'
 import { productImageTable } from './models/product-image.js'
 import { productImportTable } from './models/product-import.js'
+import { productMetafieldTable } from './models/product-metafield.js'
+import { productMetafieldDefinitionTable } from './models/product-metafield-definition.js'
 import { productOptionTable } from './models/product-option.js'
 import { productOptionValueTable } from './models/product-option-value.js'
 import { productProductCategoryTable } from './models/product-product-category.js'
@@ -22,6 +24,8 @@ import { ProductCategoryRepository } from './repositories/product-category.js'
 import { ProductCollectionRepository } from './repositories/product-collection.js'
 import { ProductImageRepository } from './repositories/product-image.js'
 import { ProductImportRepository } from './repositories/product-import.js'
+import { ProductMetafieldRepository } from './repositories/product-metafield.js'
+import { ProductMetafieldDefinitionRepository } from './repositories/product-metafield-definition.js'
 import { ProductOptionRepository } from './repositories/product-option.js'
 import { ProductOptionValueRepository } from './repositories/product-option-value.js'
 import { ProductProductCategoryRepository } from './repositories/product-product-category.js'
@@ -49,6 +53,8 @@ export default Module(Modules.PRODUCT, {
     productCollectionTable,
     productImageTable,
     productImportTable,
+    productMetafieldDefinitionTable,
+    productMetafieldTable,
     productOptionTable,
     productOptionValueTable,
     productProductCategoryTable,
@@ -81,5 +87,7 @@ export default Module(Modules.PRODUCT, {
     productProductTagRepository: ProductProductTagRepository,
     productTypeRepository: ProductTypeRepository,
     productImportRepository: ProductImportRepository,
+    productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository,
+    productMetafieldRepository: ProductMetafieldRepository,
   },
 })

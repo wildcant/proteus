@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { dateToIso } from '../../common.js'
-import { AdminProductGroupingRule } from '../product-tag/entities.js'
+import { AdminProductGroupingRule } from '../product-metafield/entities.js'
 
 export const AdminProductCollection = z
   .object({

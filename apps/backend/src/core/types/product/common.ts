@@ -29,6 +29,8 @@ export type ProductDTO = {
   metadata: Record<string, unknown> | null
   /** The product's Product Type. Can name a soft-deleted Type; `listProductGroupings` joins live ones only. */
   typeId: string | null
+  /** The product's brand, the CSV's Vendor column. */
+  brand: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -53,6 +55,13 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   tagId?: string | string[]
   /** Products carrying any of the Tags with these values. Not a column, as `tagId`. */
   tagValue?: string | string[]
+  /**
+   * Products whose field holds any of the values listed for its key, for every key listed —
+   * `{ genero: ['women'], tipo: ['tops', 'bottoms'] }`. A vendor field's key matches the brand,
+   * ignoring case. An unknown key matches nothing; a key with no values narrows nothing. Not a
+   * column, as `tagId`.
+   */
+  metafields?: Record<string, string[]>
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
@@ -321,11 +330,58 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
 }
 
 /**
- * A tag rule: every condition must hold, and a condition holds when the product carries any one of its
- * tag values — an AND of ORs. `[['genero:hombre', 'genero:unisex'], ['estilo:clasicos']]` reads
- * "(hombre or unisex) and clasicos". Values match exactly, as tags are stored.
+ * A rule: one condition per field key, every condition must hold, and a condition holds when the
+ * product's field carries any one of its values — an AND of ORs.
+ * `{ genero: ['hombre', 'unisex'], estilo: ['clasicos'] }` reads "(hombre or unisex) and clasicos".
+ * Metafield values match exactly, as they are stored; the vendor field matches the brand ignoring case.
  */
-export type ProductGroupingRuleDTO = string[][]
+export type ProductGroupingRuleDTO = Record<string, string[]>
+
+/** What a metafield holds. A list of short texts is the only kind, the one Shopify can filter on and build collections from. */
+export type ProductMetafieldType = 'list.single_line_text_field'
+
+/**
+ * Where a field's values come from: the product's metafield rows, or its `brand` column (the CSV's
+ * Vendor). At most one field is `vendor`.
+ */
+export type ProductFieldSource = 'metafield' | 'vendor'
+
+/** A named product field ("Género", key `genero`), as the structure file's `campos` declare it. */
+export type ProductMetafieldDefinitionDTO = {
+  id: string
+  namespace: string
+  key: string
+  name: string
+  type: ProductMetafieldType
+  /** Offered as a storefront filter on the product lists. */
+  filterable: boolean
+  /** Place among the definitions, the structure file's order. */
+  rank: number
+  source: ProductFieldSource
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/** One value of a storefront filter, with how many products in view would hold it. */
+export type ProductMetafieldFilterValueDTO = {
+  value: string
+  count: number
+}
+
+/** A filterable metafield over the products in view: every value they hold, sorted. */
+export type ProductMetafieldFilterDTO = {
+  key: string
+  name: string
+  values: ProductMetafieldFilterValueDTO[]
+}
+
+/** One of a product's metafields with its values, in the order they were written. */
+export type ProductMetafieldDTO = {
+  key: string
+  name: string
+  values: string[]
+}
 
 export type ProductCategoryDTO = {
   id: string
@@ -386,11 +442,23 @@ type CatalogStructureCollectionDTO = {
   rule: ProductGroupingRuleDTO | null
 }
 
+/** A metafield definition as a structure file's `campos` declare it. */
+type CatalogStructureMetafieldDTO = {
+  name: string
+  key: string
+  /** `filtro: true`: offered as a storefront filter. */
+  filterable: boolean
+  /** `origen: vendor`: the product's brand rather than a metafield. */
+  source: ProductFieldSource
+}
+
 /**
- * The store's structure as `estructura.yaml` declares it: the Category tree, the Collections and the
- * menu. The file is the source: applying it makes the catalogue's groupings exactly these.
+ * The store's structure as `estructura.yaml` declares it: the metafield definitions its rules read,
+ * the Category tree, the Collections and the menu. The file is the source: applying it makes the
+ * catalogue's definitions and groupings exactly these.
  */
 export type CatalogStructureDTO = {
+  metafields: CatalogStructureMetafieldDTO[]
   categories: CatalogStructureCategoryDTO[]
   collections: CatalogStructureCollectionDTO[]
   menu: StoreNavigationEntryDTO[]
@@ -420,10 +488,16 @@ type CatalogStructureCollectionChangeDTO = {
 }
 
 /**
- * What applying a structure does to the groupings, by handle. An update is a new name, rule, rank
- * or an inactive Category turned active; a move is a new parent, and is listed only as a move.
+ * What applying a structure does to the metafield definitions, by key, and to the groupings, by
+ * handle. A definition update is a new name, filter switch or place. A grouping update is a new name,
+ * rule, rank or an inactive Category turned active; a move is a new parent, and is listed only as a move.
  */
 export type CatalogStructureChangesDTO = {
+  metafields: {
+    create: CatalogStructureMetafieldDTO[]
+    update: CatalogStructureMetafieldDTO[]
+    delete: CatalogStructureMetafieldDTO[]
+  }
   categories: {
     create: CatalogStructureCategoryChangeDTO[]
     update: CatalogStructureCategoryChangeDTO[]
@@ -533,6 +607,13 @@ export type ImportedProductDTO = {
   status: ProductStatusType
   type: string | null
   tags: string[]
+  /**
+   * Values by key for each metafield column in the file, read from the product's first row. `[]` is
+   * an empty cell, which clears the metafield; a key without a column is absent and left alone.
+   */
+  metafields: Record<string, string[]>
+  /** The Vendor cell, trimmed; `null` when empty or the file has no Vendor column. */
+  brand: string | null
   options: Array<{ title: string; values: string[] }>
   variants: ImportedVariantDTO[]
   /** In display order. */
@@ -547,6 +628,10 @@ export type ProductImportSummaryDTO = {
   willCreate: { tags: string[]; types: string[] }
   /** Columns present in the file that the import does not read. */
   ignoredColumns: string[]
+  /** The metafields the file has a column for, by key, with the name the store gives each. */
+  metafields: Array<{ key: string; name: string }>
+  /** What the store calls the brand: the vendor campo's name, `null` when no campo reads it. */
+  brandName: string | null
   firstProduct: ImportedProductDTO | null
 }
 

@@ -28,7 +28,7 @@ export const GET = async (
 
   const { pagination, filters } = req.validatedQuery
   const { offset, limit } = pagination
-  const { category, collection, tag, ...columnFilters } = filters
+  const { category, collection, tag, filter, ...columnFilters } = filters
 
   const {
     productIds: sellableProductIds,
@@ -44,7 +44,7 @@ export const GET = async (
   const [products, count] = await productService.listAndCountProducts(
     {
       ...columnFilters,
-      ...buildStoreGroupingFilters({ category, collection, tag }),
+      ...buildStoreGroupingFilters({ category, collection, tag, filter }),
       status: 'published',
       id: sellableProductIds,
     },

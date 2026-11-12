@@ -14,9 +14,12 @@ import type {
   CreateProductTagDTO,
   CreateProductTypeDTO,
   CreateProductVariantDTO,
+  ProductMetafieldValuesDTO,
   SetProductOptionsDTO,
+  UpdateProductDTO,
   UpdateProductTypeDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   VariantImageInput,
 } from '../../../src/core/types/product/mutations.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
@@ -28,6 +31,7 @@ import {
   generateCreateProductVariantDTO,
   generateSetProductOptionsDTO,
   generateUpdateProductVariantDTO,
+  generateUpsertProductMetafieldDefinitionDTO,
   generateVariantImageInputDTO,
 } from '../product-dto.js'
 
@@ -70,6 +74,36 @@ export async function createProductTag(container: AppContainer, overrides?: Part
   const productService = container.resolve(Modules.PRODUCT)
 
   return productService.createTag(generateCreateProductTagDTO(overrides))
+}
+
+/** Metafield definitions, one per override, in order. */
+export async function createMetafieldDefinitions(
+  container: AppContainer,
+  overrides: Partial<UpsertProductMetafieldDefinitionDTO>[] = [{}],
+) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.upsertMetafieldDefinitions(
+    overrides.map((definition) => generateUpsertProductMetafieldDefinitionDTO(definition)),
+  )
+}
+
+/** Replaces the values of the metafields named; the rest are left alone. */
+export async function setProductMetafields(
+  container: AppContainer,
+  productId: string,
+  metafields: ProductMetafieldValuesDTO,
+) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.updateProduct(productId, { metafields })
+}
+
+/** Writes fields the admin cannot, such as the brand an import sets. */
+export async function updateProduct(container: AppContainer, productId: string, data: UpdateProductDTO) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.updateProduct(productId, data)
 }
 
 export async function createProductType(container: AppContainer, overrides?: Partial<CreateProductTypeDTO>) {

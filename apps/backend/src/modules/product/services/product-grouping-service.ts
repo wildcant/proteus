@@ -129,7 +129,7 @@ export class ProductGroupingService {
       if (collection.rule) {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: i18n.t("This collection's products follow its tag rule. Change the rule or the products' tags."),
+          message: i18n.t("This collection's products follow its rule. Change the rule or the products' metafields."),
         })
       }
       await this.productProductCollectionRepository.setProducts(collectionId, data, transactionContext)

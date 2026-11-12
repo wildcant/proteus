@@ -27,25 +27,64 @@ expose their name as `textContent` rather than `aria-label`.
 ## 1. Build the manifest
 
 ```bash
-pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/estructura.yaml]
+pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/estructura.yaml] [path/to/catalogo.csv]
 ```
 
-It prints `{ collections, menu }`:
+Pass the product CSV too (absolute paths, or relative to `apps/backend`): a menu section that lists a
+campo's values (`mostrar: { valores: <clave> }`) reads them off the CSV's products, and the script
+stops without it.
 
-- `collections[]`: `{ title, handle, rule, unsupported? }`. `rule` is `{ applies: 'all' | 'any', tags }`,
-  or `null` for a manual collection. `unsupported` explains a rule Shopify can't express; that
-  collection is created manual, and its reason goes in the final report.
-- `menu[]`: `{ title, collectionHandle, children }`, nested as the main menu must be.
+It prints `{ metafields, filters, collections, menu }`:
+
+- `metafields[]`: `{ name, namespace, key, type }`, the product metafield definitions the rules read.
+  `type` is always `list.single_line_text_field`. The vendor campo (`origen: vendor`, the brand) is
+  the product's built-in Vendor and has no definition.
+- `filters[]`: the storefront filters, in order. `{ name, source: 'metafield', metafield }` is a
+  metafield (`custom.<key>`); `{ name, source: 'vendor' }` is the Vendor, which Search & Discovery
+  calls "Brand".
+- `collections[]`: `{ title, handle, rule, unsupported? }`. `rule` is
+  `{ applies: 'all' | 'any', conditions }` or `null` for a manual collection. A condition is
+  `{ metafield, value }` (`metafield` is `custom.<key>`) or `{ field: 'vendor', value }`, the
+  product's Vendor. `unsupported` explains a rule Shopify can't express; that collection is created
+  manual, and its reason goes in the final report.
+- `menu[]`: `{ title, collectionHandle, url, children }`, nested as the main menu must be. `url` null
+  links the collection `collectionHandle`; otherwise the item links that URL, the collection page
+  narrowed by Search & Discovery filter params (`/collections/hombre?filter.p.vendor=Nike`). A menu
+  entry with sections has one child per section (Marcas), each holding its links (Nike).
 
 A non-zero exit prints the structure file's errors; stop and show them to the user.
 
 Done when the manifest JSON is in hand.
 
-## 2. Import the products
+## 2. Create the metafield definitions
+
+The CSV's metafield columns (`Género (product.metafields.custom.genero)`) only import into a
+definition that already exists, so create the definitions before the import. A list cell holds one
+value per line (a quoted multi-line cell); a comma, `;` or a JSON array imports as one literal value.
+
+Open `/settings/custom_data/product/metafields` (Configuración › Metacampos y metaobjetos ›
+Productos). For each manifest `metafields[]` entry whose name is not listed yet, open
+`/settings/custom_data/product/metafields/create` and:
+
+1. Click "Nombre" and type the entry's `name`. Shopify suggests standards ("Estándares sugeridos");
+   ignore them. Check the button "Espacio de nombres y clave: custom.<key>" reads the manifest key.
+2. Click the "Uno" button next to "Tipo" and choose "Lista de valores".
+3. Open the "Tipo" combobox and pick "Texto de una sola línea". The type then reads "Lista ·
+   Texto de una sola línea".
+4. Tick the checkboxes "Activar filtro para la lista de producto en el admin o con la Admin API" and
+   "Activar colecciones" (the "Usar como condición en colecciones" option).
+5. Click "Guardar". The page moves to `/settings/custom_data/product/metafields/<id>`.
+
+An existing definition whose type is not a single-line text list can't be changed in place; tell the
+user rather than deleting it, since deleting it drops its values on every product.
+
+Done when the definitions list shows every manifest name as "Texto de una sola línea".
+
+## 3. Import the products
 
 The import dialog has no overwrite option: its preview says it will not overwrite existing products
-with the same handle. A store that already holds the catalogue keeps its old tags unless those
-products are deleted first. Ask the user before deleting.
+with the same handle. A store that already holds the catalogue keeps its old tags and metafields
+unless those products are deleted first. Ask the user before deleting.
 
 1. Open `/products`. If the user agreed to delete the old products: tick "Seleccionar todos", open
    the bulk "Acciones" menu, choose "Eliminar productos" and confirm "Eliminar". Deletion runs in the
@@ -56,9 +95,14 @@ products are deleted first. Ask the user before deleting.
 3. Shopify imports in the background. Reload `/products` until the product count equals the CSV's
    distinct `URL handle` values.
 
-Done when every CSV product is listed.
+Done when every CSV product is listed. Open one product and check that its Género, Tipo and
+Colecciones metafields hold the CSV's values, one per line ("Metacampos del producto" shows each
+value as its own chip).
 
-## 3. Apply the collections
+Apply the collections only after the import has finished: a collection saved while products are
+still arriving can keep a stale membership (a re-save of its condition fixes it).
+
+## 4. Apply the collections
 
 Open `/collections` and list every collection by title. The manifest's titles are unique, so title is
 the key; open a collection to read its handle.
@@ -67,36 +111,43 @@ the key; open a collection to read its handle.
   is the theme's default collection; recommend keeping it. Open `/collections/<id>/delete`, wait for
   the dialog "¿Eliminar <title>?", click "Eliminar colección", and wait for the redirect to
   `/collections` before opening the next one.
-- **In the manifest and in Shopify:** open it and make its title, handle and tags equal the
-  manifest's. Remove a wrong tag with its chip button "Eliminar <tag>", then add the right one in the
-  "Valores de etiqueta" combobox.
+- **In the manifest and in Shopify:** open it and make its title, handle and conditions equal the
+  manifest's. A collection still on "Etiqueta" conditions gets them removed and replaced by the
+  metafield conditions.
 - **In the manifest only:** create it.
 
-A tag condition holds a list of tag values plus a match type, "Tipo de coincidencia actual: OR" by
-default. One condition with all of `rule.tags` and the match type that fits `applies` expresses the
-rule: AND for `all`, OR for `any`.
+The collection editor's sidebar holds the conditions. A condition reads "Atributo de condición: <x>",
+"es igual a", then its values. `evaluate_script` reaches every control by `aria-label` (deep query
+through shadow roots, visible elements only); snapshot uids work too.
 
-Creating a collection (set the condition before the title; once the title field has focus, typing
-lands in it):
+- **Point a condition at a metafield:** click its "Atributo de condición: …" button, click the
+  "Metacampo" cell, then the metafield's name cell ("Género"). The relation becomes "es igual a" and
+  the old values clear. Click the condition's "Agregar" button (the one after that attribute); the
+  "Valores de lista de cadenas del metacampo" box gets focus. Type `value` and press Enter.
+- **Add a condition:** click the sidebar's "Agregar condición"; it opens the same attribute picker
+  directly (no empty row first). Pick "Metacampo" › name, then the new row's "Agregar" and the value.
+  Add the new conditions first, then retarget the existing one: retargeting first left the picker
+  state confused once.
+- **A Vendor condition** (`{ field: 'vendor', value }`): pick "Proveedor" in the attribute picker
+  rather than "Metacampo"; the condition reads "Proveedor es igual a". Type `value` into its value
+  box. Verify on first run.
+- **All or any:** with two or more conditions a "Cumplir [todas las | cualquier] condiciones" switch
+  appears above them ("Tipo de coincidencia de inclusión"). "todas las" is the default; pick
+  "cualquier" for `applies: 'any'`.
+- A collection still on "Etiqueta" conditions shows "Valor seleccionado: <tag>" buttons; retargeting
+  its first condition to the metafield replaces them.
 
-1. Open `/collections/new` and wait for "Agregar condición".
-2. Click the sidebar's "Agregar condición" (the one marked expandable). The "Buscar atributos"
-   search gets focus; type `Etiqueta` and press Enter. The relation shows "incluye"; leave it.
-3. Focus the "Valores de etiqueta" combobox. For each tag in `rule.tags`, type it and press Enter.
-   Then press Escape.
-4. With more than one tag and `applies: 'all'`, open "Tipo de coincidencia actual: OR" and click the
-   "AND" cell.
-5. Read the product grid; it previews the members. Compare the count with the CSV.
-6. For `rule: null`, add no condition and pick products manually instead.
-7. Click "Agregar título" and type the manifest `title`. The handle follows the title ("Men › Tops"
-   becomes `men-tops`); check it in the search engine listing, and edit it there if it differs from
-   the manifest `handle`.
-8. Click "Guardar". The page moves to `/collections/<id>`.
+Creating a collection: open `/collections/new`, set the conditions as above, then click
+"Agregar título" and type the manifest `title`. The handle follows the title ("Men › Tops" becomes
+`men-tops`); check it in the search engine listing. For `rule: null`, add no condition and pick
+products manually. Click "Guardar".
+
+Deleting a collection also removes the menu items that link to it.
 
 Done when `/collections` lists exactly the manifest's titles (plus any extras the user chose to keep),
 each with the manifest's handle and conditions.
 
-## 4. Rebuild the main menu
+## 5. Rebuild the main menu
 
 Open `/content/menus` and the main menu.
 
@@ -107,9 +158,12 @@ Open `/content/menus` and the main menu.
    1. Click "Agregar elemento del menú" for a top-level item, or "Agregar elemento del menú a
       <parent>" for a child. The "Etiqueta" field gets focus.
    2. Type the item's `title`, then press Tab to reach "Enlace".
-   3. Type the title of the collection whose `handle` is the item's `collectionHandle`. When the
-      result list shows the collection, click it. When it shows link categories instead, click
-      "Colecciones" first.
+   3. With `url` null: type the title of the collection whose `handle` is the item's
+      `collectionHandle`. When the result list shows the collection, click it. When it shows link
+      categories instead, click "Colecciones" first.
+      With a `url`: type (or paste) the URL into "Enlace" and accept it as a web address rather
+      than picking a result. Verify on first run: after closing the item, its link should read the
+      URL with its `filter.p.*` params intact.
    4. Click "Cerrar elemento del menú".
 3. A parent shows "Agregar elemento del menú a <parent>" only once it has a child. Nest its first
    child by hand: add it as a top-level item, which lands last. Then use the keyboard:
@@ -124,18 +178,47 @@ Open `/content/menus` and the main menu.
 
 Done when the menu tree equals the manifest's `menu`, item for item and level for level.
 
-## 5. Verify
+## 6. Add the storefront filters
+
+The Search & Discovery app (`/apps/search-and-discovery/filters`) holds the storefront's collection
+filters. Its pages render inside an iframe; snapshots reach into it.
+
+Add one filter per manifest `filters[]` entry, in manifest order, skipping any already listed. A
+campo that is not in `filters[]` (Colecciones) is not a filter; it only builds collections.
+
+1. Open `/apps/search-and-discovery/filters/new`.
+2. Click "Seleccionar fuente". A dialog lists the sources, each as a button "<name>, n de m, botón"
+   with its kind ("Metacampo de producto", "Opción de producto", or "Brand · Origen: Proveedor ·
+   Estándar" for Vendor). For `source: 'metafield'` click the metafield's name ("Género"); for
+   `source: 'vendor'` click "Brand".
+3. "Etiqueta del filtro" fills with the source's name. Keep it for a metafield; for Brand, set it to
+   the entry's `name` ("Marca"). Keep "Condición OR" (a shopper's selections widen the list). Click
+   "Guardar".
+4. Repeat for every other `filters[]` entry, in manifest order. The order the app lists them in is
+   the order the storefront shows them; reorder by drag if an existing one is out of place.
+
+The menu's filtered links (`filter.p.vendor=…`, `filter.p.m.custom.<key>=…`) only narrow the page
+when that field is a filter here, so a section that lists a campo's values needs it in `filters[]`
+(for a campo with `filtro: false`, add the filter anyway, or tell the user the links will not narrow).
+
+Done when a collection page on the live storefront shows each `filters[]` entry ("Marca", "Género",
+"Tipo") as a separate filter.
+
+## 7. Verify
 
 1. Smart collection counts fill in asynchronously after a save. Reload `/collections` until no count
-   is still changing, then compare each count with the number of CSV products whose tags satisfy the
-   collection's rule.
+   is still changing, then compare each count with the number of CSV products whose metafields satisfy
+   the collection's rule.
 2. Open the live storefront and check the header: its links and their nesting follow the menu, and
    each link opens its collection. From a storefront page, `fetch('/collections/<handle>/products.json?limit=250')`
    returns each collection's live members, which checks every count in one script.
+3. Open a few filtered links (a brand, a model): the collection page shows the filter applied and
+   only products holding that value.
 
-Done when every count matches and every header link lands on its collection.
+Done when every count matches, every header link lands on its collection, and every filtered link
+lands on its collection narrowed.
 
 ## Report
 
-Tell the user: collections created, updated and deleted; the menu applied; each count mismatch; each
+Tell the user: metafield definitions created; collections created, updated and deleted; the menu applied; the filters added; each count mismatch; each
 `unsupported` collection with its reason; and anything skipped.

@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import { AdminProductCategory } from '../product-category/entities.js'
 import { AdminProductCollection } from '../product-collection/entities.js'
+import { AdminProductMetafield } from '../product-metafield/entities.js'
 import { AdminProductScopedOption } from '../product-option/entities.js'
 import { AdminProductTag } from '../product-tag/entities.js'
 import { AdminProductType } from '../product-type/entities.js'
@@ -15,6 +16,8 @@ const AdminGroupedProduct = AdminProduct.extend({
   categories: z.array(AdminProductCategory),
   collections: z.array(AdminProductCollection),
   tags: z.array(AdminProductTag),
+  /** The metafields that hold values, by key. Rules read these. */
+  metafields: z.array(AdminProductMetafield),
 }).openapi('AdminGroupedProduct')
 
 const AdminProductDetail = AdminGroupedProduct.extend({

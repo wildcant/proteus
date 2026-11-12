@@ -10,7 +10,9 @@ export type ExistingImportVariant = { id: string; sku: string | null; optionValu
 
 /**
  * The fields an import writes on a product, the same on create and on overwrite. Categories and
- * collections are left out: ruled ones follow from the tags, and manual ones survive an overwrite.
+ * collections are left out: ruled ones follow from the metafields, and manual ones survive an
+ * overwrite. Only the metafields the file has a column for are written; the brand is always
+ * written, as the type is.
  */
 export function buildImportedProductFields(
   product: ImportedProductDTO,
@@ -23,6 +25,8 @@ export function buildImportedProductFields(
     status: product.status,
     typeId: references.typeId,
     tagIds: references.tagIds,
+    brand: product.brand,
+    metafields: product.metafields,
   }
 }
 

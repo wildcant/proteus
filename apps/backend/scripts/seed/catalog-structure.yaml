@@ -1,58 +1,79 @@
-# Store structure for the development catalogue in product-import.csv. A rule is a list of
-# conditions that must all hold; each condition is a list of tags, any one of which matches.
+# Store structure for the development catalogue in product-import.csv. `campos` are the product
+# metafields the rules read; `filtro: true` also offers one as a storefront filter, in this order.
+# `origen: vendor` makes a campo the product's brand, the CSV's Vendor column, instead of a metafield.
+# A rule maps each clave to the values that satisfy it: every clave must match, each by any one of
+# its values. mock.shop gives every product the same Vendor, so Marca is here as a smoke test only.
+#
+# A menu entry may open a panel of `secciones` instead of its children, each one of:
+#   - nombre: Estilos
+#     mostrar: subcategorias                  # the entry's child categories
+#   - nombre: Marcas
+#     mostrar: { valores: marca, limite: 8 }  # each value of a campo among the entry's products
+#   - nombre: Destacados
+#     enlaces:                                # fixed links
+#       - { nombre: Tops, filtro: { tipo: [tops] } }      # the entry's list, filtered
+#       - { coleccion: featured }                         # or a category or collection
+# This catalogue's menu keeps the plain children.
+campos:
+  - nombre: Género
+    clave: genero
+    filtro: true
+  - nombre: Tipo
+    clave: tipo
+    filtro: true
+  - nombre: Colecciones
+    clave: colecciones
+  - { nombre: Marca, clave: marca, origen: vendor }
 categorias:
   - nombre: Men
     handle: men
-    regla: [[genero:men]]
+    regla: { genero: [men] }
     hijos:
       - nombre: Tops
         handle: men-tops
-        regla: [[genero:men], [tipo:tops]]
+        regla: { genero: [men], tipo: [tops] }
       - nombre: Bottoms
         handle: men-bottoms
-        regla: [[genero:men], [tipo:bottoms]]
+        regla: { genero: [men], tipo: [bottoms] }
       - nombre: Shoes
         handle: men-shoes
-        regla: [[genero:men], [tipo:shoes]]
-      - nombre: Accessories
-        handle: men-accessories
-        regla: [[genero:men], [tipo:accessories]]
+        regla: { genero: [men], tipo: [shoes] }
   - nombre: Women
     handle: women
-    regla: [[genero:women]]
+    regla: { genero: [women] }
     hijos:
       - nombre: Tops
         handle: women-tops
-        regla: [[genero:women], [tipo:tops]]
+        regla: { genero: [women], tipo: [tops] }
       - nombre: Bottoms
         handle: women-bottoms
-        regla: [[genero:women], [tipo:bottoms]]
+        regla: { genero: [women], tipo: [bottoms] }
   - nombre: Unisex
     handle: unisex
-    regla: [[genero:unisex]]
+    regla: { genero: [unisex] }
     hijos:
       - nombre: Tops
         handle: unisex-tops
-        regla: [[genero:unisex], [tipo:tops]]
+        regla: { genero: [unisex], tipo: [tops] }
       - nombre: Bottoms
         handle: unisex-bottoms
-        regla: [[genero:unisex], [tipo:bottoms]]
+        regla: { genero: [unisex], tipo: [bottoms] }
       - nombre: Shoes
         handle: unisex-shoes
-        regla: [[genero:unisex], [tipo:shoes]]
+        regla: { genero: [unisex], tipo: [shoes] }
       - nombre: Accessories
         handle: unisex-accessories
-        regla: [[genero:unisex], [tipo:accessories]]
+        regla: { genero: [unisex], tipo: [accessories] }
 colecciones:
   - nombre: Featured
     handle: featured
-    regla: [[coleccion:featured]]
+    regla: { colecciones: [featured] }
   - nombre: Essentials
     handle: essentials
-    regla: [[coleccion:essentials]]
+    regla: { colecciones: [essentials] }
   - nombre: Active
     handle: active
-    regla: [[coleccion:active]]
+    regla: { colecciones: [active] }
 menu:
   - categoria: men
   - categoria: women

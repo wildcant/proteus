@@ -104,7 +104,7 @@ test.describe('Shop by category', () => {
   })
 
   test('a product a child rule picks up is listed on the parent category too', async ({ expect, http, service }) => {
-    const classics = await service.create.productTag(api.container, { value: 'estilo:clasicos' })
+    await service.create.metafieldDefinitions(api.container, [{ key: 'estilo', name: 'Estilo' }])
     const createCategory = async (body: object) => {
       const response = await api.post<typeof adminCategoryRoutes.PostOutput>(
         '/admin/product-categories',
@@ -115,9 +115,12 @@ test.describe('Shop by category', () => {
     }
     // The parent is manual and holds nothing directly; only the child's rule places the product.
     const men = await createCategory({})
-    const menClassics = await createCategory({ parentId: men.id, rule: [[classics.value]] })
+    const menClassics = await createCategory({ parentId: men.id, rule: { estilo: ['clasicos'] } })
 
-    const { product } = await service.create.product(api.container, { status: 'published', tagIds: [classics.id] })
+    const { product } = await service.create.product(api.container, {
+      status: 'published',
+      metafields: { estilo: ['clasicos'] },
+    })
     const [variant] = await service.create.productVariants(api.container, product.id)
     if (!variant) throw new Error('Expected a variant')
     await service.create.variantPrices(api.container, [variant.id])

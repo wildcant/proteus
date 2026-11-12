@@ -2834,6 +2834,34 @@
               "$ref": "#/components/schemas/AdminCatalogStructureError"
             }
           },
+          "metafields": {
+            "type": "object",
+            "properties": {
+              "create": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminCatalogStructureMetafieldChange"
+                }
+              },
+              "update": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminCatalogStructureMetafieldChange"
+                }
+              },
+              "delete": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminCatalogStructureMetafieldChange"
+                }
+              }
+            },
+            "required": [
+              "create",
+              "update",
+              "delete"
+            ]
+          },
           "categories": {
             "type": "object",
             "properties": {
@@ -2921,6 +2949,7 @@
         },
         "required": [
           "errors",
+          "metafields",
           "categories",
           "collections",
           "menu"
@@ -2939,6 +2968,33 @@
         "required": [
           "path",
           "message"
+        ]
+      },
+      "AdminCatalogStructureMetafieldChange": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "filterable": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "metafield",
+              "vendor"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "filterable",
+          "source"
         ]
       },
       "AdminCatalogStructureCategoryChange": {
@@ -3011,11 +3067,152 @@
           },
           "handle": {
             "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminNavigationSection"
+            }
           }
         },
         "required": [
           "type",
-          "handle"
+          "handle",
+          "sections"
+        ]
+      },
+      "AdminNavigationSection": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "subcategories"
+                ]
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "name"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "values"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "limit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "key",
+              "limit"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "links"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminNavigationLink"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "links"
+            ]
+          }
+        ]
+      },
+      "AdminNavigationLink": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "filter"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "filter": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "filter"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "category",
+                  "collection"
+                ]
+              },
+              "handle": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "handle",
+              "name"
+            ]
+          }
         ]
       },
       "AdminApplyCatalogStructure": {
@@ -3099,10 +3296,10 @@
       },
       "AdminProductGroupingRule": {
         "type": [
-          "array",
+          "object",
           "null"
         ],
-        "items": {
+        "additionalProperties": {
           "type": "array",
           "items": {
             "type": "string",
@@ -3111,9 +3308,7 @@
           },
           "minItems": 1,
           "maxItems": 20
-        },
-        "minItems": 1,
-        "maxItems": 20
+        }
       },
       "AdminProductCollectionResponse": {
         "type": "object",
@@ -3784,6 +3979,12 @@
               "null"
             ]
           },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -3821,6 +4022,7 @@
           "externalId",
           "metadata",
           "typeId",
+          "brand",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -4071,15 +4273,44 @@
                 "items": {
                   "$ref": "#/components/schemas/AdminProductTag"
                 }
+              },
+              "metafields": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminProductMetafield"
+                }
               }
             },
             "required": [
               "type",
               "categories",
               "collections",
-              "tags"
+              "tags",
+              "metafields"
             ]
           }
+        ]
+      },
+      "AdminProductMetafield": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "values"
         ]
       },
       "AdminCreateProduct": {
@@ -5513,6 +5744,30 @@
               "type": "string"
             }
           },
+          "metafields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ]
+            }
+          },
+          "brandName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "firstProduct": {
             "$ref": "#/components/schemas/AdminImportedProduct"
           }
@@ -5523,6 +5778,8 @@
           "images",
           "willCreate",
           "ignoredColumns",
+          "metafields",
+          "brandName",
           "firstProduct"
         ]
       },
@@ -5571,6 +5828,21 @@
               "type": "string"
             }
           },
+          "metafields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "options": {
             "type": "array",
             "items": {
@@ -5614,6 +5886,8 @@
           "status",
           "type",
           "tags",
+          "metafields",
+          "brand",
           "options",
           "variants",
           "imageUrls"

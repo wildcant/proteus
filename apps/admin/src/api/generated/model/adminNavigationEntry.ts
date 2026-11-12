@@ -6,8 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminNavigationEntryType } from './adminNavigationEntryType.ts';
+import type { AdminNavigationSection } from './adminNavigationSection.ts';
 
 export interface AdminNavigationEntry {
   type: AdminNavigationEntryType;
   handle: string;
+  sections: AdminNavigationSection[];
 }

@@ -7,7 +7,15 @@ import type {
   ProductImportErrorDTO,
   ProductImportSettingsDTO,
 } from '../../../../core/types/product/common.js'
-import { IMPORT_COLUMNS, type ImportColumn, MARKET_PRICE_HEADER, normalizeHeader, OPTION_COLUMNS } from './columns.js'
+import {
+  CUSTOM_METAFIELD_NAMESPACE,
+  IMPORT_COLUMNS,
+  type ImportColumn,
+  MARKET_PRICE_HEADER,
+  METAFIELD_HEADER,
+  normalizeHeader,
+  OPTION_COLUMNS,
+} from './columns.js'
 
 const MAX_IMPORT_FILE_BYTES = 15 * 1024 * 1024
 
@@ -16,6 +24,8 @@ export type ParsedShopifyCsv = {
   errors: ProductImportErrorDTO[]
   /** Headers present in the file that the import does not read, as written. */
   ignoredColumns: string[]
+  /** The keys of the `custom` metafields the file has a column for, in column order. */
+  metafieldKeys: string[]
 }
 
 type CsvSource = AsyncIterable<Uint8Array | string>
@@ -24,6 +34,7 @@ type CsvSource = AsyncIterable<Uint8Array | string>
 type HeaderMap = {
   index: Partial<Record<ImportColumn, number>>
   prices: Array<{ index: number; currencyCode: string }>
+  metafields: Array<{ index: number; key: string }>
 }
 
 /** A product while its rows are still arriving. */
@@ -44,10 +55,14 @@ const NUMBER = /^-?\d+([.,]\d+)?$/
  *
  * UTF-8 with or without a BOM, comma- or semicolon-delimited (Spanish-locale spreadsheets export
  * `;`), the delimiter read off the header line.
+ *
+ * `definedMetafieldKeys` are the `custom` metafields the store defines: a column for any other
+ * `custom` key is an error, since its values would have nowhere to go.
  */
 export async function parseShopifyCsv(
   source: CsvSource,
   settings: ProductImportSettingsDTO,
+  definedMetafieldKeys: ReadonlySet<string>,
 ): Promise<ParsedShopifyCsv> {
   const errors: ProductImportErrorDTO[] = []
   const fail = (line: number, handle: string | null, message: string) => errors.push({ line, handle, message })
@@ -68,8 +83,8 @@ export async function parseShopifyCsv(
       const line = previousEnd + 1
       previousEnd = info.lines
       if (!header) {
-        const read = readHeader(record, settings, fail)
-        if (!read) return { products: [], errors, ignoredColumns: [] }
+        const read = readHeader(record, settings, definedMetafieldKeys, fail)
+        if (!read) return { products: [], errors, ignoredColumns: [], metafieldKeys: [] }
         header = read.header
         ignoredColumns = read.ignored
         continue
@@ -84,6 +99,7 @@ export async function parseShopifyCsv(
     input.destroy()
   }
 
+  const metafieldKeys = header?.metafields.map((metafield) => metafield.key) ?? []
   if (tooLarge()) {
     return {
       products: [],
@@ -91,13 +107,19 @@ export async function parseShopifyCsv(
         { line: 1, handle: null, message: `The file is larger than ${MAX_IMPORT_FILE_BYTES / 1024 / 1024} MB.` },
       ],
       ignoredColumns,
+      metafieldKeys,
     }
   }
   if (!header) {
-    return { products: [], errors: [{ line: 1, handle: null, message: 'The file has no header row.' }], ignoredColumns }
+    return {
+      products: [],
+      errors: [{ line: 1, handle: null, message: 'The file has no header row.' }],
+      ignoredColumns,
+      metafieldKeys,
+    }
   }
 
-  return { products: [...drafts.values()].map(finishProduct), errors, ignoredColumns }
+  return { products: [...drafts.values()].map(finishProduct), errors, ignoredColumns, metafieldKeys }
 }
 
 /**
@@ -158,9 +180,10 @@ function detectDelimiter(text: string): ',' | ';' {
 function readHeader(
   record: string[],
   settings: ProductImportSettingsDTO,
+  definedMetafieldKeys: ReadonlySet<string>,
   fail: (line: number, handle: string | null, message: string) => void,
 ): { header: HeaderMap; ignored: string[] } | null {
-  const header: HeaderMap = { index: {}, prices: [] }
+  const header: HeaderMap = { index: {}, prices: [], metafields: [] }
   const ignored: string[] = []
   const columnByName = new Map<string, ImportColumn>(
     Object.entries(IMPORT_COLUMNS).flatMap(([column, names]) => names.map((name) => [name, column as ImportColumn])),
@@ -174,6 +197,20 @@ function readHeader(
       const currencyCode = settings.marketCurrencies[market.trim()]
       if (currencyCode) header.prices.push({ index, currencyCode })
       else fail(1, null, `The column "${raw.trim()}" names a market the store does not sell in.`)
+      return
+    }
+    const [, namespace, key] = METAFIELD_HEADER.exec(name) ?? []
+    // Other namespaces are Shopify's own (`shopify.color-pattern`), which the store has no field for.
+    if (namespace === CUSTOM_METAFIELD_NAMESPACE && key) {
+      if (!definedMetafieldKeys.has(key)) {
+        fail(
+          1,
+          null,
+          `The column "${raw.trim()}" is the metafield "${key}", which the store does not define. Declare the campo "${key}" in the structure file first.`,
+        )
+      } else if (header.metafields.some((metafield) => metafield.key === key)) {
+        fail(1, null, `The metafield "${key}" has more than one column.`)
+      } else header.metafields.push({ index, key })
       return
     }
     const column = columnByName.get(name)
@@ -223,7 +260,7 @@ function readRow(
   const report = (message: string) => fail(line, handle, message)
 
   const existing = drafts.get(handle)
-  const product = existing ?? startProduct(handle, line, get, settings, report)
+  const product = existing ?? startProduct(handle, line, get, readMetafields(record, header), settings, report)
   if (!existing) drafts.set(handle, product)
   else product.rows++
 
@@ -249,6 +286,7 @@ function startProduct(
   handle: string,
   line: number,
   get: (column: ImportColumn) => string,
+  metafields: Record<string, string[]>,
   settings: ProductImportSettingsDTO,
   report: (message: string) => void,
 ): ProductDraft {
@@ -273,6 +311,8 @@ function startProduct(
     status: (status === '' || status === 'active') && settings.publish ? 'published' : 'draft',
     type: get('type') || null,
     tags: readTags(get('tags')),
+    metafields,
+    brand: get('brand') || null,
     options: hasNoOptions ? [] : optionNames.map((title) => ({ title, values: [] })),
     variants: [],
     imageUrls: [],
@@ -281,12 +321,23 @@ function startProduct(
   }
 }
 
-/**
- * Every tag is a plain tag, `genero:hombre` included: the structure file's rules read them to place
- * the product in categories and collections, so the import never names a grouping itself.
- */
+/** Every tag is a plain word: rules read metafields, so a tag never places the product anywhere. */
 function readTags(raw: string): string[] {
   return [...new Set(raw.split(',').map((entry) => entry.trim()))].filter(Boolean)
+}
+
+/**
+ * Each metafield column's values on the product's first row. A list cell holds one value per line,
+ * as Shopify reads and writes it; a comma is part of a value. An empty cell is an empty list, which
+ * clears the metafield on overwrite.
+ */
+function readMetafields(record: string[], header: HeaderMap): Record<string, string[]> {
+  return Object.fromEntries(
+    header.metafields.map(({ index, key }) => {
+      const values = (record[index] ?? '').split(/\r?\n/).map((value) => value.trim())
+      return [key, [...new Set(values)].filter(Boolean)]
+    }),
+  )
 }
 
 /**

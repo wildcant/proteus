@@ -4,7 +4,7 @@ import { stringifySearch } from '#/lib/search-params'
 import { productListSearchSchema } from './product-list-search'
 
 /**
- * The Tag filter's URL, through the router's own parser and the router's own writer: what a chip
+ * The Tag and metafield filters' URL, through the router's own parser and the router's own writer: what a chip
  * writes, and what the list reads back from a link someone typed or shared.
  *
  * In the browser project although nothing renders: the schema reads its sort names from the query
@@ -21,7 +21,13 @@ describe('the product list URL', () => {
   })
 
   test('reads back exactly what it wrote', () => {
-    const search = { q: 'tee', tag: ['cotton', '2024'], sort: 'az' as const, offset: 24 }
+    const search = {
+      q: 'tee',
+      tag: ['cotton', '2024'],
+      filter: ['genero:women', 'tipo:tops', 'talla:10:30'],
+      sort: 'az' as const,
+      offset: 24,
+    }
     expect(readSearch(stringifySearch(search))).toEqual(search)
   })
 
@@ -30,5 +36,11 @@ describe('the product list URL', () => {
     expect(readSearch('?tag=2024').tag).toEqual(['2024'])
     expect(readSearch('?tag=').tag).toBeUndefined()
     expect(readSearch('?q=tee').tag).toBeUndefined()
+  })
+
+  test('reads a hand-typed metafield value as a one-value filter, and drops one with no key or value', () => {
+    expect(readSearch('?filter=genero:women').filter).toEqual(['genero:women'])
+    expect(readSearch('?filter=women').filter).toBeUndefined()
+    expect(readSearch('?filter=genero:').filter).toBeUndefined()
   })
 })
