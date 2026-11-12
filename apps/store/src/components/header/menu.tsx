@@ -7,16 +7,18 @@ import { type MenuSection, type MenuSource, type MenuTarget, resolveMenuItems } 
 type MenuDestination = { key: string; label: string; target?: MenuTarget }
 
 /**
- * A menu entry that opens rather than navigates, so its own page is `shopAll`, "Shop all <name>".
- * A Category with children lists them in `links`; an entry with sections lays them out as titled
- * columns in `sections` instead, and has no `links`.
+ * A menu entry that opens rather than navigates. A Category with children lists them in `links`
+ * under `shopAll`, "Shop all <name>". An entry with sections lays them out as titled columns in
+ * `sections` instead, with `footer` set apart below, and has neither `links` nor `shopAll`: its
+ * columns say where "View all" goes.
  */
 export type MenuGroup = {
   key: string
   label: string
-  shopAll: MenuDestination
+  shopAll: MenuDestination | null
   links: MenuDestination[]
   sections: MenuSection[]
+  footer: MenuDestination[]
 }
 
 type MenuEntry = MenuDestination | MenuGroup
@@ -34,11 +36,18 @@ export function useMenuEntries(source: MenuSource): MenuEntry[] {
 
   return [
     { key: 'shop-all', label: t`Shop all` },
-    ...resolveMenuItems(source).map(({ key, label: name, target, children, sections }): MenuEntry => {
+    ...resolveMenuItems(source).map(({ key, label: name, target, children, sections, footer }): MenuEntry => {
       if (children.length === 0 && sections.length === 0) return { key, label: name, target }
-      return { key, label: name, shopAll: { key, label: t`Shop all ${name}`, target }, links: children, sections }
+      const shopAll = sections.length > 0 ? null : { key, label: t`Shop all ${name}`, target }
+      return { key, label: name, shopAll, links: children, sections, footer }
     }),
   ]
+}
+
+/** "View all", or "View all Adidas" when the column is narrower than the entry. */
+export function useViewAllLabel() {
+  const { t } = useLingui()
+  return (name: string | null) => (name ? t`View all ${name}` : t`View all`)
 }
 
 /** The link for one destination; `children` defaults to its label, for a row that adds an icon. */

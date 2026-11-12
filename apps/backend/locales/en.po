@@ -613,22 +613,22 @@ msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Only an import waiting in preview can be confirmed or canceled."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:375
+#: src/modules/product/services/product-module-service.ts:376
 msgid "Variant creation returned no rows"
 msgstr "Variant creation returned no rows"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:454
+#: src/modules/product/services/product-module-service.ts:455
 msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1244
+#: src/modules/product/services/product-module-service.ts:1270
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1343
+#: src/modules/product/services/product-module-service.ts:1375
 msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 msgstr "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 

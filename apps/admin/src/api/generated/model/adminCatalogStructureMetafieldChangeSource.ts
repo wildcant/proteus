@@ -12,4 +12,5 @@ export type AdminCatalogStructureMetafieldChangeSource = typeof AdminCatalogStru
 export const AdminCatalogStructureMetafieldChangeSource = {
   metafield: 'metafield',
   vendor: 'vendor',
+  type: 'type',
 } as const;

@@ -170,13 +170,19 @@ test.describe('buildStructureManifest', () => {
       '      - { nombre: Marcas, mostrar: { valores: marca } }',
       '  - categoria: nike',
     ])
+    const csvProduct = (brand: string, metafields: Record<string, string[]>) => ({
+      brand,
+      type: null,
+      metafields,
+      options: [],
+    })
     const csvProducts = [
-      { brand: 'Adidas', metafields: { genero: ['hombre'], modelo: ['Stan Smith'] } },
+      csvProduct('Adidas', { genero: ['hombre'], modelo: ['Stan Smith'] }),
       // One brand whatever its case, under the spelling met first.
-      { brand: 'adidas', metafields: { genero: ['hombre'], modelo: ['Gazelle'] } },
-      { brand: 'Nike', metafields: { genero: ['hombre'], modelo: ['Air Force 1'] } },
+      csvProduct('adidas', { genero: ['hombre'], modelo: ['Gazelle'] }),
+      csvProduct('Nike', { genero: ['hombre'], modelo: ['Air Force 1'] }),
       // Not the entry's: its values are not offered under Hombre.
-      { brand: 'Vans', metafields: { genero: ['mujer'], modelo: ['Old Skool'] } },
+      csvProduct('Vans', { genero: ['mujer'], modelo: ['Old Skool'] }),
     ]
 
     const manifest = buildStructureManifest(structure, csvProducts)
@@ -239,7 +245,7 @@ test.describe('buildStructureManifest', () => {
 
     // Without the CSV a `valores` section has nothing to read.
     expect(() => buildStructureManifest(structure)).toThrow(
-      'The menu entry "hombre" lists the values of "marca": pass the product CSV to read them from.',
+      'The menu entry "hombre" lists values in "Marcas": pass the product CSV to read them from.',
     )
   })
 })

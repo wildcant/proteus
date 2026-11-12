@@ -31,26 +31,31 @@ pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/es
 ```
 
 Pass the product CSV too (absolute paths, or relative to `apps/backend`): a menu section that lists a
-campo's values (`mostrar: { valores: <clave> }`) reads them off the CSV's products, and the script
-stops without it.
+campo's values (`mostrar: { valores: <clave> }`, grouped or not) or an option's values
+(`mostrar: { opcion: Talla }`) reads them off the CSV's products, and the script stops without it.
 
 It prints `{ metafields, filters, collections, menu }`:
 
 - `metafields[]`: `{ name, namespace, key, type }`, the product metafield definitions the rules read.
   `type` is always `list.single_line_text_field`. The vendor campo (`origen: vendor`, the brand) is
-  the product's built-in Vendor and has no definition.
+  the product's built-in Vendor, and the type campo (`origen: type`) its built-in Product type; neither
+  has a definition.
 - `filters[]`: the storefront filters, in order. `{ name, source: 'metafield', metafield }` is a
   metafield (`custom.<key>`); `{ name, source: 'vendor' }` is the Vendor, which Search & Discovery
-  calls "Brand".
+  calls "Brand"; `{ name, source: 'type' }` is the Product type.
 - `collections[]`: `{ title, handle, rule, unsupported? }`. `rule` is
   `{ applies: 'all' | 'any', conditions }` or `null` for a manual collection. A condition is
-  `{ metafield, value }` (`metafield` is `custom.<key>`) or `{ field: 'vendor', value }`, the
-  product's Vendor. `unsupported` explains a rule Shopify can't express; that collection is created
+  `{ metafield, value }` (`metafield` is `custom.<key>`), `{ field: 'vendor', value }`, the
+  product's Vendor, or `{ field: 'type', value }`, its Product type. `unsupported` explains a rule Shopify can't express; that collection is created
   manual, and its reason goes in the final report.
 - `menu[]`: `{ title, collectionHandle, url, children }`, nested as the main menu must be. `url` null
   links the collection `collectionHandle`; otherwise the item links that URL, the collection page
-  narrowed by Search & Discovery filter params (`/collections/hombre?filter.p.vendor=Nike`). A menu
-  entry with sections has one child per section (Marcas), each holding its links (Nike).
+  narrowed by Search & Discovery filter params (`/collections/hombre?filter.p.vendor=Nike`,
+  `filter.p.product_type=`, `filter.p.m.custom.<key>=`, `filter.v.option.talla=42`). A menu entry
+  with sections has one child per section (Marcas), each holding its links (Nike); a grouped section
+  has one child per group instead (Tenis › Adidas › Samba), the group linking the entry filtered by
+  it. The entry's footer links (`pie`) follow its sections as plain children. A section's `nota` has
+  no place in a Shopify menu and is left out.
 
 A non-zero exit prints the structure file's errors; stop and show them to the user.
 
@@ -131,6 +136,9 @@ through shadow roots, visible elements only); snapshot uids work too.
 - **A Vendor condition** (`{ field: 'vendor', value }`): pick "Proveedor" in the attribute picker
   rather than "Metacampo"; the condition reads "Proveedor es igual a". Type `value` into its value
   box. Verify on first run.
+- **A Product type condition** (`{ field: 'type', value }`): pick "Tipo de producto" in the attribute
+  picker; the condition reads "Tipo de producto es igual a". Type `value` as the CSV writes it
+  (`Tenis`). Verify on first run.
 - **All or any:** with two or more conditions a "Cumplir [todas las | cualquier] condiciones" switch
   appears above them ("Tipo de coincidencia de inclusión"). "todas las" is the default; pick
   "cualquier" for `applies: 'any'`.
@@ -190,7 +198,9 @@ campo that is not in `filters[]` (Colecciones) is not a filter; it only builds c
 2. Click "Seleccionar fuente". A dialog lists the sources, each as a button "<name>, n de m, botón"
    with its kind ("Metacampo de producto", "Opción de producto", or "Brand · Origen: Proveedor ·
    Estándar" for Vendor). For `source: 'metafield'` click the metafield's name ("Género"); for
-   `source: 'vendor'` click "Brand".
+   `source: 'vendor'` click "Brand"; for `source: 'type'` click the Product type source. A menu
+   section of sizes links `filter.v.option.talla`, which narrows only when the option ("Talla") is a
+   filter too: add it, as "Opción de producto", even though `filters[]` does not list it.
 3. "Etiqueta del filtro" fills with the source's name. Keep it for a metafield; for Brand, set it to
    the entry's `name` ("Marca"). Keep "Condición OR" (a shopper's selections widen the list). Click
    "Guardar".

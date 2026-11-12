@@ -18,7 +18,11 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
   // The key, whether the campo is the product's brand rather than a metafield, and whether the
   // storefront offers it as a filter.
   const metafieldDetail = (row: AdminCatalogStructureMetafieldChange) =>
-    [row.key, row.source === 'vendor' ? t`brand` : null, row.filterable ? t`filter` : null]
+    [
+      row.key,
+      row.source === 'vendor' ? t`brand` : row.source === 'type' ? t`product type` : null,
+      row.filterable ? t`filter` : null,
+    ]
       .filter((part) => part !== null)
       .join(' · ')
   const under = (parentHandle: string | null | undefined) => parentHandle ?? atRoot
@@ -163,6 +167,20 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
 }
 
 function MenuEntries({ entries }: { entries: AdminNavigationEntry[] }) {
+  const { t } = useLingui()
+  /** A section by name, with what it lists when that is more than its name says: "Marcas: modelo by marca". */
+  const describe = (section: AdminNavigationEntry['sections'][number]) => {
+    const { name } = section
+    if (section.type === 'groups') {
+      const { key, groupKey } = section
+      return t`${name}: ${key} by ${groupKey}`
+    }
+    if (section.type === 'option') {
+      const { option } = section
+      return t`${name}: option ${option}`
+    }
+    return name
+  }
   if (entries.length === 0) {
     return (
       <span className="text-muted-foreground">
@@ -172,8 +190,9 @@ function MenuEntries({ entries }: { entries: AdminNavigationEntry[] }) {
   }
   return (
     <ol className="flex flex-wrap gap-x-2">
-      {entries.map(({ type, handle, sections }, index) => {
-        const sectionNames = sections.map((section) => section.name).join(', ')
+      {entries.map(({ type, handle, sections, footer = [] }, index) => {
+        const sectionNames = sections.map(describe).join(', ')
+        const footerNames = footer.map((link) => link.name ?? ('handle' in link ? link.handle : '')).join(', ')
         return (
           <li key={`${type}:${handle}`}>
             {index > 0 && (
@@ -186,6 +205,11 @@ function MenuEntries({ entries }: { entries: AdminNavigationEntry[] }) {
             {sections.length > 0 && (
               <span className="pl-1 text-muted-foreground">
                 <Trans>(sections: {sectionNames})</Trans>
+              </span>
+            )}
+            {footer.length > 0 && (
+              <span className="pl-1 text-muted-foreground">
+                <Trans>(footer: {footerNames})</Trans>
               </span>
             )}
           </li>

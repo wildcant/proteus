@@ -353,10 +353,11 @@ export type ProductGroupingRuleDTO = Record<string, string[]>
 export type ProductMetafieldType = 'list.single_line_text_field'
 
 /**
- * Where a field's values come from: the product's metafield rows, or its `brand` column (the CSV's
- * Vendor). At most one field is `vendor`.
+ * Where a field's values come from: the product's metafield rows, its `brand` column (the CSV's
+ * Vendor), or its Product Type's value (the CSV's Type). At most one field is `vendor`, and at most
+ * one is `type`.
  */
-export type ProductFieldSource = 'metafield' | 'vendor'
+export type ProductFieldSource = 'metafield' | 'vendor' | 'type'
 
 /** A named product field ("Género", key `genero`), as the structure file's `campos` declare it. */
 export type ProductMetafieldDefinitionDTO = {
@@ -379,6 +380,13 @@ export type ProductMetafieldDefinitionDTO = {
 export type ProductFilterValueDTO = {
   value: string
   count: number
+}
+
+/** One group of a field's values, `Adidas` with its models, with how many products hold the group's value and each one. */
+export type ProductFieldGroupDTO = {
+  value: string
+  count: number
+  values: ProductFilterValueDTO[]
 }
 
 /**

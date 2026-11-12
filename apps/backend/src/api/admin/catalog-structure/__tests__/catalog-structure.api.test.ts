@@ -19,7 +19,7 @@ import type * as uploadRoutes from '../../uploads/route.js'
 import catalogStructureDefinitions from '../definitions.js'
 import type * as structureRoutes from '../route.js'
 
-/** The development catalogue's structure: three metafield campos and the brand, Men, Women and Unisex with their children, three Collections, a menu of the three. */
+/** The development catalogue's structure: four metafield campos and the brand, Men, Women and Unisex with their children and Shoes, three Collections, and a menu whose Men, Women and Shoes open panels. */
 const FIXTURE = readFileSync(resolve(__dirname, '../../../../../scripts/seed/catalog-structure.yaml'), 'utf8')
 
 type Plan = (typeof structureRoutes.PostOutput)['_zod']['output']['catalogStructure']
@@ -105,7 +105,8 @@ test.describe('Structure files', () => {
       create: [
         { key: 'tipo', name: 'Tipo', filterable: true, source: 'metafield' },
         { key: 'colecciones', name: 'Colecciones', filterable: false, source: 'metafield' },
-        { key: 'marca', name: 'Marca', filterable: false, source: 'vendor' },
+        { key: 'marca', name: 'Marca', filterable: true, source: 'vendor' },
+        { key: 'modelo', name: 'Modelo', filterable: false, source: 'metafield' },
       ],
       update: [{ key: 'genero', name: 'Género', filterable: true, source: 'metafield' }],
       delete: [{ key: 'temporada', name: 'Temporada', filterable: false, source: 'metafield' }],
@@ -122,6 +123,7 @@ test.describe('Structure files', () => {
         'unisex-bottoms',
         'unisex-shoes',
         'unisex-accessories',
+        'shoes',
       ].sort(),
     )
     expect(plan.categories.update).toEqual([{ handle: 'men', name: 'Men', parentHandle: null }])
@@ -131,12 +133,32 @@ test.describe('Structure files', () => {
     expect(handles(plan.categories.delete)).toEqual(['legacy', 'legacy-child'])
     expect(handles(plan.collections.create)).toEqual(['active', 'essentials', 'featured'])
     expect(plan.collections.delete).toEqual([{ handle: 'dropped', name: dropped.body.collection.title }])
+    const subcategories = { type: 'subcategories', name: 'Category' }
+    const size = { type: 'option', name: 'Size', option: 'Size', note: 'Only what comes in your size.' }
     expect(plan.menu).toEqual({
       current: [],
       next: [
-        { type: 'category', handle: 'men', sections: [] },
-        { type: 'category', handle: 'women', sections: [] },
+        { type: 'category', handle: 'men', sections: [subcategories, size] },
+        { type: 'category', handle: 'women', sections: [subcategories, size] },
+        {
+          type: 'category',
+          handle: 'shoes',
+          sections: [
+            {
+              type: 'links',
+              name: 'All shoes',
+              links: [
+                { type: 'category', handle: 'men-shoes', name: "Men's shoes" },
+                { type: 'category', handle: 'unisex-shoes', name: 'Unisex shoes' },
+                { type: 'collection', handle: 'active', name: null },
+              ],
+            },
+            { type: 'groups', name: 'Brands', key: 'modelo', groupKey: 'marca', groups: 6, limit: 6 },
+          ],
+          footer: [{ type: 'category', handle: 'shoes', name: 'All brands' }],
+        },
         { type: 'category', handle: 'unisex', sections: [] },
+        { type: 'collection', handle: 'featured', sections: [] },
       ],
     })
 
@@ -150,7 +172,7 @@ test.describe('Structure files', () => {
 
     // The tree is the file's, in file order, every Category active; the manual tree is gone.
     const tree = (await api.get<typeof categoryRoutes.GetOutput>('/admin/product-categories')).body.productCategories
-    expect(tree.map((root) => root.handle)).toEqual(['men', 'women', 'unisex'])
+    expect(tree.map((root) => root.handle)).toEqual(['men', 'women', 'unisex', 'shoes'])
     const [menNode] = tree
     expect(menNode).toMatchObject({ id: men.id, name: 'Men', isActive: true, rule: { genero: ['men'] } })
     expect(menNode?.children.map((child) => child.handle)).toEqual(['men-tops', 'men-bottoms', 'men-shoes'])
@@ -184,7 +206,10 @@ test.describe('Structure files', () => {
     const womenId = tree[1]?.id
     expect(await membersOf(`categoryId=${womenId}`)).toEqual([])
 
-    expect(await navigation()).toEqual(plan.menu.next)
+    // The store serves the file's menu, in its order; how sections resolve is the navigation API's own test.
+    expect((await navigation()).map(({ type, handle }) => `${type}:${handle}`)).toEqual(
+      plan.menu.next.map(({ type, handle }) => `${type}:${handle}`),
+    )
 
     // The same file again changes nothing.
     const again = await preview(await upload(FIXTURE))
