@@ -12,8 +12,8 @@ How an agent works in the Proteus FigCraft file. For what to draw, see `brand-ru
   - `brand`: the favicon and touch icons (sections `sources`, `export`, `preview`); see `brand-marks.md`.
 - FigCraft reads and writes only under `~/designs`. Backups, screenshots and the plan file live there too; nothing design-side goes into the repo except the exporters' committed snapshots.
 - Machine paths (the design file, the CLI binary) live only in `packages/design/design.local.json`, which is gitignored. The committed `design.json` holds none.
-- Variables: collection `Primitives` (mode `Value`: `palette/neutral|blue|red|green/*`, `font/sans`), collection `Theme` (flat `color/*` roles, modes `Light` and `Dark`), collection `Viewport` (modes `Mobile` and `Desktop`: `type/display|title|heading/size`). There are no `space/*` or `radius/*` variables yet: spacing is Tailwind's 4 px scale and the radius is 0. Roles and values: `colour.md`.
-- Text styles: `type/display`, `type/title`, `type/heading`. Each style's description gives its use. Body (14 px) and meta (12 px) have no style yet.
+- Variables: collection `Primitives` (mode `Value`: `palette/neutral|blue|red|green|orange/*`, `font/sans`), collection `Theme` (flat `color/*` roles, modes `Light` and `Dark`), collection `Viewport` (modes `Mobile`, `Sm`, `Md`, `Desktop`: `type/display|title|heading/size`; `Sm` and `Md` hold the fluid value at 640 and 768 px), `Spacing` (`space/<n>` = n × 4 px, the steps the store uses), `Radius` (`radius/none|xs|arrow|full`), `Type` (`weight/*`, `text/<key>/size|leading`, `tracking/*`, `leading/*`), `Layout` (`breakpoint/sm|md|lg`) and `Motion` (`duration/<ms>`, `ease/*` strings). Roles and values: `colour.md`.
+- Text styles: `type/display`, `type/title`, `type/heading`, `type/body`, `type/body-compact`, `type/label`, `type/label-bold`, `type/caption`, `type/caption-medium`, `type/input`, `type/button-lg`, `type/total`, `type/badge`. Each style's description gives its use; the body and label roles bind their size and leading to `text/*`. Effect styles: `shadow/panel`, `shadow/lg`, `shadow/xl`.
 - Fonts: Manrope (`~/designs/proteus/fonts/`).
 - Two MCP servers run the same engine:
   - `figcraft-app` drives the running app (`~/bin/figcraft-app`, port 7979). Use this one for every drawing: the owner watches the canvas.
@@ -54,7 +54,7 @@ How an agent works in the Proteus FigCraft file. For what to draw, see `brand-ru
 | Screen state | `frame.create {preset, name}` (`frame.presets` lists them), then a variant of the screen set (see "Screen sets") |
 | Auto layout | `set_properties` with `layout`, `gap`, `padding`, `mainAlign`, `crossAlign`, `sizingH`, `sizingV`; `layout.add` / `layout.remove` |
 | Bind a token | `variable.bind {ids, field, variable}`; fields `fill`, `stroke`, `fills/<i>/color`, `gap`, `paddingHorizontal`, `cornerRadius`, `width`, `height`, `opacity`, ... |
-| Set a mode on a frame | the frame's `Theme` mode (`Light`, `Dark`) and `Viewport` mode (`Mobile`, `Desktop`); find the command with `list_commands {filter: "mode"}` |
+| Set a mode on a frame | the frame's `Theme` mode (`Light`, `Dark`) and `Viewport` mode (`Mobile`, `Sm`, `Md`, `Desktop`); find the command with `list_commands {filter: "mode"}` |
 | Text style | `style.apply {ids, style: "type/heading"}` |
 | Use a component | `instance.create {component, parent}`; `instance.setProperties {ids, properties}` for variants, text and booleans; `instance.swap`; `instance.slotInsert` for slots |
 | Make a component | `component.create`, `component.addProperty`, `component.bindProperty`, `component.combineVariants`, `component.addVariant` |
@@ -87,7 +87,7 @@ Carried over from the sibling project's sessions on the same engine; each cost t
 ## Screen sets
 
 - A screen is a component set on its `app/<group>` page, one per route, named like the feature component the route renders. No screen branches on a mode: a route composes its screen from granular feature components on the feature page.
-- Variants are `state × viewport`: `state=<state>` for each state the code produces (loading, empty, error, guest, signed in, validation, drawer open), `viewport=mobile` at 390 px and `viewport=lg` at 1440 px, plus `sm` (640) or `md` (768) only where the screen changes there. Each frame is set to the matching `Viewport` mode (`Mobile` for `mobile`, `Desktop` for `lg`; which mode an `sm` or `md` frame takes is an open question for the inventory, since the type sizes are fluid between the two).
+- Variants are `state × viewport`: `state=<state>` for each state the code produces (loading, empty, error, guest, signed in, validation, drawer open), `viewport=mobile` at 390 px and `viewport=lg` at 1440 px, plus `sm` (640) or `md` (768) only where the screen changes there. Each frame is set to the matching `Viewport` mode (`Mobile` for `mobile`, `Sm` for `sm`, `Md` for `md`, `Desktop` for `lg`).
 - Draw in the `Light` theme only. Check dark by switching the frame's `Theme` mode to `Dark`, screenshotting, and switching back; never keep a dark copy.
 - Drawers and sheets are states of the screen they cover (`Product`, `state=bagOpen`), not screens of their own.
 - To extract a part from a screen: `edit.duplicate` the layer, `node.reparent` the copy to the target page's section, `component.create` it, add its text properties, then put an instance where the layer was (`instance.create`, `node.reparent {index}`, `sizingH: fill`) and delete the original. To turn existing frames into one set: `component.create {ids: [frame]}` on each frame, `object.rename` each to `state=<state>, viewport=<viewport>`, then `component.combineVariants {ids}` with the default first.
@@ -128,7 +128,8 @@ What the exporters do with the file, so a design choice doesn't break an export.
 - `type/*` styles with `case: upper` export as `text-transform: uppercase`. The text-style classes are emitted doubled (`.type-x.type-x`) so they beat a hardcoded `text-*`; the cost is that breakpoint variants (`lg:type-x`) don't work, so a responsive size goes through the `Viewport` collection instead.
 - `components:export` skips screen sets (pages `app/*`, or "Screen set" at the start of the description) and the design-only sets on its not-exported list.
 - A `viewport` property never becomes a `cva` prop: `mobile` values are the base classes, and each larger value emits only the classes that differ from the next value down, under `sm:`, `md:` or `lg:`. Draw `sm` or `md` only where the set changes there.
-- Values with no token (spacing, the 0 radius, `shadow-xl`, the 80 % scrim) map only as far as the exporter knows them; a gap that stops an export is fixed in the design or the exporter, never in the generated file.
+- Bind every padding, gap and fixed size to a `space/*` variable, every radius to `radius/*`, every shadow to a `shadow/*` style. The 80 % drawer scrim has no token; a gap that stops an export is fixed in the design or the exporter, never in the generated file.
+- A shadow's colour bound to a variable takes the variable's alpha, not the paint's: a translucent shadow needs a translucent role (`color/shadow`).
 
 ## FigCraft's built-in prompts
 

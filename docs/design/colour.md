@@ -4,8 +4,8 @@ The colour system in `~/designs/proteus/Proteus.figcraft`, the design source of 
 
 ## Structure
 
-- **Primitives:** collection `Primitives`, mode `Value`. Ramps `palette/neutral/*`, `palette/blue/*`, `palette/red/*`, `palette/green/*`, plus `font/sans`. No Tailwind default colours.
-- **Roles:** collection `Theme`, modes `Light` and `Dark`, flat kebab-case `color/*` names so each becomes a class (`text-ink-muted`, `bg-surface-subtle`). Every role aliases a primitive in each mode.
+- **Primitives:** collection `Primitives`, mode `Value`. Ramps `palette/neutral/*`, `palette/blue/*`, `palette/red/*`, `palette/green/*`, `palette/orange/*`, plus `font/sans`. No Tailwind default colours.
+- **Roles:** collection `Theme`, modes `Light` and `Dark`, flat kebab-case `color/*` names so each becomes a class (`text-ink-muted`, `bg-surface-subtle`). Every role aliases a primitive in each mode, except the two translucent ones (`selection`, `shadow`), which hold their colour with its alpha.
 - Layers bind roles only, never `palette/*`. A new role is proposed to the owner first (name, primitive in each mode, why), then added in FigCraft and followed by `tokens:export`.
 - The generated CSS puts `Light` on `:root` and `Dark` on `:root[data-theme="dark"]` and under `prefers-color-scheme: dark` unless the shopper chose light.
 
@@ -17,6 +17,7 @@ The colour system in `~/designs/proteus/Proteus.figcraft`, the design source of 
 | `blue/*` | 300 #7AA9FF · 700 #004EBA | The one hue |
 | `red/*` | 300 #FF8FA5 · 600 #DC0428 | Sale and destruction |
 | `green/*` | 400 #00E890 · 600 #009966 | Positive states |
+| `orange/*` | 300 #FFB86A | Notice banners |
 
 ## Roles (`color/*`)
 
@@ -32,6 +33,11 @@ The colour system in `~/designs/proteus/Proteus.figcraft`, the design source of 
 | `accent` | blue/700 #004EBA | blue/300 #7AA9FF | The only hue: count badges, with `surface` text, never white |
 | `sale` | red/600 #DC0428 | red/300 #FF8FA5 | Sale prices and destructive actions; lifts on dark rather than inverting |
 | `positive` | green/600 #009966 | green/400 #00E890 | Positive states; unused in the store today |
+| `warning` | orange/300 #FFB86A | orange/300 #FFB86A | Notice banners (cart transfer, market switch failed), with `ink` text |
+| `selection` | #4FB8B2 at 24 % | #4FB8B2 at 24 % | Text-selection highlight |
+| `shadow` | #0D1012 at 20 % | #F4F5F6 at 20 % | The colour of `shadow-panel`: `ink` at 20 % |
+
+`warning` is the sRGB value of Tailwind's `orange-300` (`oklch(83.7% 0.128 66.29)`), which the banners still use as `bg-orange-300`. That oklch colour lies outside sRGB: on an sRGB screen both render #FFB86A, on a wide-gamut screen `bg-orange-300` is slightly more saturated than the role. The design file is sRGB, so the role keeps the sRGB value.
 
 ## Contrast
 
@@ -80,4 +86,5 @@ Measured, not fixed. Each is a token decision (`DESIGN.md`, Do's and Don'ts; no 
 
 - **`ink-muted` in light is 4.3 on `surface` and 4.0 on `surface-subtle`**, under 4.5:1, and it is the store's secondary text at 14 px (about 100 uses). Dark passes (7.5 / 6.7).
 - **`ink-subtle` is 2.5 / 2.3 in light and 4.4 / 3.9 in dark.** It passes 3:1 only for glyphs in dark. It is used as text in a few places (the PDP fit line, option values under a line item, upcoming steps on the order track), which fails in both themes.
+- **`ink` on `warning`: 11.2 in light, 1.6 in dark.** The banner keeps `ink` text on the same orange in both schemes, so in dark the text is near-white on orange and fails.
 - **`positive` in light is 3.7 / 3.4.** Fine for an icon or large text; not for body text. Unused today.

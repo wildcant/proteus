@@ -1,8 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@proteus/ui/styles.css";
-/* Colour roles, the font and the type-* roles, generated from the design file. Change them there,
-   then `pnpm --filter @proteus/design run tokens:export` (see packages/design). */
+/* Colour roles, the font, the type-* roles and the scales (spacing, radii, weights, text sizes,
+   shadows, motion, breakpoints), generated from the design file. Change them there, then
+   `pnpm --filter @proteus/design run tokens:export` (see packages/design). */
 @import "@proteus/design/tokens.css";
 @source "../../../packages/ui/src";
 
@@ -17,15 +18,6 @@
 @theme {
   /* Kept so the ~25 existing `text-foreground-muted` usages keep resolving. */
   --color-foreground-muted: var(--foreground-muted);
-
-  /* The system's one shadow, and it exists for a single job: lifting a pinned panel footer off
-     the content that scrolls up to meet it. Cast upward, because that is the only edge content
-     arrives from.
-
-     Built on --ink rather than a literal black so it inverts with the scheme — a black shadow on
-     the dark surface would be invisible, and the footer would lose its edge exactly where the
-     panel is hardest to read. */
-  --shadow-panel: 0 -8px 24px -8px color-mix(in oklab, var(--ink) 20%, transparent);
 }
 
 :root {

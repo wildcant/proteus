@@ -29,6 +29,14 @@
           "width": 375
         },
         {
+          "mode": "Sm",
+          "width": 640
+        },
+        {
+          "mode": "Md",
+          "width": 768
+        },
+        {
           "mode": "Desktop",
           "width": 1440
         }
@@ -49,5 +57,17 @@
     "output": "../../DESIGN.md",
     "name": "Proteus",
     "description": "The storefront's design system, drawn in the FigCraft design file and generated into code."
+  },
+  "flow": {
+    "output": "../../apps/store/src/navigation/flow.gen.ts",
+    "screens": "../../apps/store/src/navigation/screens.ts",
+    "routeTree": "../../apps/store/src/routeTree.gen.ts"
+  },
+  "icons": {
+    "set": "Icon",
+    "output": "../../apps/store/src/components/ui/icon/icon.glyphs.tsx"
+  },
+  "brand": {
+    "output": "../../apps/store/public"
   }
 }

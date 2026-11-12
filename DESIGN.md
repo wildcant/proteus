@@ -1,10 +1,10 @@
 ---
 name: Proteus
 description: The storefront's design system, drawn in the FigCraft design file and generated into code.
-colors: { ink: "#0d1012", ink-muted: "#767a7f", ink-subtle: "#9fa3a8", ink-disabled: "#bec2c6", surface: "#ffffff", surface-subtle: "#f4f5f6", line: "#dee0e3", accent: "#004eba", sale: "#dc0428", positive: "#009966" }
-typography: { display: { fontFamily: "Manrope", fontSize: "32px", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.02em" }, title: { fontFamily: "Manrope", fontSize: "24px", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.02em" }, heading: { fontFamily: "Manrope", fontSize: "20px", fontWeight: 800, lineHeight: 0.94, letterSpacing: "-0.01em" } }
-rounded: {}
-spacing: {}
+colors: { ink: "#0d1012", ink-muted: "#767a7f", ink-subtle: "#9fa3a8", ink-disabled: "#bec2c6", surface: "#ffffff", surface-subtle: "#f4f5f6", line: "#dee0e3", accent: "#004eba", sale: "#dc0428", positive: "#009966", warning: "#ffb86a", selection: "rgb(79 184 178 / 0.24)", shadow: "rgb(13 16 18 / 0.2)" }
+typography: { display: { fontFamily: "Manrope", fontSize: "32px", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.02em" }, title: { fontFamily: "Manrope", fontSize: "24px", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.02em" }, heading: { fontFamily: "Manrope", fontSize: "20px", fontWeight: 800, lineHeight: 0.94, letterSpacing: "-0.01em" }, body: { fontFamily: "Manrope", fontSize: "14px", fontWeight: 400, lineHeight: 1.4 }, body-compact: { fontFamily: "Manrope", fontSize: "14px", fontWeight: 400, lineHeight: "20px" }, label: { fontFamily: "Manrope", fontSize: "14px", fontWeight: 500, lineHeight: "20px" }, label-bold: { fontFamily: "Manrope", fontSize: "14px", fontWeight: 700, lineHeight: "20px" }, caption: { fontFamily: "Manrope", fontSize: "12px", fontWeight: 400, lineHeight: "16px" }, caption-medium: { fontFamily: "Manrope", fontSize: "12px", fontWeight: 500, lineHeight: "16px" }, input: { fontFamily: "Manrope", fontSize: "16px", fontWeight: 400, lineHeight: "24px" }, button-lg: { fontFamily: "Manrope", fontSize: "16px", fontWeight: 600, lineHeight: "24px" }, total: { fontFamily: "Manrope", fontSize: "16px", fontWeight: 700, lineHeight: "24px" }, badge: { fontFamily: "Manrope", fontSize: "10px", fontWeight: 700, lineHeight: 1 } }
+rounded: { none: "0px", xs: "2px", arrow: "3px", full: "9999px" }
+spacing: { "0": "0px", "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "7": "28px", "8": "32px", "9": "36px", "10": "40px", "11": "44px", "12": "48px", "13": "52px", "14": "56px", "15": "60px", "16": "64px", "17": "68px", "20": "80px", "22": "88px", "24": "96px", "28": "112px", "32": "128px", "36": "144px", "38": "152px", "40": "160px", "44": "176px", "48": "192px", "56": "224px", "60": "240px", "64": "256px", "70": "280px", "72": "288px", "80": "320px", "90": "360px", "100": "400px", "125": "500px", "140": "560px", "160": "640px", "200": "800px", "350": "1400px", "0.5": "2px", "1.5": "6px", "2.25": "9px", "2.5": "10px", "3.5": "14px", "3.75": "15px", "5.75": "23px", "12.5": "50px" }
 components: {}
 ---
 
@@ -34,7 +34,7 @@ Mobile first. The phone layout is the base; wider viewports only add columns, ra
 
 ## Colors
 
-Neutral ink and surfaces, one hue, one red, one green. Values and ratios: `docs/design/colour.md`.
+Neutral ink and surfaces, one hue, one red, one green, plus a notice orange, a selection tint and the shadow colour. Values and ratios: `docs/design/colour.md`.
 
 ### Primary
 
@@ -57,6 +57,10 @@ Neutral ink and surfaces, one hue, one red, one green. Values and ratios: `docs/
 - **Ink Muted** (`ink-muted`): secondary text: descriptions, footer links, meta lines, link hover.
 - **Ink Subtle** (`ink-subtle`): tertiary text and placeholder glyphs: breadcrumb separators, empty-state icons, option values under a line item.
 - **Ink Disabled** (`ink-disabled`): disabled marks: inactive gallery dots.
+### Utility
+- **Warning** (`warning`): the notice banners (the bag could not move to your account, the market switch failed). The same orange in both schemes, with `ink` text; the banners still use `bg-orange-300`, which the role reproduces.
+- **Selection** (`selection`): the text-selection highlight, teal at 24 % in both schemes. The body still sets it with `selection:bg-[rgba(79,184,178,0.24)]`.
+- **Shadow** (`shadow`): the colour of `shadow-panel`: `ink` at 20 %, so it inverts with the scheme.
 
 ### Named Rules
 
@@ -79,9 +83,18 @@ Neutral ink and surfaces, one hue, one red, one green. Values and ratios: `docs/
 - **Display** (`type-display`, ExtraBold 800, 32 → 48 px fluid between 375 and 1440 px, leading 0.9, −2 %, uppercase): the page's name: a category or search heading, "Hello, Name", the address book, an order confirmed, 404.
 - **Title** (`type-title`, ExtraBold 800, 24 → 32 px fluid, leading 0.9, −2 %, uppercase): page titles below the display.
 - **Heading** (`type-heading`, ExtraBold 800, 20 px, leading 0.94, −1 %, uppercase): panel and section headings, footer column titles, the wordmark.
-- **Body** (Regular 400, 14 px, leading 1.4): the default, set on `body`; product titles, descriptions.
-- **Meta** (Regular 400, 12 px, `text-xs`): option values, help text, badges.
-- **Emphasis**: `font-medium` for button labels and badges, `font-bold` for prices.
+- **Body** (`type-body`, Regular 400, 14 px, leading 1.4): the default, set on `body`; product titles, descriptions.
+- **Body Compact** (`type-body-compact`, Regular 400, 14 / 20 px, `text-sm`): most UI text: lists, details, form help.
+- **Label** (`type-label`, Medium 500, 14 / 20 px, `text-sm font-medium`): button labels, field labels, menu items.
+- **Label Bold** (`type-label-bold`, Bold 700, 14 / 20 px, `text-sm font-bold`): link buttons, inline totals.
+- **Caption** (`type-caption`, Regular 400, 12 / 16 px, `text-xs`): meta lines, option values, help and legal text.
+- **Caption Medium** (`type-caption-medium`, Medium 500, 12 / 16 px, `text-xs font-medium`): small labels such as step names.
+- **Input** (`type-input`, Regular 400, 16 / 24 px, `text-base`): field values on a phone, so iOS does not zoom; `md:text-sm` from `md`.
+- **Button Large** (`type-button-lg`, SemiBold 600, 16 / 24 px): the tall auth buttons.
+- **Total** (`type-total`, Bold 700, 16 / 24 px): order and bag totals, market menu items.
+- **Badge** (`type-badge`, Bold 700, 10 px, leading 1): the bag's count badge.
+
+The sizes behind them are the `text/*` scale (`text-2xs` 10, `text-xs` 12, `text-sm` 14, `text-base` 16, `text-lg` 18 px, each with Tailwind's leading), and the weights the `weight/*` scale (`font-normal` 400 to `font-extrabold` 800); both are generated, at Tailwind's default values, so the store's `text-sm font-medium` and `type-label` are the same thing. The store's classes still name the scale; the text styles are what a drawing applies.
 
 ### Named Rules
 
@@ -93,7 +106,7 @@ Neutral ink and surfaces, one hue, one red, one green. Values and ratios: `docs/
 
 ## Layout
 
-A centred column up to 1400 px (`max-w-350`), with side gutters of 16 px on a phone, 24 px from `sm` and 32 px from `lg`. Spacing is Tailwind's 4 px scale. Breakpoints are Tailwind's defaults: `sm` 40rem, `md` 48rem, `lg` 64rem; mobile is the base.
+A centred column up to 1400 px (`max-w-350`), with side gutters of 16 px on a phone, 24 px from `sm` and 32 px from `lg`. Spacing is a 4 px scale: `space/1` is Tailwind's `--spacing` step and every `space/<n>` in the design file is n steps, so `p-4` is `space/4` (16 px); the frontmatter lists the steps the store uses. Breakpoints are generated from `breakpoint/*` at Tailwind's defaults: `sm` 40rem, `md` 48rem, `lg` 64rem; mobile is the base. The design file draws frames at 390 (`Mobile`), 640 (`Sm`), 768 (`Md`) and 1440 px (`Desktop`); the fluid type sizes interpolate between Mobile (375) and Desktop, and the `Sm` and `Md` modes hold the interpolated value at their width.
 
 - **Header:** sticky, 56 px tall on a phone and 80 px from `lg`, a `line` hairline under it. Three columns with the wordmark centred: menu and search icons on the left on a phone, the category rail from `lg`; search bar (from `lg`), account and bag on the right.
 - **Product grid:** two columns on a phone, three from `sm`, four from `lg`; a 4 px column gutter and 24 px between rows. Each card is a 4:5 photograph on `surface-subtle`, then title, fit line and "From" price below, with no side inset on a phone.
@@ -109,13 +122,15 @@ Flat. Depth comes from the surface step (`surface` → `surface-subtle`), hairli
 
 ### Named Rules
 
-**The One Shadow Rule.** `shadow-panel` lifts the bag's pinned footer off the content that scrolls up under it, cast upward and built on `ink` so it survives dark. Floating menus (the market menu, popovers) use Tailwind's `shadow-xl`, which no token expresses: a recorded gap. Cards, buttons and panels have no shadow.
+**The One Shadow Rule.** `shadow-panel` (0 −8 24 −8, the `shadow` role) lifts the bag's pinned footer off the content that scrolls up under it, cast upward and on `ink` at 20 % so it survives dark. Floating surfaces take `shadow-xl` (popovers, the market menu) and `shadow-lg` (toasts), black at 10 %, Tailwind's values. All three are `shadow/*` effect styles. Cards, buttons and panels have no shadow.
+
+Motion is generated too: `duration/*` (100, 150, 200, 250, 300, 450 ms) and `ease/*`: `in-out` (Tailwind's default curve), `drawer` (cubic-bezier(0.32, 0.72, 0, 1), the drawer's slide and scrim, 450 ms), `drawer-content` (its content fade, 300 ms) and `toast`. Links and buttons fade colour and opacity over 150 ms.
 
 **The Scrim Separates Rule.** An overlay over product photography gets the 80 % scrim. A weaker scrim lets the page argue with the panel.
 
 ## Shapes
 
-Square. The radius is 0 everywhere (`--radius: 0rem`, so every primitive squares at once). The pill (`rounded-full`) is reserved for a label laid on top of something: the sold-out badge on a photograph, the bag and line-item count badges, the signed-in avatar, gallery dots, and the theme toggle. Everything that sits in the grid is square.
+Square. The radius is 0 everywhere (`radius/none`; `--radius: 0rem` in the store squares every shadcn primitive at once). Two small radii exist only on tooltip and popover arrows (`radius/xs` 2 px, `radius/arrow` 3 px). The pill (`rounded-full`, `radius/full`) is reserved for a label laid on top of something: the sold-out badge on a photograph, the bag and line-item count badges, the signed-in avatar, gallery dots, and the theme toggle. Everything that sits in the grid is square.
 
 The wordmark is the store name set in `type-heading`, not a drawn mark. Favicon and touch icons are placeholder images today and come from the `brand` page once the brand slice draws them.
 

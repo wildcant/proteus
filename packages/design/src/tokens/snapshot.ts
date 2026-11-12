@@ -1,6 +1,6 @@
 // The FigCraft exports the tokens are built from: `variable.export` (the variables JSON, same shape as
-// Figma's REST `GET /v1/files/:key/variables/local`) and `style.list` (the text styles). Both are
-// committed, so the build runs on any machine and in CI without FigCraft.
+// Figma's REST `GET /v1/files/:key/variables/local`) and `style.list` (the text and effect styles). All
+// are committed, so the build runs on any machine and in CI without FigCraft.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -43,19 +43,45 @@ export type TextStyle = {
   }
 }
 
+export type Shadow = {
+  type: 'dropShadow' | 'innerShadow' | (string & {})
+  color: Rgba
+  offset: [number, number]
+  radius: number
+  spread: number
+  visible: boolean
+}
+
+export type EffectStyle = {
+  id: string
+  name: string
+  description: string
+  /** `effects/<i>/color` -> the variable bound there. A bound colour reads as the variable's, alpha included. */
+  bound?: Record<string, string>
+  effects: Shadow[]
+}
+
 export type Snapshot = {
   collections: Record<string, VariableCollection>
   variables: Record<string, Variable>
   textStyles: TextStyle[]
+  effectStyles: EffectStyle[]
 }
 
 const VARIABLES_FILE = 'variables.json'
 const TEXT_STYLES_FILE = 'text-styles.json'
+const EFFECT_STYLES_FILE = 'effect-styles.json'
 
 export function readSnapshot(dir: string): Snapshot {
   const { meta } = JSON.parse(readFileSync(join(dir, VARIABLES_FILE), 'utf8'))
   const rawStyles = JSON.parse(readFileSync(join(dir, TEXT_STYLES_FILE), 'utf8')) as RawTextStyle[]
-  return { collections: meta.variableCollections, variables: meta.variables, textStyles: rawStyles.map(fromFigCraft) }
+  const effectStyles = JSON.parse(readFileSync(join(dir, EFFECT_STYLES_FILE), 'utf8')) as EffectStyle[]
+  return {
+    collections: meta.variableCollections,
+    variables: meta.variables,
+    textStyles: rawStyles.map(fromFigCraft),
+    effectStyles,
+  }
 }
 
 // style.list writes the style fields in snake_case; everything past this point uses camelCase.
@@ -78,11 +104,13 @@ function fromFigCraft({ style, ...textStyle }: RawTextStyle): TextStyle {
 /** Refreshes the token half of the snapshot from the design file. */
 export function exportTokenSnapshot(config: ResolvedConfig) {
   mkdirSync(config.snapshot, { recursive: true })
-  const [, textStyles] = withFigCraft(config.figcraft, config.snapshot, (run) =>
+  const [, textStyles, effectStyles] = withFigCraft(config.figcraft, config.snapshot, (run) =>
     run([
       { command: 'variable.export', params: { format: 'json', path: join(config.snapshot, VARIABLES_FILE) } },
       { command: 'style.list', params: { type: 'text' } },
+      { command: 'style.list', params: { type: 'effect' } },
     ]),
   )
   writeFileSync(join(config.snapshot, TEXT_STYLES_FILE), `${JSON.stringify(textStyles, null, 2)}\n`)
+  writeFileSync(join(config.snapshot, EFFECT_STYLES_FILE), `${JSON.stringify(effectStyles, null, 2)}\n`)
 }

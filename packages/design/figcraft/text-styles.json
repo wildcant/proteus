@@ -79,5 +79,283 @@
       "link": null
     },
     "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92"
+    },
+    "description": "Running text: the page default (body, 14 px at 1.4).",
+    "id": "S:7",
+    "name": "type/body",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 140
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "Most UI text: lists, details, form help (text-sm).",
+    "id": "S:8",
+    "name": "type/body-compact",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "Buttons, field labels, menu items (text-sm font-medium).",
+    "id": "S:9",
+    "name": "type/label",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Medium",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "Link buttons and inline totals (text-sm font-bold).",
+    "id": "S:10",
+    "name": "type/label-bold",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90",
+      "lineHeight": "VariableID:91"
+    },
+    "description": "Meta lines, helper and legal text (text-xs).",
+    "id": "S:11",
+    "name": "type/caption",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90",
+      "lineHeight": "VariableID:91"
+    },
+    "description": "Small labels: badges in rows, step names (text-xs font-medium).",
+    "id": "S:12",
+    "name": "type/caption-medium",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "Medium",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "Field values below md, so iOS does not zoom (text-base; md:text-sm).",
+    "id": "S:13",
+    "name": "type/input",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "The tall auth buttons (h-14 font-semibold text-base).",
+    "id": "S:14",
+    "name": "type/button-lg",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "SemiBold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "Order and bag totals, market menu items (text-base font-bold).",
+    "id": "S:15",
+    "name": "type/total",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:89"
+    },
+    "description": "Bag count badge (text-[10px] font-bold leading-none).",
+    "id": "S:16",
+    "name": "type/badge",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 10,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 100
+      },
+      "link": null
+    },
+    "type": "text"
   }
 ]

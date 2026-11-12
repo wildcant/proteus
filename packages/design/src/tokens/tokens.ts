@@ -4,18 +4,25 @@
 //
 //   Theme collection     color/<name>               a colour role, one value per Theme mode
 //   any other collection palette/<ramp>/<step>     raw colours the roles alias
-//                        space/<key>                spacing
+//                        space/<key>                spacing; space/1 is the step the numbered keys multiply
 //                        radius/<key>               corner radii
 //                        tracking/<key>             letter spacing, percent of the font size
+//                        leading/<key>              unitless line heights
+//                        weight/<key>               font weights
+//                        text/<key>/size|leading    the text size scale (px), a leading paired with its size
+//                        breakpoint/<key>           viewport widths (px)
+//                        duration/<key>             transition durations (ms)
+//                        ease/<key>                 timing functions (strings)
 //                        stroke/<key>               line widths
 //                        font/<key>                 a font family; text styles bind theirs to one of these
 //                        type/<name>/size|leading   numbers the type/<name> text style binds
 //   Viewport collection  any number                 one value per viewport mode (responsive)
 //   Text styles          type/<name>                one class each
+//   Effect styles        shadow/<key>               box shadows
 //
 // A name outside these prefixes is kept in `other` (TS output only) rather than dropped in silence.
 import type { TokensConfig } from '../config.ts'
-import type { Rgba, Snapshot, TextStyle, Variable, VariableValue } from './snapshot.ts'
+import type { EffectStyle, Rgba, Snapshot, TextStyle, Variable, VariableValue } from './snapshot.ts'
 
 /** A length in px: one value, or one per viewport mode. */
 export type Length = number | Record<string, number>
@@ -32,7 +39,11 @@ export type TypeToken = {
   weight: number
   italic: boolean
   size: Length
+  /** The text/<key> the size is bound to, if any: the class then reads `--text-<key>`. */
+  sizeKey: string | undefined
   lineHeight: LineHeight
+  /** Set when the line height is bound to that same text/<key>/leading. */
+  leadingKey: string | undefined
   /** em */
   letterSpacing: number
   textTransform: 'uppercase' | 'lowercase' | 'capitalize' | undefined
@@ -46,6 +57,15 @@ export type Tokens = {
   space: Entry[]
   radius: Entry[]
   tracking: Entry[]
+  leading: Entry[]
+  weights: Entry[]
+  /** px */
+  text: { key: string; size: number; leading: number | undefined }[]
+  breakpoints: Entry[]
+  /** ms */
+  durations: Entry[]
+  eases: { key: string; value: string }[]
+  shadows: { key: string; value: string }[]
   stroke: Entry[]
   fonts: { key: string; family: string }[]
   /** Numbers in the viewport collection that no text style uses, e.g. layout/margin. */
@@ -87,6 +107,10 @@ export function buildTokens(snapshot: Snapshot, config: TokensConfig): Tokens {
   const viewportModes = config.viewport?.modes.map((m) => m.mode) ?? []
   for (const mode of themeModes) modeId(theme, mode)
   for (const mode of viewportModes) if (viewport) modeId(viewport, mode)
+  // A fluid scale reads only its two ends; the modes between them are there to draw frames at, so
+  // they must hold what the browser computes at that width.
+  const fluidEnds =
+    config.viewport?.scale === 'fluid' ? [config.viewport.modes[0], config.viewport.modes.at(-1)] : undefined
 
   // A value as seen in the given modes (by collection name). An alias is followed into its own
   // collection, in that collection's mode from `modes`, else its default.
@@ -107,9 +131,27 @@ export function buildTokens(snapshot: Snapshot, config: TokensConfig): Tokens {
 
   const length = (variable: Variable): Length => {
     if (viewport && variable.variableCollectionId === viewport.id) {
-      return Object.fromEntries(
+      const values = Object.fromEntries(
         viewportModes.map((mode) => [mode, number(valueIn(variable, { [viewport.name]: mode }), variable)]),
       )
+      const [from, to] = fluidEnds ?? []
+      if (from && to) {
+        for (const between of config.viewport?.modes.slice(1, -1) ?? []) {
+          const expected = round(
+            (values[from.mode] ?? 0) +
+              (((values[to.mode] ?? 0) - (values[from.mode] ?? 0)) * (between.width - from.width)) /
+                (to.width - from.width),
+            2,
+          )
+          const held = values[between.mode] ?? 0
+          if (Math.abs(held - expected) > 0.01) {
+            throw new Error(
+              `${variable.name}: ${between.mode} (${between.width}) holds ${held}, but the fluid scale gives ${expected} there`,
+            )
+          }
+        }
+      }
+      return values
     }
     return number(valueIn(variable, {}), variable)
   }
@@ -153,7 +195,32 @@ export function buildTokens(snapshot: Snapshot, config: TokensConfig): Tokens {
   const space = entries('space/')
   const radius = entries('radius/')
   const tracking = entries('tracking/')
+  const leading = entries('leading/')
+  const weights = entries('weight/')
+  const breakpoints = entries('breakpoint/')
+  const durations = entries('duration/')
   const stroke = entries('stroke/')
+  const eases = byPrefix('ease/').map((v) => ({ key: v.name.slice('ease/'.length), value: String(valueIn(v, {})) }))
+
+  const textScale = new Map<string, { size?: number; leading?: number }>()
+  for (const v of byPrefix('text/')) {
+    const match = /^text\/(.+)\/(size|leading)$/.exec(v.name)
+    if (!match?.[1]) throw new Error(`${v.name}: name a text scale variable text/<key>/size or text/<key>/leading`)
+    const entry = textScale.get(match[1]) ?? {}
+    entry[match[2] as 'size' | 'leading'] = scalarNumber(length(v), v.name)
+    textScale.set(match[1], entry)
+  }
+  const text = [...textScale].map(([key, { size, leading }]) => {
+    if (size === undefined) throw new Error(`text/${key}/leading has no text/${key}/size`)
+    return { key, size, leading }
+  })
+
+  const shadows = snapshot.effectStyles
+    .filter((s) => s.name.startsWith('shadow/'))
+    .map((s) => ({
+      key: s.name.slice('shadow/'.length).replaceAll('/', '-'),
+      value: shadowValue(s, variables, theme.id),
+    }))
 
   const responsive: Entry[] = viewport
     ? viewport.variableIds
@@ -179,6 +246,13 @@ export function buildTokens(snapshot: Snapshot, config: TokensConfig): Tokens {
     space,
     radius,
     tracking,
+    leading,
+    weights,
+    text,
+    breakpoints,
+    durations,
+    eases,
+    shadows,
     stroke,
     fonts,
     responsive,
@@ -222,6 +296,8 @@ function typeToken(
 
   const sizeVariable = bound('fontSize')
   const leadingVariable = bound('lineHeight')
+  const sizeKey = /^text\/(.+)\/size$/.exec(sizeVariable?.name ?? '')?.[1]
+  const leadingKey = /^text\/(.+)\/leading$/.exec(leadingVariable?.name ?? '')?.[1]
   const lineHeight: LineHeight = leadingVariable
     ? { kind: 'length', value: length(leadingVariable) }
     : s.lineHeight.unit === 'pixels'
@@ -241,7 +317,9 @@ function typeToken(
     weight,
     italic: /italic|oblique/i.test(s.fontStyle),
     size: sizeVariable ? length(sizeVariable) : s.fontSize,
+    sizeKey,
     lineHeight,
+    leadingKey: leadingKey !== undefined && leadingKey === sizeKey ? leadingKey : undefined,
     letterSpacing: round(letterSpacing, 4),
     textTransform: ({ upper: 'uppercase', lower: 'lowercase', title: 'capitalize' } as const)[
       s.case as 'upper' | 'lower' | 'title'
@@ -268,15 +346,39 @@ function hex(value: VariableValue, variable: Variable): string {
   if (typeof value !== 'object' || !('r' in value)) {
     throw new Error(`${variable.name}: expected a colour, got ${JSON.stringify(value)}`)
   }
-  const color = value as Rgba
-  const channels = [color.r, color.g, color.b, ...(color.a < 1 ? [color.a] : [])]
-  return `#${channels
-    .map((c) =>
-      Math.round(c * 255)
-        .toString(16)
-        .padStart(2, '0'),
-    )
-    .join('')}`
+  return colorString(value as Rgba)
+}
+
+/** `#rrggbb` when opaque; `rgb(r g b / a)` otherwise, so the alpha is kept as designed, not rounded to 8 bits. */
+export function colorString(color: Rgba): string {
+  const channels = [color.r, color.g, color.b].map((c) => Math.round(c * 255))
+  if (color.a < 1) return `rgb(${channels.join(' ')} / ${round(color.a, 3)})`
+  return `#${channels.map((c) => c.toString(16).padStart(2, '0')).join('')}`
+}
+
+/** A shadow style in CSS: Tailwind's notation, a colour bound to a Theme role as `var(--<role>)`. */
+function shadowValue(style: EffectStyle, variables: Snapshot['variables'], themeId: string): string {
+  const px = (n: number) => (n === 0 ? '0' : `${round(n, 2)}px`)
+  return style.effects
+    .map((effect, i) => {
+      if (effect.type !== 'dropShadow' && effect.type !== 'innerShadow') {
+        throw new Error(`${style.name}: effect ${i} is a ${effect.type}; only shadows export`)
+      }
+      const boundId = style.bound?.[`effects/${i}/color`]
+      const role = boundId ? variables[boundId] : undefined
+      if (boundId && !(role && role.variableCollectionId === themeId && role.name.startsWith('color/'))) {
+        throw new Error(`${style.name}: bind effect ${i}'s colour to a color/* role, not ${role?.name ?? boundId}`)
+      }
+      const color = role ? `var(--${role.name.slice('color/'.length).replaceAll('/', '-')})` : colorString(effect.color)
+      const [x, y] = effect.offset
+      return `${effect.type === 'innerShadow' ? 'inset ' : ''}${px(x)} ${px(y)} ${px(effect.radius)} ${px(effect.spread)} ${color}`
+    })
+    .join(', ')
+}
+
+function scalarNumber(value: Length, name: string) {
+  if (typeof value !== 'number') throw new Error(`${name} cannot be responsive`)
+  return value
 }
 
 export function round(value: number, digits: number) {

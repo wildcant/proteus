@@ -1,6 +1,8 @@
 // Tokens -> a Tailwind v4 stylesheet.
 //
-//   @theme        --color-<role>: var(--<role>), --font-*, --spacing-*, --radius-*, --tracking-*
+//   @theme        --color-<role>: var(--<role>), --font-*, --spacing(-*), --radius-*, --font-weight-*, --text-*,
+//                 --tracking-*, --leading-*, --breakpoint-*, --transition-duration-*, --ease-*, --shadow-*, each
+//                 in the form Tailwind's own theme declares it, so a utility the store uses computes the same
 //   :root         --<role> in the first Theme mode, plus the responsive sizes at their base viewport
 //   <selector>    --<role> in each other Theme mode (and under its media query, if it has one)
 //   @media        the responsive sizes from each later viewport mode up (`steps` scale only)
@@ -15,6 +17,7 @@ type Declarations = [property: string, value: string][]
 
 export function renderCss(tokens: Tokens, config: TokensConfig): string {
   const rem = (px: number) => (px === 0 ? '0' : `${round(px / config.rootFontSize, 4)}rem`)
+  const remNumber = (px: number) => String(round(px / config.rootFontSize, 4))
   const viewport = config.viewport
 
   // Responsive lengths: the value to declare now, and the later viewports' overrides by min-width.
@@ -30,7 +33,8 @@ export function renderCss(tokens: Tokens, config: TokensConfig): string {
       return px
     }
     if (viewport.scale === 'fluid') {
-      const [to] = later
+      // Between the first and the last mode; the ones between are drawing modes, checked by buildTokens.
+      const to = later.at(-1)
       if (!to) throw new Error('a fluid viewport needs two modes')
       return fluid(at(base.mode), at(to.mode), base.width, to.width, config.rootFontSize)
     }
@@ -52,12 +56,41 @@ export function renderCss(tokens: Tokens, config: TokensConfig): string {
       ? tokens.palette.map(({ key, value }): [string, string] => [`--color-${key}`, value])
       : []),
     ...tokens.fonts.map(({ key, family }): [string, string] => [`--font-${key}`, fontStack(key, family)]),
-    ...themeLengths('spacing', tokens.space, lengthValue),
-    ...themeLengths('radius', tokens.radius, lengthValue),
+    ...spacing(tokens.space, lengthValue),
+    ...tokens.radius.map(({ key, value }): [string, string] => {
+      const property = `--radius-${key}`
+      // 9999 is how a design file says "pill"; Tailwind's own full radius is unbounded.
+      return [
+        property,
+        typeof value === 'number' && value >= 9999 ? 'calc(infinity * 1px)' : lengthValue(property, value),
+      ]
+    }),
+    ...tokens.weights.map(({ key, value }): [string, string] => [
+      `--font-weight-${key}`,
+      String(scalar(value, `weight/${key}`)),
+    ]),
+    ...tokens.text.flatMap(({ key, size, leading }): [string, string][] => [
+      [`--text-${key}`, rem(size)],
+      // A ratio, as Tailwind writes it, so a nested element with its own size keeps the proportion.
+      ...(leading === undefined
+        ? []
+        : [[`--text-${key}--line-height`, `calc(${remNumber(leading)} / ${remNumber(size)})`] as [string, string]]),
+    ]),
     ...tokens.tracking.map(({ key, value }): [string, string] => [
       `--tracking-${key}`,
       `${round(scalar(value, `tracking/${key}`) / 100, 4)}em`,
     ]),
+    ...tokens.leading.map(({ key, value }): [string, string] => [
+      `--leading-${key}`,
+      String(scalar(value, `leading/${key}`)),
+    ]),
+    ...themeLengths('breakpoint', tokens.breakpoints, lengthValue),
+    ...tokens.durations.map(({ key, value }): [string, string] => [
+      `--transition-duration-${key}`,
+      `${scalar(value, `duration/${key}`)}ms`,
+    ]),
+    ...tokens.eases.map(({ key, value }): [string, string] => [`--ease-${key}`, value]),
+    ...tokens.shadows.map(({ key, value }): [string, string] => [`--shadow-${key}`, value]),
   ]
 
   const [firstMode, ...otherModes] = config.theme.modes
@@ -68,6 +101,8 @@ export function renderCss(tokens: Tokens, config: TokensConfig): string {
   const typeVariables: Declarations = []
   const typeClasses = tokens.textStyles.map((style) =>
     typeClass(style, config, (suffix, value) => {
+      if (suffix === 'size' && style.sizeKey !== undefined) return `var(--text-${style.sizeKey})`
+      if (suffix === 'leading' && style.leadingKey !== undefined) return `var(--text-${style.leadingKey}--line-height)`
       if (typeof value === 'number') return rem(value)
       const property = `--${config.textStyles.prefix}${style.name}-${suffix}`
       typeVariables.push([property, lengthValue(property, value)])
@@ -118,6 +153,25 @@ function typeClass(
   if (style.letterSpacing) declarations.push(['letter-spacing', `${style.letterSpacing}em`])
   if (style.textTransform) declarations.push(['text-transform', style.textTransform])
   return { name: `${config.textStyles.prefix}${style.name}`, declarations }
+}
+
+/**
+ * space/1 is Tailwind's `--spacing`, the step every numbered utility multiplies (`p-4` is four of them).
+ * A numbered key on that scale is then implied and not declared again; any other key is `--spacing-<key>`.
+ */
+function spacing(entries: Entry[], value: (property: string, length: Length) => string): [string, string][] {
+  const step = entries.find((e) => e.key === '1')?.value
+  if (typeof step !== 'number') return themeLengths('spacing', entries, value)
+  const implied = (e: Entry) =>
+    /^\d+(\.\d+)?$/.test(e.key) && typeof e.value === 'number' && e.value === Number(e.key) * step
+  return [
+    ['--spacing', value('--spacing', step)],
+    ...themeLengths(
+      'spacing',
+      entries.filter((e) => !implied(e)),
+      value,
+    ),
+  ]
 }
 
 function themeLengths(namespace: string, entries: Entry[], value: (property: string, length: Length) => string) {
