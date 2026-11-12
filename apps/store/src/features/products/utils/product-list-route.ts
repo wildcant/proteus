@@ -25,8 +25,9 @@ export const productListRouteOptions = {
   head: (context: Parameters<typeof marketHeadLinksFor>[0]) => ({ links: marketHeadLinksFor(context) }),
   validateSearch: productListSearchSchema,
   loaderDeps: productListLoaderDeps,
-  headers: () => ({
-    'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
+  // A not-found page is not cached: the handle may be published a minute later.
+  headers: ({ match }: { match: { status: string } }) => ({
+    'Cache-Control': match.status === 'notFound' ? 'no-store' : 'public, max-age=300, stale-while-revalidate=3600',
   }),
   staleTime: 30_000,
 }

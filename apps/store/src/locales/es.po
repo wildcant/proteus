@@ -558,11 +558,11 @@ msgstr "Enlace no válido"
 msgid "It is still priced in {0}"
 msgstr "Sus precios siguen en {0}"
 
-#: src/routes/_main/collections/$handle.tsx:36
+#: src/routes/_main/collections/$handle.tsx:51
 msgid "It may have ended, or no longer be in the store."
 msgstr "Puede que haya terminado o que ya no esté en la tienda."
 
-#: src/routes/_main/categories/$handle.tsx:39
+#: src/routes/_main/categories/$handle.tsx:55
 msgid "It may have moved, or no longer be in the store."
 msgstr "Puede que se haya movido o que ya no esté en la tienda."
 
@@ -1165,11 +1165,11 @@ msgstr "No pudimos procesar tu pago. Inténtalo de nuevo o usa otra tarjeta."
 msgid "We couldn’t find that page"
 msgstr "No encontramos esa página"
 
-#: src/routes/_main/categories/$handle.tsx:38
+#: src/routes/_main/categories/$handle.tsx:54
 msgid "We couldn't find this category"
 msgstr "No encontramos esta categoría"
 
-#: src/routes/_main/collections/$handle.tsx:35
+#: src/routes/_main/collections/$handle.tsx:50
 msgid "We couldn't find this collection"
 msgstr "No encontramos esta colección"
 

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 import { collectionQueryOptions, useSuspenseCollection } from '#/features/products/api/collections'
 import { ensureProductListData } from '#/features/products/api/product-list'
 import type { ProductListScope } from '#/features/products/api/products'
@@ -14,13 +14,15 @@ export const Route = createFileRoute('/_main/collections/$handle')({
   ssr: true,
   ...productListRouteOptions,
   component: CollectionPage,
+  notFoundComponent: CollectionNotFound,
   loader: async ({ context, deps, params }) => {
     // In parallel, not Collection first: the list is filtered by the same handle, so an unknown
     // one costs an empty page rather than a second round trip on every known one.
-    await Promise.all([
+    const [{ collection }] = await Promise.all([
       context.queryClient.ensureQueryData(collectionQueryOptions(params.handle)),
       ensureProductListData(context, { ...deps, scope: scopeFor(params.handle) }),
     ])
+    if (!collection) throw notFound()
   },
 })
 
@@ -28,15 +30,8 @@ function CollectionPage() {
   const { handle } = Route.useParams()
   const search = Route.useSearch()
   const { collection } = useSuspenseCollection(handle)
-
-  if (!collection) {
-    return (
-      <ProductListNotFound
-        heading={<Trans>We couldn't find this collection</Trans>}
-        body={<Trans>It may have ended, or no longer be in the store.</Trans>}
-      />
-    )
-  }
+  // Refetched without it since the loader ran.
+  if (!collection) throw notFound()
 
   return (
     <ProductListPage
@@ -45,6 +40,15 @@ function CollectionPage() {
       search={search}
       heading={collection.title}
       intro={<CollectionHero collection={collection} />}
+    />
+  )
+}
+
+function CollectionNotFound() {
+  return (
+    <ProductListNotFound
+      heading={<Trans>We couldn't find this collection</Trans>}
+      body={<Trans>It may have ended, or no longer be in the store.</Trans>}
     />
   )
 }

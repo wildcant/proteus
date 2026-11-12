@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 import { categoryTreeQueryOptions, useSuspenseCategoryTree } from '#/features/products/api/product-categories'
 import { ensureProductListData } from '#/features/products/api/product-list'
 import type { ProductListScope } from '#/features/products/api/products'
@@ -17,12 +17,13 @@ export const Route = createFileRoute('/_main/categories/$handle')({
   ssr: true,
   ...productListRouteOptions,
   component: CategoryPage,
+  notFoundComponent: CategoryNotFound,
   loader: async ({ context, deps, params }) => {
     // The `_main` loader is fetching the tree alongside this one, so this joins its request rather
     // than making a second: the Category, its ancestors and its children all come from there.
     const tree = await context.queryClient.ensureQueryData(categoryTreeQueryOptions())
-    // A handle the Visible tree does not hold renders the not-found state, with no list to load.
-    if (!findCategoryTrail(tree, params.handle)) return
+    // A handle the Visible tree does not hold answers 404, with no list to load.
+    if (!findCategoryTrail(tree, params.handle)) throw notFound()
     await ensureProductListData(context, { ...deps, scope: scopeFor(params.handle) })
   },
 })
@@ -31,15 +32,8 @@ function CategoryPage() {
   const { handle } = Route.useParams()
   const search = Route.useSearch()
   const trail = findCategoryTrail(useSuspenseCategoryTree(), handle)
-
-  if (!trail) {
-    return (
-      <ProductListNotFound
-        heading={<Trans>We couldn't find this category</Trans>}
-        body={<Trans>It may have moved, or no longer be in the store.</Trans>}
-      />
-    )
-  }
+  // The tree refetched without it since the loader ran.
+  if (!trail) throw notFound()
 
   const { category, ancestors } = trail
   return (
@@ -50,6 +44,15 @@ function CategoryPage() {
       heading={category.name}
       eyebrow={<CategoryBreadcrumb ancestors={ancestors} />}
       intro={<CategoryIntro category={category} />}
+    />
+  )
+}
+
+function CategoryNotFound() {
+  return (
+    <ProductListNotFound
+      heading={<Trans>We couldn't find this category</Trans>}
+      body={<Trans>It may have moved, or no longer be in the store.</Trans>}
     />
   )
 }
