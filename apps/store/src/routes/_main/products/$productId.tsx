@@ -2,9 +2,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import { productQueryOptions } from '#/features/products/api/products'
-import { ProductDetail } from '#/features/products/components/product-detail'
+import { ProductDetail } from '#/features/products/components/product-detail/product-detail'
 import { ProductDetailSkeleton } from '#/features/products/components/product-detail-skeleton'
-import { ProductError } from '#/features/products/components/product-error'
+import { ProductError } from '#/features/products/components/product-error/product-error'
 import { marketHeadLinksFor } from '#/lib/seo/market-links'
 
 /** Keeps the chosen variant shareable — a link to a colourway renders that colourway on the server. */

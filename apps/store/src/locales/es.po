@@ -23,15 +23,15 @@ msgstr "{0} c/u"
 msgid "{0}, your default card"
 msgstr "{0}, tu tarjeta predeterminada"
 
-#: src/features/products/components/product-gallery.tsx:99
+#: src/features/products/components/product-gallery/product-gallery.tsx:112
 msgid "{alt} — view {position} of {count}"
 msgstr "{alt} — vista {position} de {count}"
 
-#: src/features/products/components/product-gallery.tsx:75
+#: src/features/products/components/product-gallery/product-gallery.tsx:83
 msgid "{alt} images"
 msgstr "Imágenes de {alt}"
 
-#: src/features/products/components/product-list-header.tsx:84
+#: src/features/products/components/product-list-header/product-list-header.tsx:116
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# producto} other {# productos}}"
 
@@ -44,7 +44,7 @@ msgstr "{count} redes de tarjeta aceptadas"
 msgid "{label} will be removed from your address book. This cannot be undone."
 msgstr "{label} se eliminará de tu libreta de direcciones. Esta acción no se puede deshacer."
 
-#: src/features/products/components/variant-stock.tsx:34
+#: src/features/products/components/variant-stock/variant-stock.tsx:36
 msgid "{remaining, plural, one {Only # left} other {Only # left}}"
 msgstr "{remaining, plural, one {Solo queda #} other {Solo quedan #}}"
 
@@ -76,7 +76,7 @@ msgstr "<0>No pudimos eliminar esa tarjeta.</0> Inténtalo de nuevo."
 msgid "<0>Expired</0> — add this card again to use it"
 msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
 
-#: src/features/cart/components/cart-drawer.tsx:68
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:102
 msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu compra pronto para no quedarte sin ellos."
 
@@ -105,7 +105,7 @@ msgstr "Agrega direcciones a tu libreta y podrás finalizar tus compras más rá
 msgid "Add an address"
 msgstr "Agregar una dirección"
 
-#: src/features/products/components/add-to-cart.tsx:77
+#: src/features/products/components/add-to-cart/add-to-cart.tsx:86
 msgid "Add to cart"
 msgstr "Agregar al carrito"
 
@@ -146,7 +146,7 @@ msgstr "¿Ya tienes una cuenta?"
 msgid "Apartment, suite, etc."
 msgstr "Apartamento, oficina, etc."
 
-#: src/features/products/components/product-filters.tsx:136
+#: src/features/products/components/price-menu/price-menu.tsx:59
 msgid "Apply"
 msgstr "Aplicar"
 
@@ -162,7 +162,7 @@ msgstr "Automático"
 msgid "Awaiting payment"
 msgstr "Pago pendiente"
 
-#: src/features/products/components/search-drawer.tsx:46
+#: src/features/products/components/search-drawer/search-drawer.tsx:63
 msgid "Back"
 msgstr "Atrás"
 
@@ -198,7 +198,7 @@ msgstr "Volver al inicio"
 msgid "Back to sign in"
 msgstr "Volver a iniciar sesión"
 
-#: src/features/products/components/search-best-sellers.tsx:30
+#: src/features/products/components/search-best-sellers/search-best-sellers.tsx:38
 msgid "Best sellers"
 msgstr "Más vendidos"
 
@@ -210,12 +210,12 @@ msgstr "Dirección de facturación"
 msgid "Billing address same as shipping"
 msgstr "La dirección de facturación es la misma que la de envío"
 
-#: src/features/products/components/category-breadcrumb.tsx:16
+#: src/features/products/components/category-breadcrumb/category-breadcrumb.tsx:22
 msgid "Breadcrumb"
 msgstr "Ruta de navegación"
 
-#: src/features/cart/components/cart-empty.tsx:20
-#: src/features/products/components/product-error.tsx:27
+#: src/features/cart/components/cart-empty/cart-empty.tsx:35
+#: src/features/products/components/product-error/product-error.tsx:42
 msgid "Browse products"
 msgstr "Explorar productos"
 
@@ -231,7 +231,7 @@ msgstr "Al realizar tu pedido aceptas nuestros Términos y condiciones, nuestro 
 msgid "Calculated"
 msgstr "Calculado"
 
-#: src/features/cart/components/cart-drawer.tsx:101
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:135
 msgid "Calculated at checkout"
 msgstr "Se calcula al finalizar la compra"
 
@@ -253,7 +253,7 @@ msgstr "Tarjeta"
 msgid "Cards are saved at checkout — choose \"Save this card for next time\" when you pay and it will be here for your next order."
 msgstr "Las tarjetas se guardan al pagar: elige \"Guardar esta tarjeta para la próxima vez\" y aparecerá aquí en tu próximo pedido."
 
-#: src/features/cart/components/cart-trigger.tsx:23
+#: src/features/cart/components/cart-trigger/cart-trigger.tsx:31
 msgid "Cart"
 msgstr "Carrito"
 
@@ -262,7 +262,7 @@ msgstr "Carrito"
 msgid "Check your email"
 msgstr "Revisa tu correo"
 
-#: src/features/cart/components/cart-drawer.tsx:124
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:159
 msgid "Checkout"
 msgstr "Finalizar compra"
 
@@ -276,20 +276,20 @@ msgstr "Elige una nueva contraseña para tu cuenta."
 msgid "City"
 msgstr "Ciudad"
 
-#: src/features/products/components/product-filters.tsx:87
+#: src/features/products/components/product-filters/product-filters.tsx:90
 msgid "Clear all"
 msgstr "Borrar todo"
 
-#: src/features/products/components/product-empty.tsx:45
+#: src/features/products/components/product-empty/product-empty.tsx:56
 msgid "Clear filters"
 msgstr "Borrar filtros"
 
 #: src/components/header/search-form.tsx:74
-#: src/features/products/components/product-empty.tsx:25
+#: src/features/products/components/product-empty/product-empty.tsx:36
 msgid "Clear search"
 msgstr "Borrar búsqueda"
 
-#: src/features/cart/components/cart-drawer.tsx:49
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:78
 msgid "Close cart"
 msgstr "Cerrar carrito"
 
@@ -297,7 +297,7 @@ msgstr "Cerrar carrito"
 msgid "Close menu"
 msgstr "Cerrar menú"
 
-#: src/features/products/components/search-drawer.tsx:62
+#: src/features/products/components/search-drawer/search-drawer.tsx:84
 msgid "Close search"
 msgstr "Cerrar búsqueda"
 
@@ -498,11 +498,11 @@ msgstr "No se pudo actualizar el producto del carrito"
 msgid "Failed to update password"
 msgstr "No pudimos actualizar tu contraseña"
 
-#: src/features/products/components/product-tag-filter.tsx:32
+#: src/features/products/components/product-tag-filter/product-tag-filter.tsx:42
 msgid "Filter by tag"
 msgstr "Filtrar por etiqueta"
 
-#: src/features/products/components/product-filters.tsx:63
+#: src/features/products/components/product-filters/product-filters.tsx:63
 msgid "Filters"
 msgstr "Filtros"
 
@@ -525,11 +525,11 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
 
-#: src/features/products/components/product-filters.tsx:130
+#: src/features/products/components/price-menu/price-menu.tsx:53
 msgid "From"
 msgstr "Desde"
 
-#: src/features/products/components/product-card.tsx:49
+#: src/features/products/components/product-card/product-card.tsx:73
 msgid "From {startingPrice}"
 msgstr "Desde {startingPrice}"
 
@@ -574,7 +574,7 @@ msgstr "Puede que haya terminado o que ya no esté en la tienda."
 msgid "It may have moved, or no longer be in the store."
 msgstr "Puede que se haya movido o que ya no esté en la tienda."
 
-#: src/features/products/components/product-error.tsx:24
+#: src/features/products/components/product-error/product-error.tsx:38
 msgid "It may not be one we sell here."
 msgstr "Puede que no lo vendamos aquí."
 
@@ -601,7 +601,7 @@ msgstr "Claro"
 msgid "Login failed"
 msgstr "No pudimos iniciar tu sesión"
 
-#: src/features/products/components/product-specs.tsx:20
+#: src/features/products/components/product-specs/product-specs.tsx:28
 msgid "Made in"
 msgstr "Hecho en"
 
@@ -627,7 +627,7 @@ msgstr "Usar como mi dirección principal"
 msgid "Market: {marketName}"
 msgstr "Mercado: {marketName}"
 
-#: src/features/products/components/product-specs.tsx:18
+#: src/features/products/components/product-specs/product-specs.tsx:26
 msgid "Material"
 msgstr "Material"
 
@@ -676,19 +676,19 @@ msgstr "No se realizó ningún cobro"
 msgid "No problem. Enter your account email address and we'll send you instructions so you can reset your password."
 msgstr "No hay problema. Ingresa el correo de tu cuenta y te enviaremos instrucciones para restablecer tu contraseña."
 
-#: src/features/products/components/search-results.tsx:44
+#: src/features/products/components/search-results/search-results.tsx:55
 msgid "No products match “{debouncedTerm}”."
 msgstr "Ningún producto coincide con “{debouncedTerm}”."
 
-#: src/features/products/components/product-empty.tsx:23
+#: src/features/products/components/product-empty/product-empty.tsx:34
 msgid "No products match “{q}”."
 msgstr "Ningún producto coincide con “{q}”."
 
-#: src/features/products/components/product-empty.tsx:33
+#: src/features/products/components/product-empty/product-empty.tsx:44
 msgid "No products match the chosen filters."
 msgstr "Ningún producto coincide con los filtros elegidos."
 
-#: src/features/products/components/product-empty.tsx:52
+#: src/features/products/components/product-empty/product-empty.tsx:63
 msgid "No products yet."
 msgstr "Aún no hay productos."
 
@@ -717,7 +717,7 @@ msgstr "Pedido #{displayId}"
 msgid "Order progress"
 msgstr "Progreso del pedido"
 
-#: src/features/cart/components/cart-drawer.tsx:90
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:124
 #: src/features/checkout/components/checkout-summary.tsx:41
 #: src/features/checkout/components/checkout-summary.tsx:60
 msgid "Order summary"
@@ -803,29 +803,29 @@ msgstr "En preparación"
 msgid "Previous"
 msgstr "Anterior"
 
-#: src/features/products/components/product-filters.tsx:111
-#: src/features/products/components/product-filters.tsx:125
+#: src/features/products/components/price-menu/price-menu.tsx:39
+#: src/features/products/components/price-menu/price-menu.tsx:47
 msgid "Price"
 msgstr "Precio"
 
 #. placeholder {0}: format(minPrice)
 #. placeholder {1}: format(maxPrice)
-#: src/features/products/components/product-filters.tsx:108
+#: src/features/products/components/price-menu/price-menu.tsx:36
 msgid "Price: {0} – {1}"
 msgstr "Precio: {0} – {1}"
 
 #. placeholder {0}: format(minPrice)
-#: src/features/products/components/product-filters.tsx:109
+#: src/features/products/components/price-menu/price-menu.tsx:37
 msgid "Price: from {0}"
 msgstr "Precio: desde {0}"
 
 #. placeholder {0}: format(maxPrice)
-#: src/features/products/components/product-filters.tsx:110
+#: src/features/products/components/price-menu/price-menu.tsx:38
 msgid "Price: up to {0}"
 msgstr "Precio: hasta {0}"
 
-#: src/features/products/components/product-detail.tsx:42
-#: src/features/products/components/search-results.tsx:52
+#: src/features/products/components/product-detail/product-detail.tsx:61
+#: src/features/products/components/search-results/search-results.tsx:65
 msgid "Products"
 msgstr "Productos"
 
@@ -837,7 +837,7 @@ msgstr "Proteus — tienda moderna impulsada por TanStack Start"
 msgid "Ready to ship"
 msgstr "Listo para enviar"
 
-#: src/features/products/components/product-specs.tsx:17
+#: src/features/products/components/product-specs/product-specs.tsx:25
 msgid "Ref."
 msgstr "Ref."
 
@@ -863,7 +863,7 @@ msgstr "Eliminar {name}"
 msgid "Remove {name}?"
 msgstr "¿Eliminar {name}?"
 
-#: src/features/products/components/product-tag-filter.tsx:40
+#: src/features/products/components/product-tag-filter/product-tag-filter.tsx:51
 msgid "Remove filter {value}"
 msgstr "Quitar el filtro {value}"
 
@@ -893,8 +893,8 @@ msgid "Save this card for next time"
 msgstr "Guardar esta tarjeta para la próxima vez"
 
 #: src/components/header/search-triggers.tsx:48
-#: src/features/products/components/product-list-header.tsx:42
-#: src/features/products/components/search-drawer.tsx:39
+#: src/features/products/components/product-list-header/product-list-header.tsx:60
+#: src/features/products/components/search-drawer/search-drawer.tsx:52
 msgid "Search"
 msgstr "Búsqueda"
 
@@ -948,7 +948,7 @@ msgstr "Enviar a"
 msgid "Shipped"
 msgstr "Enviado"
 
-#: src/features/cart/components/cart-drawer.tsx:98
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:132
 #: src/features/checkout/components/checkout-summary.tsx:129
 #: src/features/orders/components/order-summary.tsx:30
 msgid "Shipping"
@@ -959,15 +959,15 @@ msgid "Shipping method"
 msgstr "Método de envío"
 
 #: src/components/store/footer/footer.tsx:46
-#: src/features/products/components/product-list-header.tsx:42
+#: src/features/products/components/product-list-header/product-list-header.tsx:60
 msgid "Shop"
 msgstr "Tienda"
 
 #: src/components/header/menu.tsx:36
 #: src/components/store/footer/footer.tsx:48
-#: src/features/products/components/category-breadcrumb.tsx:20
-#: src/features/products/components/product-empty.tsx:55
-#: src/features/products/components/product-list-not-found.tsx:20
+#: src/features/products/components/category-breadcrumb/category-breadcrumb.tsx:26
+#: src/features/products/components/product-empty/product-empty.tsx:66
+#: src/features/products/components/product-list-not-found/product-list-not-found.tsx:35
 msgid "Shop all"
 msgstr "Ver todo"
 
@@ -1011,9 +1011,9 @@ msgstr "Regístrate"
 msgid "Signing in..."
 msgstr "Iniciando sesión..."
 
-#: src/features/products/components/add-to-cart.tsx:77
-#: src/features/products/components/product-card.tsx:71
-#: src/features/products/components/variant-stock.tsx:24
+#: src/features/products/components/add-to-cart/add-to-cart.tsx:86
+#: src/features/products/components/product-card/product-card.tsx:95
+#: src/features/products/components/variant-stock/variant-stock.tsx:26
 msgid "Sold out"
 msgstr "Agotado"
 
@@ -1025,7 +1025,7 @@ msgstr "Algo salió mal al cargar el pedido <0>{orderId}</0>. Inténtalo de nuev
 msgid "Something went wrong when we tried to transfer your cart"
 msgstr "Algo salió mal al intentar transferir tu carrito"
 
-#: src/features/products/components/product-sort.tsx:28
+#: src/features/products/components/product-sort/product-sort.tsx:36
 msgid "Sort by"
 msgstr "Ordenar por"
 
@@ -1088,7 +1088,7 @@ msgstr "Tema: oscuro. Haz clic para cambiar de modo."
 msgid "Theme mode: light. Click to switch mode."
 msgstr "Tema: claro. Haz clic para cambiar de modo."
 
-#: src/features/cart/components/cart-empty.tsx:17
+#: src/features/cart/components/cart-empty/cart-empty.tsx:31
 msgid "There are no products in your bag"
 msgstr "No hay productos en tu carrito"
 
@@ -1105,7 +1105,7 @@ msgstr "Este pedido se canceló y no se enviará."
 msgid "This payment method cannot be resumed here. Please start the checkout again."
 msgstr "Este método de pago no se puede retomar aquí. Vuelve a iniciar el pago."
 
-#: src/features/products/components/add-to-cart.tsx:43
+#: src/features/products/components/add-to-cart/add-to-cart.tsx:50
 msgid "This product isn't available to order yet."
 msgstr "Este producto aún no está disponible para pedir."
 
@@ -1113,11 +1113,11 @@ msgstr "Este producto aún no está disponible para pedir."
 msgid "This verification link is invalid or has expired. Request a new one from your account."
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
 
-#: src/features/products/components/product-filters.tsx:133
+#: src/features/products/components/price-menu/price-menu.tsx:56
 msgid "To"
 msgstr "Hasta"
 
-#: src/features/cart/components/cart-drawer.tsx:106
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:140
 #: src/features/checkout/components/checkout-summary.tsx:141
 #: src/features/orders/components/order-summary.tsx:38
 msgid "Total"
@@ -1152,7 +1152,7 @@ msgstr "Usar otra tarjeta"
 msgid "Used for your order confirmation and cart reminders"
 msgstr "Lo usamos para la confirmación de tu pedido y los recordatorios del carrito"
 
-#: src/features/products/components/variant-picker.tsx:207
+#: src/features/products/components/variant-picker/variant-picker.tsx:133
 msgid "Variant"
 msgstr "Variante"
 
@@ -1165,11 +1165,11 @@ msgstr "No pudimos verificar tu correo"
 msgid "Verifying"
 msgstr "Verificando"
 
-#: src/features/products/components/search-best-sellers.tsx:33
+#: src/features/products/components/search-best-sellers/search-best-sellers.tsx:41
 msgid "View all"
 msgstr "Ver todo"
 
-#: src/features/products/components/search-results.tsx:60
+#: src/features/products/components/search-results/search-results.tsx:74
 msgid "View all “{debouncedTerm}”"
 msgstr "Ver todo “{debouncedTerm}”"
 
@@ -1218,7 +1218,7 @@ msgstr "No pudimos cargar tus tarjetas guardadas."
 msgid "We couldn't load your saved cards. Enter a card below to pay."
 msgstr "No pudimos cargar tus tarjetas guardadas. Ingresa una tarjeta abajo para pagar."
 
-#: src/features/products/components/product-error.tsx:21
+#: src/features/products/components/product-error/product-error.tsx:35
 msgid "We couldn't show this product"
 msgstr "No pudimos mostrar este producto"
 
@@ -1238,7 +1238,7 @@ msgstr "Te enviamos un enlace de verificación a tu correo. Haz clic en él para
 msgid "We'll charge it once and won't store the details."
 msgstr "La cobraremos una sola vez y no guardaremos los datos."
 
-#: src/features/products/components/product-specs.tsx:19
+#: src/features/products/components/product-specs/product-specs.tsx:27
 msgid "Weight"
 msgstr "Peso"
 
@@ -1262,11 +1262,11 @@ msgstr "Tendrás que ingresarla de nuevo la próxima vez."
 msgid "Your addresses"
 msgstr "Tus direcciones"
 
-#: src/features/cart/components/cart-drawer.tsx:45
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:70
 msgid "Your Bag"
 msgstr "Tu carrito"
 
-#: src/features/cart/components/cart-empty.tsx:14
+#: src/features/cart/components/cart-empty/cart-empty.tsx:28
 msgid "Your bag is empty"
 msgstr "Tu carrito está vacío"
 
