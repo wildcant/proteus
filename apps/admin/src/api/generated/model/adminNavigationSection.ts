@@ -10,14 +10,32 @@ import type { AdminNavigationLink } from './adminNavigationLink.ts';
 export type AdminNavigationSection = {
   type: 'subcategories';
   name: string;
+  note?: string;
 } | {
   type: 'values';
   name: string;
   key: string;
   /** @nullable */
   limit: number | null;
+  note?: string;
+} | {
+  type: 'groups';
+  name: string;
+  key: string;
+  groupKey: string;
+  /** @nullable */
+  groups: number | null;
+  /** @nullable */
+  limit: number | null;
+  note?: string;
+} | {
+  type: 'option';
+  name: string;
+  option: string;
+  note?: string;
 } | {
   type: 'links';
   name: string;
   links: AdminNavigationLink[];
+  note?: string;
 };
