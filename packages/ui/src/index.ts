@@ -1,6 +1,8 @@
 // Re-exported so app packages can build render-prop components without taking a direct
 // dependency on @base-ui/react. Public API, not an internal: @base-ui/react/use-render.
 export { useRender } from '@base-ui/react/use-render'
+// ui-core owns this behaviour; re-exported so the admin reaches everything through this one entry.
+export { cn, toast, useRouteModal, useToastManager } from '@proteus/ui-core'
 // Re-exported so a consumer defining variants gets them from the design system, alongside `cn`,
 // rather than taking its own dependency on the styling primitives this package already owns.
 export { cva, type VariantProps } from 'class-variance-authority'
@@ -176,12 +178,10 @@ export {
 export { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from './components/ui/tabs.tsx'
 export { TagInput, type TagInputItem } from './components/ui/tag-input.tsx'
 export { Textarea } from './components/ui/textarea.tsx'
-export { Toaster, toast, useToastManager } from './components/ui/toast.tsx'
+export { Toaster } from './components/ui/toast.tsx'
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip.tsx'
-export { usePrompt } from './hooks/use-prompt.tsx'
-export { cn } from './lib/utils.ts'
+export { usePrompt } from './hooks/use-prompt.ts'
 export { KeyboundForm } from './route-modals/keybound-form.tsx'
 export { RouteDrawer } from './route-modals/route-drawer/route-drawer.tsx'
 export { RouteFocusModal } from './route-modals/route-focus-modal/route-focus-modal.tsx'
 export { RouteModalForm, type UnsavedChangesCopy } from './route-modals/route-modal-form/route-modal-form.tsx'
-export { useRouteModal } from './route-modals/route-modal-provider/use-route-modal.tsx'

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { RouteModalProviderContext } from './route-modal-context'
+import { RouteModalProviderContext } from './route-modal-context.tsx'
 
 /**
  * Access the route modal context (`handleSuccess`, `setCloseOnEscape`).

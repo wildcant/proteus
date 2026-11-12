@@ -1,10 +1,8 @@
 import { Toast as ToastPrimitive } from '@base-ui/react/toast'
+import { cn, toast } from '@proteus/ui-core'
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon, XIcon } from 'lucide-react'
 import type * as React from 'react'
 import { Button } from '#/components/ui/button.tsx'
-import { cn } from '#/lib/utils.ts'
-
-const toast = ToastPrimitive.createToastManager()
 
 function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
   return <ToastPrimitive.Provider {...props} />
@@ -194,6 +192,4 @@ function Toaster({
   )
 }
 
-const useToastManager = ToastPrimitive.useToastManager
-
-export { Toaster, toast, useToastManager }
+export { Toaster }

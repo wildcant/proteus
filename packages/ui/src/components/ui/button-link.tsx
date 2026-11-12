@@ -1,8 +1,8 @@
+import { cn } from '@proteus/ui-core'
 import { createLink } from '@tanstack/react-router'
 import type { VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { buttonVariants } from '#/components/ui/button.tsx'
-import { cn } from '#/lib/utils.ts'
 
 /**
  * A link wearing the button's look, for a control that navigates.

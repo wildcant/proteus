@@ -202,6 +202,7 @@
     {
       "includes": [
         "packages/ui/src/index.ts",
+        "packages/ui-core/src/index.ts",
         "packages/utils/src/index.ts",
         "packages/icons/src/index.ts",
         "packages/testing/index.ts",
@@ -231,7 +232,7 @@
       }
     },
     {
-      "includes": ["apps/admin/**", "apps/store/**", "packages/ui/**"],
+      "includes": ["apps/admin/**", "apps/store/**", "packages/ui/**", "packages/ui-core/**"],
       "linter": {
         "domains": {
           "react": "recommended",

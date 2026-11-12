@@ -15,11 +15,10 @@
     "./styles.css": "./src/styles.css"
   },
   "dependencies": {
-    "@base-ui/react": "^1.6.0",
+    "@base-ui/react": "catalog:",
+    "@proteus/ui-core": "workspace:*",
     "class-variance-authority": "catalog:",
-    "clsx": "^2.1.1",
-    "lucide-react": "catalog:",
-    "tailwind-merge": "^3.6.0"
+    "lucide-react": "catalog:"
   },
   "peerDependencies": {
     "@tanstack/form-core": "catalog:",
