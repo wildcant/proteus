@@ -11,18 +11,27 @@ import type {
 import type {
   CreateProductDTO,
   CreateProductOptionDTO,
+  CreateProductTagDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
+  ProductMetafieldValuesDTO,
   SetProductOptionsDTO,
+  UpdateProductDTO,
+  UpdateProductTypeDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   VariantImageInput,
 } from '../../../src/core/types/product/mutations.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import {
   generateCreateProductDTO,
   generateCreateProductOptionDTO,
+  generateCreateProductTagDTO,
+  generateCreateProductTypeDTO,
   generateCreateProductVariantDTO,
   generateSetProductOptionsDTO,
   generateUpdateProductVariantDTO,
+  generateUpsertProductMetafieldDefinitionDTO,
   generateVariantImageInputDTO,
 } from '../product-dto.js'
 
@@ -59,6 +68,61 @@ export async function createProductOption(container: AppContainer, overrides?: P
   const productService = container.resolve(Modules.PRODUCT)
 
   return productService.createProductOption(generateCreateProductOptionDTO(overrides))
+}
+
+export async function createProductTag(container: AppContainer, overrides?: Partial<CreateProductTagDTO>) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.createTag(generateCreateProductTagDTO(overrides))
+}
+
+/** Metafield definitions, one per override, in order. */
+export async function createMetafieldDefinitions(
+  container: AppContainer,
+  overrides: Partial<UpsertProductMetafieldDefinitionDTO>[] = [{}],
+) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.upsertMetafieldDefinitions(
+    overrides.map((definition) => generateUpsertProductMetafieldDefinitionDTO(definition)),
+  )
+}
+
+/** Replaces the values of the metafields named; the rest are left alone. */
+export async function setProductMetafields(
+  container: AppContainer,
+  productId: string,
+  metafields: ProductMetafieldValuesDTO,
+) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.updateProduct(productId, { metafields })
+}
+
+/** Writes fields the admin cannot, such as the brand an import sets. */
+export async function updateProduct(container: AppContainer, productId: string, data: UpdateProductDTO) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.updateProduct(productId, data)
+}
+
+export async function createProductType(container: AppContainer, overrides?: Partial<CreateProductTypeDTO>) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.createType(generateCreateProductTypeDTO(overrides))
+}
+
+export async function updateProductType(container: AppContainer, typeId: string, data: UpdateProductTypeDTO) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  return productService.updateType(typeId, data)
+}
+
+/** A soft delete: products keep the id, and read no Type. */
+export async function deleteProductType(container: AppContainer, typeId: string) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  await productService.softDeleteTypes([typeId])
 }
 
 export async function createProductVariants(

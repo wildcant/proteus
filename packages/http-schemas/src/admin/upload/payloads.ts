@@ -23,9 +23,14 @@ export type AdminCreatePresignedUploadUrlBody = z.infer<typeof AdminCreatePresig
 
 // `z.file()` has no OpenAPI mapping of its own; the override emits the binary
 // string form that multipart/form-data request bodies are specified with.
-export const AdminUploadFiles = z
-  .object({
-    files: z.array(z.file().openapi({ type: 'string', format: 'binary' })).max(MAX_ITEMS.small),
-  })
-  .openapi('AdminUploadFiles')
+//
+// The non-file fields of the form, which the handler reads as its body. `private` keeps a file off
+// public URLs — a catalogue CSV for an import, say — and is served only through presigned links.
+export const AdminUploadFilesFields = z.object({
+  access: z.enum(['public', 'private']).default('public'),
+})
+
+export const AdminUploadFiles = AdminUploadFilesFields.extend({
+  files: z.array(z.file().openapi({ type: 'string', format: 'binary' })).max(MAX_ITEMS.small),
+}).openapi('AdminUploadFiles')
 export type AdminUploadFilesBody = z.infer<typeof AdminUploadFiles>

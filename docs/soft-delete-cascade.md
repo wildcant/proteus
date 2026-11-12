@@ -245,7 +245,7 @@ it shows and once through the variant that shows it. It is hidden once, on first
 
 ## Restrict — refusing a deletion
 
-`product` is the only module with restrict edges, and they exist to stop a shared row disappearing
+`product` is the only module with restrict edges, and they exist to stop a row disappearing
 underneath the things still using it.
 
 ```mermaid
@@ -253,11 +253,16 @@ flowchart TD
   PO["product_option"] --> POV["product_option_value"]
   PPO["product_product_option"] -. blocks .-> PO
   PPOV["product_product_option_value"] -. blocks .-> POV
+  PC["product_category"] -. "blocks (parent_id)" .-> PC
 ```
 
-Both guards sit in the **product** layer and point up at the **global** one: a product offering an
-option is what makes that option un-deletable, and a product offering a value is what makes that
-value un-deletable. See [Product Options](product-options.md).
+The option guards sit in the **product** layer and point up at the **global** one: a product
+offering an option is what makes that option un-deletable, and a product offering a value is what
+makes that value un-deletable. See [Product Options](product-options.md).
+
+`product_category.parent_id` points at its own table: a Category with a live child cannot be
+deleted, so a subtree goes leaf-first. That one sits inside its own closure — see
+[Overlap](#overlap--a-guard-inside-its-own-closure).
 
 Refusal raises `NOT_ALLOWED` (400) naming the relationship, e.g.:
 
@@ -270,25 +275,30 @@ origin.
 
 ## Overlap — a guard inside its own closure
 
-A closure can hold both a guard and the table it guards. **The codebase has no instance of this
-today**, and `guard-outside-its-closure` reports none. It had exactly one until
-[ADR 0018](adr/0018-layered-product-options.md): `product_variant_option` declared
-`option_id → cascade` alongside `option_value_id → restrict`, so deleting a `product_option`
-reached both `product_option_value` and the row guarding it.
+A closure can hold both a guard and the table it guards. **The codebase has one, and it is
+intended**: `product_category.parent_id` is a restrict reference from `product_category` to itself,
+so every closure rooted at `product_category` holds the guard and the guarded table at once. The
+refusal is the rule — a Category with live children is not deleted — so the relationship is recorded
+in `ALLOWED` in `guard-outside-its-closure`, with that reason, and the check reports nothing.
 
 ```mermaid
 flowchart TD
-  R["product_option"] --> V["product_option_value"]
-  R --> H["product_variant_option"]
-  H -. blocks .-> V
+  P["product_category (Men)"]
+  C["product_category (Men › Tops)"] -. "blocks (parent_id)" .-> P
 ```
 
-The fix was not a rule about ordering but a schema that cannot express the shape: guards now point
-only upward across a layer boundary, so no closure can reach one. The mechanism below stays, because
-it is what makes the *next* such pair deterministic rather than dependent on export order.
+Because the check reads the pre-cascade state, a parent and its child cannot be deleted in one call
+either: the child is still live when the parent is checked. Subtrees go leaf-first.
 
-This used to be the bug on this page. The restrict check was interleaved with the hiding, and its
-"is anything live referencing this?" query excludes rows already hidden — so:
+Any other overlap is a schema to redesign. Guards between two different tables point only upward
+across a layer boundary ([ADR 0018](adr/0018-layered-product-options.md)), so no closure reaches one
+by accident. The shape to avoid is a row that cascades from one table and guards another inside the
+same closure: a `product_variant_option` declaring `option_id → cascade` alongside
+`option_value_id → restrict` would let deleting a `product_option` reach both `product_option_value`
+and the row guarding it.
+
+That shape is why the check reads pre-cascade state. Interleaved with the hiding, the restrict
+check's "is anything live referencing this?" query excludes rows already hidden — so:
 
 - Reach `product_option_value` first → its guard is still live → **refused**
 - Reach `product_variant_option` first → it is hidden → nothing live blocks → **the value is hidden

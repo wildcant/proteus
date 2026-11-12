@@ -111,6 +111,7 @@ export const StoreProduct = z
     width: z.number().nullable(),
     originCountry: z.string().nullable(),
     material: z.string().nullable(),
+    brand: z.string().nullable(),
   })
   .openapi('StoreProduct')
 export type StoreProduct = z.infer<typeof StoreProduct>

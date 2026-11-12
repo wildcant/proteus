@@ -25,6 +25,9 @@ import type { BodyType } from '../../fetcher.ts';
 export const uploadFiles = (
     adminUploadFiles?: BodyType<AdminUploadFiles>,
  ) => {const formData = new FormData();
+if(adminUploadFiles?.access !== undefined) {
+ formData.append(`access`, adminUploadFiles.access);
+ }
 if(adminUploadFiles?.files !== undefined) {
  adminUploadFiles?.files.forEach(value => formData.append(`files`, value));
  }

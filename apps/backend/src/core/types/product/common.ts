@@ -1,5 +1,6 @@
 import type { BaseFilterable, OperatorMap } from '../common.js'
 import type { PriceDTO } from '../pricing/common.js'
+import type { StoreNavigationEntryDTO } from '../store/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
@@ -26,6 +27,10 @@ export type ProductDTO = {
   discountable: boolean
   externalId: string | null
   metadata: Record<string, unknown> | null
+  /** The product's Product Type. Can name a soft-deleted Type; `listProductGroupings` joins live ones only. */
+  typeId: string | null
+  /** The product's brand, the CSV's Vendor column. */
+  brand: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -38,6 +43,43 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
   status?: ProductStatusType | ProductStatusType[]
   isGiftcard?: boolean
   createdAt?: OperatorMap<Date>
+  /** Products of any of these Product Types. */
+  typeId?: string | string[]
+  /** Direct members of any of these Categories. Not a column: `ProductRepository.extraWhere` applies it. */
+  categoryId?: string | string[]
+  /** Members of any of these Collections. Not a column: `ProductRepository.extraWhere` applies it. */
+  collectionId?: string | string[]
+  /** Members of any of the Collections with these handles. Not a column, as `collectionId`. */
+  collectionHandle?: string | string[]
+  /** Products carrying any of these Tags. Not a column: `ProductRepository.extraWhere` applies it. */
+  tagId?: string | string[]
+  /** Products carrying any of the Tags with these values. Not a column, as `tagId`. */
+  tagValue?: string | string[]
+  /**
+   * Products whose field holds any of the values listed for its key, for every key listed —
+   * `{ genero: ['women'], tipo: ['tops', 'bottoms'] }`. A vendor field's key matches the brand,
+   * ignoring case. An unknown key matches nothing; a key with no values narrows nothing. Not a
+   * column, as `tagId`.
+   */
+  metafields?: Record<string, string[]>
+  /**
+   * Products offering any of the values listed for an option, by the option's title, for every
+   * option listed — `{ Talla: ['42', '43'], Color: ['Negro'] }`. An unknown title matches nothing.
+   * Not a column, as `tagId`.
+   */
+  optionValues?: Record<string, string[]>
+  /**
+   * The products the shopper's price range keeps, resolved by the caller from pricing. A selection
+   * like `metafields`: a filter count applies it, but it never narrows which values are offered.
+   * Not a column, as `tagId`.
+   */
+  pricedProductIds?: string[]
+  /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
+  categoryHandle?: string | string[]
+  /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
+  includeDescendants?: boolean
+  /** Narrows `categoryId` / `categoryHandle` to Visible Categories: a hidden one matches nothing. */
+  visibleOnly?: boolean
 }
 
 export type ProductVariantDTO = {
@@ -297,4 +339,364 @@ export interface FilterableProductVariantImageProps extends BaseFilterable<Filte
   id?: string | string[]
   variantId?: string | string[]
   imageId?: string | string[]
+}
+
+/**
+ * A rule: one condition per field key, every condition must hold, and a condition holds when the
+ * product's field carries any one of its values — an AND of ORs.
+ * `{ genero: ['hombre', 'unisex'], estilo: ['clasicos'] }` reads "(hombre or unisex) and clasicos".
+ * Metafield values match exactly, as they are stored; the vendor field matches the brand ignoring case.
+ */
+export type ProductGroupingRuleDTO = Record<string, string[]>
+
+/** What a metafield holds. A list of short texts is the only kind, the one Shopify can filter on and build collections from. */
+export type ProductMetafieldType = 'list.single_line_text_field'
+
+/**
+ * Where a field's values come from: the product's metafield rows, or its `brand` column (the CSV's
+ * Vendor). At most one field is `vendor`.
+ */
+export type ProductFieldSource = 'metafield' | 'vendor'
+
+/** A named product field ("Género", key `genero`), as the structure file's `campos` declare it. */
+export type ProductMetafieldDefinitionDTO = {
+  id: string
+  namespace: string
+  key: string
+  name: string
+  type: ProductMetafieldType
+  /** Offered as a storefront filter on the product lists. */
+  filterable: boolean
+  /** Place among the definitions, the structure file's order. */
+  rank: number
+  source: ProductFieldSource
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/** One value of a storefront filter, with how many products in view would hold it. */
+export type ProductFilterValueDTO = {
+  value: string
+  count: number
+}
+
+/**
+ * A storefront filter over the products in view, every value they hold: a filterable metafield keyed
+ * by its key, or a product option keyed `option.<title>`.
+ */
+export type ProductFilterDTO = {
+  key: string
+  name: string
+  values: ProductFilterValueDTO[]
+}
+
+/** One of a product's metafields with its values, in the order they were written. */
+export type ProductMetafieldDTO = {
+  key: string
+  name: string
+  values: string[]
+}
+
+export type ProductCategoryDTO = {
+  id: string
+  name: string
+  description: string
+  handle: string
+  parentId: string | null
+  rank: number
+  isActive: boolean
+  isInternal: boolean
+  /** `null` is manual: the members are picked. A ruled Category's members follow its rule. */
+  rule: ProductGroupingRuleDTO | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export type ListCategoryTreeDTO = {
+  /** Only Visible Categories — active, not internal, every ancestor visible. The store's tree. */
+  visibleOnly?: boolean
+}
+
+/** A Category with its children nested, siblings in rank order. */
+export type ProductCategoryTreeNodeDTO = ProductCategoryDTO & {
+  children: ProductCategoryTreeNodeDTO[]
+}
+
+export type ProductCollectionDTO = {
+  id: string
+  title: string
+  handle: string
+  thumbnail: string | null
+  /** `null` is manual: the members are picked. A ruled Collection's members follow its rule. */
+  rule: ProductGroupingRuleDTO | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductCollectionProps extends BaseFilterable<FilterableProductCollectionProps> {
+  id?: string | string[]
+  title?: string | OperatorMap<string>
+  handle?: string | string[]
+}
+
+/** A Category as a structure file declares it, its children in file order. `rule` null is a manual Category. */
+export type CatalogStructureCategoryDTO = {
+  name: string
+  handle: string
+  rule: ProductGroupingRuleDTO | null
+  children: CatalogStructureCategoryDTO[]
+}
+
+/** A Collection as a structure file declares it. `rule` null is a manual Collection. */
+type CatalogStructureCollectionDTO = {
+  name: string
+  handle: string
+  rule: ProductGroupingRuleDTO | null
+}
+
+/** A metafield definition as a structure file's `campos` declare it. */
+type CatalogStructureMetafieldDTO = {
+  name: string
+  key: string
+  /** `filtro: true`: offered as a storefront filter. */
+  filterable: boolean
+  /** `origen: vendor`: the product's brand rather than a metafield. */
+  source: ProductFieldSource
+}
+
+/**
+ * The store's structure as `estructura.yaml` declares it: the metafield definitions its rules read,
+ * the Category tree, the Collections and the menu. The file is the source: applying it makes the
+ * catalogue's definitions and groupings exactly these.
+ */
+export type CatalogStructureDTO = {
+  metafields: CatalogStructureMetafieldDTO[]
+  categories: CatalogStructureCategoryDTO[]
+  collections: CatalogStructureCollectionDTO[]
+  menu: StoreNavigationEntryDTO[]
+}
+
+/** One problem with a structure file. `path` names where it is, `categorias[0].hijos[1].handle`. */
+export type CatalogStructureErrorDTO = {
+  path: string
+  message: string
+}
+
+/** A Category the file creates, updates or deletes. `parentHandle` is where it ends up (for a delete, where it was). */
+type CatalogStructureCategoryChangeDTO = {
+  handle: string
+  name: string
+  parentHandle: string | null
+}
+
+/** A Category the file puts under another parent; it may change otherwise too. */
+type CatalogStructureCategoryMoveDTO = CatalogStructureCategoryChangeDTO & {
+  previousParentHandle: string | null
+}
+
+type CatalogStructureCollectionChangeDTO = {
+  handle: string
+  name: string
+}
+
+/**
+ * What applying a structure does to the metafield definitions, by key, and to the groupings, by
+ * handle. A definition update is a new name, filter switch or place. A grouping update is a new name,
+ * rule, rank or an inactive Category turned active; a move is a new parent, and is listed only as a move.
+ */
+export type CatalogStructureChangesDTO = {
+  metafields: {
+    create: CatalogStructureMetafieldDTO[]
+    update: CatalogStructureMetafieldDTO[]
+    delete: CatalogStructureMetafieldDTO[]
+  }
+  categories: {
+    create: CatalogStructureCategoryChangeDTO[]
+    update: CatalogStructureCategoryChangeDTO[]
+    move: CatalogStructureCategoryMoveDTO[]
+    delete: CatalogStructureCategoryChangeDTO[]
+  }
+  collections: {
+    create: CatalogStructureCollectionChangeDTO[]
+    update: CatalogStructureCollectionChangeDTO[]
+    delete: CatalogStructureCollectionChangeDTO[]
+  }
+}
+
+/** A structure file read against the catalogue. A file with errors has no structure, and changes nothing. */
+export type CatalogStructurePlanDTO = {
+  structure: CatalogStructureDTO | null
+  errors: CatalogStructureErrorDTO[]
+  changes: CatalogStructureChangesDTO
+}
+
+export type ProductTypeDTO = {
+  id: string
+  value: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductTypeProps extends BaseFilterable<FilterableProductTypeProps> {
+  id?: string | string[]
+  value?: string | string[] | OperatorMap<string>
+}
+
+export type ProductTagDTO = {
+  id: string
+  value: string
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+export interface FilterableProductTagProps extends BaseFilterable<FilterableProductTagProps> {
+  id?: string | string[]
+  value?: string | string[] | OperatorMap<string>
+}
+
+/** What a product is grouped under, read for many products at once. */
+export type ProductGroupingsDTO = {
+  /** `null` when the product has none, or its Type was deleted. */
+  type: ProductTypeDTO | null
+  categories: ProductCategoryDTO[]
+  collections: ProductCollectionDTO[]
+  tags: ProductTagDTO[]
+}
+
+export type FilterableProductCategoryProps = {
+  handle?: string | string[]
+}
+
+// ── Product imports ─────────────────────────────────────────────────────
+
+/**
+ * `previewed` is the only state a job can be confirmed or canceled from. `failed` means no product
+ * made it in; a run where some products failed and others did not is `completed`, with the
+ * failures on the job.
+ */
+export type ProductImportStatus = 'previewed' | 'importing' | 'completed' | 'failed' | 'canceled' | 'expired'
+
+export type ProductImportOptionsDTO = {
+  /** Products whose handle already exists are updated rather than skipped. */
+  overwrite: boolean
+  /** Active products are imported published rather than as drafts. */
+  publish: boolean
+}
+
+/** One problem with the file or one product's import. `line` is the CSV line, the header being line 1. */
+export type ProductImportErrorDTO = {
+  line: number
+  handle: string | null
+  message: string
+}
+
+export type ImportedVariantDTO = {
+  /** The CSV line the variant was read from. */
+  line: number
+  sku: string | null
+  /** In the product's option order; empty for a product with no options. */
+  optionValues: string[]
+  weight: number | null
+  manageInventory: boolean
+  allowBackorder: boolean
+  /** Units on hand at the default location; `null` leaves stock alone. */
+  inventoryQuantity: number | null
+  prices: Array<{ currencyCode: string; amount: number }>
+  imageUrl: string | null
+}
+
+/** A product as the import file describes it, normalized from its rows. */
+export type ImportedProductDTO = {
+  /** The line of the product's first row. */
+  line: number
+  /** How many CSV rows the product spans, which is what chunks are sized by. */
+  rows: number
+  handle: string
+  title: string
+  description: string | null
+  status: ProductStatusType
+  type: string | null
+  tags: string[]
+  /**
+   * Values by key for each metafield column in the file, read from the product's first row. `[]` is
+   * an empty cell, which clears the metafield; a key without a column is absent and left alone.
+   */
+  metafields: Record<string, string[]>
+  /** The Vendor cell, trimmed; `null` when empty or the file has no Vendor column. */
+  brand: string | null
+  options: Array<{ title: string; values: string[] }>
+  variants: ImportedVariantDTO[]
+  /** In display order. */
+  imageUrls: string[]
+}
+
+export type ProductImportSummaryDTO = {
+  products: { create: number; update: number; skip: number }
+  skus: number
+  images: number
+  /** Tags and types the file names that do not exist yet, created when the import runs. */
+  willCreate: { tags: string[]; types: string[] }
+  /** Columns present in the file that the import does not read. */
+  ignoredColumns: string[]
+  /** The metafields the file has a column for, by key, with the name the store gives each. */
+  metafields: Array<{ key: string; name: string }>
+  /** What the store calls the brand: the vendor campo's name, `null` when no campo reads it. */
+  brandName: string | null
+  firstProduct: ImportedProductDTO | null
+}
+
+export type ProductImportDTO = {
+  id: string
+  /** The uploaded CSV. */
+  fileId: string
+  options: ProductImportOptionsDTO
+  status: ProductImportStatus
+  summary: ProductImportSummaryDTO
+  /** File keys of the normalized product chunks the run reads, in order. */
+  chunks: string[]
+  created: number
+  updated: number
+  skipped: number
+  failed: number
+  errors: ProductImportErrorDTO[]
+  /** The user who uploaded the file, and who is told when it finishes. */
+  createdBy: string | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/** What one product's import came to. */
+export type ProductImportOutcomeDTO =
+  | { outcome: 'created' | 'updated' | 'skipped' }
+  | { outcome: 'failed'; error: ProductImportErrorDTO }
+
+/** What an import file comes to before anything is written: the summary, every error, and the products in chunks. */
+export type ProductImportPlanDTO = {
+  summary: ProductImportSummaryDTO
+  errors: ProductImportErrorDTO[]
+  chunks: ImportedProductDTO[][]
+}
+
+/** The settings a file is read against: what each price column is quoted in. */
+export type ProductImportSettingsDTO = ProductImportOptionsDTO & {
+  /** The store's default currency, which the plain `Price` column is in. `null` when the store has none. */
+  defaultCurrency: string | null
+  /** Region currency by lower-cased region name, for `Price / <Market>` columns. */
+  marketCurrencies: Record<string, string>
+}
+
+/** The ids an imported product's names resolve to, created where missing. */
+export type ProductImportReferencesDTO = {
+  /** The live product with the same handle, if any. */
+  existingProductId: string | null
+  typeId: string | null
+  tagIds: string[]
+  /** In the product's option order; `valueIds` line up with `ImportedProductDTO.options[].values`. */
+  options: Array<{ optionId: string; valueIds: string[] }>
 }

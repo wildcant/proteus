@@ -15,6 +15,7 @@ export function searchable<T>(...columns: Array<keyof T & string>): string[] {
 export const Tags = {
   AUTH: 'Auth',
   CARTS: 'Carts',
+  COLLECTIONS: 'Collections',
   COUNTRIES: 'Countries',
   CUSTOMERS: 'Customers',
   FULFILLMENTS: 'Fulfillments',
@@ -25,7 +26,10 @@ export const Tags = {
   PAYMENT_COLLECTIONS: 'Payment Collections',
   PAYMENT_PROVIDERS: 'Payment Providers',
   PRODUCTS: 'Products',
+  PRODUCT_CATEGORIES: 'Product Categories',
   PRODUCT_OPTIONS: 'Product Options',
+  PRODUCT_TAGS: 'Product Tags',
+  PRODUCT_TYPES: 'Product Types',
   PRODUCT_VARIANTS: 'Product Variants',
   REFUND_REASONS: 'Refund Reasons',
   RESERVATIONS: 'Reservations',
@@ -99,9 +103,9 @@ type GetRoute = BaseRoute & {
 
 type BodyRoute = BaseRoute & {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-  // Multipart bodies reach the handler as `req.files`, not `req.body`, so they are
-  // never run through `input.body` validation. This schema exists purely to describe
-  // the form shape in the OpenAPI spec so generated clients accept a FormData payload.
+  // Multipart uploads reach the handler as `req.files`, and the form's text fields as
+  // `req.body`, which `input.body` validates. This schema describes the whole form in the
+  // OpenAPI spec so generated clients accept a FormData payload.
   multipartBody?: z.ZodType
 }
 

@@ -72,10 +72,10 @@ Category hides its whole subtree.
 _Avoid_: public category, published category
 
 **Collection**:
-A flat, hand-picked group of products around a season, campaign or story, with its own landing
-page — `Summer 2026`, `Gifts under $200`. Says nothing about what the product is, so Collections
-overlap: a product can sit in several. Its membership is stored and chosen by a person; a list
-derived from data is a Computed List, never a Collection.
+A flat group of products around a season, campaign or story, with its own landing page —
+`Summer 2026`, `Gifts under $200`. Says nothing about what the product is, so Collections overlap: a
+product can sit in several. Its membership is stored, and chosen by a person or by a Rule; a
+list derived from sales or dates each time it is read is a Computed List, never a Collection.
 _Avoid_: category, curated shop, edit, lookbook, range, assortment
 
 **Computed List**:
@@ -87,9 +87,24 @@ its rule.
 _Avoid_: collection, smart collection, automated collection, featured category, sort (for the list
 itself)
 
+**Rule**:
+The condition that decides a Category's or Collection's members from product Metafields: one
+condition per Metafield, all of which must hold, each met by any one of its values —
+`genero: [hombre, unisex]` and `estilo: [clasicos]`. A ruled grouping's members follow the rule and
+cannot be picked by hand; a grouping without one is manual. Membership is stored, and recomputed
+whenever a product's Metafields, the rule or a Metafield definition changes.
+_Avoid_: tag rule, smart collection, automated collection, filter, condition set
+
+**Metafield**:
+A named product field defined once for the store — `Género`, `Tipo`, `Colecciones` — holding a list
+of short text values per product. Rules place products by them, and they are what the storefront
+filters by. The store structure file defines them; the product CSV fills them in a
+`Name (product.metafields.custom.<key>)` column, one value per line.
+_Avoid_: attribute, custom field, metadata, property, facet (for the field itself)
+
 **Tag**:
-A free, flat keyword on a product — `organic-cotton`, `gold` — used for filtering, search and rule
-matching. Many per product, no hierarchy, no page of its own.
+A free, flat keyword on a product — `organic-cotton`, `gold` — used for search and the plain tag
+filter. Many per product, no hierarchy, no page of its own, and never read by a Rule.
 _Avoid_: label, keyword, attribute, facet
 
 **Product Type**:

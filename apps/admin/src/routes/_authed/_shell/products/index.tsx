@@ -22,7 +22,11 @@ function ProductsPage() {
         use={products}
         className="flex-1"
         heading={t`Products`}
-        actions={[{ label: t`Create Product`, to: 'create' }]}
+        actions={[
+          { label: t`Import`, to: 'import' },
+          { label: t`Import structure`, to: 'import-structure' },
+          { label: t`Create Product`, to: 'create' },
+        ]}
       />
     </PageLayout.SingleColumn>
   )

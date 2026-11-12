@@ -47,6 +47,8 @@ export const Route = createFileRoute('/_main/products/')({
 | `_main` | `true` | Required — layout parent of SSR routes (Nav, Footer) |
 | `products/` | `true` | SEO — crawlable product listing |
 | `products/$productId` | `true` | SEO — crawlable product detail |
+| `categories/$handle` | `true` | SEO — crawlable category listing |
+| `collections/$handle` | `true` | SEO — crawlable collection listing |
 | `_authed/*` | `false` (default) | Auth-gated, no SEO value, depends on `localStorage` |
 | `cart`, `checkout` | `false` (default) | User-specific, cart ID in `localStorage` |
 | `login`, `register` | `false` (default) | No SEO value |
@@ -55,5 +57,5 @@ export const Route = createFileRoute('/_main/products/')({
 
 - **SEO routes** get full server-rendered HTML with ISR caching. Loaders run on the server and `ensureQueryData` populates the React Query cache before render.
 - **SPA routes** behave as a traditional SPA. `beforeLoad`/`loader` run only on the client. No hydration mismatches from missing `localStorage`. Auth guards work correctly without server-side workarounds.
-- Layout routes (`__root__`, `_main`) always SSR their components (Nav, Footer), which means those components must be SSR-safe. Since they have no `beforeLoad`/`loader`, this is straightforward.
+- Layout routes (`__root__`, `_main`) always SSR their components (Nav, Footer), which means those components must be SSR-safe. `_main` has one loader: it fetches the Category tree the nav, side menu and footer draw from, with `ensureQueryData`, so the chrome renders from the cache on the server as a leaf route does. Child loaders run alongside it and read the tree through the same query, joining that request rather than repeating it. Nothing in a layout loader may read client-only state.
 - Adding a new SSR route requires `ssr: true` on the route and ensuring all parent layout routes also have `ssr: true`.

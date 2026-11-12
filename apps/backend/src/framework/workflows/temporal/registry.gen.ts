@@ -21,11 +21,14 @@ import { createOrderShipmentWorkflow } from '../../../workflows/order/create-ord
 import { markOrderDeliveredWorkflow } from '../../../workflows/order/mark-order-delivered.js'
 import { createPaymentCollectionForCartWorkflow } from '../../../workflows/payment/create-payment-collection-for-cart.js'
 import { repricePaymentSessionWorkflow } from '../../../workflows/payment/reprice-payment-session.js'
+import { applyCatalogStructureWorkflow } from '../../../workflows/product/apply-catalog-structure.js'
 import { batchImageVariantsWorkflow } from '../../../workflows/product/batch-image-variants.js'
 import { batchVariantImagesWorkflow } from '../../../workflows/product/batch-variant-images.js'
+import { createProductImportWorkflow } from '../../../workflows/product/create-product-import.js'
 import { createProductVariantsWorkflow } from '../../../workflows/product/create-product-variants.js'
 import { createProductWorkflow } from '../../../workflows/product/create-product.js'
 import { deleteProductVariantWorkflow } from '../../../workflows/product/delete-product-variant.js'
+import { importProductWorkflow } from '../../../workflows/product/import-product.js'
 import { setProductOptionsWorkflow } from '../../../workflows/product/set-product-options.js'
 import { updateProductVariantWorkflow } from '../../../workflows/product/update-product-variant.js'
 import { updateVariantPricesWorkflow } from '../../../workflows/product/update-variant-prices.js'
@@ -53,11 +56,14 @@ export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
   markOrderDeliveredWorkflow,
   createPaymentCollectionForCartWorkflow,
   repricePaymentSessionWorkflow,
+  applyCatalogStructureWorkflow,
   batchImageVariantsWorkflow,
   batchVariantImagesWorkflow,
+  createProductImportWorkflow,
   createProductVariantsWorkflow,
   createProductWorkflow,
   deleteProductVariantWorkflow,
+  importProductWorkflow,
   setProductOptionsWorkflow,
   updateProductVariantWorkflow,
   updateVariantPricesWorkflow,

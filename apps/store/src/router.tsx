@@ -7,6 +7,7 @@ import { createI18n } from '#/lib/i18n/catalogs'
 import { I18nRouterProvider } from '#/lib/i18n/i18n-provider'
 import { catalogLanguageFor, currentUrl, resolveMarket } from '#/lib/i18n/resolve-market'
 import { joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
+import { stringifySearch } from '#/lib/search-params'
 import { routeTree } from './routeTree.gen'
 
 export async function getRouter() {
@@ -34,6 +35,8 @@ export async function getRouter() {
     defaultNotFoundComponent: NotFound,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
+    // Repeated keys for arrays, so a Tag filter reads `?tag=cotton&tag=wool`. See the function.
+    stringifySearch,
     // The market rides in the URL the browser shows, not in the route tree. Splitting the two
     // here keeps every route file, every generated route id and every typed navigation call site
     // exactly as it was — the alternative, a `$localeCode` directory, rewrites all three.

@@ -1,4 +1,5 @@
 export * from './auth/auth.ts';
+export * from './collections/collections.ts';
 export * from './countries/countries.ts';
 export * from './customers/customers.ts';
 export * from './fulfillment-providers/fulfillment-providers.ts';
@@ -11,7 +12,10 @@ export * from './payment-collections/payment-collections.ts';
 export * from './payment-providers/payment-providers.ts';
 export * from './payments/payments.ts';
 export * from './permissions/permissions.ts';
+export * from './product-categories/product-categories.ts';
 export * from './product-options/product-options.ts';
+export * from './product-tags/product-tags.ts';
+export * from './product-types/product-types.ts';
 export * from './product-variants/product-variants.ts';
 export * from './products/products.ts';
 export * from './refund-reasons/refund-reasons.ts';

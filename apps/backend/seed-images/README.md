@@ -1,23 +1,26 @@
 # Seed images
 
-Product photography for `scripts/seed-dev.ts`. Committed so a fresh clone can seed a storefront
-that looks like a storefront, without a network fetch at seed time.
+Product photography for the catalogue in `scripts/seed/product-import.csv`. Committed so a fresh
+clone can seed a storefront that looks like a storefront, without a network fetch at seed time.
 
 ## Provenance
 
-All 114 photos come from [mock.shop](https://mock.shop), Shopify's public storefront-prototyping
+Every photo comes from [mock.shop](https://mock.shop), Shopify's public storefront-prototyping
 API — the backend behind <https://demostore.mock.shop>. It needs no account or access token, and
 Shopify publishes it for building proof-of-concept storefronts.
 
-They were pulled from the `men` and `women` collections at 1200px via the Shopify CDN's `?width=`
-parameter (the originals are 4096x4096), then renamed `{handle}-{colour}-{nn}.jpg`. The colourway
-for each photo comes from the mock.shop variant that uses it, not from its original filename —
-mock.shop's own names disagree with its option values in places (`ClayHoodie01.jpg` is the `Olive`
-colourway).
+`scripts/seed/build-product-import-csv.ts` writes the CSV and downloads each image it names, at
+1200px through the Shopify CDN's `?width=` parameter (the originals are 4096x4096). A file is named
+after the last segment of its CDN URL, which mock.shop sets to the photo's content hash, so the
+seed finds the file for a CSV URL without a lookup table. The script also deletes any file the CSV
+no longer names, so rerunning it keeps the two in step:
 
-To refresh or extend the set, re-run the pull against mock.shop and regenerate `CATALOG` in
-`scripts/seed-dev.ts`; the two must stay in step, because the list of files to upload is derived
-from the catalogue.
+```bash
+pnpm --filter backend exec tsx scripts/seed/build-product-import-csv.ts
+```
+
+`scripts/seed-dev.ts` places these files in file storage, then imports the CSV with each CDN URL
+swapped for the stored copy.
 
 ## Licence
 

@@ -47,11 +47,21 @@ const unauthenticatedOperations = {
   admin: ['acceptInvite', 'authAuthenticate', 'authRegister', 'authResetPassword'],
   store: [
     'authResetPassword',
+    // The store menu every page draws, before any sign-in: catalogue structure like the category tree.
+    'getStoreNavigation',
     'getStoreProduct',
     // The market picker draws this list before a shopper has done anything, sign in included —
     // and a country's name and ISO code are catalogue data, the same as the two product
     // operations beside it here.
     'listStoreCountries',
+    // The navigation every page draws: the Visible Category tree, catalogue data like the rest.
+    'listStoreProductCategoryTree',
+    // A collection page's hero, reached by URL before any sign-in: catalogue data like the rest.
+    'listStoreProductCollections',
+    // The filter values and counts above every product list: catalogue data like the list itself.
+    'listStoreProductFilters',
+    // The Tag chips above every product list: values from the catalogue, like the list itself.
+    'listStoreProductTagValues',
     'listStoreProducts',
     'storeAuthLogin',
     'storeAuthSignup',
@@ -66,7 +76,17 @@ const unauthenticatedOperations = {
  */
 const operationsWithoutUnauthorized = {
   admin: ['acceptInvite', 'authRegister', 'authResetPassword'],
-  store: ['authResetPassword', 'getStoreProduct', 'listStoreCountries', 'listStoreProducts'],
+  store: [
+    'authResetPassword',
+    'getStoreNavigation',
+    'getStoreProduct',
+    'listStoreCountries',
+    'listStoreProductCategoryTree',
+    'listStoreProductCollections',
+    'listStoreProductFilters',
+    'listStoreProductTagValues',
+    'listStoreProducts',
+  ],
 }
 
 test.describe('shipped OpenAPI documents', () => {

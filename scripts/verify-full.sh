@@ -96,7 +96,7 @@ for arg in "$@"; do
     -h | --help)
       echo "Usage: pnpm verify:full"
       echo ""
-      echo "  Runs every test suite in parallel: the full backend suite, the store's unit and"
+      echo "  Runs every test suite in parallel: the full backend suite, the store's"
       echo "  component tests, the http-schemas and utils package tests, and both Playwright"
       echo "  e2e suites."
       echo ""
@@ -115,7 +115,7 @@ done
 label_of() {
   case "$1" in
     backend) echo "Backend suite (full)" ;;
-    store) echo "Store unit + component tests" ;;
+    store) echo "Store component tests" ;;
     schemas) echo "Request-schema bound tests (@proteus/http-schemas)" ;;
     packages) echo "Shared formatter tests (@proteus/utils)" ;;
     storeE2e) echo "Store e2e (:3013 backend, proteus_test_store)" ;;

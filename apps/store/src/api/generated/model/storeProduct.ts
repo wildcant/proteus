@@ -28,4 +28,6 @@ export interface StoreProduct {
   originCountry: string | null;
   /** @nullable */
   material: string | null;
+  /** @nullable */
+  brand: string | null;
 }

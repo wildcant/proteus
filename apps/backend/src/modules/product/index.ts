@@ -1,20 +1,40 @@
 import { Module } from '../../core/utils/module.js'
 import { Modules } from '../../core/utils/modules-definition.js'
 import { productTable } from './models/product.js'
+import { productCategoryTable } from './models/product-category.js'
+import { productCollectionTable } from './models/product-collection.js'
 import { productImageTable } from './models/product-image.js'
+import { productImportTable } from './models/product-import.js'
+import { productMetafieldTable } from './models/product-metafield.js'
+import { productMetafieldDefinitionTable } from './models/product-metafield-definition.js'
 import { productOptionTable } from './models/product-option.js'
 import { productOptionValueTable } from './models/product-option-value.js'
+import { productProductCategoryTable } from './models/product-product-category.js'
+import { productProductCollectionTable } from './models/product-product-collection.js'
 import { productProductOptionTable } from './models/product-product-option.js'
 import { productProductOptionValueTable } from './models/product-product-option-value.js'
+import { productProductTagTable } from './models/product-product-tag.js'
+import { productTagTable } from './models/product-tag.js'
+import { productTypeTable } from './models/product-type.js'
 import { productVariantTable } from './models/product-variant.js'
 import { productVariantImageTable } from './models/product-variant-image.js'
 import { productVariantOptionTable } from './models/product-variant-option.js'
 import { ProductRepository } from './repositories/product.js'
+import { ProductCategoryRepository } from './repositories/product-category.js'
+import { ProductCollectionRepository } from './repositories/product-collection.js'
 import { ProductImageRepository } from './repositories/product-image.js'
+import { ProductImportRepository } from './repositories/product-import.js'
+import { ProductMetafieldRepository } from './repositories/product-metafield.js'
+import { ProductMetafieldDefinitionRepository } from './repositories/product-metafield-definition.js'
 import { ProductOptionRepository } from './repositories/product-option.js'
 import { ProductOptionValueRepository } from './repositories/product-option-value.js'
+import { ProductProductCategoryRepository } from './repositories/product-product-category.js'
+import { ProductProductCollectionRepository } from './repositories/product-product-collection.js'
 import { ProductProductOptionRepository } from './repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from './repositories/product-product-option-value.js'
+import { ProductProductTagRepository } from './repositories/product-product-tag.js'
+import { ProductTagRepository } from './repositories/product-tag.js'
+import { ProductTypeRepository } from './repositories/product-type.js'
 import { ProductVariantRepository } from './repositories/product-variant.js'
 import { ProductVariantImageRepository } from './repositories/product-variant-image.js'
 import { ProductVariantOptionRepository } from './repositories/product-variant-option.js'
@@ -29,12 +49,22 @@ export default Module(Modules.PRODUCT, {
     { id: 'product.delete', title: 'Delete products' },
   ],
   models: {
+    productCategoryTable,
+    productCollectionTable,
     productImageTable,
+    productImportTable,
+    productMetafieldDefinitionTable,
+    productMetafieldTable,
     productOptionTable,
     productOptionValueTable,
+    productProductCategoryTable,
+    productProductCollectionTable,
     productProductOptionTable,
     productProductOptionValueTable,
+    productProductTagTable,
     productTable,
+    productTagTable,
+    productTypeTable,
     productVariantImageTable,
     productVariantOptionTable,
     productVariantTable,
@@ -49,5 +79,15 @@ export default Module(Modules.PRODUCT, {
     productImageRepository: ProductImageRepository,
     productVariantImageRepository: ProductVariantImageRepository,
     productVariantOptionRepository: ProductVariantOptionRepository,
+    productCategoryRepository: ProductCategoryRepository,
+    productProductCategoryRepository: ProductProductCategoryRepository,
+    productCollectionRepository: ProductCollectionRepository,
+    productProductCollectionRepository: ProductProductCollectionRepository,
+    productTagRepository: ProductTagRepository,
+    productProductTagRepository: ProductProductTagRepository,
+    productTypeRepository: ProductTypeRepository,
+    productImportRepository: ProductImportRepository,
+    productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository,
+    productMetafieldRepository: ProductMetafieldRepository,
   },
 })

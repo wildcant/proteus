@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { MenuIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '#/components/button'
+import type { MenuSource } from '#/components/header/menu-items'
 import { Nav } from '#/components/header/nav'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
 import { Wordmark } from '#/components/header/wordmark'
@@ -18,7 +19,14 @@ import { SideMenu } from './side-menu'
  * overlays whose open state is a URL param, so they are siblings in the `_main` layout route now
  * rather than props threaded through the bar. See `packages/frontend-structure` for the rule.
  */
-export function Header({ actions }: { actions?: ReactNode }) {
+export function Header({
+  menu,
+  actions,
+}: {
+  /** What the rail and the side menu draw from, read by the layout route. */
+  menu: MenuSource
+  actions?: ReactNode
+}) {
   const { t } = useLingui()
   const { setOpen: setMenuOpen } = useModal('menu')
 
@@ -42,7 +50,7 @@ export function Header({ actions }: { actions?: ReactNode }) {
 
           <SearchIconTrigger className="lg:hidden" />
 
-          <Nav />
+          <Nav menu={menu} />
         </div>
 
         <Wordmark />
@@ -62,7 +70,7 @@ export function Header({ actions }: { actions?: ReactNode }) {
         </div>
       </div>
 
-      <SideMenu />
+      <SideMenu menu={menu} />
     </header>
   )
 }

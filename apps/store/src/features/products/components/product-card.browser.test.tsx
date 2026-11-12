@@ -52,6 +52,7 @@ function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductLis
     width: null,
     originCountry: null,
     material: null,
+    brand: null,
     startingPrice: { id: 'price_1', currencyCode: 'usd', calculatedAmount: '46.00' },
     soldOut: false,
     ...overrides,

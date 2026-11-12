@@ -11,6 +11,16 @@ import type { AdminCreateProductStatus } from './adminCreateProductStatus.ts';
 import type { AdminCreateProductVariant } from './adminCreateProductVariant.ts';
 
 export interface AdminCreateProduct {
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  categoryIds?: string[];
+  /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  collectionIds?: string[];
   /** @maxLength 4000 */
   description?: string;
   discountable?: boolean;
@@ -36,6 +46,11 @@ export interface AdminCreateProduct {
   /** @maxLength 255 */
   subtitle?: string;
   /**
+     * @maxItems 100
+     * @items.maxLength 64
+     */
+  tagIds?: string[];
+  /**
      * @maxLength 2048
      * @nullable
      */
@@ -45,6 +60,11 @@ export interface AdminCreateProduct {
      * @maxLength 255
      */
   title: string;
+  /**
+     * @maxLength 64
+     * @nullable
+     */
+  typeId?: string | null;
   /** @maxItems 1000 */
   variants?: AdminCreateProductVariant[];
   /** @nullable */

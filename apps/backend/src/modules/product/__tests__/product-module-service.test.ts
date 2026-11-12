@@ -6,11 +6,21 @@ import { buildSearchFilter } from '../../../core/utils/build-search-filter.js'
 import { createWithTransaction } from '../../../core/utils/with-transaction.js'
 import productModule from '../index.js'
 import { ProductRepository } from '../repositories/product.js'
+import { ProductCategoryRepository } from '../repositories/product-category.js'
+import { ProductCollectionRepository } from '../repositories/product-collection.js'
 import { ProductImageRepository } from '../repositories/product-image.js'
+import { ProductImportRepository } from '../repositories/product-import.js'
+import { ProductMetafieldRepository } from '../repositories/product-metafield.js'
+import { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
+import { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
+import { ProductProductTagRepository } from '../repositories/product-product-tag.js'
+import { ProductTagRepository } from '../repositories/product-tag.js'
+import { ProductTypeRepository } from '../repositories/product-type.js'
 import { ProductVariantRepository } from '../repositories/product-variant.js'
 import { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 import { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
@@ -50,6 +60,16 @@ test.beforeEach(({ getDb, logger }) => {
     productImageRepository,
     productVariantImageRepository,
     productVariantOptionRepository,
+    productCategoryRepository: new ProductCategoryRepository({ getDb, cascadeGraph }),
+    productProductCategoryRepository: new ProductProductCategoryRepository({ getDb, cascadeGraph }),
+    productCollectionRepository: new ProductCollectionRepository({ getDb, cascadeGraph }),
+    productProductCollectionRepository: new ProductProductCollectionRepository({ getDb, cascadeGraph }),
+    productTagRepository: new ProductTagRepository({ getDb, cascadeGraph }),
+    productProductTagRepository: new ProductProductTagRepository({ getDb, cascadeGraph }),
+    productTypeRepository: new ProductTypeRepository({ getDb, cascadeGraph }),
+    productImportRepository: new ProductImportRepository({ getDb, cascadeGraph }),
+    productMetafieldDefinitionRepository: new ProductMetafieldDefinitionRepository({ getDb, cascadeGraph }),
+    productMetafieldRepository: new ProductMetafieldRepository({ getDb, cascadeGraph }),
     withTransaction,
     logger,
   })

@@ -16,16 +16,27 @@ import { Route as AuthedSettingsRouteRouteImport } from './routes/_authed/settin
 import { Route as PublicInviteRouteImport } from './routes/_public/invite'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as AuthedShellIndexRouteImport } from './routes/_authed/_shell/index'
+import { Route as AuthedShellCategoriesRouteRouteImport } from './routes/_authed/_shell/categories/route'
+import { Route as AuthedShellCollectionsRouteRouteImport } from './routes/_authed/_shell/collections/route'
 import { Route as AuthedShellCustomersRouteRouteImport } from './routes/_authed/_shell/customers/route'
 import { Route as AuthedShellInventoryRouteRouteImport } from './routes/_authed/_shell/inventory/route'
 import { Route as AuthedShellOrdersRouteRouteImport } from './routes/_authed/_shell/orders/route'
 import { Route as AuthedShellProductOptionsRouteRouteImport } from './routes/_authed/_shell/product-options/route'
+import { Route as AuthedShellProductTagsRouteRouteImport } from './routes/_authed/_shell/product-tags/route'
+import { Route as AuthedShellProductTypesRouteRouteImport } from './routes/_authed/_shell/product-types/route'
 import { Route as AuthedShellProductsRouteRouteImport } from './routes/_authed/_shell/products/route'
 import { Route as AuthedShellReservationsRouteRouteImport } from './routes/_authed/_shell/reservations/route'
 import { Route as AuthedSettingsRegionsRouteRouteImport } from './routes/_authed/settings/regions/route'
 import { Route as AuthedSettingsRolesRouteRouteImport } from './routes/_authed/settings/roles/route'
 import { Route as AuthedSettingsStoreRouteRouteImport } from './routes/_authed/settings/store/route'
 import { Route as AuthedSettingsUsersRouteRouteImport } from './routes/_authed/settings/users/route'
+import { Route as AuthedShellCategoriesIndexRouteImport } from './routes/_authed/_shell/categories/index'
+import { Route as AuthedShellCategoriesIdRouteRouteImport } from './routes/_authed/_shell/categories/$id/route'
+import { Route as AuthedShellCategoriesCreateRouteImport } from './routes/_authed/_shell/categories/create'
+import { Route as AuthedShellCategoriesOrganizeRouteImport } from './routes/_authed/_shell/categories/organize'
+import { Route as AuthedShellCollectionsIndexRouteImport } from './routes/_authed/_shell/collections/index'
+import { Route as AuthedShellCollectionsIdRouteRouteImport } from './routes/_authed/_shell/collections/$id/route'
+import { Route as AuthedShellCollectionsCreateRouteImport } from './routes/_authed/_shell/collections/create'
 import { Route as AuthedShellCustomersIndexRouteImport } from './routes/_authed/_shell/customers/index'
 import { Route as AuthedShellInventoryIndexRouteImport } from './routes/_authed/_shell/inventory/index'
 import { Route as AuthedShellOrdersIndexRouteImport } from './routes/_authed/_shell/orders/index'
@@ -33,9 +44,17 @@ import { Route as AuthedShellOrdersIdRouteRouteImport } from './routes/_authed/_
 import { Route as AuthedShellProductOptionsIndexRouteImport } from './routes/_authed/_shell/product-options/index'
 import { Route as AuthedShellProductOptionsIdRouteRouteImport } from './routes/_authed/_shell/product-options/$id/route'
 import { Route as AuthedShellProductOptionsCreateRouteImport } from './routes/_authed/_shell/product-options/create'
+import { Route as AuthedShellProductTagsIndexRouteImport } from './routes/_authed/_shell/product-tags/index'
+import { Route as AuthedShellProductTagsIdRouteRouteImport } from './routes/_authed/_shell/product-tags/$id/route'
+import { Route as AuthedShellProductTagsCreateRouteImport } from './routes/_authed/_shell/product-tags/create'
+import { Route as AuthedShellProductTypesIndexRouteImport } from './routes/_authed/_shell/product-types/index'
+import { Route as AuthedShellProductTypesIdRouteRouteImport } from './routes/_authed/_shell/product-types/$id/route'
+import { Route as AuthedShellProductTypesCreateRouteImport } from './routes/_authed/_shell/product-types/create'
 import { Route as AuthedShellProductsIndexRouteImport } from './routes/_authed/_shell/products/index'
 import { Route as AuthedShellProductsIdRouteRouteImport } from './routes/_authed/_shell/products/$id/route'
 import { Route as AuthedShellProductsCreateRouteImport } from './routes/_authed/_shell/products/create'
+import { Route as AuthedShellProductsImportRouteImport } from './routes/_authed/_shell/products/import'
+import { Route as AuthedShellProductsImportStructureRouteImport } from './routes/_authed/_shell/products/import-structure'
 import { Route as AuthedShellReservationsIndexRouteImport } from './routes/_authed/_shell/reservations/index'
 import { Route as AuthedSettingsRegionsIndexRouteImport } from './routes/_authed/settings/regions/index'
 import { Route as AuthedSettingsRegionsIdRouteRouteImport } from './routes/_authed/settings/regions/$id/route'
@@ -49,18 +68,33 @@ import { Route as AuthedSettingsStoreEditRouteImport } from './routes/_authed/se
 import { Route as AuthedSettingsUsersIndexRouteImport } from './routes/_authed/settings/users/index'
 import { Route as AuthedSettingsUsersIdRouteImport } from './routes/_authed/settings/users/$id'
 import { Route as AuthedSettingsUsersInviteRouteImport } from './routes/_authed/settings/users/invite'
+import { Route as AuthedShellCategoriesIdDetailRouteRouteImport } from './routes/_authed/_shell/categories/$id/_detail/route'
+import { Route as AuthedShellCollectionsIdDetailRouteRouteImport } from './routes/_authed/_shell/collections/$id/_detail/route'
 import { Route as AuthedShellCustomersIdEditRouteImport } from './routes/_authed/_shell/customers/$id/edit'
 import { Route as AuthedShellOrdersIdDetailRouteRouteImport } from './routes/_authed/_shell/orders/$id/_detail/route'
 import { Route as AuthedShellProductOptionsIdDetailRouteRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/route'
+import { Route as AuthedShellProductTagsIdDetailRouteRouteImport } from './routes/_authed/_shell/product-tags/$id/_detail/route'
+import { Route as AuthedShellProductTypesIdDetailRouteRouteImport } from './routes/_authed/_shell/product-types/$id/_detail/route'
 import { Route as AuthedShellProductsIdDetailRouteRouteImport } from './routes/_authed/_shell/products/$id/_detail/route'
 import { Route as AuthedSettingsRegionsIdDetailRouteRouteImport } from './routes/_authed/settings/regions/$id/_detail/route'
+import { Route as AuthedShellCategoriesIdDetailIndexRouteImport } from './routes/_authed/_shell/categories/$id/_detail/index'
+import { Route as AuthedShellCategoriesIdDetailEditRouteImport } from './routes/_authed/_shell/categories/$id/_detail/edit'
+import { Route as AuthedShellCategoriesIdDetailProductsRouteImport } from './routes/_authed/_shell/categories/$id/_detail/products'
+import { Route as AuthedShellCollectionsIdDetailIndexRouteImport } from './routes/_authed/_shell/collections/$id/_detail/index'
+import { Route as AuthedShellCollectionsIdDetailEditRouteImport } from './routes/_authed/_shell/collections/$id/_detail/edit'
+import { Route as AuthedShellCollectionsIdDetailProductsRouteImport } from './routes/_authed/_shell/collections/$id/_detail/products'
 import { Route as AuthedShellOrdersIdDetailIndexRouteImport } from './routes/_authed/_shell/orders/$id/_detail/index'
 import { Route as AuthedShellProductOptionsIdDetailIndexRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/index'
 import { Route as AuthedShellProductOptionsIdDetailEditRouteImport } from './routes/_authed/_shell/product-options/$id/_detail/edit'
+import { Route as AuthedShellProductTagsIdDetailIndexRouteImport } from './routes/_authed/_shell/product-tags/$id/_detail/index'
+import { Route as AuthedShellProductTagsIdDetailEditRouteImport } from './routes/_authed/_shell/product-tags/$id/_detail/edit'
+import { Route as AuthedShellProductTypesIdDetailIndexRouteImport } from './routes/_authed/_shell/product-types/$id/_detail/index'
+import { Route as AuthedShellProductTypesIdDetailEditRouteImport } from './routes/_authed/_shell/product-types/$id/_detail/edit'
 import { Route as AuthedShellProductsIdDetailIndexRouteImport } from './routes/_authed/_shell/products/$id/_detail/index'
 import { Route as AuthedShellProductsIdDetailEditRouteImport } from './routes/_authed/_shell/products/$id/_detail/edit'
 import { Route as AuthedShellProductsIdDetailMediaRouteImport } from './routes/_authed/_shell/products/$id/_detail/media'
 import { Route as AuthedShellProductsIdDetailOptionsRouteImport } from './routes/_authed/_shell/products/$id/_detail/options'
+import { Route as AuthedShellProductsIdDetailOrganizationRouteImport } from './routes/_authed/_shell/products/$id/_detail/organization'
 import { Route as AuthedShellProductsIdVariantsVariantIdRouteRouteImport } from './routes/_authed/_shell/products/$id/variants/$variantId/route'
 import { Route as AuthedShellProductsIdVariantsCreateRouteImport } from './routes/_authed/_shell/products/$id/variants/create'
 import { Route as AuthedSettingsRegionsIdDetailIndexRouteImport } from './routes/_authed/settings/regions/$id/_detail/index'
@@ -105,6 +139,18 @@ const AuthedShellIndexRoute = AuthedShellIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedShellRouteRoute,
 } as any)
+const AuthedShellCategoriesRouteRoute =
+  AuthedShellCategoriesRouteRouteImport.update({
+    id: '/categories',
+    path: '/categories',
+    getParentRoute: () => AuthedShellRouteRoute,
+  } as any)
+const AuthedShellCollectionsRouteRoute =
+  AuthedShellCollectionsRouteRouteImport.update({
+    id: '/collections',
+    path: '/collections',
+    getParentRoute: () => AuthedShellRouteRoute,
+  } as any)
 const AuthedShellCustomersRouteRoute =
   AuthedShellCustomersRouteRouteImport.update({
     id: '/customers',
@@ -126,6 +172,18 @@ const AuthedShellProductOptionsRouteRoute =
   AuthedShellProductOptionsRouteRouteImport.update({
     id: '/product-options',
     path: '/product-options',
+    getParentRoute: () => AuthedShellRouteRoute,
+  } as any)
+const AuthedShellProductTagsRouteRoute =
+  AuthedShellProductTagsRouteRouteImport.update({
+    id: '/product-tags',
+    path: '/product-tags',
+    getParentRoute: () => AuthedShellRouteRoute,
+  } as any)
+const AuthedShellProductTypesRouteRoute =
+  AuthedShellProductTypesRouteRouteImport.update({
+    id: '/product-types',
+    path: '/product-types',
     getParentRoute: () => AuthedShellRouteRoute,
   } as any)
 const AuthedShellProductsRouteRoute =
@@ -163,6 +221,48 @@ const AuthedSettingsUsersRouteRoute =
     id: '/users',
     path: '/users',
     getParentRoute: () => AuthedSettingsRouteRoute,
+  } as any)
+const AuthedShellCategoriesIndexRoute =
+  AuthedShellCategoriesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellCategoriesRouteRoute,
+  } as any)
+const AuthedShellCategoriesIdRouteRoute =
+  AuthedShellCategoriesIdRouteRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthedShellCategoriesRouteRoute,
+  } as any)
+const AuthedShellCategoriesCreateRoute =
+  AuthedShellCategoriesCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedShellCategoriesRouteRoute,
+  } as any)
+const AuthedShellCategoriesOrganizeRoute =
+  AuthedShellCategoriesOrganizeRouteImport.update({
+    id: '/organize',
+    path: '/organize',
+    getParentRoute: () => AuthedShellCategoriesRouteRoute,
+  } as any)
+const AuthedShellCollectionsIndexRoute =
+  AuthedShellCollectionsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellCollectionsRouteRoute,
+  } as any)
+const AuthedShellCollectionsIdRouteRoute =
+  AuthedShellCollectionsIdRouteRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthedShellCollectionsRouteRoute,
+  } as any)
+const AuthedShellCollectionsCreateRoute =
+  AuthedShellCollectionsCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedShellCollectionsRouteRoute,
   } as any)
 const AuthedShellCustomersIndexRoute =
   AuthedShellCustomersIndexRouteImport.update({
@@ -205,6 +305,42 @@ const AuthedShellProductOptionsCreateRoute =
     path: '/create',
     getParentRoute: () => AuthedShellProductOptionsRouteRoute,
   } as any)
+const AuthedShellProductTagsIndexRoute =
+  AuthedShellProductTagsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellProductTagsRouteRoute,
+  } as any)
+const AuthedShellProductTagsIdRouteRoute =
+  AuthedShellProductTagsIdRouteRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthedShellProductTagsRouteRoute,
+  } as any)
+const AuthedShellProductTagsCreateRoute =
+  AuthedShellProductTagsCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedShellProductTagsRouteRoute,
+  } as any)
+const AuthedShellProductTypesIndexRoute =
+  AuthedShellProductTypesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellProductTypesRouteRoute,
+  } as any)
+const AuthedShellProductTypesIdRouteRoute =
+  AuthedShellProductTypesIdRouteRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthedShellProductTypesRouteRoute,
+  } as any)
+const AuthedShellProductTypesCreateRoute =
+  AuthedShellProductTypesCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthedShellProductTypesRouteRoute,
+  } as any)
 const AuthedShellProductsIndexRoute =
   AuthedShellProductsIndexRouteImport.update({
     id: '/',
@@ -221,6 +357,18 @@ const AuthedShellProductsCreateRoute =
   AuthedShellProductsCreateRouteImport.update({
     id: '/create',
     path: '/create',
+    getParentRoute: () => AuthedShellProductsRouteRoute,
+  } as any)
+const AuthedShellProductsImportRoute =
+  AuthedShellProductsImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthedShellProductsRouteRoute,
+  } as any)
+const AuthedShellProductsImportStructureRoute =
+  AuthedShellProductsImportStructureRouteImport.update({
+    id: '/import-structure',
+    path: '/import-structure',
     getParentRoute: () => AuthedShellProductsRouteRoute,
   } as any)
 const AuthedShellReservationsIndexRoute =
@@ -299,6 +447,16 @@ const AuthedSettingsUsersInviteRoute =
     path: '/invite',
     getParentRoute: () => AuthedSettingsUsersRouteRoute,
   } as any)
+const AuthedShellCategoriesIdDetailRouteRoute =
+  AuthedShellCategoriesIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedShellCategoriesIdRouteRoute,
+  } as any)
+const AuthedShellCollectionsIdDetailRouteRoute =
+  AuthedShellCollectionsIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedShellCollectionsIdRouteRoute,
+  } as any)
 const AuthedShellCustomersIdEditRoute =
   AuthedShellCustomersIdEditRouteImport.update({
     id: '/$id/edit',
@@ -315,6 +473,16 @@ const AuthedShellProductOptionsIdDetailRouteRoute =
     id: '/_detail',
     getParentRoute: () => AuthedShellProductOptionsIdRouteRoute,
   } as any)
+const AuthedShellProductTagsIdDetailRouteRoute =
+  AuthedShellProductTagsIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedShellProductTagsIdRouteRoute,
+  } as any)
+const AuthedShellProductTypesIdDetailRouteRoute =
+  AuthedShellProductTypesIdDetailRouteRouteImport.update({
+    id: '/_detail',
+    getParentRoute: () => AuthedShellProductTypesIdRouteRoute,
+  } as any)
 const AuthedShellProductsIdDetailRouteRoute =
   AuthedShellProductsIdDetailRouteRouteImport.update({
     id: '/_detail',
@@ -324,6 +492,42 @@ const AuthedSettingsRegionsIdDetailRouteRoute =
   AuthedSettingsRegionsIdDetailRouteRouteImport.update({
     id: '/_detail',
     getParentRoute: () => AuthedSettingsRegionsIdRouteRoute,
+  } as any)
+const AuthedShellCategoriesIdDetailIndexRoute =
+  AuthedShellCategoriesIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellCategoriesIdDetailRouteRoute,
+  } as any)
+const AuthedShellCategoriesIdDetailEditRoute =
+  AuthedShellCategoriesIdDetailEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedShellCategoriesIdDetailRouteRoute,
+  } as any)
+const AuthedShellCategoriesIdDetailProductsRoute =
+  AuthedShellCategoriesIdDetailProductsRouteImport.update({
+    id: '/products',
+    path: '/products',
+    getParentRoute: () => AuthedShellCategoriesIdDetailRouteRoute,
+  } as any)
+const AuthedShellCollectionsIdDetailIndexRoute =
+  AuthedShellCollectionsIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellCollectionsIdDetailRouteRoute,
+  } as any)
+const AuthedShellCollectionsIdDetailEditRoute =
+  AuthedShellCollectionsIdDetailEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedShellCollectionsIdDetailRouteRoute,
+  } as any)
+const AuthedShellCollectionsIdDetailProductsRoute =
+  AuthedShellCollectionsIdDetailProductsRouteImport.update({
+    id: '/products',
+    path: '/products',
+    getParentRoute: () => AuthedShellCollectionsIdDetailRouteRoute,
   } as any)
 const AuthedShellOrdersIdDetailIndexRoute =
   AuthedShellOrdersIdDetailIndexRouteImport.update({
@@ -342,6 +546,30 @@ const AuthedShellProductOptionsIdDetailEditRoute =
     id: '/edit',
     path: '/edit',
     getParentRoute: () => AuthedShellProductOptionsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductTagsIdDetailIndexRoute =
+  AuthedShellProductTagsIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellProductTagsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductTagsIdDetailEditRoute =
+  AuthedShellProductTagsIdDetailEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedShellProductTagsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductTypesIdDetailIndexRoute =
+  AuthedShellProductTypesIdDetailIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthedShellProductTypesIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductTypesIdDetailEditRoute =
+  AuthedShellProductTypesIdDetailEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthedShellProductTypesIdDetailRouteRoute,
   } as any)
 const AuthedShellProductsIdDetailIndexRoute =
   AuthedShellProductsIdDetailIndexRouteImport.update({
@@ -365,6 +593,12 @@ const AuthedShellProductsIdDetailOptionsRoute =
   AuthedShellProductsIdDetailOptionsRouteImport.update({
     id: '/options',
     path: '/options',
+    getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
+  } as any)
+const AuthedShellProductsIdDetailOrganizationRoute =
+  AuthedShellProductsIdDetailOrganizationRouteImport.update({
+    id: '/organization',
+    path: '/organization',
     getParentRoute: () => AuthedShellProductsIdDetailRouteRoute,
   } as any)
 const AuthedShellProductsIdVariantsVariantIdRouteRoute =
@@ -439,33 +673,52 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthedSettingsRouteRouteWithChildren
   '/invite': typeof PublicInviteRoute
   '/login': typeof PublicLoginRoute
+  '/categories': typeof AuthedShellCategoriesRouteRouteWithChildren
+  '/collections': typeof AuthedShellCollectionsRouteRouteWithChildren
   '/customers': typeof AuthedShellCustomersRouteRouteWithChildren
   '/inventory': typeof AuthedShellInventoryRouteRouteWithChildren
   '/orders': typeof AuthedShellOrdersRouteRouteWithChildren
   '/product-options': typeof AuthedShellProductOptionsRouteRouteWithChildren
+  '/product-tags': typeof AuthedShellProductTagsRouteRouteWithChildren
+  '/product-types': typeof AuthedShellProductTypesRouteRouteWithChildren
   '/products': typeof AuthedShellProductsRouteRouteWithChildren
   '/reservations': typeof AuthedShellReservationsRouteRouteWithChildren
   '/settings/regions': typeof AuthedSettingsRegionsRouteRouteWithChildren
   '/settings/roles': typeof AuthedSettingsRolesRouteRouteWithChildren
   '/settings/store': typeof AuthedSettingsStoreRouteRouteWithChildren
   '/settings/users': typeof AuthedSettingsUsersRouteRouteWithChildren
+  '/categories/$id': typeof AuthedShellCategoriesIdRouteRouteWithChildren
+  '/collections/$id': typeof AuthedShellCollectionsIdRouteRouteWithChildren
   '/orders/$id': typeof AuthedShellOrdersIdRouteRouteWithChildren
   '/product-options/$id': typeof AuthedShellProductOptionsIdRouteRouteWithChildren
+  '/product-tags/$id': typeof AuthedShellProductTagsIdRouteRouteWithChildren
+  '/product-types/$id': typeof AuthedShellProductTypesIdRouteRouteWithChildren
   '/products/$id': typeof AuthedShellProductsIdRouteRouteWithChildren
   '/settings/regions/$id': typeof AuthedSettingsRegionsIdRouteRouteWithChildren
   '/settings/roles/$id': typeof AuthedSettingsRolesIdRouteRoute
+  '/categories/create': typeof AuthedShellCategoriesCreateRoute
+  '/categories/organize': typeof AuthedShellCategoriesOrganizeRoute
+  '/collections/create': typeof AuthedShellCollectionsCreateRoute
   '/product-options/create': typeof AuthedShellProductOptionsCreateRoute
+  '/product-tags/create': typeof AuthedShellProductTagsCreateRoute
+  '/product-types/create': typeof AuthedShellProductTypesCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
+  '/products/import': typeof AuthedShellProductsImportRoute
+  '/products/import-structure': typeof AuthedShellProductsImportStructureRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
   '/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
   '/settings/store/edit': typeof AuthedSettingsStoreEditRoute
   '/settings/users/$id': typeof AuthedSettingsUsersIdRoute
   '/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
+  '/categories/': typeof AuthedShellCategoriesIndexRoute
+  '/collections/': typeof AuthedShellCollectionsIndexRoute
   '/customers/': typeof AuthedShellCustomersIndexRoute
   '/inventory/': typeof AuthedShellInventoryIndexRoute
   '/orders/': typeof AuthedShellOrdersIndexRoute
   '/product-options/': typeof AuthedShellProductOptionsIndexRoute
+  '/product-tags/': typeof AuthedShellProductTagsIndexRoute
+  '/product-types/': typeof AuthedShellProductTypesIndexRoute
   '/products/': typeof AuthedShellProductsIndexRoute
   '/reservations/': typeof AuthedShellReservationsIndexRoute
   '/settings/regions/': typeof AuthedSettingsRegionsIndexRoute
@@ -474,14 +727,25 @@ export interface FileRoutesByFullPath {
   '/settings/users/': typeof AuthedSettingsUsersIndexRoute
   '/customers/$id/edit': typeof AuthedShellCustomersIdEditRoute
   '/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
+  '/categories/$id/edit': typeof AuthedShellCategoriesIdDetailEditRoute
+  '/categories/$id/products': typeof AuthedShellCategoriesIdDetailProductsRoute
+  '/collections/$id/edit': typeof AuthedShellCollectionsIdDetailEditRoute
+  '/collections/$id/products': typeof AuthedShellCollectionsIdDetailProductsRoute
   '/product-options/$id/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
+  '/product-tags/$id/edit': typeof AuthedShellProductTagsIdDetailEditRoute
+  '/product-types/$id/edit': typeof AuthedShellProductTypesIdDetailEditRoute
   '/products/$id/edit': typeof AuthedShellProductsIdDetailEditRoute
   '/products/$id/media': typeof AuthedShellProductsIdDetailMediaRoute
   '/products/$id/options': typeof AuthedShellProductsIdDetailOptionsRoute
+  '/products/$id/organization': typeof AuthedShellProductsIdDetailOrganizationRoute
   '/products/$id/variants/create': typeof AuthedShellProductsIdVariantsCreateRoute
   '/settings/regions/$id/edit': typeof AuthedSettingsRegionsIdDetailEditRoute
+  '/categories/$id/': typeof AuthedShellCategoriesIdDetailIndexRoute
+  '/collections/$id/': typeof AuthedShellCollectionsIdDetailIndexRoute
   '/orders/$id/': typeof AuthedShellOrdersIdDetailIndexRoute
   '/product-options/$id/': typeof AuthedShellProductOptionsIdDetailIndexRoute
+  '/product-tags/$id/': typeof AuthedShellProductTagsIdDetailIndexRoute
+  '/product-types/$id/': typeof AuthedShellProductTypesIdDetailIndexRoute
   '/products/$id/': typeof AuthedShellProductsIdDetailIndexRoute
   '/settings/regions/$id/': typeof AuthedSettingsRegionsIdDetailIndexRoute
   '/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
@@ -497,23 +761,38 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthedSettingsRouteRouteWithChildren
   '/invite': typeof PublicInviteRoute
   '/login': typeof PublicLoginRoute
+  '/categories/$id': typeof AuthedShellCategoriesIdDetailIndexRoute
+  '/collections/$id': typeof AuthedShellCollectionsIdDetailIndexRoute
   '/orders/$id': typeof AuthedShellOrdersIdDetailIndexRoute
   '/product-options/$id': typeof AuthedShellProductOptionsIdDetailIndexRoute
+  '/product-tags/$id': typeof AuthedShellProductTagsIdDetailIndexRoute
+  '/product-types/$id': typeof AuthedShellProductTypesIdDetailIndexRoute
   '/products/$id': typeof AuthedShellProductsIdDetailIndexRoute
   '/settings/regions/$id': typeof AuthedSettingsRegionsIdDetailIndexRoute
   '/settings/roles/$id': typeof AuthedSettingsRolesIdRouteRoute
+  '/categories/create': typeof AuthedShellCategoriesCreateRoute
+  '/categories/organize': typeof AuthedShellCategoriesOrganizeRoute
+  '/collections/create': typeof AuthedShellCollectionsCreateRoute
   '/product-options/create': typeof AuthedShellProductOptionsCreateRoute
+  '/product-tags/create': typeof AuthedShellProductTagsCreateRoute
+  '/product-types/create': typeof AuthedShellProductTypesCreateRoute
   '/products/create': typeof AuthedShellProductsCreateRoute
+  '/products/import': typeof AuthedShellProductsImportRoute
+  '/products/import-structure': typeof AuthedShellProductsImportStructureRoute
   '/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
   '/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
   '/settings/store/edit': typeof AuthedSettingsStoreEditRoute
   '/settings/users/$id': typeof AuthedSettingsUsersIdRoute
   '/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
+  '/categories': typeof AuthedShellCategoriesIndexRoute
+  '/collections': typeof AuthedShellCollectionsIndexRoute
   '/customers': typeof AuthedShellCustomersIndexRoute
   '/inventory': typeof AuthedShellInventoryIndexRoute
   '/orders': typeof AuthedShellOrdersIndexRoute
   '/product-options': typeof AuthedShellProductOptionsIndexRoute
+  '/product-tags': typeof AuthedShellProductTagsIndexRoute
+  '/product-types': typeof AuthedShellProductTypesIndexRoute
   '/products': typeof AuthedShellProductsIndexRoute
   '/reservations': typeof AuthedShellReservationsIndexRoute
   '/settings/regions': typeof AuthedSettingsRegionsIndexRoute
@@ -522,10 +801,17 @@ export interface FileRoutesByTo {
   '/settings/users': typeof AuthedSettingsUsersIndexRoute
   '/customers/$id/edit': typeof AuthedShellCustomersIdEditRoute
   '/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
+  '/categories/$id/edit': typeof AuthedShellCategoriesIdDetailEditRoute
+  '/categories/$id/products': typeof AuthedShellCategoriesIdDetailProductsRoute
+  '/collections/$id/edit': typeof AuthedShellCollectionsIdDetailEditRoute
+  '/collections/$id/products': typeof AuthedShellCollectionsIdDetailProductsRoute
   '/product-options/$id/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
+  '/product-tags/$id/edit': typeof AuthedShellProductTagsIdDetailEditRoute
+  '/product-types/$id/edit': typeof AuthedShellProductTypesIdDetailEditRoute
   '/products/$id/edit': typeof AuthedShellProductsIdDetailEditRoute
   '/products/$id/media': typeof AuthedShellProductsIdDetailMediaRoute
   '/products/$id/options': typeof AuthedShellProductsIdDetailOptionsRoute
+  '/products/$id/organization': typeof AuthedShellProductsIdDetailOrganizationRoute
   '/products/$id/variants/create': typeof AuthedShellProductsIdVariantsCreateRoute
   '/settings/regions/$id/edit': typeof AuthedSettingsRegionsIdDetailEditRoute
   '/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
@@ -544,10 +830,14 @@ export interface FileRoutesById {
   '/_authed/settings': typeof AuthedSettingsRouteRouteWithChildren
   '/_public/invite': typeof PublicInviteRoute
   '/_public/login': typeof PublicLoginRoute
+  '/_authed/_shell/categories': typeof AuthedShellCategoriesRouteRouteWithChildren
+  '/_authed/_shell/collections': typeof AuthedShellCollectionsRouteRouteWithChildren
   '/_authed/_shell/customers': typeof AuthedShellCustomersRouteRouteWithChildren
   '/_authed/_shell/inventory': typeof AuthedShellInventoryRouteRouteWithChildren
   '/_authed/_shell/orders': typeof AuthedShellOrdersRouteRouteWithChildren
   '/_authed/_shell/product-options': typeof AuthedShellProductOptionsRouteRouteWithChildren
+  '/_authed/_shell/product-tags': typeof AuthedShellProductTagsRouteRouteWithChildren
+  '/_authed/_shell/product-types': typeof AuthedShellProductTypesRouteRouteWithChildren
   '/_authed/_shell/products': typeof AuthedShellProductsRouteRouteWithChildren
   '/_authed/_shell/reservations': typeof AuthedShellReservationsRouteRouteWithChildren
   '/_authed/settings/regions': typeof AuthedSettingsRegionsRouteRouteWithChildren
@@ -555,43 +845,73 @@ export interface FileRoutesById {
   '/_authed/settings/store': typeof AuthedSettingsStoreRouteRouteWithChildren
   '/_authed/settings/users': typeof AuthedSettingsUsersRouteRouteWithChildren
   '/_authed/_shell/': typeof AuthedShellIndexRoute
+  '/_authed/_shell/categories/$id': typeof AuthedShellCategoriesIdRouteRouteWithChildren
+  '/_authed/_shell/collections/$id': typeof AuthedShellCollectionsIdRouteRouteWithChildren
   '/_authed/_shell/orders/$id': typeof AuthedShellOrdersIdRouteRouteWithChildren
   '/_authed/_shell/product-options/$id': typeof AuthedShellProductOptionsIdRouteRouteWithChildren
+  '/_authed/_shell/product-tags/$id': typeof AuthedShellProductTagsIdRouteRouteWithChildren
+  '/_authed/_shell/product-types/$id': typeof AuthedShellProductTypesIdRouteRouteWithChildren
   '/_authed/_shell/products/$id': typeof AuthedShellProductsIdRouteRouteWithChildren
   '/_authed/settings/regions/$id': typeof AuthedSettingsRegionsIdRouteRouteWithChildren
   '/_authed/settings/roles/$id': typeof AuthedSettingsRolesIdRouteRoute
+  '/_authed/_shell/categories/create': typeof AuthedShellCategoriesCreateRoute
+  '/_authed/_shell/categories/organize': typeof AuthedShellCategoriesOrganizeRoute
+  '/_authed/_shell/collections/create': typeof AuthedShellCollectionsCreateRoute
   '/_authed/_shell/product-options/create': typeof AuthedShellProductOptionsCreateRoute
+  '/_authed/_shell/product-tags/create': typeof AuthedShellProductTagsCreateRoute
+  '/_authed/_shell/product-types/create': typeof AuthedShellProductTypesCreateRoute
   '/_authed/_shell/products/create': typeof AuthedShellProductsCreateRoute
+  '/_authed/_shell/products/import': typeof AuthedShellProductsImportRoute
+  '/_authed/_shell/products/import-structure': typeof AuthedShellProductsImportStructureRoute
   '/_authed/settings/regions/create': typeof AuthedSettingsRegionsCreateRoute
   '/_authed/settings/roles/create': typeof AuthedSettingsRolesCreateRoute
   '/_authed/settings/store/currencies': typeof AuthedSettingsStoreCurrenciesRoute
   '/_authed/settings/store/edit': typeof AuthedSettingsStoreEditRoute
   '/_authed/settings/users/$id': typeof AuthedSettingsUsersIdRoute
   '/_authed/settings/users/invite': typeof AuthedSettingsUsersInviteRoute
+  '/_authed/_shell/categories/': typeof AuthedShellCategoriesIndexRoute
+  '/_authed/_shell/collections/': typeof AuthedShellCollectionsIndexRoute
   '/_authed/_shell/customers/': typeof AuthedShellCustomersIndexRoute
   '/_authed/_shell/inventory/': typeof AuthedShellInventoryIndexRoute
   '/_authed/_shell/orders/': typeof AuthedShellOrdersIndexRoute
   '/_authed/_shell/product-options/': typeof AuthedShellProductOptionsIndexRoute
+  '/_authed/_shell/product-tags/': typeof AuthedShellProductTagsIndexRoute
+  '/_authed/_shell/product-types/': typeof AuthedShellProductTypesIndexRoute
   '/_authed/_shell/products/': typeof AuthedShellProductsIndexRoute
   '/_authed/_shell/reservations/': typeof AuthedShellReservationsIndexRoute
   '/_authed/settings/regions/': typeof AuthedSettingsRegionsIndexRoute
   '/_authed/settings/roles/': typeof AuthedSettingsRolesIndexRoute
   '/_authed/settings/store/': typeof AuthedSettingsStoreIndexRoute
   '/_authed/settings/users/': typeof AuthedSettingsUsersIndexRoute
+  '/_authed/_shell/categories/$id/_detail': typeof AuthedShellCategoriesIdDetailRouteRouteWithChildren
+  '/_authed/_shell/collections/$id/_detail': typeof AuthedShellCollectionsIdDetailRouteRouteWithChildren
   '/_authed/_shell/orders/$id/_detail': typeof AuthedShellOrdersIdDetailRouteRouteWithChildren
   '/_authed/_shell/product-options/$id/_detail': typeof AuthedShellProductOptionsIdDetailRouteRouteWithChildren
+  '/_authed/_shell/product-tags/$id/_detail': typeof AuthedShellProductTagsIdDetailRouteRouteWithChildren
+  '/_authed/_shell/product-types/$id/_detail': typeof AuthedShellProductTypesIdDetailRouteRouteWithChildren
   '/_authed/_shell/products/$id/_detail': typeof AuthedShellProductsIdDetailRouteRouteWithChildren
   '/_authed/settings/regions/$id/_detail': typeof AuthedSettingsRegionsIdDetailRouteRouteWithChildren
   '/_authed/_shell/customers/$id/edit': typeof AuthedShellCustomersIdEditRoute
   '/_authed/_shell/products/$id/variants/$variantId': typeof AuthedShellProductsIdVariantsVariantIdRouteRouteWithChildren
+  '/_authed/_shell/categories/$id/_detail/edit': typeof AuthedShellCategoriesIdDetailEditRoute
+  '/_authed/_shell/categories/$id/_detail/products': typeof AuthedShellCategoriesIdDetailProductsRoute
+  '/_authed/_shell/collections/$id/_detail/edit': typeof AuthedShellCollectionsIdDetailEditRoute
+  '/_authed/_shell/collections/$id/_detail/products': typeof AuthedShellCollectionsIdDetailProductsRoute
   '/_authed/_shell/product-options/$id/_detail/edit': typeof AuthedShellProductOptionsIdDetailEditRoute
+  '/_authed/_shell/product-tags/$id/_detail/edit': typeof AuthedShellProductTagsIdDetailEditRoute
+  '/_authed/_shell/product-types/$id/_detail/edit': typeof AuthedShellProductTypesIdDetailEditRoute
   '/_authed/_shell/products/$id/_detail/edit': typeof AuthedShellProductsIdDetailEditRoute
   '/_authed/_shell/products/$id/_detail/media': typeof AuthedShellProductsIdDetailMediaRoute
   '/_authed/_shell/products/$id/_detail/options': typeof AuthedShellProductsIdDetailOptionsRoute
+  '/_authed/_shell/products/$id/_detail/organization': typeof AuthedShellProductsIdDetailOrganizationRoute
   '/_authed/_shell/products/$id/variants/create': typeof AuthedShellProductsIdVariantsCreateRoute
   '/_authed/settings/regions/$id/_detail/edit': typeof AuthedSettingsRegionsIdDetailEditRoute
+  '/_authed/_shell/categories/$id/_detail/': typeof AuthedShellCategoriesIdDetailIndexRoute
+  '/_authed/_shell/collections/$id/_detail/': typeof AuthedShellCollectionsIdDetailIndexRoute
   '/_authed/_shell/orders/$id/_detail/': typeof AuthedShellOrdersIdDetailIndexRoute
   '/_authed/_shell/product-options/$id/_detail/': typeof AuthedShellProductOptionsIdDetailIndexRoute
+  '/_authed/_shell/product-tags/$id/_detail/': typeof AuthedShellProductTagsIdDetailIndexRoute
+  '/_authed/_shell/product-types/$id/_detail/': typeof AuthedShellProductTypesIdDetailIndexRoute
   '/_authed/_shell/products/$id/_detail/': typeof AuthedShellProductsIdDetailIndexRoute
   '/_authed/settings/regions/$id/_detail/': typeof AuthedSettingsRegionsIdDetailIndexRoute
   '/_authed/_shell/products/$id/variants/$variantId/prices': typeof AuthedShellProductsIdVariantsVariantIdPricesRouteRoute
@@ -609,33 +929,52 @@ export interface FileRouteTypes {
     | '/settings'
     | '/invite'
     | '/login'
+    | '/categories'
+    | '/collections'
     | '/customers'
     | '/inventory'
     | '/orders'
     | '/product-options'
+    | '/product-tags'
+    | '/product-types'
     | '/products'
     | '/reservations'
     | '/settings/regions'
     | '/settings/roles'
     | '/settings/store'
     | '/settings/users'
+    | '/categories/$id'
+    | '/collections/$id'
     | '/orders/$id'
     | '/product-options/$id'
+    | '/product-tags/$id'
+    | '/product-types/$id'
     | '/products/$id'
     | '/settings/regions/$id'
     | '/settings/roles/$id'
+    | '/categories/create'
+    | '/categories/organize'
+    | '/collections/create'
     | '/product-options/create'
+    | '/product-tags/create'
+    | '/product-types/create'
     | '/products/create'
+    | '/products/import'
+    | '/products/import-structure'
     | '/settings/regions/create'
     | '/settings/roles/create'
     | '/settings/store/currencies'
     | '/settings/store/edit'
     | '/settings/users/$id'
     | '/settings/users/invite'
+    | '/categories/'
+    | '/collections/'
     | '/customers/'
     | '/inventory/'
     | '/orders/'
     | '/product-options/'
+    | '/product-tags/'
+    | '/product-types/'
     | '/products/'
     | '/reservations/'
     | '/settings/regions/'
@@ -644,14 +983,25 @@ export interface FileRouteTypes {
     | '/settings/users/'
     | '/customers/$id/edit'
     | '/products/$id/variants/$variantId'
+    | '/categories/$id/edit'
+    | '/categories/$id/products'
+    | '/collections/$id/edit'
+    | '/collections/$id/products'
     | '/product-options/$id/edit'
+    | '/product-tags/$id/edit'
+    | '/product-types/$id/edit'
     | '/products/$id/edit'
     | '/products/$id/media'
     | '/products/$id/options'
+    | '/products/$id/organization'
     | '/products/$id/variants/create'
     | '/settings/regions/$id/edit'
+    | '/categories/$id/'
+    | '/collections/$id/'
     | '/orders/$id/'
     | '/product-options/$id/'
+    | '/product-tags/$id/'
+    | '/product-types/$id/'
     | '/products/$id/'
     | '/settings/regions/$id/'
     | '/products/$id/variants/$variantId/prices'
@@ -667,23 +1017,38 @@ export interface FileRouteTypes {
     | '/settings'
     | '/invite'
     | '/login'
+    | '/categories/$id'
+    | '/collections/$id'
     | '/orders/$id'
     | '/product-options/$id'
+    | '/product-tags/$id'
+    | '/product-types/$id'
     | '/products/$id'
     | '/settings/regions/$id'
     | '/settings/roles/$id'
+    | '/categories/create'
+    | '/categories/organize'
+    | '/collections/create'
     | '/product-options/create'
+    | '/product-tags/create'
+    | '/product-types/create'
     | '/products/create'
+    | '/products/import'
+    | '/products/import-structure'
     | '/settings/regions/create'
     | '/settings/roles/create'
     | '/settings/store/currencies'
     | '/settings/store/edit'
     | '/settings/users/$id'
     | '/settings/users/invite'
+    | '/categories'
+    | '/collections'
     | '/customers'
     | '/inventory'
     | '/orders'
     | '/product-options'
+    | '/product-tags'
+    | '/product-types'
     | '/products'
     | '/reservations'
     | '/settings/regions'
@@ -692,10 +1057,17 @@ export interface FileRouteTypes {
     | '/settings/users'
     | '/customers/$id/edit'
     | '/products/$id/variants/$variantId'
+    | '/categories/$id/edit'
+    | '/categories/$id/products'
+    | '/collections/$id/edit'
+    | '/collections/$id/products'
     | '/product-options/$id/edit'
+    | '/product-tags/$id/edit'
+    | '/product-types/$id/edit'
     | '/products/$id/edit'
     | '/products/$id/media'
     | '/products/$id/options'
+    | '/products/$id/organization'
     | '/products/$id/variants/create'
     | '/settings/regions/$id/edit'
     | '/products/$id/variants/$variantId/prices'
@@ -713,10 +1085,14 @@ export interface FileRouteTypes {
     | '/_authed/settings'
     | '/_public/invite'
     | '/_public/login'
+    | '/_authed/_shell/categories'
+    | '/_authed/_shell/collections'
     | '/_authed/_shell/customers'
     | '/_authed/_shell/inventory'
     | '/_authed/_shell/orders'
     | '/_authed/_shell/product-options'
+    | '/_authed/_shell/product-tags'
+    | '/_authed/_shell/product-types'
     | '/_authed/_shell/products'
     | '/_authed/_shell/reservations'
     | '/_authed/settings/regions'
@@ -724,43 +1100,73 @@ export interface FileRouteTypes {
     | '/_authed/settings/store'
     | '/_authed/settings/users'
     | '/_authed/_shell/'
+    | '/_authed/_shell/categories/$id'
+    | '/_authed/_shell/collections/$id'
     | '/_authed/_shell/orders/$id'
     | '/_authed/_shell/product-options/$id'
+    | '/_authed/_shell/product-tags/$id'
+    | '/_authed/_shell/product-types/$id'
     | '/_authed/_shell/products/$id'
     | '/_authed/settings/regions/$id'
     | '/_authed/settings/roles/$id'
+    | '/_authed/_shell/categories/create'
+    | '/_authed/_shell/categories/organize'
+    | '/_authed/_shell/collections/create'
     | '/_authed/_shell/product-options/create'
+    | '/_authed/_shell/product-tags/create'
+    | '/_authed/_shell/product-types/create'
     | '/_authed/_shell/products/create'
+    | '/_authed/_shell/products/import'
+    | '/_authed/_shell/products/import-structure'
     | '/_authed/settings/regions/create'
     | '/_authed/settings/roles/create'
     | '/_authed/settings/store/currencies'
     | '/_authed/settings/store/edit'
     | '/_authed/settings/users/$id'
     | '/_authed/settings/users/invite'
+    | '/_authed/_shell/categories/'
+    | '/_authed/_shell/collections/'
     | '/_authed/_shell/customers/'
     | '/_authed/_shell/inventory/'
     | '/_authed/_shell/orders/'
     | '/_authed/_shell/product-options/'
+    | '/_authed/_shell/product-tags/'
+    | '/_authed/_shell/product-types/'
     | '/_authed/_shell/products/'
     | '/_authed/_shell/reservations/'
     | '/_authed/settings/regions/'
     | '/_authed/settings/roles/'
     | '/_authed/settings/store/'
     | '/_authed/settings/users/'
+    | '/_authed/_shell/categories/$id/_detail'
+    | '/_authed/_shell/collections/$id/_detail'
     | '/_authed/_shell/orders/$id/_detail'
     | '/_authed/_shell/product-options/$id/_detail'
+    | '/_authed/_shell/product-tags/$id/_detail'
+    | '/_authed/_shell/product-types/$id/_detail'
     | '/_authed/_shell/products/$id/_detail'
     | '/_authed/settings/regions/$id/_detail'
     | '/_authed/_shell/customers/$id/edit'
     | '/_authed/_shell/products/$id/variants/$variantId'
+    | '/_authed/_shell/categories/$id/_detail/edit'
+    | '/_authed/_shell/categories/$id/_detail/products'
+    | '/_authed/_shell/collections/$id/_detail/edit'
+    | '/_authed/_shell/collections/$id/_detail/products'
     | '/_authed/_shell/product-options/$id/_detail/edit'
+    | '/_authed/_shell/product-tags/$id/_detail/edit'
+    | '/_authed/_shell/product-types/$id/_detail/edit'
     | '/_authed/_shell/products/$id/_detail/edit'
     | '/_authed/_shell/products/$id/_detail/media'
     | '/_authed/_shell/products/$id/_detail/options'
+    | '/_authed/_shell/products/$id/_detail/organization'
     | '/_authed/_shell/products/$id/variants/create'
     | '/_authed/settings/regions/$id/_detail/edit'
+    | '/_authed/_shell/categories/$id/_detail/'
+    | '/_authed/_shell/collections/$id/_detail/'
     | '/_authed/_shell/orders/$id/_detail/'
     | '/_authed/_shell/product-options/$id/_detail/'
+    | '/_authed/_shell/product-tags/$id/_detail/'
+    | '/_authed/_shell/product-types/$id/_detail/'
     | '/_authed/_shell/products/$id/_detail/'
     | '/_authed/settings/regions/$id/_detail/'
     | '/_authed/_shell/products/$id/variants/$variantId/prices'
@@ -828,6 +1234,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellIndexRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
+    '/_authed/_shell/categories': {
+      id: '/_authed/_shell/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof AuthedShellCategoriesRouteRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
+    }
+    '/_authed/_shell/collections': {
+      id: '/_authed/_shell/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof AuthedShellCollectionsRouteRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
+    }
     '/_authed/_shell/customers': {
       id: '/_authed/_shell/customers'
       path: '/customers'
@@ -854,6 +1274,20 @@ declare module '@tanstack/react-router' {
       path: '/product-options'
       fullPath: '/product-options'
       preLoaderRoute: typeof AuthedShellProductOptionsRouteRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
+    }
+    '/_authed/_shell/product-tags': {
+      id: '/_authed/_shell/product-tags'
+      path: '/product-tags'
+      fullPath: '/product-tags'
+      preLoaderRoute: typeof AuthedShellProductTagsRouteRouteImport
+      parentRoute: typeof AuthedShellRouteRoute
+    }
+    '/_authed/_shell/product-types': {
+      id: '/_authed/_shell/product-types'
+      path: '/product-types'
+      fullPath: '/product-types'
+      preLoaderRoute: typeof AuthedShellProductTypesRouteRouteImport
       parentRoute: typeof AuthedShellRouteRoute
     }
     '/_authed/_shell/products': {
@@ -897,6 +1331,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/users'
       preLoaderRoute: typeof AuthedSettingsUsersRouteRouteImport
       parentRoute: typeof AuthedSettingsRouteRoute
+    }
+    '/_authed/_shell/categories/': {
+      id: '/_authed/_shell/categories/'
+      path: '/'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof AuthedShellCategoriesIndexRouteImport
+      parentRoute: typeof AuthedShellCategoriesRouteRoute
+    }
+    '/_authed/_shell/categories/$id': {
+      id: '/_authed/_shell/categories/$id'
+      path: '/$id'
+      fullPath: '/categories/$id'
+      preLoaderRoute: typeof AuthedShellCategoriesIdRouteRouteImport
+      parentRoute: typeof AuthedShellCategoriesRouteRoute
+    }
+    '/_authed/_shell/categories/create': {
+      id: '/_authed/_shell/categories/create'
+      path: '/create'
+      fullPath: '/categories/create'
+      preLoaderRoute: typeof AuthedShellCategoriesCreateRouteImport
+      parentRoute: typeof AuthedShellCategoriesRouteRoute
+    }
+    '/_authed/_shell/categories/organize': {
+      id: '/_authed/_shell/categories/organize'
+      path: '/organize'
+      fullPath: '/categories/organize'
+      preLoaderRoute: typeof AuthedShellCategoriesOrganizeRouteImport
+      parentRoute: typeof AuthedShellCategoriesRouteRoute
+    }
+    '/_authed/_shell/collections/': {
+      id: '/_authed/_shell/collections/'
+      path: '/'
+      fullPath: '/collections/'
+      preLoaderRoute: typeof AuthedShellCollectionsIndexRouteImport
+      parentRoute: typeof AuthedShellCollectionsRouteRoute
+    }
+    '/_authed/_shell/collections/$id': {
+      id: '/_authed/_shell/collections/$id'
+      path: '/$id'
+      fullPath: '/collections/$id'
+      preLoaderRoute: typeof AuthedShellCollectionsIdRouteRouteImport
+      parentRoute: typeof AuthedShellCollectionsRouteRoute
+    }
+    '/_authed/_shell/collections/create': {
+      id: '/_authed/_shell/collections/create'
+      path: '/create'
+      fullPath: '/collections/create'
+      preLoaderRoute: typeof AuthedShellCollectionsCreateRouteImport
+      parentRoute: typeof AuthedShellCollectionsRouteRoute
     }
     '/_authed/_shell/customers/': {
       id: '/_authed/_shell/customers/'
@@ -947,6 +1430,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductOptionsCreateRouteImport
       parentRoute: typeof AuthedShellProductOptionsRouteRoute
     }
+    '/_authed/_shell/product-tags/': {
+      id: '/_authed/_shell/product-tags/'
+      path: '/'
+      fullPath: '/product-tags/'
+      preLoaderRoute: typeof AuthedShellProductTagsIndexRouteImport
+      parentRoute: typeof AuthedShellProductTagsRouteRoute
+    }
+    '/_authed/_shell/product-tags/$id': {
+      id: '/_authed/_shell/product-tags/$id'
+      path: '/$id'
+      fullPath: '/product-tags/$id'
+      preLoaderRoute: typeof AuthedShellProductTagsIdRouteRouteImport
+      parentRoute: typeof AuthedShellProductTagsRouteRoute
+    }
+    '/_authed/_shell/product-tags/create': {
+      id: '/_authed/_shell/product-tags/create'
+      path: '/create'
+      fullPath: '/product-tags/create'
+      preLoaderRoute: typeof AuthedShellProductTagsCreateRouteImport
+      parentRoute: typeof AuthedShellProductTagsRouteRoute
+    }
+    '/_authed/_shell/product-types/': {
+      id: '/_authed/_shell/product-types/'
+      path: '/'
+      fullPath: '/product-types/'
+      preLoaderRoute: typeof AuthedShellProductTypesIndexRouteImport
+      parentRoute: typeof AuthedShellProductTypesRouteRoute
+    }
+    '/_authed/_shell/product-types/$id': {
+      id: '/_authed/_shell/product-types/$id'
+      path: '/$id'
+      fullPath: '/product-types/$id'
+      preLoaderRoute: typeof AuthedShellProductTypesIdRouteRouteImport
+      parentRoute: typeof AuthedShellProductTypesRouteRoute
+    }
+    '/_authed/_shell/product-types/create': {
+      id: '/_authed/_shell/product-types/create'
+      path: '/create'
+      fullPath: '/product-types/create'
+      preLoaderRoute: typeof AuthedShellProductTypesCreateRouteImport
+      parentRoute: typeof AuthedShellProductTypesRouteRoute
+    }
     '/_authed/_shell/products/': {
       id: '/_authed/_shell/products/'
       path: '/'
@@ -966,6 +1491,20 @@ declare module '@tanstack/react-router' {
       path: '/create'
       fullPath: '/products/create'
       preLoaderRoute: typeof AuthedShellProductsCreateRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
+    }
+    '/_authed/_shell/products/import': {
+      id: '/_authed/_shell/products/import'
+      path: '/import'
+      fullPath: '/products/import'
+      preLoaderRoute: typeof AuthedShellProductsImportRouteImport
+      parentRoute: typeof AuthedShellProductsRouteRoute
+    }
+    '/_authed/_shell/products/import-structure': {
+      id: '/_authed/_shell/products/import-structure'
+      path: '/import-structure'
+      fullPath: '/products/import-structure'
+      preLoaderRoute: typeof AuthedShellProductsImportStructureRouteImport
       parentRoute: typeof AuthedShellProductsRouteRoute
     }
     '/_authed/_shell/reservations/': {
@@ -1059,6 +1598,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedSettingsUsersInviteRouteImport
       parentRoute: typeof AuthedSettingsUsersRouteRoute
     }
+    '/_authed/_shell/categories/$id/_detail': {
+      id: '/_authed/_shell/categories/$id/_detail'
+      path: ''
+      fullPath: '/categories/$id'
+      preLoaderRoute: typeof AuthedShellCategoriesIdDetailRouteRouteImport
+      parentRoute: typeof AuthedShellCategoriesIdRouteRoute
+    }
+    '/_authed/_shell/collections/$id/_detail': {
+      id: '/_authed/_shell/collections/$id/_detail'
+      path: ''
+      fullPath: '/collections/$id'
+      preLoaderRoute: typeof AuthedShellCollectionsIdDetailRouteRouteImport
+      parentRoute: typeof AuthedShellCollectionsIdRouteRoute
+    }
     '/_authed/_shell/customers/$id/edit': {
       id: '/_authed/_shell/customers/$id/edit'
       path: '/$id/edit'
@@ -1080,6 +1633,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedShellProductOptionsIdDetailRouteRouteImport
       parentRoute: typeof AuthedShellProductOptionsIdRouteRoute
     }
+    '/_authed/_shell/product-tags/$id/_detail': {
+      id: '/_authed/_shell/product-tags/$id/_detail'
+      path: ''
+      fullPath: '/product-tags/$id'
+      preLoaderRoute: typeof AuthedShellProductTagsIdDetailRouteRouteImport
+      parentRoute: typeof AuthedShellProductTagsIdRouteRoute
+    }
+    '/_authed/_shell/product-types/$id/_detail': {
+      id: '/_authed/_shell/product-types/$id/_detail'
+      path: ''
+      fullPath: '/product-types/$id'
+      preLoaderRoute: typeof AuthedShellProductTypesIdDetailRouteRouteImport
+      parentRoute: typeof AuthedShellProductTypesIdRouteRoute
+    }
     '/_authed/_shell/products/$id/_detail': {
       id: '/_authed/_shell/products/$id/_detail'
       path: ''
@@ -1093,6 +1660,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/regions/$id'
       preLoaderRoute: typeof AuthedSettingsRegionsIdDetailRouteRouteImport
       parentRoute: typeof AuthedSettingsRegionsIdRouteRoute
+    }
+    '/_authed/_shell/categories/$id/_detail/': {
+      id: '/_authed/_shell/categories/$id/_detail/'
+      path: '/'
+      fullPath: '/categories/$id/'
+      preLoaderRoute: typeof AuthedShellCategoriesIdDetailIndexRouteImport
+      parentRoute: typeof AuthedShellCategoriesIdDetailRouteRoute
+    }
+    '/_authed/_shell/categories/$id/_detail/edit': {
+      id: '/_authed/_shell/categories/$id/_detail/edit'
+      path: '/edit'
+      fullPath: '/categories/$id/edit'
+      preLoaderRoute: typeof AuthedShellCategoriesIdDetailEditRouteImport
+      parentRoute: typeof AuthedShellCategoriesIdDetailRouteRoute
+    }
+    '/_authed/_shell/categories/$id/_detail/products': {
+      id: '/_authed/_shell/categories/$id/_detail/products'
+      path: '/products'
+      fullPath: '/categories/$id/products'
+      preLoaderRoute: typeof AuthedShellCategoriesIdDetailProductsRouteImport
+      parentRoute: typeof AuthedShellCategoriesIdDetailRouteRoute
+    }
+    '/_authed/_shell/collections/$id/_detail/': {
+      id: '/_authed/_shell/collections/$id/_detail/'
+      path: '/'
+      fullPath: '/collections/$id/'
+      preLoaderRoute: typeof AuthedShellCollectionsIdDetailIndexRouteImport
+      parentRoute: typeof AuthedShellCollectionsIdDetailRouteRoute
+    }
+    '/_authed/_shell/collections/$id/_detail/edit': {
+      id: '/_authed/_shell/collections/$id/_detail/edit'
+      path: '/edit'
+      fullPath: '/collections/$id/edit'
+      preLoaderRoute: typeof AuthedShellCollectionsIdDetailEditRouteImport
+      parentRoute: typeof AuthedShellCollectionsIdDetailRouteRoute
+    }
+    '/_authed/_shell/collections/$id/_detail/products': {
+      id: '/_authed/_shell/collections/$id/_detail/products'
+      path: '/products'
+      fullPath: '/collections/$id/products'
+      preLoaderRoute: typeof AuthedShellCollectionsIdDetailProductsRouteImport
+      parentRoute: typeof AuthedShellCollectionsIdDetailRouteRoute
     }
     '/_authed/_shell/orders/$id/_detail/': {
       id: '/_authed/_shell/orders/$id/_detail/'
@@ -1114,6 +1723,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/product-options/$id/edit'
       preLoaderRoute: typeof AuthedShellProductOptionsIdDetailEditRouteImport
       parentRoute: typeof AuthedShellProductOptionsIdDetailRouteRoute
+    }
+    '/_authed/_shell/product-tags/$id/_detail/': {
+      id: '/_authed/_shell/product-tags/$id/_detail/'
+      path: '/'
+      fullPath: '/product-tags/$id/'
+      preLoaderRoute: typeof AuthedShellProductTagsIdDetailIndexRouteImport
+      parentRoute: typeof AuthedShellProductTagsIdDetailRouteRoute
+    }
+    '/_authed/_shell/product-tags/$id/_detail/edit': {
+      id: '/_authed/_shell/product-tags/$id/_detail/edit'
+      path: '/edit'
+      fullPath: '/product-tags/$id/edit'
+      preLoaderRoute: typeof AuthedShellProductTagsIdDetailEditRouteImport
+      parentRoute: typeof AuthedShellProductTagsIdDetailRouteRoute
+    }
+    '/_authed/_shell/product-types/$id/_detail/': {
+      id: '/_authed/_shell/product-types/$id/_detail/'
+      path: '/'
+      fullPath: '/product-types/$id/'
+      preLoaderRoute: typeof AuthedShellProductTypesIdDetailIndexRouteImport
+      parentRoute: typeof AuthedShellProductTypesIdDetailRouteRoute
+    }
+    '/_authed/_shell/product-types/$id/_detail/edit': {
+      id: '/_authed/_shell/product-types/$id/_detail/edit'
+      path: '/edit'
+      fullPath: '/product-types/$id/edit'
+      preLoaderRoute: typeof AuthedShellProductTypesIdDetailEditRouteImport
+      parentRoute: typeof AuthedShellProductTypesIdDetailRouteRoute
     }
     '/_authed/_shell/products/$id/_detail/': {
       id: '/_authed/_shell/products/$id/_detail/'
@@ -1141,6 +1778,13 @@ declare module '@tanstack/react-router' {
       path: '/options'
       fullPath: '/products/$id/options'
       preLoaderRoute: typeof AuthedShellProductsIdDetailOptionsRouteImport
+      parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
+    }
+    '/_authed/_shell/products/$id/_detail/organization': {
+      id: '/_authed/_shell/products/$id/_detail/organization'
+      path: '/organization'
+      fullPath: '/products/$id/organization'
+      preLoaderRoute: typeof AuthedShellProductsIdDetailOrganizationRouteImport
       parentRoute: typeof AuthedShellProductsIdDetailRouteRoute
     }
     '/_authed/_shell/products/$id/variants/$variantId': {
@@ -1222,6 +1866,118 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthedShellCategoriesIdDetailRouteRouteChildren {
+  AuthedShellCategoriesIdDetailEditRoute: typeof AuthedShellCategoriesIdDetailEditRoute
+  AuthedShellCategoriesIdDetailProductsRoute: typeof AuthedShellCategoriesIdDetailProductsRoute
+  AuthedShellCategoriesIdDetailIndexRoute: typeof AuthedShellCategoriesIdDetailIndexRoute
+}
+
+const AuthedShellCategoriesIdDetailRouteRouteChildren: AuthedShellCategoriesIdDetailRouteRouteChildren =
+  {
+    AuthedShellCategoriesIdDetailEditRoute:
+      AuthedShellCategoriesIdDetailEditRoute,
+    AuthedShellCategoriesIdDetailProductsRoute:
+      AuthedShellCategoriesIdDetailProductsRoute,
+    AuthedShellCategoriesIdDetailIndexRoute:
+      AuthedShellCategoriesIdDetailIndexRoute,
+  }
+
+const AuthedShellCategoriesIdDetailRouteRouteWithChildren =
+  AuthedShellCategoriesIdDetailRouteRoute._addFileChildren(
+    AuthedShellCategoriesIdDetailRouteRouteChildren,
+  )
+
+interface AuthedShellCategoriesIdRouteRouteChildren {
+  AuthedShellCategoriesIdDetailRouteRoute: typeof AuthedShellCategoriesIdDetailRouteRouteWithChildren
+}
+
+const AuthedShellCategoriesIdRouteRouteChildren: AuthedShellCategoriesIdRouteRouteChildren =
+  {
+    AuthedShellCategoriesIdDetailRouteRoute:
+      AuthedShellCategoriesIdDetailRouteRouteWithChildren,
+  }
+
+const AuthedShellCategoriesIdRouteRouteWithChildren =
+  AuthedShellCategoriesIdRouteRoute._addFileChildren(
+    AuthedShellCategoriesIdRouteRouteChildren,
+  )
+
+interface AuthedShellCategoriesRouteRouteChildren {
+  AuthedShellCategoriesIdRouteRoute: typeof AuthedShellCategoriesIdRouteRouteWithChildren
+  AuthedShellCategoriesCreateRoute: typeof AuthedShellCategoriesCreateRoute
+  AuthedShellCategoriesOrganizeRoute: typeof AuthedShellCategoriesOrganizeRoute
+  AuthedShellCategoriesIndexRoute: typeof AuthedShellCategoriesIndexRoute
+}
+
+const AuthedShellCategoriesRouteRouteChildren: AuthedShellCategoriesRouteRouteChildren =
+  {
+    AuthedShellCategoriesIdRouteRoute:
+      AuthedShellCategoriesIdRouteRouteWithChildren,
+    AuthedShellCategoriesCreateRoute: AuthedShellCategoriesCreateRoute,
+    AuthedShellCategoriesOrganizeRoute: AuthedShellCategoriesOrganizeRoute,
+    AuthedShellCategoriesIndexRoute: AuthedShellCategoriesIndexRoute,
+  }
+
+const AuthedShellCategoriesRouteRouteWithChildren =
+  AuthedShellCategoriesRouteRoute._addFileChildren(
+    AuthedShellCategoriesRouteRouteChildren,
+  )
+
+interface AuthedShellCollectionsIdDetailRouteRouteChildren {
+  AuthedShellCollectionsIdDetailEditRoute: typeof AuthedShellCollectionsIdDetailEditRoute
+  AuthedShellCollectionsIdDetailProductsRoute: typeof AuthedShellCollectionsIdDetailProductsRoute
+  AuthedShellCollectionsIdDetailIndexRoute: typeof AuthedShellCollectionsIdDetailIndexRoute
+}
+
+const AuthedShellCollectionsIdDetailRouteRouteChildren: AuthedShellCollectionsIdDetailRouteRouteChildren =
+  {
+    AuthedShellCollectionsIdDetailEditRoute:
+      AuthedShellCollectionsIdDetailEditRoute,
+    AuthedShellCollectionsIdDetailProductsRoute:
+      AuthedShellCollectionsIdDetailProductsRoute,
+    AuthedShellCollectionsIdDetailIndexRoute:
+      AuthedShellCollectionsIdDetailIndexRoute,
+  }
+
+const AuthedShellCollectionsIdDetailRouteRouteWithChildren =
+  AuthedShellCollectionsIdDetailRouteRoute._addFileChildren(
+    AuthedShellCollectionsIdDetailRouteRouteChildren,
+  )
+
+interface AuthedShellCollectionsIdRouteRouteChildren {
+  AuthedShellCollectionsIdDetailRouteRoute: typeof AuthedShellCollectionsIdDetailRouteRouteWithChildren
+}
+
+const AuthedShellCollectionsIdRouteRouteChildren: AuthedShellCollectionsIdRouteRouteChildren =
+  {
+    AuthedShellCollectionsIdDetailRouteRoute:
+      AuthedShellCollectionsIdDetailRouteRouteWithChildren,
+  }
+
+const AuthedShellCollectionsIdRouteRouteWithChildren =
+  AuthedShellCollectionsIdRouteRoute._addFileChildren(
+    AuthedShellCollectionsIdRouteRouteChildren,
+  )
+
+interface AuthedShellCollectionsRouteRouteChildren {
+  AuthedShellCollectionsIdRouteRoute: typeof AuthedShellCollectionsIdRouteRouteWithChildren
+  AuthedShellCollectionsCreateRoute: typeof AuthedShellCollectionsCreateRoute
+  AuthedShellCollectionsIndexRoute: typeof AuthedShellCollectionsIndexRoute
+}
+
+const AuthedShellCollectionsRouteRouteChildren: AuthedShellCollectionsRouteRouteChildren =
+  {
+    AuthedShellCollectionsIdRouteRoute:
+      AuthedShellCollectionsIdRouteRouteWithChildren,
+    AuthedShellCollectionsCreateRoute: AuthedShellCollectionsCreateRoute,
+    AuthedShellCollectionsIndexRoute: AuthedShellCollectionsIndexRoute,
+  }
+
+const AuthedShellCollectionsRouteRouteWithChildren =
+  AuthedShellCollectionsRouteRoute._addFileChildren(
+    AuthedShellCollectionsRouteRouteChildren,
+  )
 
 interface AuthedShellCustomersRouteRouteChildren {
   AuthedShellCustomersIndexRoute: typeof AuthedShellCustomersIndexRoute
@@ -1350,10 +2106,115 @@ const AuthedShellProductOptionsRouteRouteWithChildren =
     AuthedShellProductOptionsRouteRouteChildren,
   )
 
+interface AuthedShellProductTagsIdDetailRouteRouteChildren {
+  AuthedShellProductTagsIdDetailEditRoute: typeof AuthedShellProductTagsIdDetailEditRoute
+  AuthedShellProductTagsIdDetailIndexRoute: typeof AuthedShellProductTagsIdDetailIndexRoute
+}
+
+const AuthedShellProductTagsIdDetailRouteRouteChildren: AuthedShellProductTagsIdDetailRouteRouteChildren =
+  {
+    AuthedShellProductTagsIdDetailEditRoute:
+      AuthedShellProductTagsIdDetailEditRoute,
+    AuthedShellProductTagsIdDetailIndexRoute:
+      AuthedShellProductTagsIdDetailIndexRoute,
+  }
+
+const AuthedShellProductTagsIdDetailRouteRouteWithChildren =
+  AuthedShellProductTagsIdDetailRouteRoute._addFileChildren(
+    AuthedShellProductTagsIdDetailRouteRouteChildren,
+  )
+
+interface AuthedShellProductTagsIdRouteRouteChildren {
+  AuthedShellProductTagsIdDetailRouteRoute: typeof AuthedShellProductTagsIdDetailRouteRouteWithChildren
+}
+
+const AuthedShellProductTagsIdRouteRouteChildren: AuthedShellProductTagsIdRouteRouteChildren =
+  {
+    AuthedShellProductTagsIdDetailRouteRoute:
+      AuthedShellProductTagsIdDetailRouteRouteWithChildren,
+  }
+
+const AuthedShellProductTagsIdRouteRouteWithChildren =
+  AuthedShellProductTagsIdRouteRoute._addFileChildren(
+    AuthedShellProductTagsIdRouteRouteChildren,
+  )
+
+interface AuthedShellProductTagsRouteRouteChildren {
+  AuthedShellProductTagsIdRouteRoute: typeof AuthedShellProductTagsIdRouteRouteWithChildren
+  AuthedShellProductTagsCreateRoute: typeof AuthedShellProductTagsCreateRoute
+  AuthedShellProductTagsIndexRoute: typeof AuthedShellProductTagsIndexRoute
+}
+
+const AuthedShellProductTagsRouteRouteChildren: AuthedShellProductTagsRouteRouteChildren =
+  {
+    AuthedShellProductTagsIdRouteRoute:
+      AuthedShellProductTagsIdRouteRouteWithChildren,
+    AuthedShellProductTagsCreateRoute: AuthedShellProductTagsCreateRoute,
+    AuthedShellProductTagsIndexRoute: AuthedShellProductTagsIndexRoute,
+  }
+
+const AuthedShellProductTagsRouteRouteWithChildren =
+  AuthedShellProductTagsRouteRoute._addFileChildren(
+    AuthedShellProductTagsRouteRouteChildren,
+  )
+
+interface AuthedShellProductTypesIdDetailRouteRouteChildren {
+  AuthedShellProductTypesIdDetailEditRoute: typeof AuthedShellProductTypesIdDetailEditRoute
+  AuthedShellProductTypesIdDetailIndexRoute: typeof AuthedShellProductTypesIdDetailIndexRoute
+}
+
+const AuthedShellProductTypesIdDetailRouteRouteChildren: AuthedShellProductTypesIdDetailRouteRouteChildren =
+  {
+    AuthedShellProductTypesIdDetailEditRoute:
+      AuthedShellProductTypesIdDetailEditRoute,
+    AuthedShellProductTypesIdDetailIndexRoute:
+      AuthedShellProductTypesIdDetailIndexRoute,
+  }
+
+const AuthedShellProductTypesIdDetailRouteRouteWithChildren =
+  AuthedShellProductTypesIdDetailRouteRoute._addFileChildren(
+    AuthedShellProductTypesIdDetailRouteRouteChildren,
+  )
+
+interface AuthedShellProductTypesIdRouteRouteChildren {
+  AuthedShellProductTypesIdDetailRouteRoute: typeof AuthedShellProductTypesIdDetailRouteRouteWithChildren
+}
+
+const AuthedShellProductTypesIdRouteRouteChildren: AuthedShellProductTypesIdRouteRouteChildren =
+  {
+    AuthedShellProductTypesIdDetailRouteRoute:
+      AuthedShellProductTypesIdDetailRouteRouteWithChildren,
+  }
+
+const AuthedShellProductTypesIdRouteRouteWithChildren =
+  AuthedShellProductTypesIdRouteRoute._addFileChildren(
+    AuthedShellProductTypesIdRouteRouteChildren,
+  )
+
+interface AuthedShellProductTypesRouteRouteChildren {
+  AuthedShellProductTypesIdRouteRoute: typeof AuthedShellProductTypesIdRouteRouteWithChildren
+  AuthedShellProductTypesCreateRoute: typeof AuthedShellProductTypesCreateRoute
+  AuthedShellProductTypesIndexRoute: typeof AuthedShellProductTypesIndexRoute
+}
+
+const AuthedShellProductTypesRouteRouteChildren: AuthedShellProductTypesRouteRouteChildren =
+  {
+    AuthedShellProductTypesIdRouteRoute:
+      AuthedShellProductTypesIdRouteRouteWithChildren,
+    AuthedShellProductTypesCreateRoute: AuthedShellProductTypesCreateRoute,
+    AuthedShellProductTypesIndexRoute: AuthedShellProductTypesIndexRoute,
+  }
+
+const AuthedShellProductTypesRouteRouteWithChildren =
+  AuthedShellProductTypesRouteRoute._addFileChildren(
+    AuthedShellProductTypesRouteRouteChildren,
+  )
+
 interface AuthedShellProductsIdDetailRouteRouteChildren {
   AuthedShellProductsIdDetailEditRoute: typeof AuthedShellProductsIdDetailEditRoute
   AuthedShellProductsIdDetailMediaRoute: typeof AuthedShellProductsIdDetailMediaRoute
   AuthedShellProductsIdDetailOptionsRoute: typeof AuthedShellProductsIdDetailOptionsRoute
+  AuthedShellProductsIdDetailOrganizationRoute: typeof AuthedShellProductsIdDetailOrganizationRoute
   AuthedShellProductsIdDetailIndexRoute: typeof AuthedShellProductsIdDetailIndexRoute
   AuthedShellProductsIdDetailImagesImageIdVariantsRoute: typeof AuthedShellProductsIdDetailImagesImageIdVariantsRoute
 }
@@ -1365,6 +2226,8 @@ const AuthedShellProductsIdDetailRouteRouteChildren: AuthedShellProductsIdDetail
       AuthedShellProductsIdDetailMediaRoute,
     AuthedShellProductsIdDetailOptionsRoute:
       AuthedShellProductsIdDetailOptionsRoute,
+    AuthedShellProductsIdDetailOrganizationRoute:
+      AuthedShellProductsIdDetailOrganizationRoute,
     AuthedShellProductsIdDetailIndexRoute:
       AuthedShellProductsIdDetailIndexRoute,
     AuthedShellProductsIdDetailImagesImageIdVariantsRoute:
@@ -1424,6 +2287,8 @@ const AuthedShellProductsIdRouteRouteWithChildren =
 interface AuthedShellProductsRouteRouteChildren {
   AuthedShellProductsIdRouteRoute: typeof AuthedShellProductsIdRouteRouteWithChildren
   AuthedShellProductsCreateRoute: typeof AuthedShellProductsCreateRoute
+  AuthedShellProductsImportRoute: typeof AuthedShellProductsImportRoute
+  AuthedShellProductsImportStructureRoute: typeof AuthedShellProductsImportStructureRoute
   AuthedShellProductsIndexRoute: typeof AuthedShellProductsIndexRoute
 }
 
@@ -1432,6 +2297,9 @@ const AuthedShellProductsRouteRouteChildren: AuthedShellProductsRouteRouteChildr
     AuthedShellProductsIdRouteRoute:
       AuthedShellProductsIdRouteRouteWithChildren,
     AuthedShellProductsCreateRoute: AuthedShellProductsCreateRoute,
+    AuthedShellProductsImportRoute: AuthedShellProductsImportRoute,
+    AuthedShellProductsImportStructureRoute:
+      AuthedShellProductsImportStructureRoute,
     AuthedShellProductsIndexRoute: AuthedShellProductsIndexRoute,
   }
 
@@ -1455,21 +2323,32 @@ const AuthedShellReservationsRouteRouteWithChildren =
   )
 
 interface AuthedShellRouteRouteChildren {
+  AuthedShellCategoriesRouteRoute: typeof AuthedShellCategoriesRouteRouteWithChildren
+  AuthedShellCollectionsRouteRoute: typeof AuthedShellCollectionsRouteRouteWithChildren
   AuthedShellCustomersRouteRoute: typeof AuthedShellCustomersRouteRouteWithChildren
   AuthedShellInventoryRouteRoute: typeof AuthedShellInventoryRouteRouteWithChildren
   AuthedShellOrdersRouteRoute: typeof AuthedShellOrdersRouteRouteWithChildren
   AuthedShellProductOptionsRouteRoute: typeof AuthedShellProductOptionsRouteRouteWithChildren
+  AuthedShellProductTagsRouteRoute: typeof AuthedShellProductTagsRouteRouteWithChildren
+  AuthedShellProductTypesRouteRoute: typeof AuthedShellProductTypesRouteRouteWithChildren
   AuthedShellProductsRouteRoute: typeof AuthedShellProductsRouteRouteWithChildren
   AuthedShellReservationsRouteRoute: typeof AuthedShellReservationsRouteRouteWithChildren
   AuthedShellIndexRoute: typeof AuthedShellIndexRoute
 }
 
 const AuthedShellRouteRouteChildren: AuthedShellRouteRouteChildren = {
+  AuthedShellCategoriesRouteRoute: AuthedShellCategoriesRouteRouteWithChildren,
+  AuthedShellCollectionsRouteRoute:
+    AuthedShellCollectionsRouteRouteWithChildren,
   AuthedShellCustomersRouteRoute: AuthedShellCustomersRouteRouteWithChildren,
   AuthedShellInventoryRouteRoute: AuthedShellInventoryRouteRouteWithChildren,
   AuthedShellOrdersRouteRoute: AuthedShellOrdersRouteRouteWithChildren,
   AuthedShellProductOptionsRouteRoute:
     AuthedShellProductOptionsRouteRouteWithChildren,
+  AuthedShellProductTagsRouteRoute:
+    AuthedShellProductTagsRouteRouteWithChildren,
+  AuthedShellProductTypesRouteRoute:
+    AuthedShellProductTypesRouteRouteWithChildren,
   AuthedShellProductsRouteRoute: AuthedShellProductsRouteRouteWithChildren,
   AuthedShellReservationsRouteRoute:
     AuthedShellReservationsRouteRouteWithChildren,

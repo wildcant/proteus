@@ -5,58 +5,115 @@ import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AppliedProductOptionChangeDTO,
+  CatalogStructureChangesDTO,
+  CatalogStructureDTO,
+  CatalogStructurePlanDTO,
   EnrichedProductVariantDTO,
+  FilterableProductCategoryProps,
+  FilterableProductCollectionProps,
   FilterableProductImageProps,
   FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
   FilterableProductProps,
+  FilterableProductTagProps,
+  FilterableProductTypeProps,
   FilterableProductVariantImageProps,
   FilterableProductVariantOptionProps,
   FilterableProductVariantProps,
+  ImportedProductDTO,
+  ListCategoryTreeDTO,
   PickerVariantDTO,
+  ProductCategoryDTO,
+  ProductCategoryTreeNodeDTO,
+  ProductCollectionDTO,
   ProductDTO,
+  ProductFieldSource,
+  ProductFilterDTO,
+  ProductGroupingRuleDTO,
+  ProductGroupingsDTO,
   ProductImageDTO,
+  ProductImportDTO,
+  ProductImportOutcomeDTO,
+  ProductImportPlanDTO,
+  ProductImportReferencesDTO,
+  ProductImportSettingsDTO,
+  ProductMetafieldDefinitionDTO,
+  ProductMetafieldDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
   ProductOptionValueDTO,
   ProductOptionWithValuesDTO,
   ProductScopedOptionDTO,
+  ProductTagDTO,
+  ProductTypeDTO,
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
   VariantReassignmentDTO,
 } from '../../../core/types/product/common.js'
 import type {
+  CreateProductCategoryDTO,
+  CreateProductCollectionDTO,
   CreateProductDTO,
   CreateProductImageDTO,
+  CreateProductImportDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTagDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
+  ProductGroupingIdsDTO,
+  ProductMetafieldValuesDTO,
+  SetCategoryProductsDTO,
+  SetCollectionProductsDTO,
   SetProductOptionsDTO,
+  SyncRuleMembershipsDTO,
+  UpdateProductCategoryDTO,
+  UpdateProductCollectionDTO,
   UpdateProductDTO,
   UpdateProductOptionDTO,
+  UpdateProductTagDTO,
+  UpdateProductTypeDTO,
   UpdateProductVariantDTO,
   UpsertProductImageInput,
+  UpsertProductMetafieldDefinitionDTO,
   UpsertProductVariantDTO,
   VariantImageInput,
 } from '../../../core/types/product/mutations.js'
 import type { IProductModuleService } from '../../../core/types/product/service.js'
+import { OPTION_FILTER_PREFIX } from '../../../core/utils/product-filter-key.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
+import type { ProductCategoryRepository } from '../repositories/product-category.js'
+import type { ProductCollectionRepository } from '../repositories/product-collection.js'
 import type { ProductImageRepository } from '../repositories/product-image.js'
+import type { ProductImportRepository } from '../repositories/product-import.js'
+import type { ProductMetafieldRepository } from '../repositories/product-metafield.js'
+import type { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
+import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
+import type { ProductProductTagRepository } from '../repositories/product-product-tag.js'
+import type { ProductTagRepository } from '../repositories/product-tag.js'
+import type { ProductTypeRepository } from '../repositories/product-type.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 import type { ProductVariantImageRepository } from '../repositories/product-variant-image.js'
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
 import { combinationLabel } from '../utils/option-combinations.js'
+import { separateGroupingIds } from '../utils/product-grouping-ids.js'
 import type { VariantReconciliationPlan, VariantRemovalReason } from '../utils/reconcile-variants.js'
+import { ProductCatalogStructureService } from './product-catalog-structure-service.js'
+import { ProductCategoryService } from './product-category-service.js'
+import { ProductGroupingService } from './product-grouping-service.js'
+import { ProductImportService } from './product-import-service.js'
 import { ProductOptionService } from './product-option-service.js'
+import { ProductRuleMembershipService } from './product-rule-membership-service.js'
 
 /**
  * Everything the module is built from. The five option repositories are not used here — they are
@@ -72,6 +129,16 @@ type InjectedDependencies = {
   productImageRepository: ProductImageRepository
   productVariantImageRepository: ProductVariantImageRepository
   productVariantOptionRepository: ProductVariantOptionRepository
+  productCategoryRepository: ProductCategoryRepository
+  productProductCategoryRepository: ProductProductCategoryRepository
+  productCollectionRepository: ProductCollectionRepository
+  productProductCollectionRepository: ProductProductCollectionRepository
+  productTagRepository: ProductTagRepository
+  productProductTagRepository: ProductProductTagRepository
+  productTypeRepository: ProductTypeRepository
+  productImportRepository: ProductImportRepository
+  productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
+  productMetafieldRepository: ProductMetafieldRepository
   withTransaction: WithTransaction
   logger: Logger
 }
@@ -89,8 +156,24 @@ export class ProductModuleService implements IProductModuleService {
   private productVariantRepository: ProductVariantRepository
   private productImageRepository: ProductImageRepository
   private productVariantImageRepository: ProductVariantImageRepository
+  private productProductCategoryRepository: ProductProductCategoryRepository
+  private productProductCollectionRepository: ProductProductCollectionRepository
+  private productProductTagRepository: ProductProductTagRepository
+  private productTypeRepository: ProductTypeRepository
+  private productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
+  private productMetafieldRepository: ProductMetafieldRepository
   /** Private on purpose: not registered anywhere, not exported, not resolvable. */
   private productOptionService: ProductOptionService
+  /** Private for the same reason. */
+  private productCategoryService: ProductCategoryService
+  /** Private for the same reason. */
+  private productGroupingService: ProductGroupingService
+  /** Private for the same reason. */
+  private productImportService: ProductImportService
+  /** Private for the same reason. */
+  private productRuleMembershipService: ProductRuleMembershipService
+  /** Private for the same reason. */
+  private productCatalogStructureService: ProductCatalogStructureService
   private withTransaction: WithTransaction
   private logger: Logger
 
@@ -99,11 +182,26 @@ export class ProductModuleService implements IProductModuleService {
     this.productVariantRepository = dependencies.productVariantRepository
     this.productImageRepository = dependencies.productImageRepository
     this.productVariantImageRepository = dependencies.productVariantImageRepository
+    this.productProductCategoryRepository = dependencies.productProductCategoryRepository
+    this.productProductCollectionRepository = dependencies.productProductCollectionRepository
+    this.productProductTagRepository = dependencies.productProductTagRepository
+    this.productTypeRepository = dependencies.productTypeRepository
+    this.productMetafieldDefinitionRepository = dependencies.productMetafieldDefinitionRepository
+    this.productMetafieldRepository = dependencies.productMetafieldRepository
     this.withTransaction = dependencies.withTransaction
     this.logger = dependencies.logger
     // Built from the same cradle this was, so it shares the module's repositories and transaction
     // helper rather than opening its own.
     this.productOptionService = new ProductOptionService(dependencies)
+    this.productCategoryService = new ProductCategoryService(dependencies)
+    this.productGroupingService = new ProductGroupingService(dependencies)
+    this.productImportService = new ProductImportService(dependencies)
+    this.productRuleMembershipService = new ProductRuleMembershipService(dependencies)
+    this.productCatalogStructureService = new ProductCatalogStructureService(dependencies, {
+      productCategoryService: this.productCategoryService,
+      productGroupingService: this.productGroupingService,
+      productRuleMembershipService: this.productRuleMembershipService,
+    })
   }
 
   // ── Products ──────────────────────────────────────────────────────────
@@ -130,37 +228,55 @@ export class ProductModuleService implements IProductModuleService {
 
   async createProducts(data: CreateProductDTO[], context?: Context): Promise<ProductDTO[]> {
     this.logger.debug(`Creating ${data.length} product(s)`)
-    return this.withTransaction(context, async (ctx) => {
+    const writes = data.map((input) => separateGroupingIds(input))
+    return this.withTransaction(context, async (transactionContext) => {
       const products = await this.productRepository.createMany(
-        data.map(({ images, ...product }) => ({
+        writes.map(({ fields: { images, metafields: _metafields, ...product } }) => ({
           ...product,
           handle: product.handle ?? toHandle(product.title),
           thumbnail: this.resolveThumbnail(product, images),
         })),
-        ctx,
+        transactionContext,
       )
 
       await Promise.all(
-        products.map((product, index) => {
-          const images = data[index]?.images
-          return images ? this.replaceProductImages(product.id, images, ctx) : Promise.resolve()
+        products.flatMap((product, index) => {
+          const write = writes[index]
+          if (!write) return []
+          const { images, metafields } = write.fields
+          return [
+            images ? this.replaceProductImages(product.id, images, transactionContext) : undefined,
+            this.replaceProductGroupings([product.id], write.groupingIds, transactionContext),
+            metafields ? this.writeProductMetafields([product.id], metafields, transactionContext) : undefined,
+          ]
         }),
       )
+      await this.syncRuleMemberships({ productIds: products.map((product) => product.id) }, transactionContext)
 
       return products
     })
   }
 
   async updateProducts(productIds: string[], data: UpdateProductDTO, context?: Context): Promise<ProductDTO[]> {
-    const { images, ...productData } = data
-    return this.withTransaction(context, async (ctx) => {
+    const {
+      fields: { images, metafields, ...productData },
+      groupingIds,
+    } = separateGroupingIds(data)
+    return this.withTransaction(context, async (transactionContext) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const products = Object.values(changes).some((value) => value !== undefined)
-        ? await this.productRepository.updateMany(productIds, changes, ctx)
-        : await this.productRepository.find({ id: productIds }, undefined, ctx)
+        ? await this.productRepository.updateMany(productIds, changes, transactionContext)
+        : await this.productRepository.find({ id: productIds }, undefined, transactionContext)
 
       if (images) {
-        await Promise.all(productIds.map((productId) => this.replaceProductImages(productId, images, ctx)))
+        await Promise.all(
+          productIds.map((productId) => this.replaceProductImages(productId, images, transactionContext)),
+        )
+      }
+      await this.replaceProductGroupings(productIds, groupingIds, transactionContext)
+      if (metafields) await this.writeProductMetafields(productIds, metafields, transactionContext)
+      if (this.writesGroupings(groupingIds, metafields, productData.brand)) {
+        await this.syncRuleMemberships({ productIds }, transactionContext)
       }
 
       return products
@@ -168,30 +284,44 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   async createProduct(data: CreateProductDTO, context?: Context): Promise<ProductDTO> {
-    return this.withTransaction(context, async (ctx) => {
-      const { images, ...product } = data
+    const {
+      fields: { images, metafields, ...product },
+      groupingIds,
+    } = separateGroupingIds(data)
+    return this.withTransaction(context, async (transactionContext) => {
       const created = await this.productRepository.create(
         {
           ...product,
           handle: product.handle ?? toHandle(product.title),
           thumbnail: this.resolveThumbnail(product, images),
         },
-        ctx,
+        transactionContext,
       )
-      if (images) await this.replaceProductImages(created.id, images, ctx)
+      if (images) await this.replaceProductImages(created.id, images, transactionContext)
+      await this.replaceProductGroupings([created.id], groupingIds, transactionContext)
+      if (metafields) await this.writeProductMetafields([created.id], metafields, transactionContext)
+      await this.syncRuleMemberships({ productIds: [created.id] }, transactionContext)
       return created
     })
   }
 
   async updateProduct(productId: string, data: UpdateProductDTO, context?: Context): Promise<ProductDTO> {
-    const { images, ...productData } = data
-    return this.withTransaction(context, async (ctx) => {
+    const {
+      fields: { images, metafields, ...productData },
+      groupingIds,
+    } = separateGroupingIds(data)
+    return this.withTransaction(context, async (transactionContext) => {
       const changes = { ...productData, thumbnail: this.resolveThumbnail(productData, images) }
       const product = Object.values(changes).some((value) => value !== undefined)
-        ? await this.productRepository.update(productId, changes, ctx)
-        : await this.productRepository.findByIdOrFail(productId, undefined, ctx)
+        ? await this.productRepository.update(productId, changes, transactionContext)
+        : await this.productRepository.findByIdOrFail(productId, undefined, transactionContext)
 
-      if (images) await this.replaceProductImages(productId, images, ctx)
+      if (images) await this.replaceProductImages(productId, images, transactionContext)
+      await this.replaceProductGroupings([productId], groupingIds, transactionContext)
+      if (metafields) await this.writeProductMetafields([productId], metafields, transactionContext)
+      if (this.writesGroupings(groupingIds, metafields, productData.brand)) {
+        await this.syncRuleMemberships({ productIds: [productId] }, transactionContext)
+      }
 
       return product
     })
@@ -674,6 +804,297 @@ export class ProductModuleService implements IProductModuleService {
     return this.productOptionService.listAndCountProductsForOption(optionId, filters, config, context)
   }
 
+  // ── Categories ────────────────────────────────────────────────────────
+
+  async listCategoryTree(filters?: ListCategoryTreeDTO, context?: Context): Promise<ProductCategoryTreeNodeDTO[]> {
+    return this.productCategoryService.listCategoryTree(filters, context)
+  }
+
+  async listCategories(filters?: FilterableProductCategoryProps, context?: Context): Promise<ProductCategoryDTO[]> {
+    return this.productCategoryService.listCategories(filters, context)
+  }
+
+  async retrieveCategory(categoryId: string, context?: Context): Promise<ProductCategoryDTO> {
+    return this.productCategoryService.retrieveCategory(categoryId, context)
+  }
+
+  async createCategory(data: CreateProductCategoryDTO, context?: Context): Promise<ProductCategoryDTO> {
+    return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
+      const category = await this.productCategoryService.createCategory(data, transactionContext)
+      if (category.rule) {
+        await this.syncRuleMemberships({ categoryIds: [category.id], collectionIds: [] }, transactionContext)
+      }
+      return category
+    })
+  }
+
+  async updateCategory(
+    categoryId: string,
+    data: UpdateProductCategoryDTO,
+    context?: Context,
+  ): Promise<ProductCategoryDTO> {
+    return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
+      const category = await this.productCategoryService.updateCategory(categoryId, data, transactionContext)
+      if (data.rule !== undefined) {
+        await this.syncRuleMemberships({ categoryIds: [categoryId], collectionIds: [] }, transactionContext)
+      }
+      return category
+    })
+  }
+
+  async softDeleteCategories(categoryIds: string[], context?: Context): Promise<void> {
+    return this.productCategoryService.softDeleteCategories(categoryIds, context)
+  }
+
+  async setCategoryProducts(
+    categoryId: string,
+    data: SetCategoryProductsDTO,
+    context?: Context,
+  ): Promise<ProductCategoryDTO> {
+    return this.productCategoryService.setCategoryProducts(categoryId, data, context)
+  }
+
+  // ── Collections ───────────────────────────────────────────────────────
+
+  async listAndCountCollections(
+    filters?: FilterableProductCollectionProps,
+    config?: FindConfig<ProductCollectionDTO>,
+    context?: Context,
+  ): Promise<[ProductCollectionDTO[], number]> {
+    return this.productGroupingService.listAndCountCollections(filters, config, context)
+  }
+
+  async retrieveCollection(collectionId: string, context?: Context): Promise<ProductCollectionDTO> {
+    return this.productGroupingService.retrieveCollection(collectionId, context)
+  }
+
+  async createCollection(data: CreateProductCollectionDTO, context?: Context): Promise<ProductCollectionDTO> {
+    return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
+      const collection = await this.productGroupingService.createCollection(data, transactionContext)
+      if (collection.rule) {
+        await this.syncRuleMemberships({ categoryIds: [], collectionIds: [collection.id] }, transactionContext)
+      }
+      return collection
+    })
+  }
+
+  async updateCollection(
+    collectionId: string,
+    data: UpdateProductCollectionDTO,
+    context?: Context,
+  ): Promise<ProductCollectionDTO> {
+    return this.withTransaction(context, async (transactionContext) => {
+      if (data.rule) await this.assertRuleKeysDefined(data.rule, transactionContext)
+      const collection = await this.productGroupingService.updateCollection(collectionId, data, transactionContext)
+      if (data.rule !== undefined) {
+        await this.syncRuleMemberships({ categoryIds: [], collectionIds: [collectionId] }, transactionContext)
+      }
+      return collection
+    })
+  }
+
+  async softDeleteCollections(collectionIds: string[], context?: Context): Promise<void> {
+    return this.productGroupingService.softDeleteCollections(collectionIds, context)
+  }
+
+  async setCollectionProducts(
+    collectionId: string,
+    data: SetCollectionProductsDTO,
+    context?: Context,
+  ): Promise<ProductCollectionDTO> {
+    return this.productGroupingService.setCollectionProducts(collectionId, data, context)
+  }
+
+  // ── Product Types ─────────────────────────────────────────────────────
+
+  async listAndCountTypes(
+    filters?: FilterableProductTypeProps,
+    config?: FindConfig<ProductTypeDTO>,
+    context?: Context,
+  ): Promise<[ProductTypeDTO[], number]> {
+    return this.productGroupingService.listAndCountTypes(filters, config, context)
+  }
+
+  async retrieveType(typeId: string, context?: Context): Promise<ProductTypeDTO> {
+    return this.productGroupingService.retrieveType(typeId, context)
+  }
+
+  async createType(data: CreateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
+    return this.productGroupingService.createType(data, context)
+  }
+
+  async updateType(typeId: string, data: UpdateProductTypeDTO, context?: Context): Promise<ProductTypeDTO> {
+    return this.productGroupingService.updateType(typeId, data, context)
+  }
+
+  async softDeleteTypes(typeIds: string[], context?: Context): Promise<void> {
+    return this.productGroupingService.softDeleteTypes(typeIds, context)
+  }
+
+  // ── Product Tags ──────────────────────────────────────────────────────
+
+  async listAndCountTags(
+    filters?: FilterableProductTagProps,
+    config?: FindConfig<ProductTagDTO>,
+    context?: Context,
+  ): Promise<[ProductTagDTO[], number]> {
+    return this.productGroupingService.listAndCountTags(filters, config, context)
+  }
+
+  async retrieveTag(tagId: string, context?: Context): Promise<ProductTagDTO> {
+    return this.productGroupingService.retrieveTag(tagId, context)
+  }
+
+  async createTag(data: CreateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
+    return this.productGroupingService.createTag(data, context)
+  }
+
+  async updateTag(tagId: string, data: UpdateProductTagDTO, context?: Context): Promise<ProductTagDTO> {
+    return this.productGroupingService.updateTag(tagId, data, context)
+  }
+
+  async softDeleteTags(tagIds: string[], context?: Context): Promise<void> {
+    return this.productGroupingService.softDeleteTags(tagIds, context)
+  }
+
+  async listProductTagValues(
+    filters: Omit<FilterableProductProps, 'tagId' | 'tagValue'>,
+    context?: Context,
+  ): Promise<string[]> {
+    return this.productRepository.findTagValues(filters, context)
+  }
+
+  // ── Metafields ────────────────────────────────────────────────────────
+
+  async listProductFilters(filters: FilterableProductProps, context?: Context): Promise<ProductFilterDTO[]> {
+    const [definitions, options] = await Promise.all([
+      this.productMetafieldDefinitionRepository.find(
+        { filterable: true },
+        { order: { rank: 'ASC', key: 'ASC' } },
+        context,
+      ),
+      this.productRepository.findOfferedOptions(filters, context),
+    ])
+    const metafieldFilters = definitions.map(async (definition) => ({
+      key: definition.key,
+      name: definition.name,
+      values: await this.productRepository.findMetafieldValueCounts(definition, filters, context),
+    }))
+    const optionFilters = options.map(async (option) => ({
+      key: `${OPTION_FILTER_PREFIX}${option.title}`,
+      name: option.title,
+      values: await this.productRepository.findOptionValueCounts(option, filters, context),
+    }))
+    return Promise.all([...metafieldFilters, ...optionFilters])
+  }
+
+  async listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]> {
+    const [definition] = await this.productMetafieldDefinitionRepository.find({ key }, undefined, context)
+    if (!definition) return []
+    // The facet query with no selection: every count is the value's share of the scope, so none is 0.
+    const values = await this.productRepository.findMetafieldValueCounts(definition, filters, context)
+    return values.map(({ value }) => value)
+  }
+
+  async listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]> {
+    return this.productMetafieldDefinitionRepository.find(undefined, { order: { rank: 'ASC', key: 'ASC' } }, context)
+  }
+
+  async upsertMetafieldDefinitions(
+    data: UpsertProductMetafieldDefinitionDTO[],
+    context?: Context,
+  ): Promise<ProductMetafieldDefinitionDTO[]> {
+    return this.withTransaction(context, (transactionContext) =>
+      this.productMetafieldDefinitionRepository.upsertByKey(data, transactionContext),
+    )
+  }
+
+  async retrieveProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]> {
+    return this.productMetafieldRepository.findProductMetafields(productId, context)
+  }
+
+  // ── Groupings ─────────────────────────────────────────────────────────
+
+  async syncRuleMemberships(scope?: SyncRuleMembershipsDTO, context?: Context): Promise<void> {
+    return this.productRuleMembershipService.syncRuleMemberships(scope, context)
+  }
+
+  // ── Structure files ───────────────────────────────────────────────────
+
+  async planCatalogStructure(
+    source: AsyncIterable<Uint8Array | string>,
+    context?: Context,
+  ): Promise<CatalogStructurePlanDTO> {
+    return this.productCatalogStructureService.planCatalogStructure(source, context)
+  }
+
+  async applyCatalogStructure(structure: CatalogStructureDTO, context?: Context): Promise<CatalogStructureChangesDTO> {
+    return this.productCatalogStructureService.applyCatalogStructure(structure, context)
+  }
+
+  async retrieveProductGroupings(productId: string, context?: Context): Promise<ProductGroupingsDTO> {
+    const groupingsOf = await this.readGroupings([productId], context)
+    return groupingsOf(productId)
+  }
+
+  async listProductGroupings(productIds: string[], context?: Context): Promise<Record<string, ProductGroupingsDTO>> {
+    const unique = [...new Set(productIds)]
+    const groupingsOf = await this.readGroupings(unique, context)
+    return Object.fromEntries(unique.map((productId) => [productId, groupingsOf(productId)]))
+  }
+
+  // ── Imports ───────────────────────────────────────────────────────────
+
+  async planProductImport(
+    source: AsyncIterable<Uint8Array | string>,
+    settings: ProductImportSettingsDTO,
+    context?: Context,
+  ): Promise<ProductImportPlanDTO> {
+    return this.productImportService.planProductImport(source, settings, context)
+  }
+
+  async createProductImport(data: CreateProductImportDTO, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.createProductImport(data, context)
+  }
+
+  async retrieveProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.retrieveProductImport(importId, context)
+  }
+
+  async confirmProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.confirmProductImport(importId, context)
+  }
+
+  async cancelProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.cancelProductImport(importId, context)
+  }
+
+  async expireProductImports(context?: Context): Promise<ProductImportDTO[]> {
+    return this.productImportService.expireProductImports(context)
+  }
+
+  async recordProductImportOutcome(
+    importId: string,
+    outcome: ProductImportOutcomeDTO,
+    context?: Context,
+  ): Promise<void> {
+    return this.productImportService.recordProductImportOutcome(importId, outcome, context)
+  }
+
+  async finishProductImport(importId: string, context?: Context): Promise<ProductImportDTO> {
+    return this.productImportService.finishProductImport(importId, context)
+  }
+
+  async resolveProductImportReferences(
+    product: ImportedProductDTO,
+    context?: Context,
+  ): Promise<ProductImportReferencesDTO> {
+    return this.productImportService.resolveProductImportReferences(product, context)
+  }
+
   // ── Variant options ───────────────────────────────────────────────────
 
   async listProductVariantOptions(
@@ -837,6 +1258,113 @@ export class ProductModuleService implements IProductModuleService {
   ): string | null | undefined {
     if (!images) return data.thumbnail
     return data.thumbnail ?? images[0]?.url ?? null
+  }
+
+  /**
+   * The repository joins no relations, so every embed of a product's groupings goes through here:
+   * one query per relation over the whole id list, never one per product. The answer is complete
+   * for every id asked about — a product in nothing reads `null` and empty lists.
+   */
+  private async readGroupings(
+    productIds: string[],
+    context?: Context,
+  ): Promise<(productId: string) => ProductGroupingsDTO> {
+    const [types, categories, collections, tags] = await Promise.all([
+      this.productTypeRepository.findTypesOfProducts(productIds, context),
+      this.productProductCategoryRepository.findGroupingsOfProducts(productIds, context),
+      this.productProductCollectionRepository.findGroupingsOfProducts(productIds, context),
+      this.productProductTagRepository.findGroupingsOfProducts(productIds, context),
+    ])
+    return (productId) => ({
+      type: types.get(productId) ?? null,
+      categories: categories.get(productId) ?? [],
+      collections: collections.get(productId) ?? [],
+      tags: tags.get(productId) ?? [],
+    })
+  }
+
+  /**
+   * Whether a product write set its metafields or brand, which rules read, or its Categories or
+   * Collections, which a ruled one puts back as its rule says.
+   */
+  private writesGroupings(
+    { categoryIds, collectionIds }: ProductGroupingIdsDTO,
+    metafields: ProductMetafieldValuesDTO | undefined,
+    brand: string | null | undefined,
+  ): boolean {
+    return categoryIds !== undefined || collectionIds !== undefined || metafields !== undefined || brand !== undefined
+  }
+
+  /** Each key named replaces that metafield's values on every product; a key with no definition is refused. */
+  private async writeProductMetafields(
+    productIds: string[],
+    metafields: ProductMetafieldValuesDTO,
+    context: Context,
+  ): Promise<void> {
+    const definitionIdOf = await this.definitionIdsOf(Object.keys(metafields), context, 'metafield')
+    const valuesByDefinitionId = new Map(
+      Object.entries(metafields).flatMap(([key, values]) => {
+        const definitionId = definitionIdOf.get(key)
+        return definitionId ? [[definitionId, values] as const] : []
+      }),
+    )
+    await Promise.all(
+      productIds.map((productId) =>
+        this.productMetafieldRepository.setProductMetafields(productId, valuesByDefinitionId, context),
+      ),
+    )
+  }
+
+  /** A rule may only name metafields that are defined: a key nothing defines could never match. */
+  private async assertRuleKeysDefined(rule: ProductGroupingRuleDTO, context: Context): Promise<void> {
+    await this.definitionIdsOf(Object.keys(rule), context)
+  }
+
+  /**
+   * The definition id of each key, refusing with `INVALID_DATA` the keys no live definition has — of
+   * `source` when given: the vendor field holds no metafield values, a product's `brand` is its value.
+   */
+  private async definitionIdsOf(
+    keys: string[],
+    context: Context,
+    source?: ProductFieldSource,
+  ): Promise<Map<string, string>> {
+    if (keys.length === 0) return new Map()
+    const definitions = await this.productMetafieldDefinitionRepository.find(
+      { key: keys, ...(source ? { source } : {}) },
+      undefined,
+      context,
+    )
+    const idOf = new Map(definitions.map((definition) => [definition.key, definition.id]))
+    const unknown = keys.filter((key) => !idOf.has(key))
+    if (unknown.length > 0) {
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: i18n.t('No metafield is defined with the key {keys}. Declare it under campos in the structure file.'),
+        values: { keys: unknown.join(', ') },
+      })
+    }
+    return idOf
+  }
+
+  /** Each grouping the write names replaces that grouping's whole set on every product; absent ones are left alone. */
+  private async replaceProductGroupings(
+    productIds: string[],
+    { categoryIds, collectionIds, tagIds }: ProductGroupingIdsDTO,
+    context: Context,
+  ): Promise<void> {
+    const pivots = [
+      [this.productProductCategoryRepository, categoryIds],
+      [this.productProductCollectionRepository, collectionIds],
+      [this.productProductTagRepository, tagIds],
+    ] as const
+    await Promise.all(
+      pivots.flatMap(([repository, groupingIds]) =>
+        groupingIds
+          ? productIds.map((productId) => repository.replaceGroupingsOfProduct(productId, groupingIds, context))
+          : [],
+      ),
+    )
   }
 
   /**

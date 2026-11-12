@@ -247,8 +247,7 @@ job_test() { pnpm --filter backend run test:gate; }
 # drawer says a change will destroy. No database and no browser, so it runs alongside the rest.
 # job_admin() { pnpm --filter admin run test; }
 
-# The store's two fast levels: pure logic in node, and components rendered in a real Chromium via
-# Vitest Browser Mode. The browser project is in the gate rather than left to Playwright because it
+# The store's components, rendered in a real Chromium via Vitest Browser Mode. The browser project is in the gate rather than left to Playwright because it
 # needs no server, no database and no fixtures — it mounts a component with props — so it costs the
 # gate ~3s and catches the render rules that used to be asserted through a stubbed API. It is the
 # only job here that needs a browser binary; the hint below is for a checkout that has not installed
@@ -323,7 +322,7 @@ label_of() {
     test) echo "Backend API tests" ;;
     # admin) echo "Admin unit tests" ;;
     schemas) echo "Request-schema bound tests" ;;
-    store) echo "Store unit + component tests" ;;
+    store) echo "Store component tests" ;;
     packages) echo "Shared package unit tests (utils)" ;;
     translations) echo "Translations (extracted, compiled, translated)" ;;
     workerd) echo "The Worker boots and serves on workerd" ;;

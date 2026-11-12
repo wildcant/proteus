@@ -17,10 +17,21 @@ import {
   listProducts,
   updateProduct,
 } from '#/api/generated/products/products'
+import { listEveryPage } from '#/lib/list-every-page'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-const productKeys = queryKeysFactory<'products', ListProductsParams>('products')
+/** Exported so a write elsewhere that changes what a product embeds can invalidate it. */
+export const productKeys = queryKeysFactory<'products', ListProductsParams>('products')
+
+/**
+ * The ids of the products in one hand-picked group, keyed by the group's filter. Its own factory:
+ * the cached value is an id list, not a page.
+ */
+export const productIdKeys = queryKeysFactory<'productIds', ProductGroupFilter>('productIds')
+
+/** The groups whose members are picked by hand, and so are listed for the product picker to pre-check. */
+export type ProductGroupFilter = { categoryId: string } | { collectionId: string }
 
 export const productsListQueryOptions = (params?: ListProductsParams) =>
   queryOptions({
@@ -35,7 +46,23 @@ export const productQueryOptions = (id: string) =>
     queryFn: () => getProduct(id),
   })
 
+/**
+ * Every product in a group, as ids — what the product picker pre-checks. For a Category, only its
+ * direct members.
+ */
+export const productIdsQueryOptions = (filter: ProductGroupFilter) =>
+  queryOptions({
+    queryKey: productIdKeys.list(filter),
+    queryFn: () =>
+      listEveryPage(
+        (range) => listProducts({ ...filter, ...range }),
+        (page) => page.products.map((product) => product.id),
+      ),
+  })
+
 export const useProducts = (params?: ListProductsParams) => useQuery(productsListQueryOptions(params))
+
+export const useSuspenseProductIds = (filter: ProductGroupFilter) => useSuspenseQuery(productIdsQueryOptions(filter))
 
 export const useSuspenseProduct = (id: string) => useSuspenseQuery(productQueryOptions(id))
 
@@ -49,6 +76,8 @@ export const useCreateProduct = (
     mutationFn: (data: AdminCreateProduct) => createProduct(data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      // The new product may already sit in Categories and Collections.
+      queryClient.invalidateQueries({ queryKey: productIdKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {
@@ -71,6 +100,8 @@ export const useUpdateProduct = (
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: productKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: productKeys.lists() })
+      // `categoryIds` and `collectionIds` may have moved the product between groupings.
+      queryClient.invalidateQueries({ queryKey: productIdKeys.all })
       onSuccess?.(...args)
     },
     onError: (...args) => {

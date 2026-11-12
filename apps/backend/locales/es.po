@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:121
+#: src/routes.ts:143
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
@@ -59,6 +59,16 @@ msgstr "La tienda no vende en \"{currencyCode}\". No tiene monedas configuradas.
 #: src/workflows/region/steps/assign-countries-to-region.ts:53
 msgid "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it from that region first."
 msgstr "\"{displayName}\" ya está asignado a la región \"{regionId}\". Primero quítalo de esa región."
+
+#. js-lingui-explicit-id
+#: src/workflows/product/apply-catalog-structure.ts:43
+msgid "The structure file has errors. Preview it to see them, fix them and upload it again."
+msgstr "El archivo de estructura tiene errores. Previsualízalo para verlos, corrígelos y vuelve a subirlo."
+
+#. js-lingui-explicit-id
+#: src/workflows/product/import-product.ts:297
+msgid "The image \"{url}\" could not be downloaded."
+msgstr "No se pudo descargar la imagen \"{url}\"."
 
 #. js-lingui-explicit-id
 #: src/workflows/product/update-product-variant.ts:142
@@ -202,22 +212,22 @@ msgid "Variant(s) not found: {missing}"
 msgstr "Variante(s) no encontrada(s): {missing}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:122
+#: src/workflows/cart/add-to-cart.ts:126
 msgid "Variant \"{variantId}\" has no product"
 msgstr "La variante \"{variantId}\" no tiene producto"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:132
+#: src/workflows/cart/add-to-cart.ts:136
 msgid "Product \"{productId}\" is not available for sale"
 msgstr "El producto \"{productId}\" no está disponible para la venta"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:141
+#: src/workflows/cart/add-to-cart.ts:145
 msgid "Variant \"{variantId}\" has no price in {currencyCode}"
 msgstr "La variante \"{variantId}\" no tiene precio en {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:225
+#: src/workflows/cart/add-to-cart.ts:230
 msgid "Not enough stock to add the requested quantity"
 msgstr "No hay stock suficiente para agregar la cantidad que pediste"
 
@@ -322,7 +332,7 @@ msgid "Customer with id \"{customerId}\" not found"
 msgstr "No se encontró el cliente con id \"{customerId}\""
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:31
+#: src/api/store/middlewares.ts:36
 #: src/workflows/cart/update-cart.ts:139
 msgid "No region sells to country \"{countryCode}\""
 msgstr "Ninguna región vende al país \"{countryCode}\""
@@ -568,19 +578,59 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "IDs de ubicación de inventario desconocidos: {ids}"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:245
+#: src/modules/product/services/product-category-service.ts:133
+msgid "A category with subcategories cannot be deleted. Delete or move its subcategories first."
+msgstr "Una categoría con subcategorías no se puede eliminar. Elimina o mueve primero sus subcategorías."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:146
+msgid "A category cannot be moved under itself or one of its subcategories"
+msgstr "Una categoría no puede moverse dentro de sí misma ni de una de sus subcategorías"
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:188
+msgid "This category's products follow its rule. Change the rule or the products' metafields."
+msgstr "Los productos de esta categoría siguen su regla. Cambia la regla o los metacampos de los productos."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-grouping-service.ts:132
+msgid "This collection's products follow its rule. Change the rule or the products' metafields."
+msgstr "Los productos de esta colección siguen su regla. Cambia la regla o los metacampos de los productos."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-import-service.ts:150
+msgid "This import has errors. Fix the file and upload it again."
+msgstr "Esta importación tiene errores. Corrige el archivo y súbelo de nuevo."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-import-service.ts:156
+msgid "This import has expired. Upload the file again."
+msgstr "Esta importación ha caducado. Sube el archivo de nuevo."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-import-service.ts:289
+msgid "Only an import waiting in preview can be confirmed or canceled."
+msgstr "Solo se puede confirmar o cancelar una importación en vista previa."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:375
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:324
+#: src/modules/product/services/product-module-service.ts:454
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:823
+#: src/modules/product/services/product-module-service.ts:1244
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:1343
+msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
+msgstr "No hay ningún metacampo definido con la clave {keys}. Decláralo en campos del archivo de estructura."
 
 #. js-lingui-explicit-id
 #: src/modules/product/services/product-option-service.ts:216
@@ -976,6 +1026,8 @@ msgid "Unauthorized: registration required"
 msgstr "No autorizado: se requiere registro"
 
 #. js-lingui-explicit-id
+#: src/api/admin/product-imports/[id]/confirm/route.ts:23
+#: src/api/admin/product-imports/route.ts:15
 #: src/framework/http/middlewares/authorize.ts:27
 #: src/framework/http/middlewares/authorize.ts:37
 msgid "Insufficient permissions"
@@ -1072,13 +1124,13 @@ msgid "This authentication provider does not support validateCallback"
 msgstr "Este método de acceso no permite validar la respuesta del proveedor"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:128
-#: src/core/utils/base-repository.ts:195
+#: src/core/utils/base-repository.ts:139
+#: src/core/utils/base-repository.ts:206
 msgid "Entity with id \"{id}\" not found"
 msgstr "No se encontró la entidad con id \"{id}\""
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:168
+#: src/core/utils/base-repository.ts:179
 msgid "Expected row to be created"
 msgstr "Se esperaba que se creara la fila"
 
@@ -1173,7 +1225,7 @@ msgid "Verification token TTL must be a positive integer"
 msgstr "El TTL del token de verificación debe ser un entero positivo"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:51
+#: src/api/store/middlewares.ts:56
 msgid "Cannot price this request: no countryCode was given and the store has no default region"
 msgstr "No se puede calcular el precio: no se indicó countryCode y la tienda no tiene región predeterminada"
 
@@ -1182,7 +1234,7 @@ msgstr "No se puede calcular el precio: no se indicó countryCode y la tienda no
 #: src/api/store/customers/me/addresses/route.ts:17
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
-#: src/api/store/middlewares.ts:104
+#: src/api/store/middlewares.ts:160
 #: src/api/store/orders/route.ts:16
 msgid "Not authenticated"
 msgstr "No has iniciado sesión"

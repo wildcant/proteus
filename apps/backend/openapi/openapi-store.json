@@ -23,6 +23,9 @@
       "name": "Carts"
     },
     {
+      "name": "Collections"
+    },
+    {
       "name": "Countries"
     },
     {
@@ -38,7 +41,16 @@
       "name": "Payments"
     },
     {
+      "name": "Product Categories"
+    },
+    {
+      "name": "Product Tags"
+    },
+    {
       "name": "Products"
+    },
+    {
+      "name": "Store"
     }
   ],
   "components": {
@@ -871,6 +883,58 @@
           "cart"
         ]
       },
+      "StoreProductCollectionListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductCollection"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "collections"
+        ]
+      },
+      "StoreProductCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "handle",
+          "thumbnail"
+        ]
+      },
       "StoreCountryListResponse": {
         "type": "object",
         "properties": {
@@ -1297,6 +1361,109 @@
             "type": "boolean"
           }
         }
+      },
+      "StoreNavigationResponse": {
+        "type": "object",
+        "properties": {
+          "navigation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationEntry"
+            }
+          }
+        },
+        "required": [
+          "navigation"
+        ]
+      },
+      "StoreNavigationEntry": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "collection"
+            ]
+          },
+          "handle": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationSection"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "handle",
+          "sections"
+        ]
+      },
+      "StoreNavigationSection": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationLink"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "links"
+        ]
+      },
+      "StoreNavigationLink": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "collection"
+            ]
+          },
+          "handle": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationFilter"
+            }
+          }
+        },
+        "required": [
+          "label",
+          "type",
+          "handle",
+          "filters"
+        ]
+      },
+      "StoreNavigationFilter": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ]
       },
       "StoreOrderListResponse": {
         "type": "object",
@@ -1893,6 +2060,115 @@
           "isDefault"
         ]
       },
+      "StoreProductCategoryTreeResponse": {
+        "type": "object",
+        "properties": {
+          "productCategories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductCategoryTreeNode"
+            }
+          }
+        },
+        "required": [
+          "productCategories"
+        ]
+      },
+      "StoreProductCategoryTreeNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductCategoryTreeNode"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "handle",
+          "children"
+        ]
+      },
+      "StoreProductFilterListResponse": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductFilter"
+            }
+          }
+        },
+        "required": [
+          "filters"
+        ]
+      },
+      "StoreProductFilter": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductFilterValue"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "values"
+        ]
+      },
+      "StoreProductFilterValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "count"
+        ]
+      },
+      "StoreProductTagValueListResponse": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "values"
+        ]
+      },
       "StoreProductListResponse": {
         "type": "object",
         "properties": {
@@ -2025,6 +2301,12 @@
               "string",
               "null"
             ]
+          },
+          "brand": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -2039,7 +2321,8 @@
           "height",
           "width",
           "originCountry",
-          "material"
+          "material",
+          "brand"
         ]
       },
       "StoreProductResponse": {
@@ -3430,6 +3713,85 @@
         }
       }
     },
+    "/store/collections": {
+      "get": {
+        "operationId": "listStoreProductCollections",
+        "summary": "List Collections",
+        "tags": [
+          "Collections"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "handle",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProductCollectionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
     "/store/countries": {
       "get": {
         "operationId": "listStoreCountries",
@@ -3670,6 +4032,57 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/navigation": {
+      "get": {
+        "operationId": "getStoreNavigation",
+        "summary": "Retrieve the store's menu",
+        "description": "The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront.",
+        "tags": [
+          "Store"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreNavigationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           }
         }
       }
@@ -4092,6 +4505,247 @@
         }
       }
     },
+    "/store/product-categories": {
+      "get": {
+        "operationId": "listStoreProductCategoryTree",
+        "summary": "List the Visible Category tree",
+        "tags": [
+          "Product Categories"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProductCategoryTreeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/product-filters": {
+      "get": {
+        "operationId": "listStoreProductFilters",
+        "summary": "List the metafield filters over the products in view, with counts",
+        "tags": [
+          "Products"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "collection",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[^:]+:.+$/s"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[^:]+:.+$/s"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "minPrice",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "maxPrice",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProductFilterListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/store/product-tags": {
+      "get": {
+        "operationId": "listStoreProductTagValues",
+        "summary": "List the Tag values on the products in view",
+        "tags": [
+          "Product Tags"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "collection",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose."
+            },
+            "required": false,
+            "description": "ISO 3166-1 alpha-2, case-insensitive. The market the request is made from; its owning region decides the currency. Naming a country no region sells to is an error, not a fallback — a shopper would otherwise be quoted a currency nobody chose.",
+            "name": "countryCode",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default."
+            },
+            "required": false,
+            "description": "The cart the request is made in the context of. Consulted only when no countryCode is given: the cart's region decides the currency, so prices stay in the market the cart was opened in. A cart that is unknown or has no region falls through to the default.",
+            "name": "cartId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProductTagValueListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
     "/store/products": {
       "get": {
         "operationId": "listStoreProducts",
@@ -4139,6 +4793,88 @@
             },
             "required": false,
             "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "category",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": false,
+            "name": "collection",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[^:]+:.+$/s"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[^:]+:.+$/s"
+                  }
+                }
+              ]
+            },
+            "required": false,
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "minPrice",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "required": false,
+            "name": "maxPrice",
             "in": "query"
           },
           {

@@ -31,7 +31,7 @@ msgstr "{alt} — vista {position} de {count}"
 msgid "{alt} images"
 msgstr "Imágenes de {alt}"
 
-#: src/features/products/components/product-list-header.tsx:63
+#: src/features/products/components/product-list-header.tsx:84
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# producto} other {# productos}}"
 
@@ -64,7 +64,7 @@ msgstr "{total} reservado por tu banco; se cobra cuando se envíe tu pedido"
 msgid "{total} was not charged"
 msgstr "No se cobraron {total}"
 
-#: src/components/footer.tsx:140
+#: src/components/footer.tsx:151
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. Todos los derechos reservados."
 
@@ -84,9 +84,9 @@ msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu com
 msgid "A–Z"
 msgstr "A–Z"
 
-#: src/components/footer.tsx:25
-#: src/components/header/header.tsx:56
-#: src/components/header/side-menu.tsx:20
+#: src/components/footer.tsx:34
+#: src/components/header/header.tsx:64
+#: src/components/header/side-menu.tsx:85
 #: src/features/account/components/account-detail.tsx:21
 #: src/features/orders/components/order-content.tsx:28
 msgid "Account"
@@ -132,8 +132,7 @@ msgstr "Tu libreta de direcciones está vacía"
 msgid "Address options"
 msgstr "Opciones de la dirección"
 
-#: src/components/footer.tsx:21
-#: src/features/products/components/product-list-header.tsx:28
+#: src/routes/_main/index.tsx:21
 msgid "All products"
 msgstr "Todos los productos"
 
@@ -146,6 +145,10 @@ msgstr "¿Ya tienes una cuenta?"
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:116
 msgid "Apartment, suite, etc."
 msgstr "Apartamento, oficina, etc."
+
+#: src/features/products/components/product-filters.tsx:135
+msgid "Apply"
+msgstr "Aplicar"
 
 #: src/features/address/components/address-form.tsx:26
 msgid "Are you sure you want to leave? Your unsaved changes will be lost."
@@ -206,6 +209,10 @@ msgstr "Dirección de facturación"
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:74
 msgid "Billing address same as shipping"
 msgstr "La dirección de facturación es la misma que la de envío"
+
+#: src/features/products/components/category-breadcrumb.tsx:16
+msgid "Breadcrumb"
+msgstr "Ruta de navegación"
 
 #: src/features/cart/components/cart-empty.tsx:20
 #: src/features/products/components/product-error.tsx:27
@@ -269,8 +276,16 @@ msgstr "Elige una nueva contraseña para tu cuenta."
 msgid "City"
 msgstr "Ciudad"
 
+#: src/features/products/components/product-filters.tsx:86
+msgid "Clear all"
+msgstr "Borrar todo"
+
+#: src/features/products/components/product-empty.tsx:45
+msgid "Clear filters"
+msgstr "Borrar filtros"
+
 #: src/components/header/search-form.tsx:74
-#: src/features/products/components/product-empty.tsx:23
+#: src/features/products/components/product-empty.tsx:25
 msgid "Clear search"
 msgstr "Borrar búsqueda"
 
@@ -278,7 +293,7 @@ msgstr "Borrar búsqueda"
 msgid "Close cart"
 msgstr "Cerrar carrito"
 
-#: src/components/header/side-menu.tsx:52
+#: src/components/header/side-menu.tsx:56
 msgid "Close menu"
 msgstr "Cerrar menú"
 
@@ -323,7 +338,7 @@ msgstr "Seguir comprando"
 msgid "Country"
 msgstr "País"
 
-#: src/components/footer.tsx:28
+#: src/components/footer.tsx:37
 #: src/features/auth/components/register-form.tsx:33
 msgid "Create account"
 msgstr "Crear cuenta"
@@ -483,6 +498,14 @@ msgstr "No se pudo actualizar el producto del carrito"
 msgid "Failed to update password"
 msgstr "No pudimos actualizar tu contraseña"
 
+#: src/features/products/components/product-tag-filter.tsx:32
+msgid "Filter by tag"
+msgstr "Filtrar por etiqueta"
+
+#: src/features/products/components/product-filters.tsx:62
+msgid "Filters"
+msgstr "Filtros"
+
 #: src/features/address/components/address-form.tsx:44
 #: src/features/auth/components/register-form.tsx:15
 #: src/features/checkout/components/delivery/shipping-address-form.tsx:32
@@ -501,6 +524,10 @@ msgstr "¿Olvidaste tu contraseña?"
 #: src/routes/_auth/forgot-password.tsx:32
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
+
+#: src/features/products/components/product-filters.tsx:129
+msgid "From"
+msgstr "Desde"
 
 #: src/features/products/components/product-card.tsx:49
 msgid "From {startingPrice}"
@@ -522,11 +549,6 @@ msgstr "Ocultar contraseña"
 msgid "Hold on while we confirm your email."
 msgstr "Espera mientras confirmamos tu correo."
 
-#: src/components/footer.tsx:20
-#: src/components/header/side-menu.tsx:18
-msgid "Home"
-msgstr "Inicio"
-
 #: src/routes/_auth/forgot-password.tsx:21
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "Si existe una cuenta con ese correo, te enviamos un enlace para restablecer tu contraseña."
@@ -543,6 +565,14 @@ msgstr "Enlace no válido"
 #: src/features/cart/components/cart-market-switch.tsx:81
 msgid "It is still priced in {0}"
 msgstr "Sus precios siguen en {0}"
+
+#: src/routes/_main/collections/$handle.tsx:51
+msgid "It may have ended, or no longer be in the store."
+msgstr "Puede que haya terminado o que ya no esté en la tienda."
+
+#: src/routes/_main/categories/$handle.tsx:55
+msgid "It may have moved, or no longer be in the store."
+msgstr "Puede que se haya movido o que ya no esté en la tienda."
 
 #: src/features/products/components/product-error.tsx:24
 msgid "It may not be one we sell here."
@@ -601,7 +631,7 @@ msgstr "Mercado: {marketName}"
 msgid "Material"
 msgstr "Material"
 
-#: src/components/header/side-menu.tsx:46
+#: src/components/header/side-menu.tsx:50
 msgid "Menu"
 msgstr "Menú"
 
@@ -650,11 +680,15 @@ msgstr "No hay problema. Ingresa el correo de tu cuenta y te enviaremos instrucc
 msgid "No products match “{debouncedTerm}”."
 msgstr "Ningún producto coincide con “{debouncedTerm}”."
 
-#: src/features/products/components/product-empty.tsx:20
+#: src/features/products/components/product-empty.tsx:23
 msgid "No products match “{q}”."
 msgstr "Ningún producto coincide con “{q}”."
 
-#: src/features/products/components/product-empty.tsx:28
+#: src/features/products/components/product-empty.tsx:33
+msgid "No products match the chosen filters."
+msgstr "Ningún producto coincide con los filtros elegidos."
+
+#: src/features/products/components/product-empty.tsx:52
 msgid "No products yet."
 msgstr "Aún no hay productos."
 
@@ -666,7 +700,7 @@ msgstr "No tienes tarjetas guardadas"
 msgid "No shipping options available for your address."
 msgstr "No hay opciones de envío disponibles para tu dirección."
 
-#: src/components/header/header.tsx:36
+#: src/components/header/header.tsx:44
 msgid "Open menu"
 msgstr "Abrir menú"
 
@@ -769,7 +803,27 @@ msgstr "En preparación"
 msgid "Previous"
 msgstr "Anterior"
 
-#: src/components/header/side-menu.tsx:19
+#: src/features/products/components/product-filters.tsx:110
+#: src/features/products/components/product-filters.tsx:124
+msgid "Price"
+msgstr "Precio"
+
+#. placeholder {0}: format(minPrice)
+#. placeholder {1}: format(maxPrice)
+#: src/features/products/components/product-filters.tsx:107
+msgid "Price: {0} – {1}"
+msgstr "Precio: {0} – {1}"
+
+#. placeholder {0}: format(minPrice)
+#: src/features/products/components/product-filters.tsx:108
+msgid "Price: from {0}"
+msgstr "Precio: desde {0}"
+
+#. placeholder {0}: format(maxPrice)
+#: src/features/products/components/product-filters.tsx:109
+msgid "Price: up to {0}"
+msgstr "Precio: hasta {0}"
+
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
 msgid "Products"
@@ -809,6 +863,10 @@ msgstr "Eliminar {name}"
 msgid "Remove {name}?"
 msgstr "¿Eliminar {name}?"
 
+#: src/features/products/components/product-tag-filter.tsx:40
+msgid "Remove filter {value}"
+msgstr "Quitar el filtro {value}"
+
 #: src/features/address/components/address-card.tsx:67
 #: src/features/checkout/components/delivery/address-actions.tsx:25
 msgid "Remove this address?"
@@ -835,7 +893,7 @@ msgid "Save this card for next time"
 msgstr "Guardar esta tarjeta para la próxima vez"
 
 #: src/components/header/search-triggers.tsx:47
-#: src/features/products/components/product-list-header.tsx:25
+#: src/features/products/components/product-list-header.tsx:42
 #: src/features/products/components/search-drawer.tsx:39
 msgid "Search"
 msgstr "Búsqueda"
@@ -900,14 +958,22 @@ msgstr "Envío"
 msgid "Shipping method"
 msgstr "Método de envío"
 
-#: src/components/footer.tsx:18
-#: src/features/products/components/product-list-header.tsx:25
+#: src/components/footer.tsx:27
+#: src/features/products/components/product-list-header.tsx:42
 msgid "Shop"
 msgstr "Tienda"
 
-#: src/components/header/nav.tsx:11
+#: src/components/footer.tsx:29
+#: src/components/header/menu.tsx:36
+#: src/features/products/components/category-breadcrumb.tsx:20
+#: src/features/products/components/product-empty.tsx:55
+#: src/features/products/components/product-list-not-found.tsx:20
 msgid "Shop all"
 msgstr "Ver todo"
+
+#: src/components/header/menu.tsx:39
+msgid "Shop all {name}"
+msgstr "Ver todo en {name}"
 
 #: src/features/account/components/orders-panel.tsx:111
 msgid "Shop all products"
@@ -921,7 +987,7 @@ msgstr "Mostrar imagen {position}"
 msgid "Show password"
 msgstr "Mostrar contraseña"
 
-#: src/components/footer.tsx:27
+#: src/components/footer.tsx:36
 #: src/features/auth/components/login-form.tsx:28
 #: src/features/checkout/components/contact/contact-section.tsx:28
 #: src/routes/_auth/login.tsx:43
@@ -1047,6 +1113,10 @@ msgstr "Este producto aún no está disponible para pedir."
 msgid "This verification link is invalid or has expired. Request a new one from your account."
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
 
+#: src/features/products/components/product-filters.tsx:132
+msgid "To"
+msgstr "Hasta"
+
 #: src/features/cart/components/cart-drawer.tsx:106
 #: src/features/checkout/components/checkout-summary.tsx:141
 #: src/features/orders/components/order-summary.tsx:38
@@ -1127,6 +1197,14 @@ msgstr "No pudimos procesar tu pago. Inténtalo de nuevo o usa otra tarjeta."
 #: src/components/not-found.tsx:27
 msgid "We couldn’t find that page"
 msgstr "No encontramos esa página"
+
+#: src/routes/_main/categories/$handle.tsx:54
+msgid "We couldn't find this category"
+msgstr "No encontramos esta categoría"
+
+#: src/routes/_main/collections/$handle.tsx:50
+msgid "We couldn't find this collection"
+msgstr "No encontramos esta colección"
 
 #: src/features/orders/components/order-error.tsx:18
 msgid "We couldn't load this order"

@@ -54,6 +54,8 @@ import {
   generateUpdateFulfillmentDTO,
 } from '../factories/fulfillment-dto.js'
 import { generateAdminCreateOrderFulfillmentBody } from '../factories/http/admin-order.js'
+import { generateAdminCreateProductCategoryBody } from '../factories/http/admin-product-category.js'
+import { generateAdminCreateProductCollectionBody } from '../factories/http/admin-product-collection.js'
 import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
@@ -94,6 +96,7 @@ import {
   generateCreateProductOptionDTO,
   generateCreateProductOptionValueDTO,
   generateCreateProductVariantDTO,
+  generateImportedProductDTO,
   generateSetProductOptionsDTO,
   generateUpdateProductDTO,
   generateUpdateProductVariantDTO,
@@ -166,20 +169,33 @@ import {
 import { listPrices, priceVariants } from '../factories/services/pricing.js'
 import {
   addImageToVariant,
+  createMetafieldDefinitions,
   createProduct,
   createProductOption,
   createProducts,
+  createProductTag,
+  createProductType,
   createProductVariant,
   createProductVariants,
+  deleteProductType,
   listProductImages,
   listProductOptionsForProduct,
   listProducts,
   listProductVariantImages,
   listProductVariants,
   retrieveProductVariant,
+  setProductMetafields,
   setProductOptions,
+  updateProduct,
+  updateProductType,
   updateProductVariant,
 } from '../factories/services/product.js'
+import {
+  createConfirmedProductImport,
+  createProductImport,
+  fileExists,
+  retrieveProductImport,
+} from '../factories/services/product-import.js'
 import { createStockLocation } from '../factories/services/stock-location.js'
 import { generateCreateStockLocationDTO } from '../factories/stock-location-dto.js'
 import { generateCreateUserDTO, generateUpdateUserDTO, generateUserDTO } from '../factories/user-dto.js'
@@ -256,6 +272,8 @@ export type Fixtures = {
   http: {
     admin: {
       createOrderFulfillment: typeof generateAdminCreateOrderFulfillmentBody
+      createProductCategory: typeof generateAdminCreateProductCategoryBody
+      createProductCollection: typeof generateAdminCreateProductCollectionBody
     }
     store: {
       createAddress: typeof generateStoreCreateAddressBody
@@ -296,6 +314,7 @@ export type Fixtures = {
       createPriceSet: typeof generateCreatePriceSetDTO
       createPrice: typeof generateCreatePriceDTO
       createProduct: typeof generateCreateProductDTO
+      importedProduct: typeof generateImportedProductDTO
       createProductOption: typeof generateCreateProductOptionDTO
       createProductOptionValue: typeof generateCreateProductOptionValueDTO
       createProductVariant: typeof generateCreateProductVariantDTO
@@ -365,7 +384,12 @@ export type Fixtures = {
       shippedOrder: typeof shipOrder
       product: typeof createProduct
       products: typeof createProducts
+      productImport: typeof createProductImport
+      confirmedProductImport: typeof createConfirmedProductImport
       productOption: typeof createProductOption
+      productTag: typeof createProductTag
+      metafieldDefinitions: typeof createMetafieldDefinitions
+      productType: typeof createProductType
       productVariant: typeof createProductVariant
       productVariants: typeof createProductVariants
       variantImages: typeof addImageToVariant
@@ -377,6 +401,10 @@ export type Fixtures = {
     update: {
       inventoryLevel: typeof adjustInventoryLevel
       productOptions: typeof setProductOptions
+      productMetafields: typeof setProductMetafields
+      product: typeof updateProduct
+      productType: typeof updateProductType
+      deletedProductType: typeof deleteProductType
       productVariant: typeof updateProductVariant
       authIdentity: typeof updateAuthIdentity
       authVerification: typeof updateAuthVerification
@@ -415,6 +443,8 @@ export type Fixtures = {
       productVariants: typeof listProductVariants
       productVariant: typeof retrieveProductVariant
       productImages: typeof listProductImages
+      productImport: typeof retrieveProductImport
+      fileExists: typeof fileExists
       productOptionsForProduct: typeof listProductOptionsForProduct
       productVariantImages: typeof listProductVariantImages
     }
@@ -476,6 +506,8 @@ export const test = testBase.extend<Fixtures>({
     await use({
       admin: {
         createOrderFulfillment: generateAdminCreateOrderFulfillmentBody,
+        createProductCategory: generateAdminCreateProductCategoryBody,
+        createProductCollection: generateAdminCreateProductCollectionBody,
       },
       store: {
         createAddress: generateStoreCreateAddressBody,
@@ -518,6 +550,7 @@ export const test = testBase.extend<Fixtures>({
         createPriceSet: generateCreatePriceSetDTO,
         createPrice: generateCreatePriceDTO,
         createProduct: generateCreateProductDTO,
+        importedProduct: generateImportedProductDTO,
         createProductOption: generateCreateProductOptionDTO,
         createProductOptionValue: generateCreateProductOptionValueDTO,
         createProductVariant: generateCreateProductVariantDTO,
@@ -586,7 +619,12 @@ export const test = testBase.extend<Fixtures>({
         shippedOrder: shipOrder,
         product: createProduct,
         products: createProducts,
+        productImport: createProductImport,
+        confirmedProductImport: createConfirmedProductImport,
         productOption: createProductOption,
+        productTag: createProductTag,
+        metafieldDefinitions: createMetafieldDefinitions,
+        productType: createProductType,
         productVariant: createProductVariant,
         productVariants: createProductVariants,
         variantImages: addImageToVariant,
@@ -598,6 +636,10 @@ export const test = testBase.extend<Fixtures>({
       update: {
         inventoryLevel: adjustInventoryLevel,
         productOptions: setProductOptions,
+        productMetafields: setProductMetafields,
+        product: updateProduct,
+        productType: updateProductType,
+        deletedProductType: deleteProductType,
         productVariant: updateProductVariant,
         authIdentity: updateAuthIdentity,
         authVerification: updateAuthVerification,
@@ -636,6 +678,8 @@ export const test = testBase.extend<Fixtures>({
         productVariants: listProductVariants,
         productVariant: retrieveProductVariant,
         productImages: listProductImages,
+        productImport: retrieveProductImport,
+        fileExists,
         productOptionsForProduct: listProductOptionsForProduct,
         productVariantImages: listProductVariantImages,
       },

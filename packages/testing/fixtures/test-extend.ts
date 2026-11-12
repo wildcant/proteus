@@ -16,11 +16,19 @@ import {
   createPrice,
   createPriceSet,
   createProduct,
+  createProductCategory,
+  createProductCollection,
   createProductImage,
+  createProductMetafield,
+  createProductMetafieldDefinition,
   createProductOption,
   createProductOptionValue,
+  createProductProductCategory,
+  createProductProductCollection,
   createProductProductOption,
   createProductProductOptionValue,
+  createProductProductTag,
+  createProductTag,
   createProductVariant,
   createProductVariantImage,
   createProductVariantInventoryItem,
@@ -36,6 +44,7 @@ import {
   createShippingOptionWithZone,
   createShippingProfile,
   createStockLocation,
+  createStoreNavigation,
   createUser,
   deleteActorRoleAssignmentById,
   deleteCartById,
@@ -50,6 +59,7 @@ import {
   deletePriceById,
   deletePriceSetById,
   deleteProductById,
+  deleteProductCategoryById,
   deleteProductImageById,
   deleteProductOptionById,
   deleteProductOptionValueById,
@@ -77,6 +87,7 @@ import {
   generatePrice,
   generatePriceSet,
   generateProduct,
+  generateProductCategory,
   generateProductImage,
   generateProductOption,
   generateProductOptionValue,
@@ -181,6 +192,7 @@ export type Factories = {
     role: typeof generateRole
     user: typeof generateUser
     product: typeof generateProduct
+    productCategory: typeof generateProductCategory
     productImage: typeof generateProductImage
     productVariant: typeof generateProductVariant
     productVariantImage: typeof generateProductVariantImage
@@ -217,13 +229,21 @@ export type Factories = {
     role: typeof createRole
     user: typeof createUser
     product: typeof createProduct
+    productCategory: typeof createProductCategory
+    productCollection: typeof createProductCollection
     productImage: typeof createProductImage
+    productMetafield: typeof createProductMetafield
+    productMetafieldDefinition: typeof createProductMetafieldDefinition
     productVariant: typeof createProductVariant
     productVariantImage: typeof createProductVariantImage
     productOption: typeof createProductOption
     productOptionValue: typeof createProductOptionValue
+    productProductCategory: typeof createProductProductCategory
+    productProductCollection: typeof createProductProductCollection
     productProductOption: typeof createProductProductOption
     productProductOptionValue: typeof createProductProductOptionValue
+    productTag: typeof createProductTag
+    productProductTag: typeof createProductProductTag
     productVariantOption: typeof createProductVariantOption
     priceSet: typeof createPriceSet
     price: typeof createPrice
@@ -237,6 +257,7 @@ export type Factories = {
     geoZone: typeof createGeoZone
     shippingProfile: typeof createShippingProfile
     stockLocation: typeof createStockLocation
+    storeNavigation: typeof createStoreNavigation
     inventoryItem: typeof createInventoryItem
     inventoryLevel: typeof createInventoryLevel
     productVariantInventoryItem: typeof createProductVariantInventoryItem
@@ -255,6 +276,7 @@ export type Factories = {
     role: typeof deleteRoleById
     user: typeof deleteUserById
     product: typeof deleteProductById
+    productCategory: typeof deleteProductCategoryById
     productImage: typeof deleteProductImageById
     productVariantImage: typeof deleteProductVariantImageById
     productOption: typeof deleteProductOptionById
@@ -297,6 +319,7 @@ export function createTest<RoutePath extends string = string>() {
         role: generateRole,
         user: generateUser,
         product: generateProduct,
+        productCategory: generateProductCategory,
         productImage: generateProductImage,
         productVariant: generateProductVariant,
         productVariantImage: generateProductVariantImage,
@@ -335,13 +358,21 @@ export function createTest<RoutePath extends string = string>() {
         role: createRole,
         user: createUser,
         product: createProduct,
+        productCategory: createProductCategory,
+        productCollection: createProductCollection,
         productImage: createProductImage,
+        productMetafield: createProductMetafield,
+        productMetafieldDefinition: createProductMetafieldDefinition,
         productVariant: createProductVariant,
         productVariantImage: createProductVariantImage,
         productOption: createProductOption,
         productOptionValue: createProductOptionValue,
+        productProductCategory: createProductProductCategory,
+        productProductCollection: createProductProductCollection,
         productProductOption: createProductProductOption,
         productProductOptionValue: createProductProductOptionValue,
+        productTag: createProductTag,
+        productProductTag: createProductProductTag,
         productVariantOption: createProductVariantOption,
         priceSet: createPriceSet,
         price: createPrice,
@@ -355,6 +386,7 @@ export function createTest<RoutePath extends string = string>() {
         geoZone: createGeoZone,
         shippingProfile: createShippingProfile,
         stockLocation: createStockLocation,
+        storeNavigation: createStoreNavigation,
         inventoryItem: createInventoryItem,
         inventoryLevel: createInventoryLevel,
         productVariantInventoryItem: createProductVariantInventoryItem,
@@ -373,6 +405,7 @@ export function createTest<RoutePath extends string = string>() {
         role: deleteRoleById,
         user: deleteUserById,
         product: deleteProductById,
+        productCategory: deleteProductCategoryById,
         productImage: deleteProductImageById,
         productVariantImage: deleteProductVariantImageById,
         productOption: deleteProductOptionById,

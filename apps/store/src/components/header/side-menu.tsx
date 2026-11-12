@@ -1,24 +1,27 @@
-import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '@proteus/ui'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  cn,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+} from '@proteus/ui'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Button } from '#/components/button'
+import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
+import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger } from '#/components/header/search-triggers'
 import { ThemeToggle } from '#/components/theme-toggle'
 import { useModal } from '#/lib/modal-state'
 
-/** No `Cart` entry: the bag sits in the header at every width, and a nav link that opens a modal
- *  is a weaker copy of a control already on screen.
- *
- *  Home and Products both point at `/` until a category taxonomy exists, which is why the rows are
- *  keyed by label rather than by destination. */
-const menuLinks = [
-  { to: '/' as const, label: msg`Home` },
-  { to: '/' as const, label: msg`Products` },
-  { to: '/account' as const, label: msg`Account` },
-]
+const rowClassName =
+  'flex w-full items-center justify-between gap-3 py-4 text-base text-ink no-underline hover:text-ink-muted'
 
 /**
  * The mobile navigation, as a drawer off the left edge — same primitive as the search panel,
@@ -29,9 +32,10 @@ const menuLinks = [
  * without an onClick. The search trigger sets `modal` to `search` in a single navigation, so
  * the menu closes exactly as the panel opens rather than the two overlapping.
  */
-export function SideMenu() {
+export function SideMenu({ menu }: { menu: MenuSource }) {
   const { t } = useLingui()
   const { isOpen, setOpen } = useModal('menu')
+  const entries = useMenuEntries(menu)
 
   return (
     <Drawer open={isOpen} onOpenChange={setOpen} swipeDirection="left">
@@ -58,19 +62,30 @@ export function SideMenu() {
           <SearchBarTrigger />
         </div>
 
+        {/* The rail's destinations, from the same menu, nested: a Category with children expands in
+            place, where the rail opens a panel. No `Cart` entry: the bag sits in
+            the header at every width, and a nav link that opens a modal is a weaker copy of a
+            control already on screen. */}
         <nav className="flex-1 overflow-y-auto px-4 pt-2 sm:px-6 lg:px-8">
           <ul className="m-0 flex list-none flex-col p-0">
-            {menuLinks.map(({ to, label }) => (
-              <li key={label.id}>
-                <Link
-                  to={to}
-                  className="flex items-center justify-between gap-3 py-4 text-base text-ink no-underline hover:text-ink-muted"
-                >
-                  {t(label)}
-                  <ChevronRightIcon className="size-5 shrink-0" />
-                </Link>
+            {entries.map((entry) => (
+              <li key={entry.key}>
+                {isMenuGroup(entry) ? (
+                  <SideMenuGroup group={entry} />
+                ) : (
+                  <MenuLink destination={entry} className={rowClassName}>
+                    {entry.label}
+                    <ChevronRightIcon className="size-5 shrink-0" />
+                  </MenuLink>
+                )}
               </li>
             ))}
+            <li>
+              <Link to="/account" className={rowClassName}>
+                <Trans>Account</Trans>
+                <ChevronRightIcon className="size-5 shrink-0" />
+              </Link>
+            </li>
           </ul>
         </nav>
 
@@ -80,5 +95,52 @@ export function SideMenu() {
         </div>
       </DrawerContent>
     </Drawer>
+  )
+}
+
+/**
+ * Following any of its links closes the menu for free — see `SideMenu` — so this holds no state.
+ * Sections nest as groups of their own inside the entry's, each expanding in place like the entry.
+ */
+function SideMenuGroup({ group }: { group: MenuGroup }) {
+  const childClassName = 'block py-3 text-base text-ink-muted no-underline hover:text-ink'
+  const triggerClassName =
+    'items-center font-normal text-ink **:data-[slot=accordion-trigger-icon]:size-5 **:data-[slot=accordion-trigger-icon]:text-ink'
+
+  return (
+    <Accordion>
+      <AccordionItem value={group.key} className="not-last:border-b-0">
+        <AccordionTrigger className={cn(triggerClassName, 'py-4 text-base')}>{group.label}</AccordionTrigger>
+        <AccordionContent className="pb-2 [&_a]:no-underline">
+          <ul className="m-0 flex list-none flex-col p-0 pl-4">
+            {[group.shopAll, ...group.links].map((link) => (
+              <li key={link.key}>
+                <MenuLink destination={link} className={childClassName} />
+              </li>
+            ))}
+            {group.sections.map((section) => (
+              <li key={section.key}>
+                <Accordion>
+                  <AccordionItem value={section.key} className="not-last:border-b-0">
+                    <AccordionTrigger className={cn(triggerClassName, 'py-3 text-base')}>
+                      {section.title}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-2 [&_a]:no-underline">
+                      <ul className="m-0 flex list-none flex-col p-0 pl-4">
+                        {section.links.map((link) => (
+                          <li key={link.key}>
+                            <MenuLink destination={link} className={childClassName} />
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </li>
+            ))}
+          </ul>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   )
 }

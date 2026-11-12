@@ -33,6 +33,10 @@ export const AdminProduct = z
     discountable: z.boolean(),
     externalId: z.string().nullable(),
     metadata,
+    /** Can name a deleted Product Type; the embedded `type` is the live one. */
+    typeId: z.string().nullable(),
+    /** The brand, the CSV's Vendor column. Read-only here: the import writes it. */
+    brand: z.string().nullable(),
     ...timestamps.shape,
   })
   .openapi('AdminProduct')

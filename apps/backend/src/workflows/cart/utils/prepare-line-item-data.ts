@@ -8,6 +8,8 @@ const OPTION_VALUE_SEPARATOR = ' · '
 export type PrepareLineItemDataInput = {
   quantity: number
   product: ProductDTO
+  /** The value of the product's live Product Type, or `null` when it has none. */
+  productType: string | null
   variant: EnrichedProductVariantDTO
   unitPrice: BigNumber
   thumbnail: string | null
@@ -44,6 +46,7 @@ export function prepareLineItemData(input: PrepareLineItemDataInput): CreateLine
     productDescription: product.description,
     productSubtitle: product.subtitle,
     productHandle: product.handle,
+    productType: input.productType,
     isGiftcard: product.isGiftcard,
     isDiscountable: product.discountable,
   }

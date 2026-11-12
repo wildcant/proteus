@@ -39,6 +39,19 @@ describe('sidebar response contract', () => {
     expect(groups).toHaveLength(1)
     expect(groups.at(0)?.items).toHaveLength(1)
     expect(groups.at(0)?.items.at(0)?.label).toBe('Products')
+    // Categories, Collections, Tags, Types and Options sit under Products for anyone who can read products.
+    expect(
+      groups
+        .at(0)
+        ?.items.at(0)
+        ?.children?.map((child) => [child.to, child.icon]),
+    ).toEqual([
+      ['/categories', 'folder-tree'],
+      ['/collections', 'layers'],
+      ['/product-tags', 'tags'],
+      ['/product-types', 'shapes'],
+      ['/product-options', 'sliders-horizontal'],
+    ])
   })
 
   test('emits known admin-app route targets', () => {

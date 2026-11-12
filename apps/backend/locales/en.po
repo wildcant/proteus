@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:121
+#: src/routes.ts:143
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
@@ -59,6 +59,16 @@ msgstr "The store does not sell in \"{currencyCode}\". It has no currencies conf
 #: src/workflows/region/steps/assign-countries-to-region.ts:53
 msgid "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it from that region first."
 msgstr "\"{displayName}\" is already sold to by region \"{regionId}\". Remove it from that region first."
+
+#. js-lingui-explicit-id
+#: src/workflows/product/apply-catalog-structure.ts:43
+msgid "The structure file has errors. Preview it to see them, fix them and upload it again."
+msgstr "The structure file has errors. Preview it to see them, fix them and upload it again."
+
+#. js-lingui-explicit-id
+#: src/workflows/product/import-product.ts:297
+msgid "The image \"{url}\" could not be downloaded."
+msgstr "The image \"{url}\" could not be downloaded."
 
 #. js-lingui-explicit-id
 #: src/workflows/product/update-product-variant.ts:142
@@ -202,22 +212,22 @@ msgid "Variant(s) not found: {missing}"
 msgstr "Variant(s) not found: {missing}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:122
+#: src/workflows/cart/add-to-cart.ts:126
 msgid "Variant \"{variantId}\" has no product"
 msgstr "Variant \"{variantId}\" has no product"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:132
+#: src/workflows/cart/add-to-cart.ts:136
 msgid "Product \"{productId}\" is not available for sale"
 msgstr "Product \"{productId}\" is not available for sale"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:141
+#: src/workflows/cart/add-to-cart.ts:145
 msgid "Variant \"{variantId}\" has no price in {currencyCode}"
 msgstr "Variant \"{variantId}\" has no price in {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:225
+#: src/workflows/cart/add-to-cart.ts:230
 msgid "Not enough stock to add the requested quantity"
 msgstr "Not enough stock to add the requested quantity"
 
@@ -322,7 +332,7 @@ msgid "Customer with id \"{customerId}\" not found"
 msgstr "Customer with id \"{customerId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:31
+#: src/api/store/middlewares.ts:36
 #: src/workflows/cart/update-cart.ts:139
 msgid "No region sells to country \"{countryCode}\""
 msgstr "No region sells to country \"{countryCode}\""
@@ -568,19 +578,59 @@ msgid "Unknown stock location ids: {ids}"
 msgstr "Unknown stock location ids: {ids}"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:245
+#: src/modules/product/services/product-category-service.ts:133
+msgid "A category with subcategories cannot be deleted. Delete or move its subcategories first."
+msgstr "A category with subcategories cannot be deleted. Delete or move its subcategories first."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:146
+msgid "A category cannot be moved under itself or one of its subcategories"
+msgstr "A category cannot be moved under itself or one of its subcategories"
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-category-service.ts:188
+msgid "This category's products follow its rule. Change the rule or the products' metafields."
+msgstr "This category's products follow its rule. Change the rule or the products' metafields."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-grouping-service.ts:132
+msgid "This collection's products follow its rule. Change the rule or the products' metafields."
+msgstr "This collection's products follow its rule. Change the rule or the products' metafields."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-import-service.ts:150
+msgid "This import has errors. Fix the file and upload it again."
+msgstr "This import has errors. Fix the file and upload it again."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-import-service.ts:156
+msgid "This import has expired. Upload the file again."
+msgstr "This import has expired. Upload the file again."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-import-service.ts:289
+msgid "Only an import waiting in preview can be confirmed or canceled."
+msgstr "Only an import waiting in preview can be confirmed or canceled."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:375
 msgid "Variant creation returned no rows"
 msgstr "Variant creation returned no rows"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:324
+#: src/modules/product/services/product-module-service.ts:454
 msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:823
+#: src/modules/product/services/product-module-service.ts:1244
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
+
+#. js-lingui-explicit-id
+#: src/modules/product/services/product-module-service.ts:1343
+msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
+msgstr "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 
 #. js-lingui-explicit-id
 #: src/modules/product/services/product-option-service.ts:216
@@ -976,6 +1026,8 @@ msgid "Unauthorized: registration required"
 msgstr "Unauthorized: registration required"
 
 #. js-lingui-explicit-id
+#: src/api/admin/product-imports/[id]/confirm/route.ts:23
+#: src/api/admin/product-imports/route.ts:15
 #: src/framework/http/middlewares/authorize.ts:27
 #: src/framework/http/middlewares/authorize.ts:37
 msgid "Insufficient permissions"
@@ -1072,13 +1124,13 @@ msgid "This authentication provider does not support validateCallback"
 msgstr "This authentication provider does not support validateCallback"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:128
-#: src/core/utils/base-repository.ts:195
+#: src/core/utils/base-repository.ts:139
+#: src/core/utils/base-repository.ts:206
 msgid "Entity with id \"{id}\" not found"
 msgstr "Entity with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:168
+#: src/core/utils/base-repository.ts:179
 msgid "Expected row to be created"
 msgstr "Expected row to be created"
 
@@ -1173,7 +1225,7 @@ msgid "Verification token TTL must be a positive integer"
 msgstr "Verification token TTL must be a positive integer"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:51
+#: src/api/store/middlewares.ts:56
 msgid "Cannot price this request: no countryCode was given and the store has no default region"
 msgstr "Cannot price this request: no countryCode was given and the store has no default region"
 
@@ -1182,7 +1234,7 @@ msgstr "Cannot price this request: no countryCode was given and the store has no
 #: src/api/store/customers/me/addresses/route.ts:17
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
-#: src/api/store/middlewares.ts:104
+#: src/api/store/middlewares.ts:160
 #: src/api/store/orders/route.ts:16
 msgid "Not authenticated"
 msgstr "Not authenticated"

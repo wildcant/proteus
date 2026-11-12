@@ -11,6 +11,8 @@ import { RoutesSorter } from './framework/http/routes-sorter.js'
 
 // ---- Definition imports ----
 
+import adminCatalogStructureDefinitions from './api/admin/catalog-structure/definitions.js'
+import adminCollectionDefinitions from './api/admin/collections/definitions.js'
 import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
@@ -23,7 +25,11 @@ import adminPaymentCollectionDefinitions from './api/admin/payment-collections/d
 import adminPaymentProviderDefinitions from './api/admin/payment-providers/definitions.js'
 import adminPaymentDefinitions from './api/admin/payments/definitions.js'
 import adminAccessControlPermissionDefinitions from './api/admin/permissions/definitions.js'
+import adminProductCategoryDefinitions from './api/admin/product-categories/definitions.js'
+import adminProductImportDefinitions from './api/admin/product-imports/definitions.js'
 import adminProductOptionDefinitions from './api/admin/product-options/definitions.js'
+import adminProductTagDefinitions from './api/admin/product-tags/definitions.js'
+import adminProductTypeDefinitions from './api/admin/product-types/definitions.js'
 import adminProductDefinitions from './api/admin/products/definitions.js'
 import adminRefundReasonDefinitions from './api/admin/refund-reasons/definitions.js'
 import adminRegionDefinitions from './api/admin/regions/definitions.js'
@@ -38,11 +44,16 @@ import authDefinitions from './api/auth/definitions.js'
 import hookDefinitions from './api/hooks/definitions.js'
 import storeAuthDefinitions from './api/store/auth/definitions.js'
 import storeCartDefinitions from './api/store/carts/definitions.js'
+import storeCollectionDefinitions from './api/store/collections/definitions.js'
 import storeCountryDefinitions from './api/store/countries/definitions.js'
 import storeCustomerDefinitions from './api/store/customers/definitions.js'
+import storeNavigationDefinitions from './api/store/navigation/definitions.js'
 import storeOrderDefinitions from './api/store/orders/definitions.js'
 import storePaymentCollectionDefinitions from './api/store/payment-collections/definitions.js'
 import storePaymentMethodDefinitions from './api/store/payment-methods/definitions.js'
+import storeProductCategoryDefinitions from './api/store/product-categories/definitions.js'
+import storeProductFilterDefinitions from './api/store/product-filters/definitions.js'
+import storeProductTagDefinitions from './api/store/product-tags/definitions.js'
 import storeProductDefinitions from './api/store/products/definitions.js'
 
 // ---- Shared auth routes exposed to the store API ----
@@ -70,8 +81,14 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,
   ...adminPaymentProviderDefinitions,
+  ...adminCatalogStructureDefinitions,
+  ...adminCollectionDefinitions,
+  ...adminProductCategoryDefinitions,
   ...adminProductOptionDefinitions,
+  ...adminProductTagDefinitions,
+  ...adminProductTypeDefinitions,
   ...adminProductDefinitions,
+  ...adminProductImportDefinitions,
   ...adminRefundReasonDefinitions,
   ...adminReservationDefinitions,
   ...adminRegionDefinitions,
@@ -86,11 +103,16 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeAuthDefinitions,
   ...authDefinitions.filter((d) => storeSharedAuthRoutes.has(d.matcher)),
   ...storeCartDefinitions,
+  ...storeCollectionDefinitions,
   ...storeCountryDefinitions,
   ...storeCustomerDefinitions,
+  ...storeNavigationDefinitions,
   ...storeOrderDefinitions,
   ...storePaymentCollectionDefinitions,
   ...storePaymentMethodDefinitions,
+  ...storeProductCategoryDefinitions,
+  ...storeProductFilterDefinitions,
+  ...storeProductTagDefinitions,
   ...storeProductDefinitions,
 ]
 

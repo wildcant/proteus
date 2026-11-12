@@ -1,12 +1,15 @@
-import type { ProductOptionRenderAs } from '@core/types/product/common.js'
+import type { ImportedProductDTO, ProductOptionRenderAs } from '@core/types/product/common.js'
 import type {
   CreateProductDTO,
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  CreateProductTagDTO,
+  CreateProductTypeDTO,
   CreateProductVariantDTO,
   SetProductOptionsDTO,
   UpdateProductDTO,
   UpdateProductVariantDTO,
+  UpsertProductMetafieldDefinitionDTO,
   VariantImageInput,
 } from '@core/types/product/mutations.js'
 import { faker } from '@faker-js/faker'
@@ -138,6 +141,66 @@ export function generateUpdateProductVariantDTO(overrides?: Partial<UpdateProduc
     width: faker.number.float({ min: 1, max: 200, fractionDigits: 2 }),
     variantRank: faker.number.int({ min: 0, max: 100 }),
     metadata: metadata(),
+    ...overrides,
+  }
+}
+
+export function generateCreateProductTypeDTO(overrides?: Partial<CreateProductTypeDTO>): CreateProductTypeDTO {
+  return {
+    // Unique among live Types, so two generated values in one test cannot collide.
+    value: `${faker.commerce.product()} ${faker.string.alphanumeric(6)}`,
+    ...overrides,
+  }
+}
+
+export function generateCreateProductTagDTO(overrides?: Partial<CreateProductTagDTO>): CreateProductTagDTO {
+  return {
+    // Unique among live Tags, so two generated values in one test cannot collide.
+    value: `${faker.word.noun()}-${faker.string.alphanumeric(6)}`,
+    ...overrides,
+  }
+}
+
+export function generateUpsertProductMetafieldDefinitionDTO(
+  overrides?: Partial<UpsertProductMetafieldDefinitionDTO>,
+): UpsertProductMetafieldDefinitionDTO {
+  return {
+    // Unique among live definitions, so two generated keys in one test cannot collide.
+    key: `${faker.word.noun().toLowerCase()}_${faker.string.alphanumeric({ length: 6, casing: 'lower' })}`,
+    name: faker.word.noun(),
+    ...overrides,
+  }
+}
+
+/** A product as an import file would describe it: one untracked, option-less variant, no groupings, no images. */
+export function generateImportedProductDTO(overrides?: Partial<ImportedProductDTO>): ImportedProductDTO {
+  const handle = `${faker.helpers.slugify(faker.commerce.productName()).toLowerCase()}-${faker.string.alphanumeric(6).toLowerCase()}`
+  return {
+    line: 2,
+    rows: 1,
+    handle,
+    title: faker.commerce.productName(),
+    description: null,
+    status: 'published',
+    type: null,
+    tags: [],
+    metafields: {},
+    brand: null,
+    options: [],
+    variants: [
+      {
+        line: 2,
+        sku: null,
+        optionValues: [],
+        weight: null,
+        manageInventory: false,
+        allowBackorder: false,
+        inventoryQuantity: null,
+        prices: [],
+        imageUrl: null,
+      },
+    ],
+    imageUrls: [],
     ...overrides,
   }
 }

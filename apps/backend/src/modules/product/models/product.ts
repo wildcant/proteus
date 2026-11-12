@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm'
 import { boolean, doublePrecision, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
-import { liveUniqueIndex } from '../../../core/db/indexes.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
+import { productTypeTable } from './product-type.js'
 
 export const ProductStatus = {
   DRAFT: 'draft',
@@ -34,9 +35,21 @@ export const productTable = pgTable(
     discountable: boolean().default(true).notNull(),
     externalId: text(),
     metadata: jsonb().$type<Record<string, unknown> | null>(),
+    /**
+     * The product's Product Type. `set null` keeps it out of the derived soft-delete cascade, so
+     * soft-deleting a Type leaves the id in place; reads join live Types only.
+     */
+    typeId: text().references(() => productTypeTable.id, { onDelete: 'set null' }),
+    /** The product's brand (Nike, Adidas), the column a Shopify CSV calls Vendor. The structure file's vendor campo reads it. */
+    brand: text(),
     ...timestamps,
   },
-  (table) => [liveUniqueIndex('idx_product_handle').on(table.handle)],
+  (table) => [
+    liveUniqueIndex('idx_product_handle').on(table.handle),
+    liveIndex('idx_product_type_id').on(table.typeId),
+    // Brand selections and facets match case-insensitively.
+    liveIndex('idx_product_brand').on(sql`lower(${table.brand})`),
+  ],
 )
 
 export type Product = typeof productTable.$inferSelect

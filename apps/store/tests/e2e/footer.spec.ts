@@ -16,7 +16,7 @@ test.describe('Footer', () => {
     await expect(footer.getByText(/Proteus\. All rights reserved/)).toBeVisible()
 
     // Desktop Chrome is above `sm`, so the columns are open with no trigger to press
-    await expect(footer.getByRole('link', { name: 'All products' })).toBeVisible()
+    await expect(footer.getByRole('link', { name: 'Shop all', exact: true })).toBeVisible()
     await expect(footer.getByRole('button', { name: 'Shop' })).not.toBeVisible()
   })
 
@@ -32,7 +32,7 @@ test.describe('Footer', () => {
 
     // Both items start closed — the reason the accordion exists is that five links stacked flat
     // push the copyright most of a screen down
-    const allProducts = footer.getByRole('link', { name: 'All products' })
+    const allProducts = footer.getByRole('link', { name: 'Shop all', exact: true })
     await expect(allProducts).not.toBeVisible()
 
     await shopTrigger.click()

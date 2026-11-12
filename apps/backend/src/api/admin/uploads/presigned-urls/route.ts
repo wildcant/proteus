@@ -42,6 +42,8 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
     status: 200,
     json: {
       url: uploadUrl.url,
+      // The provider's key, not the filename: a provider that prefixes keys stores the object there.
+      fileKey: uploadUrl.fields.key ?? uploadUrl.fileKey,
       filename,
       mimeType,
       size,

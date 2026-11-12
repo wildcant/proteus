@@ -36,4 +36,8 @@ createdAt?: {
   $in?: (string | null)[];
   $nin?: (string | null)[];
 };
+categoryId?: string | string[];
+collectionId?: string | string[];
+typeId?: string | string[];
+tagId?: string | string[];
 };

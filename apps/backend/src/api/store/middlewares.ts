@@ -1,11 +1,16 @@
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import type { CustomerDTO } from '@core/types/customer/common.js'
+import type { CalculatedPriceSetDTO } from '@core/types/pricing/common.js'
+import type { ProductVariantDTO } from '@core/types/product/common.js'
 import type { RegionDTO } from '@core/types/region/common.js'
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { validateQuery } from '@core/utils/validate-query.js'
 import type { MiddlewareFunction } from '@framework/http/types.js'
 import { StorePricingContextParams } from '@proteus/http-schemas/store'
 import { i18n } from '@proteus/utils'
+import { buildStartingPrices } from '@workflows/product/utils/build-starting-prices.js'
+import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import type { AppContainer } from '../../core/types/container.js'
 
 /**
@@ -68,7 +73,7 @@ async function resolveRegion(scope: AppContainer, countryCode?: string, cartId?:
  * guards this used to rely on.
  */
 export function setPricingContext(): MiddlewareFunction<{
-  pricingContext: { currencyCode: string; regionId: string }
+  pricingContext: PricingContext
 }> {
   return async (req) => {
     // Middlewares run before `input` validation, so this parses the raw query itself. The same
@@ -79,6 +84,57 @@ export function setPricingContext(): MiddlewareFunction<{
 
     // TODO(pricing): resolve customer groups for context-based pricing
     return { ...req, pricingContext: { currencyCode: region.currencyCode, regionId: region.id } }
+  }
+}
+
+type PricingContext = { currencyCode: string; regionId: string }
+
+/** What this market can sell, read once over the whole catalogue. */
+type SellableProducts = {
+  /** The products with at least one variant priced in this market — the store's catalogue here. */
+  productIds: string[]
+  /** Every variant of every product, priced or not. */
+  variants: ProductVariantDTO[]
+  priceByVariantId: Map<string, CalculatedPriceSetDTO>
+  /** The cheapest priced variant of each sellable product: the grid's "from" price. */
+  startingPriceByProductId: Map<string, CalculatedPriceSetDTO>
+}
+
+/**
+ * Which products this market can sell, for every store route that lists from the catalogue.
+ *
+ * Pricing decides the catalogue, so it is resolved before any list is drawn rather than after.
+ *
+ * The admin writes one price row per variant in one currency, so a product the store cannot
+ * quote in this market is an ordinary occurrence rather than an impossible one — and a shopper is
+ * shown no card rather than a card with no price. Filtering an already-paged result would hide the
+ * product but leave `count` promising rows no page can reach and pages shorter than the `limit`
+ * they were asked for; passing the ids into the query itself keeps `count`, `offset` and `limit`
+ * describing the list that actually comes back. The Tag chips read the same ids, so they offer
+ * only values the list can show.
+ *
+ * A plain function rather than a middleware: it needs the market `setPricingContext()` resolved,
+ * and taking that as an argument makes the order a fact the compiler checks.
+ */
+export async function listSellableProducts(
+  scope: AppContainer,
+  pricingContext: PricingContext,
+): Promise<SellableProducts> {
+  const productService = scope.resolve(Modules.PRODUCT)
+  const pricingService = scope.resolve(Modules.PRICING)
+  const linkService = scope.resolve(ContainerRegistrationKeys.LINK)
+
+  const variants = await productService.listProductVariants()
+  const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variants.map((variant) => variant.id))
+  const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
+  const calculatedPrices = await pricingService.calculatePrices(priceSetIds, pricingContext)
+
+  const startingPriceByProductId = buildStartingPrices(variants, links, calculatedPrices)
+  return {
+    productIds: [...startingPriceByProductId.keys()],
+    variants,
+    priceByVariantId: buildVariantPrices(links, calculatedPrices),
+    startingPriceByProductId,
   }
 }
 

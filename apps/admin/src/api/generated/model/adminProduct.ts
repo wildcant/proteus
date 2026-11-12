@@ -41,6 +41,10 @@ export interface AdminProduct {
   externalId: string | null;
   /** @nullable */
   metadata: AdminProductMetadata;
+  /** @nullable */
+  typeId: string | null;
+  /** @nullable */
+  brand: string | null;
   createdAt: string;
   updatedAt: string;
   /** @nullable */
