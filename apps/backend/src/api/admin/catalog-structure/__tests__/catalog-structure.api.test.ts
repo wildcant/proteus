@@ -150,11 +150,7 @@ test.describe('Structure files', () => {
     expect(tree.map((root) => root.handle)).toEqual(['men', 'women', 'unisex'])
     const [menNode] = tree
     expect(menNode).toMatchObject({ id: men.id, name: 'Men', isActive: true, rule: { genero: ['men'] } })
-    expect(menNode?.children.map((child) => child.handle)).toEqual([
-      'men-tops',
-      'men-bottoms',
-      'men-shoes',
-    ])
+    expect(menNode?.children.map((child) => child.handle)).toEqual(['men-tops', 'men-bottoms', 'men-shoes'])
     expect(menNode?.children[0]?.id).toBe(menTops.id)
     for (const gone of [legacy, legacyChild]) {
       const response = await api.get<ApiErrorBody>(`/admin/product-categories/${gone.id}`)
