@@ -96,7 +96,7 @@ Carried over from the sibling project's sessions on the same engine; each cost t
 
 ## Flows: arrows and events
 
-The `flows` page is the source of `flow:export`, which generates the store's navigation map (`apps/store/src/navigation/`, created with the flows slice). FigCraft offers no usable connector in a design file:
+The `flows` page is the source of `flow:export`, which generates the store's navigation map (`apps/store/src/navigation/flow.gen.ts`). FigCraft offers no usable connector in a design file:
 
 - Prototype interactions (`proto.interaction.add`) hold a trigger and an action but no name or label, and one screen instance would need several interactions that can't be told apart. Not used.
 - Connectors (`board.connector`) exist only on boards, not in a design file. Not available.

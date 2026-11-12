@@ -127,6 +127,12 @@ job_generated() {
   pnpm --silent --filter @proteus/design run tokens:check || code=1
   pnpm --silent --filter @proteus/design run components:check || code=1
   pnpm --silent --filter @proteus/design run design-md:check || code=1
+  # The store's navigation map, Icon glyphs and brand images, from the same design file. flow:check is also
+  # check:flow: the map, the screen table in src/navigation/ and the route tree must agree. It has nothing to
+  # check while the design file has no flows page, and brand:check none before the first brand:export.
+  pnpm --silent --filter @proteus/design run flow:check || code=1
+  pnpm --silent --filter @proteus/design run icons:check || code=1
+  pnpm --silent --filter @proteus/design run brand:check || code=1
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   pnpm --silent --filter backend run check:subscriber-registry || code=1
@@ -274,7 +280,8 @@ job_workerd() { ./scripts/checks/workerd-smoke.sh; }
 job_packages() {
   local code=0
   pnpm --filter @proteus/utils run test || code=1
-  # The design exporters (tokens, components, DESIGN.md frontmatter), each on a hand-built snapshot.
+  # The design exporters (tokens, components, DESIGN.md frontmatter, flow, icons, brand), each on a hand-built
+  # snapshot.
   pnpm --filter @proteus/design run test || code=1
   return $code
 }

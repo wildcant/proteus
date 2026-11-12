@@ -18,7 +18,7 @@ Three sections. A script reads them by name, so keep the names.
 - `export`: one frame per image file the store ships. Each frame is named exactly like its file, without the extension, and sized at the file's pixel size, so it exports at 1×.
 - `preview`: legibility checks (browser tab at 16 and 32 px, a home-screen icon at 60 px, light and dark). Never exported.
 
-The export rule: the brand export reads only the direct child frames of the section named `export` on page `brand`. A section whose name starts with `preview` is skipped, and so is everything in `sources`. Each export frame carries `pluginData` `{kind: "brandExport", file, px}` (the target path from the repo root and the pixel size) and a matching PNG export setting, so the script can trust either. The export records each file's size and hash in the snapshot; never edit the images by hand.
+The export rule: the brand export reads only the direct child frames of the section named `export` on page `brand`. A section whose name starts with `preview` is skipped, and so is everything in `sources`. Each export frame carries `pluginData` `{kind: "brandExport", file, px}` (the target file inside `apps/store/public/`, such as `favicon.png`, and the pixel size; `.png` or `.svg`) and a matching PNG export setting, so the script can trust either. The export records each file's size and hash in the snapshot; never edit the images by hand.
 
 ## Export frames (planned)
 

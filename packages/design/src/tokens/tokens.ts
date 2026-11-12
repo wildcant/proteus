@@ -350,7 +350,7 @@ function hex(value: VariableValue, variable: Variable): string {
 }
 
 /** `#rrggbb` when opaque; `rgb(r g b / a)` otherwise, so the alpha is kept as designed, not rounded to 8 bits. */
-export function colorString(color: Rgba): string {
+function colorString(color: Rgba): string {
   const channels = [color.r, color.g, color.b].map((c) => Math.round(c * 255))
   if (color.a < 1) return `rgb(${channels.join(' ')} / ${round(color.a, 3)})`
   return `#${channels.map((c) => c.toString(16).padStart(2, '0')).join('')}`

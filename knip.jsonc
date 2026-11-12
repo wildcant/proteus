@@ -96,7 +96,15 @@
       // Same two cases as the admin: the fetcher is reached only from the ignored Orval output, the
       // dependency-cruiser config only from the structure gate.
       // `lingui.config.ts` is read by the `lingui` CLI and the Vite plugin, not imported.
-      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs", "lingui.config.ts"],
+      // `src/navigation/links.ts` is the routes' way to the flow map; no route asks it yet, because the map has
+      // no flows until the design file's `flows` page is drawn. Drop the entry when the first route imports it.
+      "entry": [
+        "orval.config.ts",
+        "src/api/fetcher.ts!",
+        "structure/.dependency-cruiser.cjs",
+        "lingui.config.ts",
+        "src/navigation/links.ts!"
+      ],
       // Same plugin problem as the admin.
       "orval": false,
       // Same as the admin, plus the browser-mode setup file and Start stub at the workspace root.

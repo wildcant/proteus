@@ -88,6 +88,7 @@ export const tokenSnapshot: Snapshot = {
   },
   variables: Object.fromEntries(variables.map((v) => [v.id, v])),
   textStyles: [textStyle('heading', 20, 'Bold'), textStyle('body', 16, 'Regular')],
+  effectStyles: [],
 }
 
 export const componentsConfig: ComponentsConfig = {

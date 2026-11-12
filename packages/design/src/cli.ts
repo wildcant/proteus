@@ -3,32 +3,48 @@
 //   tokens       the theme stylesheet, from the variables and text styles
 //   components   one <name>.variants.ts per component set, beside its component in the app
 //   design-md    DESIGN.md's frontmatter, from both snapshots (its prose is left alone)
+//   flow         the store's navigation map, from the `flows` page; --check also runs check:flow
+//   icons        the store's Icon glyphs, from the Icon set
+//   brand        the favicon and touch icons in the store's public folder (written by --export only)
 //
 // Without a flag, regenerates from the committed snapshot (no FigCraft needed). --export refreshes the
 // exporter's snapshot from the design file first (components: every set, or the named ones). --check
-// writes nothing and exits 1 when a generated file is not what the snapshot produces.
+// writes nothing and exits 1 when a generated file is not what the snapshot produces, or an exporter reports a
+// problem (check:flow's, a brand file changed since its export).
 //
 // Reads design.json from the current directory, or the path given with --config.
 import { relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
+import { generateBrand } from './brand/generate.ts'
+import { exportBrandSnapshot } from './brand/snapshot.ts'
 import { generateComponents } from './components/generate.ts'
 import { exportComponentSnapshot } from './components/snapshot.ts'
 import { CONFIG_FILE, loadConfig, type ResolvedConfig } from './config.ts'
 import { generateDesignMd } from './design-md/generate.ts'
 import { stale, write } from './files.ts'
+import { generateFlow } from './flow/generate.ts'
+import { exportFlowSnapshot } from './flow/snapshot.ts'
+import { generateIcons } from './icons/generate.ts'
+import { exportIconSnapshot } from './icons/snapshot.ts'
 import { generateTokens } from './tokens/generate.ts'
 import { exportTokenSnapshot } from './tokens/snapshot.ts'
 
 type Exporter = {
   exportSnapshot?: (config: ResolvedConfig, names: string[]) => void
-  generate: (config: ResolvedConfig) => { files: Map<string, string>; notes: string[] }
+  generate: (config: ResolvedConfig) => Generated | Promise<Generated>
 }
+
+/** What an exporter produces from the snapshot, and what `--check` fails on besides stale files. */
+type Generated = { files: Map<string, string>; notes: string[]; problems?: string[] }
 
 const EXPORTERS: Record<string, Exporter> = {
   tokens: { exportSnapshot: exportTokenSnapshot, generate: (config) => ({ files: generateTokens(config), notes: [] }) },
   components: { exportSnapshot: exportComponentSnapshot, generate: generateComponents },
   'design-md': { generate: (config) => ({ files: generateDesignMd(config), notes: [] }) },
+  flow: { exportSnapshot: exportFlowSnapshot, generate: generateFlow },
+  icons: { exportSnapshot: exportIconSnapshot, generate: generateIcons },
+  brand: { exportSnapshot: exportBrandSnapshot, generate: generateBrand },
 }
 
 const { values, positionals } = parseArgs({
@@ -51,15 +67,16 @@ try {
     exporter.exportSnapshot(config, setNames)
     console.info(`exported the design file -> ${show(config.snapshot)}`)
   }
-  const { files, notes } = exporter.generate(config)
+  const { files, notes, problems = [] } = await exporter.generate(config)
   if (values.check) {
     const outdated = stale(files)
     if (outdated.length > 0) {
       process.stderr.write(
         `design: out of date, run \`pnpm --filter @proteus/design run ${name}\` and commit the result:\n${outdated.map((p) => `  ${show(p)}\n`).join('')}`,
       )
-      process.exit(1)
     }
+    if (problems.length > 0) process.stderr.write(`design: ${name}:\n${problems.map((p) => `  ${p}\n`).join('')}`)
+    if (outdated.length > 0 || problems.length > 0) process.exit(1)
   } else {
     for (const note of notes) console.info(`note: ${note}`)
     write(files)

@@ -42,7 +42,10 @@ type TokensSection = {
   viewport?: {
     collection: string
     modes: ViewportMode[]
-    /** `fluid`: clamp() between the first two modes. `steps`: each later mode applies from its width up. */
+    /**
+     * `fluid`: clamp() between the first and the last mode; any mode between them is for drawing frames at
+     * that width and must hold the interpolated value. `steps`: each later mode applies from its width up.
+     */
     scale: 'fluid' | 'steps'
   }
   textStyles?: {
@@ -83,6 +86,27 @@ type DesignMdSection = {
   description: string
 }
 
+type FlowSection = {
+  /** The generated flow map, in the app's navigation module. */
+  output: string
+  /** The hand-written screen table (`Screen` or `Screen/state` -> route), read by check:flow. Type-only imports. */
+  screens: string
+  /** The app's TanStack Router `routeTree.gen.ts`; its route files are found from it. */
+  routeTree: string
+}
+
+type IconsSection = {
+  /** The component set whose variants (`name=<kebab-case>`) are the glyphs. */
+  set: string
+  /** The generated glyph file, in the app's Icon folder. */
+  output: string
+}
+
+type BrandSection = {
+  /** The app's public folder; each export frame's pluginData names its file inside it. */
+  output: string
+}
+
 /** The shared settings, committed. One section per exporter. */
 type Config = {
   /** Folder for the exported FigCraft JSON (committed, so the builds run without FigCraft). */
@@ -90,6 +114,9 @@ type Config = {
   tokens: TokensSection
   components?: ComponentsSection
   designMd?: DesignMdSection
+  flow?: FlowSection
+  icons?: IconsSection
+  brand?: BrandSection
 }
 
 export type FigCraftLocation = {
@@ -114,6 +141,9 @@ export type ResolvedConfig = {
   tokens: TokensConfig
   components: ComponentsConfig | undefined
   designMd: DesignMdSection | undefined
+  flow: FlowSection | undefined
+  icons: IconsSection | undefined
+  brand: BrandSection | undefined
 }
 
 export function loadConfig(path: string): ResolvedConfig {
@@ -124,7 +154,7 @@ export function loadConfig(path: string): ResolvedConfig {
   const localPath = join(root, LOCAL_CONFIG_FILE)
   const local = existsSync(localPath) ? (JSON.parse(readFileSync(localPath, 'utf8')) as Local) : {}
   const file = process.env.FIGCRAFT_FILE ?? local.file
-  const { tokens, components, designMd } = config
+  const { tokens, components, designMd, flow, icons, brand } = config
   return {
     root,
     snapshot: fromRoot(config.snapshot),
@@ -149,6 +179,13 @@ export function loadConfig(path: string): ResolvedConfig {
       runtimeFills: components.runtimeFills ?? [],
     },
     designMd: designMd && { ...designMd, output: fromRoot(designMd.output) },
+    flow: flow && {
+      output: fromRoot(flow.output),
+      screens: fromRoot(flow.screens),
+      routeTree: fromRoot(flow.routeTree),
+    },
+    icons: icons && { ...icons, output: fromRoot(icons.output) },
+    brand: brand && { output: fromRoot(brand.output) },
   }
 }
 
@@ -162,13 +199,18 @@ function validate(config: Config, path: string) {
   if (!tokens.theme?.collection || !tokens.theme.modes?.length) {
     fail('`tokens.theme.collection` and `tokens.theme.modes` are required')
   }
-  if (tokens.viewport?.scale === 'fluid' && tokens.viewport.modes.length !== 2) {
-    fail('a fluid `tokens.viewport` interpolates between exactly two modes')
+  if (tokens.viewport?.scale === 'fluid' && tokens.viewport.modes.length < 2) {
+    fail('a fluid `tokens.viewport` interpolates between its first and last mode: give at least two')
   }
   if (config.components && !config.components.root) fail('`components.root` is required')
   if (config.designMd && !(config.designMd.output && config.designMd.name && config.designMd.description)) {
     fail('`designMd` needs `output`, `name` and `description`')
   }
+  if (config.flow && !(config.flow.output && config.flow.screens && config.flow.routeTree)) {
+    fail('`flow` needs `output`, `screens` and `routeTree`')
+  }
+  if (config.icons && !(config.icons.set && config.icons.output)) fail('`icons` needs `set` and `output`')
+  if (config.brand && !config.brand.output) fail('`brand.output` is required')
 }
 
 function expandHome(path: string) {

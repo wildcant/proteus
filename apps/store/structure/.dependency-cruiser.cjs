@@ -94,6 +94,16 @@ module.exports = {
     // shared -> features -> app, shared with the admin. See packages/frontend-structure.
     ...layerDirectionRules(),
     ...entityRules.forbidden,
+    {
+      name: 'navigation-only-from-routes',
+      comment:
+        'src/navigation/ is the flow map from the design file and the screen table that maps it onto the ' +
+        'route tree. Only a route may ask it for link options; it passes them to its feature as props, so ' +
+        'features, entities and shared components never know the route tree. See src/navigation/links.ts.',
+      severity: 'error',
+      from: { pathNot: ['^src/routes/', '^src/navigation/'] },
+      to: { path: '^src/navigation/' },
+    },
   ],
   required: [...featureStructureRules(), ...entityRules.required],
   options: {
