@@ -122,8 +122,8 @@ job_generated() {
   # is the step that notices when the two have drifted. See scripts/generate-workflow-registry.ts.
   pnpm --silent --filter backend run check:workflow-registry || code=1
   # The theme the store imports is generated from the committed FigCraft snapshot. Read-only: it
-  # regenerates in memory and compares. See packages/design-tokens/README.md.
-  pnpm --silent --filter @proteus/design-tokens run tokens:check || code=1
+  # regenerates in memory and compares. See packages/design/README.md.
+  pnpm --silent --filter @proteus/design run tokens:check || code=1
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   pnpm --silent --filter backend run check:subscriber-registry || code=1
@@ -272,7 +272,7 @@ job_packages() {
   local code=0
   pnpm --filter @proteus/utils run test || code=1
   # The token generator's naming contract and output shape, on a hand-built snapshot.
-  pnpm --filter @proteus/design-tokens run test || code=1
+  pnpm --filter @proteus/design run test || code=1
   return $code
 }
 

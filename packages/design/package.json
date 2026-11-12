@@ -1,5 +1,5 @@
 {
-  "name": "@proteus/design-tokens",
+  "name": "@proteus/design",
   "private": true,
   "type": "module",
   "exports": {

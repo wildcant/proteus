@@ -80,12 +80,10 @@ function fromFigCraft({ style, ...textStyle }: RawTextStyle): TextStyle {
 export function exportSnapshot(config: ResolvedConfig) {
   const file = config.file
   if (!file) {
-    throw new Error(
-      'no design file: set `file` in design-tokens.local.json (gitignored, beside design-tokens.json) or FIGCRAFT_FILE',
-    )
+    throw new Error('no design file: set `file` in design.local.json (gitignored, beside design.json) or FIGCRAFT_FILE')
   }
   mkdirSync(config.snapshot, { recursive: true })
-  const work = mkdtempSync(join(tmpdir(), 'design-tokens-'))
+  const work = mkdtempSync(join(tmpdir(), 'design-'))
   try {
     const script = join(work, 'export.jsonl')
     const steps = [

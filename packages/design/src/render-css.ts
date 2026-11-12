@@ -80,7 +80,7 @@ export function renderCss(tokens: Tokens, config: ResolvedConfig): string {
   ])
 
   const blocks = [
-    '/* Generated from the FigCraft design file by @proteus/design-tokens. Do not edit: change the design file, then run its tokens:export. */',
+    '/* Generated from the FigCraft design file by @proteus/design. Do not edit: change the design file, then run its tokens:export. */',
     rule('@theme', theme),
     rule(':root', [...colorsIn(firstMode.mode), ...responsive, ...typeVariables]),
     ...otherModes.flatMap((mode) => [

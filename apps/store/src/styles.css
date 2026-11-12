@@ -2,8 +2,8 @@
 @import "tw-animate-css";
 @import "@proteus/ui/styles.css";
 /* Colour roles, the font and the type-* roles, generated from the design file. Change them there,
-   then `pnpm --filter @proteus/design-tokens run tokens:export` (see packages/design-tokens). */
-@import "@proteus/design-tokens/tokens.css";
+   then `pnpm --filter @proteus/design run tokens:export` (see packages/design). */
+@import "@proteus/design/tokens.css";
 @source "../../../packages/ui/src";
 
 @font-face {
@@ -30,7 +30,7 @@
 
 :root {
   /* The colour roles themselves (--ink, --surface, --accent…, light and dark) come from
-     design-tokens. What follows wires them into shadcn and the store's older names.
+     @proteus/design. What follows wires them into shadcn and the store's older names.
 
      --accent shadows shadcn's own, which is a near-white hover surface paired with a near-black
      --accent-foreground. Only DropdownMenu and Combobox consume that pair, and the footer's market

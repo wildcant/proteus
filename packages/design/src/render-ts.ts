@@ -19,7 +19,7 @@ export function renderTs(tokens: Tokens): string {
     other: tokens.other,
   }
   return [
-    '// Generated from the FigCraft design file by @proteus/design-tokens. Do not edit: change the design file, then run its tokens:export.',
+    '// Generated from the FigCraft design file by @proteus/design. Do not edit: change the design file, then run its tokens:export.',
     `export const tokens = ${JSON.stringify(values, null, 2)} as const`,
     '',
   ].join('\n')

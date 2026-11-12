@@ -1,4 +1,4 @@
-# @proteus/design-tokens
+# @proteus/design
 
 The project's design tokens, generated from a FigCraft design file into a Tailwind v4 theme.
 Everything lives in this folder: the generator, its config, the FigCraft snapshot, and the generated
@@ -6,12 +6,12 @@ CSS. Apps import the CSS and never edit it.
 
 ```css
 /* apps/<app>/src/styles.css, after `@import "tailwindcss"` */
-@import "@proteus/design-tokens/tokens.css";
+@import "@proteus/design/tokens.css";
 ```
 
 ## Commands
 
-Run them from this folder, or with `pnpm --filter @proteus/design-tokens run <script>`.
+Run them from this folder, or with `pnpm --filter @proteus/design run <script>`.
 
 | Script | What it does |
 |---|---|
@@ -26,7 +26,7 @@ To change a token, change it in the design file, run `tokens:export`, and commit
 ## Set up this machine
 
 `tokens:export` needs to know where the design file and FigCraft's CLI are. Those paths are personal,
-so they live in `design-tokens.local.json` beside the config, which is gitignored:
+so they live in `design.local.json` beside the config, which is gitignored:
 
 ```json
 {
@@ -52,9 +52,9 @@ For example, when a fork of this blueprint gets its own design:
      `viewport` in the config;
    - every `type/*` text style's font bound to a `font/*` variable.
    If the file names its collections or modes differently, change `theme` and `viewport` in
-   `design-tokens.json` to match.
-2. Point `file` in `design-tokens.local.json` at the new file.
-3. Run `pnpm --filter @proteus/design-tokens run tokens:export`. It replaces `figcraft/` and `tokens/`.
+   `design.json` to match.
+2. Point `file` in `design.local.json` at the new file.
+3. Run `pnpm --filter @proteus/design run tokens:export`. It replaces `figcraft/` and `tokens/`.
    If the file breaks a rule, the export stops and names the variable or style.
 4. Check what the apps use that the new file no longer defines. The generated CSS only declares what
    the file has: a role that is gone (say `ink-subtle`) leaves its `text-ink-subtle` classes without a
@@ -64,16 +64,16 @@ For example, when a fork of this blueprint gets its own design:
 
 ## Use it in another project
 
-1. Copy this folder to `packages/design-tokens` in the new monorepo. Rename the package to the
-   project's scope (`@<project>/design-tokens`) in three places: `package.json`, the app's dependency
+1. Copy this folder to `packages/design` in the new monorepo. Rename the package to the
+   project's scope (`@<project>/design`) in three places: `package.json`, the app's dependency
    and the app's import.
-2. Create `design-tokens.local.json` (see [Set up this machine](#set-up-this-machine)) and follow
+2. Create `design.local.json` (see [Set up this machine](#set-up-this-machine)) and follow
    [Switch to another design file](#switch-to-another-design-file).
-3. Add `"@<project>/design-tokens": "workspace:*"` to the app's dependencies, and
-   `@import "@<project>/design-tokens/tokens.css";` to its stylesheet, right after the Tailwind
+3. Add `"@<project>/design": "workspace:*"` to the app's dependencies, and
+   `@import "@<project>/design/tokens.css";` to its stylesheet, right after the Tailwind
    imports.
 4. Exclude `figcraft/` from the repo's formatter (it is FigCraft's output, rewritten on every export).
-   Here, that's `!packages/design-tokens/figcraft` in `biome.json`.
+   Here, that's `!packages/design/figcraft` in `biome.json`.
 5. Optionally, add `tokens:check` and `test` to the project's verification gate.
 
 The app keeps what is not a token:
@@ -108,9 +108,9 @@ For text styles:
 
 Colours may have alpha: they export as `#rrggbbaa`.
 
-## Config: `design-tokens.json`
+## Config: `design.json`
 
-Committed and shared. The machine paths are in `design-tokens.local.json`, not here.
+Committed and shared. The machine paths are in `design.local.json`, not here.
 
 ```jsonc
 {

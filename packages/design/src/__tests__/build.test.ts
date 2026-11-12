@@ -111,7 +111,7 @@ function config(overrides: Partial<ResolvedConfig> = {}): ResolvedConfig {
   }
 }
 
-describe('design-tokens', () => {
+describe('design', () => {
   it('turns the design file into a Tailwind theme: colour modes, fluid sizes, text style classes and raw values', () => {
     const tokens = buildTokens(snapshot([display]), config())
     const css = renderCss(tokens, config())

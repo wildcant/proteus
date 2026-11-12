@@ -2,7 +2,7 @@
 // pnpm run tokens:export    export the snapshot from the design file first, then regenerate
 // pnpm run tokens:check     exit 1 when a generated file is not what the snapshot produces
 //
-// Reads design-tokens.json from the current directory, or the path given with --config.
+// Reads design.json from the current directory, or the path given with --config.
 import { relative, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
@@ -30,7 +30,7 @@ try {
     const outdated = stale(files)
     if (outdated.length > 0) {
       process.stderr.write(
-        `design-tokens: out of date, run \`pnpm --filter @proteus/design-tokens run tokens\` and commit the result:\n${outdated.map((p) => `  ${show(p)}\n`).join('')}`,
+        `design: out of date, run \`pnpm --filter @proteus/design run tokens\` and commit the result:\n${outdated.map((p) => `  ${show(p)}\n`).join('')}`,
       )
       process.exit(1)
     }
@@ -39,6 +39,6 @@ try {
     console.info(`wrote ${[...files.keys()].map(show).join(', ')}`)
   }
 } catch (error) {
-  process.stderr.write(`design-tokens: ${error instanceof Error ? error.message : String(error)}\n`)
+  process.stderr.write(`design: ${error instanceof Error ? error.message : String(error)}\n`)
   process.exit(1)
 }

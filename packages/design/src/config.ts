@@ -2,14 +2,14 @@ import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 
-export const CONFIG_FILE = 'design-tokens.json'
+export const CONFIG_FILE = 'design.json'
 /**
  * Where this machine keeps the design file and FigCraft's CLI. Gitignored: those paths are personal,
  * and only `tokens:export` needs them. Beside the config file, same shape as `Local`.
  */
-const LOCAL_CONFIG_FILE = 'design-tokens.local.json'
+const LOCAL_CONFIG_FILE = 'design.local.json'
 
-/** Machine-specific settings, from design-tokens.local.json or the environment (which wins). */
+/** Machine-specific settings, from design.local.json or the environment (which wins). */
 type Local = {
   /** The design file. `~` is expanded. FIGCRAFT_FILE overrides it. */
   file?: string

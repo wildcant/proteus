@@ -27,7 +27,7 @@
   "dependencies": {
     "@lingui/core": "catalog:",
     "@lingui/react": "catalog:",
-    "@proteus/design-tokens": "workspace:*",
+    "@proteus/design": "workspace:*",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/icons": "workspace:*",
     "@proteus/ui": "workspace:*",
