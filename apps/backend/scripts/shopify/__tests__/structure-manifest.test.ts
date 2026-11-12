@@ -44,9 +44,9 @@ test.describe('buildStructureManifest', () => {
     )
 
     expect(manifest.metafields).toEqual([
-      { name: 'Género', namespace: 'custom', key: 'genero', type: 'list.single_line_text_field', filter: true },
-      { name: 'Estilo', namespace: 'custom', key: 'estilo', type: 'list.single_line_text_field', filter: false },
-      { name: 'Colección', namespace: 'custom', key: 'coleccion', type: 'list.single_line_text_field', filter: false },
+      { name: 'Género', namespace: 'custom', key: 'genero', type: 'list.single_line_text_field' },
+      { name: 'Estilo', namespace: 'custom', key: 'estilo', type: 'list.single_line_text_field' },
+      { name: 'Colección', namespace: 'custom', key: 'coleccion', type: 'list.single_line_text_field' },
     ])
     expect(manifest.collections).toEqual([
       {
@@ -86,13 +86,14 @@ test.describe('buildStructureManifest', () => {
       },
     ])
     expect(manifest.menu).toEqual([
-      { title: 'Selección de Don Juan', collectionHandle: 'seleccion-de-don-juan', children: [] },
+      { title: 'Selección de Don Juan', collectionHandle: 'seleccion-de-don-juan', url: null, children: [] },
       {
         title: 'Hombre',
         collectionHandle: 'hombre',
+        url: null,
         children: [
-          { title: 'Clásicos', collectionHandle: 'hombre-clasicos', children: [] },
-          { title: 'Ofertas', collectionHandle: 'hombre-ofertas', children: [] },
+          { title: 'Clásicos', collectionHandle: 'hombre-clasicos', url: null, children: [] },
+          { title: 'Ofertas', collectionHandle: 'hombre-ofertas', url: null, children: [] },
         ],
       },
     ])
@@ -116,10 +117,11 @@ test.describe('buildStructureManifest', () => {
         ],
       },
     })
-    expect(manifest.metafields.map(({ key, filter }) => [key, filter])).toEqual([
-      ['genero', true],
-      ['tipo', true],
-      ['colecciones', false],
+    // The brand is the built-in Vendor: no definition, and the seed does not filter by it.
+    expect(manifest.metafields.map(({ key }) => key)).toEqual(['genero', 'tipo', 'colecciones'])
+    expect(manifest.filters).toEqual([
+      { name: 'Género', source: 'metafield', metafield: 'custom.genero' },
+      { name: 'Tipo', source: 'metafield', metafield: 'custom.tipo' },
     ])
     expect(manifest.collections).toHaveLength(15)
     expect(manifest.menu.map((item) => [item.title, item.children.map((child) => child.title)])).toEqual([
@@ -127,5 +129,117 @@ test.describe('buildStructureManifest', () => {
       ['Women', ['Tops', 'Bottoms']],
       ['Unisex', ['Tops', 'Bottoms', 'Shoes', 'Accessories']],
     ])
+  })
+
+  test('the vendor campo is a Proveedor condition and the Brand filter, and menu sections expand from the CSV products', async ({
+    expect,
+  }) => {
+    const structure = parse([
+      'campos:',
+      '  - { nombre: Marca, clave: marca, origen: vendor, filtro: true }',
+      '  - { nombre: Género, clave: genero, filtro: true }',
+      '  - { nombre: Modelo, clave: modelo }',
+      'categorias:',
+      '  - nombre: Hombre',
+      '    handle: hombre',
+      '    regla: { genero: [hombre] }',
+      '    hijos:',
+      '      - nombre: Clásicos',
+      '        handle: hombre-clasicos',
+      '        regla: { genero: [hombre], modelo: [Stan Smith] }',
+      '        hijos:',
+      '          - { nombre: Blancos, handle: hombre-clasicos-blancos }',
+      '  - nombre: Nike',
+      '    handle: nike',
+      '    regla: { marca: [Nike] }',
+      'colecciones:',
+      '  - { nombre: Rebajas, handle: rebajas }',
+      'menu:',
+      '  - categoria: hombre',
+      '    secciones:',
+      '      - { nombre: Estilos, mostrar: subcategorias }',
+      '      - { nombre: Marcas, mostrar: { valores: marca } }',
+      '      - { nombre: Modelos, mostrar: { valores: modelo, limite: 2 } }',
+      '      - nombre: Destacados',
+      '        enlaces:',
+      '          - { nombre: Stan Smith Adidas, filtro: { marca: [Adidas], modelo: [Stan Smith] } }',
+      '          - { coleccion: rebajas }',
+      '  - coleccion: rebajas',
+      '    secciones:',
+      // A manual Collection's members are picked in the admin: the CSV cannot say which, so no values.
+      '      - { nombre: Marcas, mostrar: { valores: marca } }',
+      '  - categoria: nike',
+    ])
+    const csvProducts = [
+      { brand: 'Adidas', metafields: { genero: ['hombre'], modelo: ['Stan Smith'] } },
+      // One brand whatever its case, under the spelling met first.
+      { brand: 'adidas', metafields: { genero: ['hombre'], modelo: ['Gazelle'] } },
+      { brand: 'Nike', metafields: { genero: ['hombre'], modelo: ['Air Force 1'] } },
+      // Not the entry's: its values are not offered under Hombre.
+      { brand: 'Vans', metafields: { genero: ['mujer'], modelo: ['Old Skool'] } },
+    ]
+
+    const manifest = buildStructureManifest(structure, csvProducts)
+
+    expect(manifest.metafields.map(({ key }) => key)).toEqual(['genero', 'modelo'])
+    // In campo order, the brand first.
+    expect(manifest.filters).toEqual([
+      { name: 'Marca', source: 'vendor' },
+      { name: 'Género', source: 'metafield', metafield: 'custom.genero' },
+    ])
+    expect(manifest.collections.find((collection) => collection.handle === 'nike')?.rule).toEqual({
+      applies: 'all',
+      conditions: [{ field: 'vendor', value: 'Nike' }],
+    })
+
+    const leaf = (title: string, collectionHandle: string, url: string | null = null) => ({
+      title,
+      collectionHandle,
+      url,
+      children: [],
+    })
+    const section = (title: string, children: ReturnType<typeof leaf>[]) => ({
+      title,
+      collectionHandle: 'hombre',
+      url: null,
+      children,
+    })
+    expect(manifest.menu).toEqual([
+      {
+        title: 'Hombre',
+        collectionHandle: 'hombre',
+        url: null,
+        children: [
+          // The children alone: a grandchild would be a fourth level.
+          section('Estilos', [leaf('Clásicos', 'hombre-clasicos')]),
+          section('Marcas', [
+            leaf('Adidas', 'hombre', '/collections/hombre?filter.p.vendor=Adidas'),
+            leaf('Nike', 'hombre', '/collections/hombre?filter.p.vendor=Nike'),
+          ]),
+          // Sorted and cut at `limite`; values URL-encoded.
+          section('Modelos', [
+            leaf('Air Force 1', 'hombre', '/collections/hombre?filter.p.m.custom.modelo=Air%20Force%201'),
+            leaf('Gazelle', 'hombre', '/collections/hombre?filter.p.m.custom.modelo=Gazelle'),
+          ]),
+          section('Destacados', [
+            leaf(
+              'Stan Smith Adidas',
+              'hombre',
+              '/collections/hombre?filter.p.vendor=Adidas&filter.p.m.custom.modelo=Stan%20Smith',
+            ),
+            leaf('Rebajas', 'rebajas'),
+          ]),
+        ],
+      },
+      // Its only section has no values, so it is left with none.
+      { title: 'Rebajas', collectionHandle: 'rebajas', url: null, children: [] },
+      // No secciones: the Category's tree, as before.
+      { title: 'Nike', collectionHandle: 'nike', url: null, children: [] },
+    ])
+
+    // Without the CSV a `valores` section has nothing to read.
+    expect(() => buildStructureManifest(structure)).toThrow(
+      'The menu entry "hombre" lists the values of "marca": pass the product CSV to read them from.',
+    )
   })
 })

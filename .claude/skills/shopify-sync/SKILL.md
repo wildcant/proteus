@@ -27,18 +27,30 @@ expose their name as `textContent` rather than `aria-label`.
 ## 1. Build the manifest
 
 ```bash
-pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/estructura.yaml]
+pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/estructura.yaml] [path/to/catalogo.csv]
 ```
 
-It prints `{ metafields, collections, menu }`:
+Pass the product CSV too (absolute paths, or relative to `apps/backend`): a menu section that lists a
+campo's values (`mostrar: { valores: <clave> }`) reads them off the CSV's products, and the script
+stops without it.
+
+It prints `{ metafields, filters, collections, menu }`:
 
 - `metafields[]`: `{ name, namespace, key, type }`, the product metafield definitions the rules read.
-  `type` is always `list.single_line_text_field`.
+  `type` is always `list.single_line_text_field`. The vendor campo (`origen: vendor`, the brand) is
+  the product's built-in Vendor and has no definition.
+- `filters[]`: the storefront filters, in order. `{ name, source: 'metafield', metafield }` is a
+  metafield (`custom.<key>`); `{ name, source: 'vendor' }` is the Vendor, which Search & Discovery
+  calls "Brand".
 - `collections[]`: `{ title, handle, rule, unsupported? }`. `rule` is
-  `{ applies: 'all' | 'any', conditions: [{ metafield, value }] }` (`metafield` is `custom.<key>`),
-  or `null` for a manual collection. `unsupported` explains a rule Shopify can't express; that
-  collection is created manual, and its reason goes in the final report.
-- `menu[]`: `{ title, collectionHandle, children }`, nested as the main menu must be.
+  `{ applies: 'all' | 'any', conditions }` or `null` for a manual collection. A condition is
+  `{ metafield, value }` (`metafield` is `custom.<key>`) or `{ field: 'vendor', value }`, the
+  product's Vendor. `unsupported` explains a rule Shopify can't express; that collection is created
+  manual, and its reason goes in the final report.
+- `menu[]`: `{ title, collectionHandle, url, children }`, nested as the main menu must be. `url` null
+  links the collection `collectionHandle`; otherwise the item links that URL, the collection page
+  narrowed by Search & Discovery filter params (`/collections/hombre?filter.p.vendor=Nike`). A menu
+  entry with sections has one child per section (Marcas), each holding its links (Nike).
 
 A non-zero exit prints the structure file's errors; stop and show them to the user.
 
@@ -116,6 +128,9 @@ through shadow roots, visible elements only); snapshot uids work too.
   directly (no empty row first). Pick "Metacampo" › name, then the new row's "Agregar" and the value.
   Add the new conditions first, then retarget the existing one: retargeting first left the picker
   state confused once.
+- **A Vendor condition** (`{ field: 'vendor', value }`): pick "Proveedor" in the attribute picker
+  rather than "Metacampo"; the condition reads "Proveedor es igual a". Type `value` into its value
+  box. Verify on first run.
 - **All or any:** with two or more conditions a "Cumplir [todas las | cualquier] condiciones" switch
   appears above them ("Tipo de coincidencia de inclusión"). "todas las" is the default; pick
   "cualquier" for `applies: 'any'`.
@@ -143,9 +158,12 @@ Open `/content/menus` and the main menu.
    1. Click "Agregar elemento del menú" for a top-level item, or "Agregar elemento del menú a
       <parent>" for a child. The "Etiqueta" field gets focus.
    2. Type the item's `title`, then press Tab to reach "Enlace".
-   3. Type the title of the collection whose `handle` is the item's `collectionHandle`. When the
-      result list shows the collection, click it. When it shows link categories instead, click
-      "Colecciones" first.
+   3. With `url` null: type the title of the collection whose `handle` is the item's
+      `collectionHandle`. When the result list shows the collection, click it. When it shows link
+      categories instead, click "Colecciones" first.
+      With a `url`: type (or paste) the URL into "Enlace" and accept it as a web address rather
+      than picking a result. Verify on first run: after closing the item, its link should read the
+      URL with its `filter.p.*` params intact.
    4. Click "Cerrar elemento del menú".
 3. A parent shows "Agregar elemento del menú a <parent>" only once it has a child. Nest its first
    child by hand: add it as a top-level item, which lands last. Then use the keyboard:
@@ -165,20 +183,26 @@ Done when the menu tree equals the manifest's `menu`, item for item and level fo
 The Search & Discovery app (`/apps/search-and-discovery/filters`) holds the storefront's collection
 filters. Its pages render inside an iframe; snapshots reach into it.
 
-Add one filter per manifest `metafields[]` entry with `filter: true`, in manifest order, skipping any
-already listed.
+Add one filter per manifest `filters[]` entry, in manifest order, skipping any already listed. A
+campo that is not in `filters[]` (Colecciones) is not a filter; it only builds collections.
 
 1. Open `/apps/search-and-discovery/filters/new`.
 2. Click "Seleccionar fuente". A dialog lists the sources, each as a button "<name>, n de m, botón"
    with its kind ("Metacampo de producto", "Opción de producto", or "Brand · Origen: Proveedor ·
-   Estándar" for Vendor). Click the entry's name ("Género").
-3. "Etiqueta del filtro" fills with the metafield name; keep it. Keep "Condición OR" (a shopper's
-   selections widen the list). Click "Guardar".
-4. Repeat for every other manifest `metafields[]` entry with `filter: true`, in manifest order. An
-   entry with `filter: false` (Colecciones) is not a filter; it only builds collections.
+   Estándar" for Vendor). For `source: 'metafield'` click the metafield's name ("Género"); for
+   `source: 'vendor'` click "Brand".
+3. "Etiqueta del filtro" fills with the source's name. Keep it for a metafield; for Brand, set it to
+   the entry's `name` ("Marca"). Keep "Condición OR" (a shopper's selections widen the list). Click
+   "Guardar".
+4. Repeat for every other `filters[]` entry, in manifest order. The order the app lists them in is
+   the order the storefront shows them; reorder by drag if an existing one is out of place.
 
-Done when a collection page on the live storefront shows each `filter: true` entry ("Género", "Tipo")
-as a separate filter.
+The menu's filtered links (`filter.p.vendor=…`, `filter.p.m.custom.<key>=…`) only narrow the page
+when that field is a filter here, so a section that lists a campo's values needs it in `filters[]`
+(for a campo with `filtro: false`, add the filter anyway, or tell the user the links will not narrow).
+
+Done when a collection page on the live storefront shows each `filters[]` entry ("Marca", "Género",
+"Tipo") as a separate filter.
 
 ## 7. Verify
 
@@ -188,8 +212,11 @@ as a separate filter.
 2. Open the live storefront and check the header: its links and their nesting follow the menu, and
    each link opens its collection. From a storefront page, `fetch('/collections/<handle>/products.json?limit=250')`
    returns each collection's live members, which checks every count in one script.
+3. Open a few filtered links (a brand, a model): the collection page shows the filter applied and
+   only products holding that value.
 
-Done when every count matches and every header link lands on its collection.
+Done when every count matches, every header link lands on its collection, and every filtered link
+lands on its collection narrowed.
 
 ## Report
 
