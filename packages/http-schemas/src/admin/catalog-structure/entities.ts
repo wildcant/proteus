@@ -8,10 +8,15 @@ export type AdminCatalogStructureError = z.input<typeof AdminCatalogStructureErr
 
 /**
  * A metafield definition the file creates, updates or deletes. `filterable` is its `filtro`; `source`
- * is its `origen`, `vendor` being the product's brand rather than a metafield.
+ * is its `origen`, `vendor` being the product's brand and `type` its Product Type rather than a metafield.
  */
 export const AdminCatalogStructureMetafieldChange = z
-  .object({ key: z.string(), name: z.string(), filterable: z.boolean(), source: z.enum(['metafield', 'vendor']) })
+  .object({
+    key: z.string(),
+    name: z.string(),
+    filterable: z.boolean(),
+    source: z.enum(['metafield', 'vendor', 'type']),
+  })
   .openapi('AdminCatalogStructureMetafieldChange')
 
 /** A Category the file creates, updates or deletes. `parentHandle` is where it ends up, or where it was for a delete. */
@@ -40,24 +45,51 @@ const AdminNavigationLink = z
   ])
   .openapi('AdminNavigationLink')
 
+/** A section's `nota`, the short text shown under its links. */
+const note = z.string().optional()
+
 /**
- * One section of a menu entry's panel as the file writes it: the entry's child Categories, each value
- * of one field among its products (at most `limit`), or fixed links.
+ * One section of a menu entry's panel as the file writes it: the entry's child Categories; each value
+ * of one field among its products (at most `limit`); those values grouped by `groupKey` (at most
+ * `groups` groups, `limit` values each); each value of a product option (`option`, by title); or
+ * fixed links.
  */
 const AdminNavigationSection = z
   .discriminatedUnion('type', [
-    z.object({ type: z.literal('subcategories'), name: z.string() }),
-    z.object({ type: z.literal('values'), name: z.string(), key: z.string(), limit: z.number().int().nullable() }),
-    z.object({ type: z.literal('links'), name: z.string(), links: z.array(AdminNavigationLink) }),
+    z.object({ type: z.literal('subcategories'), name: z.string(), note }),
+    z.object({
+      type: z.literal('values'),
+      name: z.string(),
+      key: z.string(),
+      limit: z.number().int().nullable(),
+      note,
+    }),
+    z.object({
+      type: z.literal('groups'),
+      name: z.string(),
+      key: z.string(),
+      groupKey: z.string(),
+      groups: z.number().int().nullable(),
+      limit: z.number().int().nullable(),
+      note,
+    }),
+    z.object({ type: z.literal('option'), name: z.string(), option: z.string(), note }),
+    z.object({ type: z.literal('links'), name: z.string(), links: z.array(AdminNavigationLink), note }),
   ])
   .openapi('AdminNavigationSection')
 
 /**
  * One entry of the store's menu: a Category or a Collection. Without `sections` a Category brings its
- * children; with them the entry opens a panel of those sections.
+ * children; with them the entry opens a panel of those sections. `footer` holds the links set apart
+ * below the panel's columns.
  */
 export const AdminNavigationEntry = z
-  .object({ type: AdminNavigationTargetType, handle: z.string(), sections: z.array(AdminNavigationSection) })
+  .object({
+    type: AdminNavigationTargetType,
+    handle: z.string(),
+    sections: z.array(AdminNavigationSection),
+    footer: z.array(AdminNavigationLink).optional(),
+  })
   .openapi('AdminNavigationEntry')
 export type AdminNavigationEntry = z.input<typeof AdminNavigationEntry>
 

@@ -11,23 +11,35 @@ export type StoreNavigationLinkDTO =
   | { type: 'filter'; name: string; filter: Record<string, string[]> }
   | { type: StoreNavigationTargetType; handle: string; name: string | null }
 
+/** What every section may carry: a short text the store shows under its links, e.g. "Te mostramos solo lo que hay en tu talla." */
+type StoreNavigationSectionNote = { note?: string }
+
 /**
  * One column of a menu entry's panel, as the structure file writes it: the entry's visible child
- * Categories, each distinct value of one field among the entry's products (cut at `limit`), or fixed links.
+ * Categories; each distinct value of one field among the entry's products (cut at `limit`); those
+ * values grouped by a second field (`groupKey`), the groups with the most products first, at most
+ * `groups` of them and `limit` values in each; the values of a product option (`option`, by title)
+ * the entry's products offer; or fixed links.
  */
-export type StoreNavigationSectionDTO =
-  | { type: 'subcategories'; name: string }
-  | { type: 'values'; name: string; key: string; limit: number | null }
-  | { type: 'links'; name: string; links: StoreNavigationLinkDTO[] }
+export type StoreNavigationSectionDTO = StoreNavigationSectionNote &
+  (
+    | { type: 'subcategories'; name: string }
+    | { type: 'values'; name: string; key: string; limit: number | null }
+    | { type: 'groups'; name: string; key: string; groupKey: string; groups: number | null; limit: number | null }
+    | { type: 'option'; name: string; option: string }
+    | { type: 'links'; name: string; links: StoreNavigationLinkDTO[] }
+  )
 
 /**
  * One entry of the store's menu: a Category or a Collection, by handle. With no `sections` a
- * Category brings its children; with them, the entry opens a panel of those sections.
+ * Category brings its children; with them, the entry opens a panel of those sections. `footer` holds
+ * the links set apart below the panel's columns; an entry without one has none.
  */
 export type StoreNavigationEntryDTO = {
   type: StoreNavigationTargetType
   handle: string
   sections: StoreNavigationSectionDTO[]
+  footer?: StoreNavigationLinkDTO[]
 }
 
 export type StoreDTO = {

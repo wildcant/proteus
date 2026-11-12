@@ -1394,12 +1394,19 @@
             "items": {
               "$ref": "#/components/schemas/StoreNavigationSection"
             }
+          },
+          "footer": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationLink"
+            }
           }
         },
         "required": [
           "type",
           "handle",
-          "sections"
+          "sections",
+          "footer"
         ]
       },
       "StoreNavigationSection": {
@@ -1408,16 +1415,35 @@
           "name": {
             "type": "string"
           },
+          "display": {
+            "type": "string",
+            "enum": [
+              "list",
+              "chips"
+            ]
+          },
           "links": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StoreNavigationLink"
             }
+          },
+          "viewAll": {
+            "$ref": "#/components/schemas/StoreNavigationViewAll"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
           "name",
-          "links"
+          "display",
+          "links",
+          "viewAll",
+          "note"
         ]
       },
       "StoreNavigationLink": {
@@ -1463,6 +1489,42 @@
         "required": [
           "key",
           "value"
+        ]
+      },
+      "StoreNavigationViewAll": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "collection"
+            ]
+          },
+          "handle": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationFilter"
+            }
+          }
+        },
+        "required": [
+          "label",
+          "type",
+          "handle",
+          "filters"
         ]
       },
       "StoreOrderListResponse": {
