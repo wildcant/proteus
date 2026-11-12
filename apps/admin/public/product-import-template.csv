@@ -1,8 +1,10 @@
-Title,URL handle,Description,Vendor,Type,Tags,Status,SKU,Option1 name,Option1 value,Option2 name,Option2 value,Price,Inventory tracker,Inventory quantity,Continue selling when out of stock,Weight value (grams),Product image URL,Image position,Variant image URL
-Classic Hoodie,classic-hoodie,"<p>A heavyweight cotton hoodie with a brushed fleece lining.</p>",Proteus,Hoodie,cotton,active,HOODIE-BLK-S,Color,Black,Size,S,45.00,shopify,20,DENY,550,,,
-,classic-hoodie,,,,,,HOODIE-BLK-M,,Black,,M,45.00,shopify,25,DENY,580,,,
-,classic-hoodie,,,,,,HOODIE-BLK-L,,Black,,L,45.00,shopify,15,DENY,610,,,
-,classic-hoodie,,,,,,HOODIE-GRY-M,,Grey,,M,45.00,shopify,10,CONTINUE,580,,,
-Canvas Tote Bag,canvas-tote-bag,"<p>A sturdy everyday tote in natural canvas.</p>",Proteus,Bag,canvas,active,TOTE-NAT,,,,,18.50,shopify,40,DENY,300,,,
-Ceramic Mug,ceramic-mug,"<p>A 350 ml stoneware mug, dishwasher safe.</p>",Proteus,Mug,gift,draft,MUG-WHT,Color,White,,,12.00,shopify,60,DENY,400,,,
-,ceramic-mug,,,,,,MUG-SND,,Sand,,,12.00,shopify,35,DENY,400,,,
+Title,URL handle,Description,Vendor,Type,Tags,Status,SKU,Option1 name,Option1 value,Option2 name,Option2 value,Price,Inventory tracker,Inventory quantity,Continue selling when out of stock,Weight value (grams),Product image URL,Image position,Variant image URL,Género (product.metafields.custom.genero),Tipo (product.metafields.custom.tipo),Colecciones (product.metafields.custom.colecciones)
+Classic Hoodie,classic-hoodie,A heavyweight cotton hoodie with a brushed fleece lining.,Proteus,Hoodie,cotton,active,HOODIE-BLK-S,Color,Black,Size,S,45.00,shopify,20,DENY,550,,,,"men
+women",tops,essentials
+,classic-hoodie,,,,,,HOODIE-BLK-M,,Black,,M,45.00,shopify,25,DENY,580,,,,,,
+,classic-hoodie,,,,,,HOODIE-BLK-L,,Black,,L,45.00,shopify,15,DENY,610,,,,,,
+,classic-hoodie,,,,,,HOODIE-GRY-M,,Grey,,M,45.00,shopify,10,CONTINUE,580,,,,,,
+Canvas Tote Bag,canvas-tote-bag,A sturdy everyday tote in natural canvas.,Proteus,Bag,canvas,active,TOTE-NAT,,,,,18.50,shopify,40,DENY,300,,,,unisex,accessories,"essentials
+featured"
+Ceramic Mug,ceramic-mug,"A 350 ml stoneware mug, dishwasher safe.",Proteus,Mug,gift,draft,MUG-WHT,Color,White,,,12.00,shopify,60,DENY,400,,,,,,
+,ceramic-mug,,,,,,MUG-SND,,Sand,,,12.00,shopify,35,DENY,400,,,,,,
