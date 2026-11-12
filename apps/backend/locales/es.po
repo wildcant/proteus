@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:141
+#: src/routes.ts:143
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
@@ -613,22 +613,22 @@ msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Solo se puede confirmar o cancelar una importación en vista previa."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:372
+#: src/modules/product/services/product-module-service.ts:373
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:451
+#: src/modules/product/services/product-module-service.ts:452
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1211
+#: src/modules/product/services/product-module-service.ts:1230
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1298
+#: src/modules/product/services/product-module-service.ts:1317
 msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 msgstr "No hay ningún metacampo definido con la clave {keys}. Decláralo en campos del archivo de estructura."
 

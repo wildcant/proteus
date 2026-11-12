@@ -14,11 +14,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/store/product/queries.ts:6
-msgid "Write a filter as key:value"
-msgstr "Write a filter as key:value"
-
-#. js-lingui-explicit-id
 #: src/bounded.ts:63
 msgid "Use {maximum} characters or fewer"
 msgstr "Use {maximum} characters or fewer"
@@ -52,6 +47,11 @@ msgstr "Name is required"
 #: src/store/user/payloads.ts:16
 msgid "Enter a valid email address"
 msgstr "Enter a valid email address"
+
+#. js-lingui-explicit-id
+#: src/store/product/queries.ts:6
+msgid "Write a filter as key:value"
+msgstr "Write a filter as key:value"
 
 #. js-lingui-explicit-id
 #: src/store/customer/payloads.ts:7
