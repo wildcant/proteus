@@ -146,6 +146,10 @@ msgstr "¿Ya tienes una cuenta?"
 msgid "Apartment, suite, etc."
 msgstr "Apartamento, oficina, etc."
 
+#: src/features/products/components/product-filters.tsx:135
+msgid "Apply"
+msgstr "Aplicar"
+
 #: src/features/address/components/address-form.tsx:26
 msgid "Are you sure you want to leave? Your unsaved changes will be lost."
 msgstr "¿Estás seguro de que quieres salir? Se perderán los cambios que no guardaste."
@@ -272,7 +276,7 @@ msgstr "Elige una nueva contraseña para tu cuenta."
 msgid "City"
 msgstr "Ciudad"
 
-#: src/features/products/components/product-metafield-filter.tsx:64
+#: src/features/products/components/product-filters.tsx:86
 msgid "Clear all"
 msgstr "Borrar todo"
 
@@ -498,7 +502,7 @@ msgstr "No pudimos actualizar tu contraseña"
 msgid "Filter by tag"
 msgstr "Filtrar por etiqueta"
 
-#: src/features/products/components/product-metafield-filter.tsx:49
+#: src/features/products/components/product-filters.tsx:62
 msgid "Filters"
 msgstr "Filtros"
 
@@ -520,6 +524,10 @@ msgstr "¿Olvidaste tu contraseña?"
 #: src/routes/_auth/forgot-password.tsx:32
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
+
+#: src/features/products/components/product-filters.tsx:129
+msgid "From"
+msgstr "Desde"
 
 #: src/features/products/components/product-card.tsx:47
 msgid "From {startingPrice}"
@@ -794,6 +802,27 @@ msgstr "En preparación"
 #: src/components/pagination.tsx:35
 msgid "Previous"
 msgstr "Anterior"
+
+#: src/features/products/components/product-filters.tsx:110
+#: src/features/products/components/product-filters.tsx:124
+msgid "Price"
+msgstr "Precio"
+
+#. placeholder {0}: format(minPrice)
+#. placeholder {1}: format(maxPrice)
+#: src/features/products/components/product-filters.tsx:107
+msgid "Price: {0} – {1}"
+msgstr "Precio: {0} – {1}"
+
+#. placeholder {0}: format(minPrice)
+#: src/features/products/components/product-filters.tsx:108
+msgid "Price: from {0}"
+msgstr "Precio: desde {0}"
+
+#. placeholder {0}: format(maxPrice)
+#: src/features/products/components/product-filters.tsx:109
+msgid "Price: up to {0}"
+msgstr "Precio: hasta {0}"
 
 #: src/features/products/components/product-detail.tsx:42
 #: src/features/products/components/search-results.tsx:52
@@ -1083,6 +1112,10 @@ msgstr "Este producto aún no está disponible para pedir."
 #: src/routes/_auth/verify.tsx:44
 msgid "This verification link is invalid or has expired. Request a new one from your account."
 msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nuevo desde tu cuenta."
+
+#: src/features/products/components/product-filters.tsx:132
+msgid "To"
+msgstr "Hasta"
 
 #: src/features/cart/components/cart-drawer.tsx:106
 #: src/features/checkout/components/checkout-summary.tsx:141

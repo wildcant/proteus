@@ -10,6 +10,8 @@ const productListLoaderDeps = ({ search }: { search: ProductListSearch }) => ({
   q: search.q,
   tag: search.tag,
   filter: search.filter,
+  minPrice: search.minPrice,
+  maxPrice: search.maxPrice,
   sort: search.sort,
   offset: search.offset,
 })

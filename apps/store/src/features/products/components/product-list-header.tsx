@@ -3,7 +3,7 @@ import { type ReactNode, Suspense } from 'react'
 import { PRODUCT_SORT_DEFAULT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
 import type { ProductListView } from '#/features/products/utils/product-list-search'
 import { useMarket } from '#/hooks/use-market'
-import { ProductMetafieldFilter } from './product-metafield-filter'
+import { ProductFilters } from './product-filters'
 import { ProductSort } from './product-sort'
 import { ProductTagFilter } from './product-tag-filter'
 
@@ -17,8 +17,8 @@ type ProductListHeaderProps = ProductListView & {
 }
 
 /**
- * Everything on the page above the grid: the eyebrow, the title, the Tag chips, the metafield
- * filters and the bar. It renders
+ * Everything on the page above the grid: the eyebrow, the title, the Tag chips, the filters and
+ * the bar. It renders
  * outside the grid's `<Suspense>` boundary — `orders-panel.tsx` sets that split, and it matters
  * twice over here, because a sort control that vanishes while the sort you just picked is loading
  * is the worst possible moment for it to go.
@@ -49,7 +49,7 @@ export function ProductListHeader({
         <ProductTagFilter scope={scope} search={search} onSearchChange={onSearchChange} />
       </Suspense>
       <Suspense fallback={null}>
-        <ProductMetafieldFilter scope={scope} search={search} onSearchChange={onSearchChange} />
+        <ProductFilters scope={scope} search={search} onSearchChange={onSearchChange} />
       </Suspense>
 
       {/* Sticky at every width, not just on a phone: the reference only needs a rail above `lg`

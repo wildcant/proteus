@@ -9,8 +9,8 @@ const productFilterKeys = queryKeysFactory<'store-product-filters', ListStorePro
 )
 
 /**
- * The filter bar's request for a list: its scope, the shopper's search, the chosen Tags and metafield
- * values, and the market. The choices are in it because they move the counts; the scope alone decides
+ * The filter bar's request for a list: its scope, the shopper's search, the chosen Tags, filter
+ * values and price range, and the market. The choices are in it because they move the counts; the scope alone decides
  * which values are offered. `countryCode` is required for the reason it is in `productsPageQuery`.
  */
 export const productFiltersQuery = ({
@@ -18,12 +18,16 @@ export const productFiltersQuery = ({
   q,
   tag,
   filter,
+  minPrice,
+  maxPrice,
   countryCode,
 }: {
   scope: ProductListScope
   q?: string
   tag?: string[]
   filter?: string[]
+  minPrice?: number
+  maxPrice?: number
   countryCode: string
 }): ListStoreProductFiltersParams => ({
   category: scope.category,
@@ -31,6 +35,8 @@ export const productFiltersQuery = ({
   q,
   tag,
   filter,
+  minPrice,
+  maxPrice,
   countryCode,
 })
 

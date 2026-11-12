@@ -1,11 +1,14 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Checkbox, cn } from '@proteus/ui'
 import { ChevronDownIcon } from 'lucide-react'
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import type { StoreProductFilter } from '#/api/generated/model'
+import { Form } from '#/components/form/form'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/popover'
 import { productFiltersQuery, useSuspenseProductFilters } from '#/features/products/api/product-filters'
+import { type PriceRange, usePriceRangeForm } from '#/features/products/hooks/use-price-range-form'
 import type { ProductListView } from '#/features/products/utils/product-list-search'
+import { useFormatters } from '#/hooks/use-formatters'
 import { useMarket } from '#/hooks/use-market'
 
 /** `genero:women` → the key and the value, which keeps any later colon. */
@@ -15,26 +18,36 @@ const splitSelection = (selection: string) => {
 }
 
 /**
- * A dropdown per filterable metafield ("Género", "Tipo") over the products in view, each a checkbox
- * per value with how many products it would leave. Choosing values of one metafield widens the list,
- * choosing across metafields narrows it, and a value no product would keep is disabled rather than
- * hidden. The choices live in the URL as `filter=<key>:<value>`.
+ * A dropdown per filterable metafield ("Género", "Tipo") and per product option ("Talla", "Color")
+ * over the products in view, each a checkbox per value with how many products it would leave, then a
+ * price range. Choosing values of one filter widens the list, choosing across filters narrows it, and
+ * a value no product would keep is disabled rather than hidden. The choices live in the URL as
+ * `filter=<key>:<value>`, `minPrice` and `maxPrice`.
  *
  * A chosen value the list no longer offers — a stale link — still gets its checkbox, so the shopper
  * can always take it away.
  */
-export function ProductMetafieldFilter({ scope, search, onSearchChange }: ProductListView) {
+export function ProductFilters({ scope, search, onSearchChange }: ProductListView) {
   const { t } = useLingui()
   const { current } = useMarket()
   const chosen = search.filter ?? []
+  const { minPrice, maxPrice } = search
   const filters = useSuspenseProductFilters(
-    productFiltersQuery({ scope, q: search.q, tag: search.tag, filter: chosen, countryCode: current.iso2 }),
+    productFiltersQuery({
+      scope,
+      q: search.q,
+      tag: search.tag,
+      filter: chosen,
+      minPrice,
+      maxPrice,
+      countryCode: current.iso2,
+    }),
   )
 
   const chosenOf = (key: string) =>
     chosen.map(splitSelection).flatMap((selection) => (selection.key === key ? [selection.value] : []))
   const shown = filters.filter((filter) => filter.values.length > 0 || chosenOf(filter.key).length > 0)
-  if (shown.length === 0) return null
+  const hasPrice = minPrice !== undefined || maxPrice !== undefined
 
   // Absent rather than empty, so an unfiltered list keeps its bare URL; page 1, because the old page
   // number belongs to another list.
@@ -55,16 +68,75 @@ export function ProductMetafieldFilter({ scope, search, onSearchChange }: Produc
           onToggle={(value) => toggle(filter.key, value)}
         />
       ))}
-      {chosen.length > 0 ? (
+      <PriceMenu
+        // Remounted when the range changes elsewhere — "Clear all", a link — so its fields start from the URL.
+        key={`${minPrice}-${maxPrice}`}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        onApply={(range) => onSearchChange({ ...range, offset: undefined })}
+      />
+      {chosen.length > 0 || hasPrice ? (
         <button
           type="button"
-          onClick={() => write([])}
+          onClick={() =>
+            onSearchChange({ filter: undefined, minPrice: undefined, maxPrice: undefined, offset: undefined })
+          }
           className="h-10 px-2 text-ink text-sm underline underline-offset-4 hover:text-ink-muted"
         >
           <Trans>Clear all</Trans>
         </button>
       ) : null}
     </fieldset>
+  )
+}
+
+/** The price range, two amounts in the market's currency, either left empty to leave that end open. */
+function PriceMenu({ minPrice, maxPrice, onApply }: PriceRange & { onApply: (range: PriceRange) => void }) {
+  const { t } = useLingui()
+  const { current } = useMarket()
+  const { formatPrice } = useFormatters()
+  const [open, setOpen] = useState(false)
+  const { form } = usePriceRangeForm({ minPrice, maxPrice }, (range) => {
+    onApply(range)
+    setOpen(false)
+  })
+  const format = (amount: number) => formatPrice(String(amount), current.currencyCode)
+  const hasPrice = minPrice !== undefined || maxPrice !== undefined
+
+  const label = (() => {
+    if (minPrice !== undefined && maxPrice !== undefined) return t`Price: ${format(minPrice)} – ${format(maxPrice)}`
+    if (minPrice !== undefined) return t`Price: from ${format(minPrice)}`
+    if (maxPrice !== undefined) return t`Price: up to ${format(maxPrice)}`
+    return t`Price`
+  })()
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        className={cn(
+          'flex h-10 cursor-pointer items-center gap-2 border px-4 text-ink text-sm',
+          hasPrice ? 'border-ink' : 'border-line hover:border-ink',
+        )}
+      >
+        {label}
+        <ChevronDownIcon aria-hidden className="size-4" strokeWidth={1.5} />
+      </PopoverTrigger>
+      <PopoverContent align="start" aria-label={t`Price`} className="w-72 p-4">
+        <Form onSubmit={form.handleSubmit} className="flex flex-col gap-3">
+          <form.AppForm>
+            <div className="grid grid-cols-2 gap-2">
+              <form.AppField name="minPrice">
+                {(field) => <field.TextField label={t`From`} type="number" />}
+              </form.AppField>
+              <form.AppField name="maxPrice">
+                {(field) => <field.TextField label={t`To`} type="number" />}
+              </form.AppField>
+            </div>
+            <form.SubmitButton>{t`Apply`}</form.SubmitButton>
+          </form.AppForm>
+        </Form>
+      </PopoverContent>
+    </Popover>
   )
 }
 

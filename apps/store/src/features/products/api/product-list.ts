@@ -7,7 +7,7 @@ import type { MarketContext } from '#/lib/market'
 
 /**
  * What every product list page's loader awaits, in parallel: the page of products, the Tag chips and
- * the metafield filters for the same scope. A file of its own because it reads three resources.
+ * the filters for the same scope. A file of its own because it reads three resources.
  *
  * The market's country goes in with the rest of the page's parameters: it is what the backend prices
  * the response in, so a loader that left it out would SSR one market's catalogue at another's
