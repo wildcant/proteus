@@ -964,14 +964,14 @@ msgid "Shop"
 msgstr "Shop"
 
 #: src/components/footer.tsx:29
-#: src/components/header/menu.tsx:36
+#: src/components/header/menu.tsx:38
 #: src/features/products/components/category-breadcrumb.tsx:20
 #: src/features/products/components/product-empty.tsx:55
 #: src/features/products/components/product-list-not-found.tsx:20
 msgid "Shop all"
 msgstr "Shop all"
 
-#: src/components/header/menu.tsx:39
+#: src/components/header/menu.tsx:41
 msgid "Shop all {name}"
 msgstr "Shop all {name}"
 
@@ -1165,6 +1165,7 @@ msgstr "Verification failed"
 msgid "Verifying"
 msgstr "Verifying"
 
+#: src/components/header/menu.tsx:50
 #: src/features/products/components/search-best-sellers.tsx:33
 msgid "View all"
 msgstr "View all"
@@ -1172,6 +1173,10 @@ msgstr "View all"
 #: src/features/products/components/search-results.tsx:60
 msgid "View all “{debouncedTerm}”"
 msgstr "View all “{debouncedTerm}”"
+
+#: src/components/header/menu.tsx:50
+msgid "View all {name}"
+msgstr "View all {name}"
 
 #: src/features/checkout/utils/payment/adapters/stripe/errors.ts:38
 msgid "We could not authenticate your card with your bank. Please try again or use a different card."

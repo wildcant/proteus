@@ -2,7 +2,7 @@ import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } fr
 import { expect, test } from 'vitest'
 import { page } from 'vitest/browser'
 import { render } from 'vitest-browser-react'
-import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
+import type { StoreNavigationSection, StoreProductCategoryTreeNode } from '#/api/generated/model'
 import type { MenuSource } from '#/components/header/menu-items'
 import { Nav } from '#/components/header/nav'
 import { I18nTestProvider } from '#/lib/i18n/test-i18n'
@@ -37,7 +37,15 @@ const classics = category('hombre-clasicos', 'Clásicos')
 const men = category('hombre', 'Hombre', [classics])
 const women = category('mujer', 'Mujer', [category('mujer-botas', 'Botas')])
 
-test('an entry with sections opens one titled column per section, each link carrying its filter', async () => {
+test('an entry with sections opens one titled column per section, each link carrying its filter, then its footer', async () => {
+  const column = (name: string, extra: Partial<StoreNavigationSection>): StoreNavigationSection => ({
+    name,
+    display: 'list',
+    links: [],
+    viewAll: null,
+    note: null,
+    ...extra,
+  })
   await renderNav({
     categories: [men, women],
     collections: [],
@@ -46,16 +54,15 @@ test('an entry with sections opens one titled column per section, each link carr
         type: 'category',
         handle: 'hombre',
         sections: [
-          {
-            name: 'Estilos',
+          column('Estilos', {
             links: [{ label: 'Clásicos', type: 'category', handle: 'hombre-clasicos', filters: [] }],
-          },
-          {
-            name: 'Marcas',
+            viewAll: { label: null, type: 'category', handle: 'hombre', filters: [] },
+          }),
+          // A brand's column, as a grouped section serves it: closed by a "View all" of that brand.
+          column('Nike', {
             links: [
-              { label: 'Nike', type: 'category', handle: 'hombre', filters: [{ key: 'marca', value: 'Nike' }] },
               {
-                label: 'Nike Cortez',
+                label: 'Cortez',
                 type: 'category',
                 handle: 'hombre',
                 filters: [
@@ -64,36 +71,52 @@ test('an entry with sections opens one titled column per section, each link carr
                 ],
               },
             ],
-          },
+            viewAll: { label: 'Nike', type: 'category', handle: 'hombre', filters: [{ key: 'marca', value: 'Nike' }] },
+          }),
+          column('Talla', {
+            display: 'chips',
+            links: [
+              { label: '42', type: 'category', handle: 'hombre', filters: [{ key: 'option.Talla', value: '42' }] },
+            ],
+            note: 'Only what comes in your size.',
+          }),
         ],
+        footer: [{ label: 'All brands', type: 'category', handle: 'hombre', filters: [] }],
       },
-      { type: 'category', handle: 'mujer', sections: [] },
+      { type: 'category', handle: 'mujer', sections: [], footer: [] },
     ],
   })
 
   await page.getByRole('button', { name: 'Hombre' }).click()
-  await expect
-    .element(page.getByRole('link', { name: 'Shop all Hombre' }))
-    .toHaveAttribute('href', '/categories/hombre')
+  // The columns say where "View all" goes, so there is no "Shop all" above them.
+  await expect.element(page.getByRole('link', { name: 'Shop all Hombre' })).not.toBeInTheDocument()
   await expect.element(page.getByRole('heading', { name: 'Estilos' })).toBeVisible()
-  await expect.element(page.getByRole('heading', { name: 'Marcas' })).toBeVisible()
+  await expect.element(page.getByRole('heading', { name: 'Talla' })).toBeVisible()
   await expect
     .element(page.getByRole('link', { name: 'Clásicos' }))
     .toHaveAttribute('href', '/categories/hombre-clasicos')
+  await expect
+    .element(page.getByRole('link', { name: 'View all', exact: true }))
+    .toHaveAttribute('href', '/categories/hombre')
   // The list's own `filter` param, repeated for each value.
   await expect
-    .element(page.getByRole('link', { name: 'Nike', exact: true }))
+    .element(page.getByRole('link', { name: 'Cortez' }))
+    .toHaveAttribute('href', '/categories/hombre?filter=marca%3ANike&filter=modelo%3ACortez')
+  await expect
+    .element(page.getByRole('link', { name: 'View all Nike' }))
     .toHaveAttribute('href', '/categories/hombre?filter=marca%3ANike')
   await expect
-    .element(page.getByRole('link', { name: 'Nike Cortez' }))
-    .toHaveAttribute('href', '/categories/hombre?filter=marca%3ANike&filter=modelo%3ACortez')
+    .element(page.getByRole('link', { name: '42' }))
+    .toHaveAttribute('href', '/categories/hombre?filter=option.Talla%3A42')
+  await expect.element(page.getByText('Only what comes in your size.')).toBeVisible()
+  await expect.element(page.getByRole('link', { name: 'All brands' })).toHaveAttribute('href', '/categories/hombre')
 })
 
 test('an entry without sections still opens its child Categories, untitled', async () => {
   await renderNav({
     categories: [men, women],
     collections: [],
-    navigation: [{ type: 'category', handle: 'mujer', sections: [] }],
+    navigation: [{ type: 'category', handle: 'mujer', sections: [], footer: [] }],
   })
 
   await page.getByRole('button', { name: 'Mujer' }).click()

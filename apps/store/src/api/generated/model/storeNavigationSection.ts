@@ -6,8 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreNavigationLink } from './storeNavigationLink.ts';
+import type { StoreNavigationSectionDisplay } from './storeNavigationSectionDisplay.ts';
+import type { StoreNavigationViewAll } from './storeNavigationViewAll.ts';
 
 export interface StoreNavigationSection {
   name: string;
+  display: StoreNavigationSectionDisplay;
   links: StoreNavigationLink[];
+  viewAll: StoreNavigationViewAll | null;
+  /** @nullable */
+  note: string | null;
 }
