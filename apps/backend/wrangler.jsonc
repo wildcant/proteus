@@ -18,12 +18,12 @@
   },
   // Keeps warm connections to Supabase (direct connection, caching off), so a request no longer
   // pays a TCP + TLS + auth handshake before its first query. `wrangler dev` connects to the local
-  // docker Postgres instead.
+  // Postgres that `.env.workerd` names in CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE,
+  // which `pnpm gen:workerd-env` writes from `.env.local` — so each checkout reads its own database.
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      "id": "8c9163c0aadf439a8629d11d9cff7c13",
-      "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/proteus"
+      "id": "8c9163c0aadf439a8629d11d9cff7c13"
     }
   ],
   "triggers": {

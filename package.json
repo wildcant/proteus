@@ -5,7 +5,7 @@
   "scripts": {
     "setup": "pnpm install && pnpm run pull-keys && pnpm run gen:workerd-env",
     "dev:translations": "./scripts/dev-translations.sh",
-    "gen:workerd-env": "dotenvx get -f .env.local --format eval 2>/dev/null > apps/backend/.env.workerd",
+    "gen:workerd-env": "dotenvx get -f .env.local --format eval 2>/dev/null > apps/backend/.env.workerd && echo \"CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=$(dotenvx get DIRECT_DATABASE_URL -f .env.local 2>/dev/null)\" >> apps/backend/.env.workerd",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "format:check": "biome format .",
