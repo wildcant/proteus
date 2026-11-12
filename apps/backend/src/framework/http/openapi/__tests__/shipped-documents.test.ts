@@ -58,6 +58,8 @@ const unauthenticatedOperations = {
     'listStoreProductCategoryTree',
     // A collection page's hero, reached by URL before any sign-in: catalogue data like the rest.
     'listStoreProductCollections',
+    // The filter values and counts above every product list: catalogue data like the list itself.
+    'listStoreProductFilters',
     // The Tag chips above every product list: values from the catalogue, like the list itself.
     'listStoreProductTagValues',
     'listStoreProducts',
@@ -81,6 +83,7 @@ const operationsWithoutUnauthorized = {
     'listStoreCountries',
     'listStoreProductCategoryTree',
     'listStoreProductCollections',
+    'listStoreProductFilters',
     'listStoreProductTagValues',
     'listStoreProducts',
   ],
