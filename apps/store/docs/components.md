@@ -46,7 +46,9 @@ The components the storefront ships, grouped by where they live in `apps/store/s
 
 ## src/components/ui
 
-Primitives the store takes from `@proteus/ui` today. Each moves into `src/components/ui/<name>/` on `@base-ui/react` in the primitives slice, in this order. All **not yet drawn**.
+Primitives the store takes from `@proteus/ui` today. Each moves into `src/components/ui/<name>/` on `@base-ui/react` in the primitives slice, in this order.
+
+**Drawn** on page `components/ui` (sets, variants, text properties): `Button` (`variant` × `size`, design-only `interaction` hover/focus-visible/disabled; `label`), `Input` (`invalid`, `interaction`, `viewport` md; `value`), `Label`, `FieldLabel`, `FieldError`, `Field` (`orientation`), `Checkbox` / `RadioGroupItem` (`checked`, `interaction`), `RadioGroup`, `NativeSelect` (`value`), `Skeleton`, `Tooltip` (`label`), `QuantityStepper` (`size` xs/lg; `value`), `Toast` (`title`, `description`, `hasDescription`), `DropdownMenu` and `DropdownMenuItem` (`current`, `highlighted`; `label`), `AlertDialog` (`viewport` mobile/sm; `title`, `description`, `confirmText`, `cancelText`), `AlertDialogOverlay`, `Drawer` (`side` right/left/up, `viewport`), `DrawerOverlay`, `DrawerTitle` (`label`), `RouteDrawer` (`viewport` mobile/sm; `title`, slots `body`, `footer`), `Accordion` (`variant` menu/footer; `label`). Not drawn: `Collapsible` (no classes of its own; its look is `CheckoutSummary`'s), `Toaster` (positioning only), `FieldSet`, `FieldGroup`. Animations and the states listed in the plan's "Primitives wave 2" are hand-written.
 
 - `Button` (and `ButtonLink`): today `src/components/button.tsx`, wrapping the shared button with the store's sizes (52 px) and variants `default`, `outline`, `ghost`, `link`.
 - Forms: `Field`, `FieldLabel`, `FieldSet`, `FieldGroup`, `FieldError`, `Input`, `Label`, `Checkbox`, `RadioGroup` / `RadioGroupItem`, `NativeSelect` / `NativeSelectOption`.

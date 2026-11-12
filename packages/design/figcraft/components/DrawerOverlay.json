@@ -1,0 +1,21 @@
+{
+  "name": "DrawerOverlay",
+  "page": "components/ui",
+  "properties": [],
+  "variants": [
+    {
+      "name": "DrawerOverlay",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#000000CC",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "boundVariables": {
+        "fill": "VariableID:128"
+      }
+    }
+  ]
+}

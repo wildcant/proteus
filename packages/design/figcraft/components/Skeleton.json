@@ -1,0 +1,21 @@
+{
+  "name": "Skeleton",
+  "page": "components/ui",
+  "properties": [],
+  "variants": [
+    {
+      "name": "Skeleton",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F5F5F5",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "boundVariables": {
+        "fill": "VariableID:123"
+      }
+    }
+  ]
+}

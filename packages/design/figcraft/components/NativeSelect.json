@@ -1,0 +1,130 @@
+{
+  "name": "NativeSelect",
+  "page": "components/ui",
+  "properties": [
+    {
+      "layers": [
+        532
+      ],
+      "name": "icon",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "default": "Variant title",
+      "name": "value",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "NativeSelect",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#DEE0E300",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:120",
+        "height": "VariableID:46",
+        "paddingLeft": "VariableID:37",
+        "paddingRight": "VariableID:46",
+        "paddingVertical": "VariableID:33",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          4,
+          32,
+          4,
+          10
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "height": 32,
+      "children": [
+        {
+          "name": "value",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:8"
+        },
+        {
+          "name": "icon",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:41",
+            "width": "VariableID:41"
+          },
+          "slot": "icon",
+          "width": 16,
+          "height": 16,
+          "absolute": {
+            "horizontal": "right",
+            "vertical": "center",
+            "left": 332,
+            "top": 8,
+            "right": 10,
+            "bottom": 8,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "chevron",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.33,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:19"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -166,6 +166,33 @@
   {
     "bound": {
       "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92"
+    },
+    "description": "Field labels beside a checkbox or radio (text-sm font-medium leading-snug, 19.25 px).",
+    "id": "S:17",
+    "name": "type/label-snug",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Medium",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 137.5
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
       "fontSize": "VariableID:92",
       "lineHeight": "VariableID:93"
     },
@@ -175,6 +202,46 @@
     "style": {
       "case": "original",
       "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
+    "description": "Link buttons (text-sm font-bold underline underline-offset-4).",
+    "id": "S:18",
+    "name": "type/link",
+    "style": {
+      "case": "original",
+      "decoration": "underline",
+      "decoration_look": {
+        "color": null,
+        "offset": {
+          "unit": "pixels",
+          "value": 4
+        },
+        "skip_ink": false,
+        "style": "solid",
+        "thickness": {
+          "unit": "auto"
+        }
+      },
       "fills": null,
       "font_family": "Manrope",
       "font_size": 14,
@@ -214,6 +281,33 @@
       "line_height": {
         "unit": "pixels",
         "value": 16
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:90"
+    },
+    "description": "Field help tooltips (text-xs font-extrabold uppercase leading-tight).",
+    "id": "S:21",
+    "name": "type/tooltip",
+    "style": {
+      "case": "upper",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 12,
+      "font_style": "ExtraBold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "percent",
+        "value": 125
       },
       "link": null
     },
@@ -319,6 +413,62 @@
       "font_family": "Manrope",
       "font_size": 16,
       "font_style": "Bold",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "Menu rows and accordion triggers in the side menu (text-base).",
+    "id": "S:20",
+    "name": "type/body-lg",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "Dialog and drawer titles from the kit (text-base font-medium).",
+    "id": "S:19",
+    "name": "type/label-lg",
+    "style": {
+      "case": "original",
+      "decoration": "none",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "Medium",
       "letter_spacing": {
         "unit": "percent",
         "value": 0

@@ -66,7 +66,18 @@
           "VariableID:27",
           "VariableID:117",
           "VariableID:118",
-          "VariableID:119"
+          "VariableID:119",
+          "VariableID:120",
+          "VariableID:121",
+          "VariableID:122",
+          "VariableID:123",
+          "VariableID:124",
+          "VariableID:125",
+          "VariableID:126",
+          "VariableID:127",
+          "VariableID:128",
+          "VariableID:129",
+          "VariableID:131"
         ]
       },
       "VariableCollectionId:3": {
@@ -162,7 +173,9 @@
           "VariableID:76",
           "VariableID:77",
           "VariableID:78",
-          "VariableID:79"
+          "VariableID:79",
+          "VariableID:132",
+          "VariableID:133"
         ]
       },
       "VariableCollectionId:5": {
@@ -182,7 +195,8 @@
           "VariableID:80",
           "VariableID:81",
           "VariableID:82",
-          "VariableID:83"
+          "VariableID:83",
+          "VariableID:130"
         ]
       },
       "VariableCollectionId:6": {
@@ -721,6 +735,280 @@
         },
         "variableCollectionId": "VariableCollectionId:1"
       },
+      "VariableID:120": {
+        "codeSyntax": {},
+        "description": "Form control fill: input, checkbox, radio, outline button. None in light; line at 30 % in dark, so a field reads as a well on the dark surface.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:120",
+        "key": "VariableID:120",
+        "name": "color/field",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.0,
+            "b": 0.8901960849761963,
+            "g": 0.8784313797950745,
+            "r": 0.8705882430076599
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.30000001192092896,
+            "b": 0.21960784494876862,
+            "g": 0.19607843458652496,
+            "r": 0.18039216101169586
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:121": {
+        "codeSyntax": {},
+        "description": "Outline button border: ink in light, line in dark (a quiet edge on the dark surface).",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:121",
+        "key": "VariableID:121",
+        "name": "color/outline",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "id": "VariableID:10",
+            "type": "VARIABLE_ALIAS"
+          },
+          "VariableCollectionId:2/mode2": {
+            "id": "VariableID:8",
+            "type": "VARIABLE_ALIAS"
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:122": {
+        "codeSyntax": {},
+        "description": "Keyboard focus ring (3 px): ink at 50 %, both schemes.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:122",
+        "key": "VariableID:122",
+        "name": "color/focus-ring",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.5,
+            "b": 0.07058823853731155,
+            "g": 0.062745101749897,
+            "r": 0.05098039284348488
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.5,
+            "b": 0.9647058844566345,
+            "g": 0.9607843160629272,
+            "r": 0.95686274766922
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:123": {
+        "codeSyntax": {},
+        "description": "The kit's neutral grey well: skeletons, and the prompt footer at 50 %. Light oklch(0.97 0 0), dark oklch(0.269 0 0).",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:123",
+        "key": "VariableID:123",
+        "name": "color/surface-muted",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 1.0,
+            "b": 0.9607843160629272,
+            "g": 0.9607843160629272,
+            "r": 0.9607843160629272
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 1.0,
+            "b": 0.14901961386203766,
+            "g": 0.14901961386203766,
+            "r": 0.14901961386203766
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:124": {
+        "codeSyntax": {},
+        "description": "Ghost button hover: surface-muted, at 50 % in dark.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:124",
+        "key": "VariableID:124",
+        "name": "color/ghost-hover",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 1.0,
+            "b": 0.9607843160629272,
+            "g": 0.9607843160629272,
+            "r": 0.9607843160629272
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.5,
+            "b": 0.14901961386203766,
+            "g": 0.14901961386203766,
+            "r": 0.14901961386203766
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:125": {
+        "codeSyntax": {},
+        "description": "Outline button hover: ink at 5 % in light, line at 50 % in dark.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:125",
+        "key": "VariableID:125",
+        "name": "color/outline-hover",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.05000000074505806,
+            "b": 0.07058823853731155,
+            "g": 0.062745101749897,
+            "r": 0.05098039284348488
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.5,
+            "b": 0.21960784494876862,
+            "g": 0.19607843458652496,
+            "r": 0.18039216101169586
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:126": {
+        "codeSyntax": {},
+        "description": "The prompt's cancel button fill: surface in light, line at 30 % in dark.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:126",
+        "key": "VariableID:126",
+        "name": "color/control",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "id": "VariableID:1",
+            "type": "VARIABLE_ALIAS"
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.30000001192092896,
+            "b": 0.21960784494876862,
+            "g": 0.19607843458652496,
+            "r": 0.18039216101169586
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:127": {
+        "codeSyntax": {},
+        "description": "Destructive button fill (the prompt's confirm): sale at 10 % in light, 20 % in dark.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:127",
+        "key": "VariableID:127",
+        "name": "color/sale-wash",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.10000000149011612,
+            "b": 0.1568627506494522,
+            "g": 0.01568627543747425,
+            "r": 0.8627451062202454
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.20000000298023224,
+            "b": 0.6470588445663452,
+            "g": 0.5607843399047852,
+            "r": 1.0
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:128": {
+        "codeSyntax": {},
+        "description": "Drawer scrim: black at 80 %, both schemes.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:128",
+        "key": "VariableID:128",
+        "name": "color/scrim",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.800000011920929,
+            "b": 0.0,
+            "g": 0.0,
+            "r": 0.0
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.800000011920929,
+            "b": 0.0,
+            "g": 0.0,
+            "r": 0.0
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:129": {
+        "codeSyntax": {},
+        "description": "Prompt scrim: black at 10 % behind a 4 px blur, both schemes.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:129",
+        "key": "VariableID:129",
+        "name": "color/scrim-dialog",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.10000000149011612,
+            "b": 0.0,
+            "g": 0.0,
+            "r": 0.0
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.10000000149011612,
+            "b": 0.0,
+            "g": 0.0,
+            "r": 0.0
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
       "VariableID:13": {
         "codeSyntax": {},
         "description": "",
@@ -740,6 +1028,85 @@
           }
         },
         "variableCollectionId": "VariableCollectionId:1"
+      },
+      "VariableID:130": {
+        "codeSyntax": {},
+        "description": "The route drawer's esc key cap (Tailwind's bare rounded, 0.25rem).",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:130",
+        "key": "VariableID:130",
+        "name": "radius/kbd",
+        "remote": false,
+        "resolvedType": "FLOAT",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:5/mode1": 4.0
+        },
+        "variableCollectionId": "VariableCollectionId:5"
+      },
+      "VariableID:131": {
+        "codeSyntax": {},
+        "description": "Disabled field fill: line at 50 % in light, 80 % in dark.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:131",
+        "key": "VariableID:131",
+        "name": "color/field-disabled",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.5,
+            "b": 0.8901960849761963,
+            "g": 0.8784313797950745,
+            "r": 0.8705882430076599
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.800000011920929,
+            "b": 0.21960784494876862,
+            "g": 0.19607843458652496,
+            "r": 0.18039216101169586
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:132": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:132",
+        "key": "VariableID:132",
+        "name": "space/96",
+        "remote": false,
+        "resolvedType": "FLOAT",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:4/mode1": 384.0
+        },
+        "variableCollectionId": "VariableCollectionId:4"
+      },
+      "VariableID:133": {
+        "codeSyntax": {},
+        "description": "",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:133",
+        "key": "VariableID:133",
+        "name": "space/112",
+        "remote": false,
+        "resolvedType": "FLOAT",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:4/mode1": 448.0
+        },
+        "variableCollectionId": "VariableCollectionId:4"
       },
       "VariableID:14": {
         "codeSyntax": {},
