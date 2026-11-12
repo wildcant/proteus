@@ -13,13 +13,17 @@
       "states": [
         "empty",
         "loading",
-        "unavailable"
+        "unavailable",
+        "list",
+        "removeConfirm"
       ]
     },
     "OrderContent": {
       "page": "app/_main/_authed",
       "states": [
-        "default"
+        "default",
+        "loading",
+        "error"
       ]
     },
     "AddressBook": {
@@ -39,7 +43,9 @@
     "OrderConfirmedContent": {
       "page": "app/_main",
       "states": [
-        "default"
+        "default",
+        "loading",
+        "error"
       ]
     },
     "ProductListPage": {
@@ -54,7 +60,9 @@
         "searchNoMatch",
         "category",
         "collection",
-        "notFound"
+        "notFound",
+        "filteredEmpty",
+        "empty"
       ]
     },
     "ProductDetail": {
@@ -63,7 +71,8 @@
         "default",
         "soldOut",
         "notFound",
-        "bagOpen"
+        "bagOpen",
+        "loading"
       ]
     },
     "Root": {
@@ -78,7 +87,10 @@
         "bag",
         "bagEmpty",
         "bagLoading",
-        "marketMenu"
+        "marketMenu",
+        "marketSwitchFailed",
+        "cartTransferFailed",
+        "menuExpanded"
       ]
     },
     "AuthLayout": {
@@ -117,13 +129,18 @@
       "states": [
         "default",
         "validation",
-        "failure"
+        "failure",
+        "success",
+        "missingToken"
       ]
     },
     "VerifyPage": {
       "page": "app/_auth",
       "states": [
-        "failed"
+        "failed",
+        "verifying",
+        "verified",
+        "invalid"
       ]
     },
     "CheckoutContent": {
@@ -136,7 +153,12 @@
         "addressOptions",
         "addressCreate",
         "deleteAddressConfirm",
-        "addressEdit"
+        "addressEdit",
+        "loading",
+        "paymentError",
+        "newCard",
+        "accountOptions",
+        "unsavedChanges"
       ]
     },
     "CheckoutLayout": {
@@ -149,6 +171,13 @@
       "page": "app/__root",
       "states": [
         "default"
+      ]
+    },
+    "CheckoutReturn": {
+      "page": "app/_checkout",
+      "states": [
+        "completing",
+        "failed"
       ]
     }
   },
@@ -451,6 +480,54 @@
           "to": "RegisterForm",
           "toState": "default",
           "condition": "the footer"
+        },
+        {
+          "event": "CHANGE_MARKET",
+          "from": "Root",
+          "fromState": "marketMenu",
+          "to": "Root",
+          "toState": "marketSwitchFailed",
+          "condition": "the bag can't be moved to that market"
+        },
+        {
+          "event": "BACK_TO_PREVIOUS_MARKET",
+          "from": "Root",
+          "fromState": "marketSwitchFailed",
+          "to": "Root",
+          "toState": "default",
+          "condition": "a full page load"
+        },
+        {
+          "event": "EXPAND_GROUP",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "menuExpanded",
+          "condition": "component state"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "menuExpanded",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": ""
+        },
+        {
+          "event": "SIGNED_IN",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "cartTransferFailed",
+          "condition": "the bag didn't move to the account"
+        },
+        {
+          "event": "RETRY_TRANSFER",
+          "from": "Root",
+          "fromState": "cartTransferFailed",
+          "to": "Root",
+          "toState": "default",
+          "condition": "the bag moves to the account; no navigation"
         }
       ]
     },
@@ -488,14 +565,6 @@
           "to": "ProductDetail",
           "toState": "default",
           "condition": "?variant, replace"
-        },
-        {
-          "event": "PLACE_ORDER",
-          "from": "CheckoutContent",
-          "fromState": "signedIn",
-          "to": "CheckoutContent",
-          "toState": "signedIn",
-          "condition": "declined or stale card: the payment error shows"
         },
         {
           "event": "OPEN_FILTERS",
@@ -738,14 +807,6 @@
           "condition": "an unknown category or collection"
         },
         {
-          "event": "SIGN_OUT",
-          "from": "CheckoutContent",
-          "fromState": "signedIn",
-          "to": "CheckoutContent",
-          "toState": "guest",
-          "condition": "the account menu"
-        },
-        {
           "event": "PRODUCT",
           "from": "ProductListPage",
           "fromState": "default",
@@ -802,12 +863,100 @@
           "condition": "redirect when the bag is empty"
         },
         {
-          "event": "CONTINUE_SHOPPING",
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "paymentError",
+          "condition": "declined or stale card: the payment error shows"
+        },
+        {
+          "event": "OPEN_ACCOUNT_OPTIONS",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "accountOptions",
+          "condition": "component state"
+        },
+        {
+          "event": "SIGN_OUT",
+          "from": "CheckoutContent",
+          "fromState": "accountOptions",
+          "to": "CheckoutContent",
+          "toState": "guest",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "CheckoutContent",
+          "fromState": "addressCreate",
+          "to": "CheckoutContent",
+          "toState": "unsavedChanges",
+          "condition": "with unsaved changes: asks first"
+        },
+        {
+          "event": "DISCARD",
+          "from": "CheckoutContent",
+          "fromState": "unsavedChanges",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "KEEP_EDITING",
+          "from": "CheckoutContent",
+          "fromState": "unsavedChanges",
+          "to": "CheckoutContent",
+          "toState": "addressCreate",
+          "condition": ""
+        },
+        {
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutReturn",
+          "toState": "completing",
+          "condition": "a redirect method: the bank's page, then back here"
+        },
+        {
+          "event": "ORDER_PLACED",
+          "from": "CheckoutReturn",
+          "fromState": "completing",
+          "to": "OrderConfirmedContent",
+          "toState": "default",
+          "condition": "payment succeeded or processing"
+        },
+        {
+          "event": "BACK_TO_CHECKOUT",
+          "from": "CheckoutReturn",
+          "fromState": "failed",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "LOAD_FAILED",
           "from": "OrderConfirmedContent",
           "fromState": "default",
+          "to": "OrderConfirmedContent",
+          "toState": "error",
+          "condition": "component state: the order read fails"
+        },
+        {
+          "event": "CONTINUE_SHOPPING",
+          "from": "OrderConfirmedContent",
+          "fromState": "error",
           "to": "ProductListPage",
           "toState": "default",
-          "condition": "when the order can't be loaded"
+          "condition": ""
+        },
+        {
+          "event": "PAYMENT_FAILED",
+          "from": "CheckoutReturn",
+          "fromState": "completing",
+          "to": "CheckoutReturn",
+          "toState": "failed",
+          "condition": "declined, a stale card, or the method can't resume"
         }
       ]
     },
@@ -919,28 +1068,12 @@
           "condition": ""
         },
         {
-          "event": "SIGN_IN",
-          "from": "ResetPasswordForm",
-          "fromState": "default",
-          "to": "LoginForm",
-          "toState": "default",
-          "condition": "after the password is updated (success view)"
-        },
-        {
           "event": "BACK_TO_SIGN_IN",
           "from": "VerifyPage",
           "fromState": "failed",
           "to": "LoginForm",
           "toState": "default",
           "condition": "the link failed or is invalid"
-        },
-        {
-          "event": "SIGN_IN",
-          "from": "VerifyPage",
-          "fromState": "failed",
-          "to": "LoginForm",
-          "toState": "default",
-          "condition": "when the link verified (verified view)"
         },
         {
           "event": "SIGNED_IN",
@@ -981,6 +1114,62 @@
           "to": "ProductListPage",
           "toState": "default",
           "condition": "the wordmark"
+        },
+        {
+          "event": "PASSWORD_UPDATED",
+          "from": "ResetPasswordForm",
+          "fromState": "default",
+          "to": "ResetPasswordForm",
+          "toState": "success",
+          "condition": "the new password is saved"
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "ResetPasswordForm",
+          "fromState": "success",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "VERIFY_FAILED",
+          "from": "VerifyPage",
+          "fromState": "verifying",
+          "to": "VerifyPage",
+          "toState": "failed",
+          "condition": "the server refused the link"
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "VerifyPage",
+          "fromState": "verified",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "VerifyPage",
+          "fromState": "invalid",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "VERIFIED",
+          "from": "VerifyPage",
+          "fromState": "verifying",
+          "to": "VerifyPage",
+          "toState": "verified",
+          "condition": "component state: the link checks out"
+        },
+        {
+          "event": "INVALID_LINK",
+          "from": "VerifyPage",
+          "fromState": "verifying",
+          "to": "VerifyPage",
+          "toState": "invalid",
+          "condition": "component state: no token, or it has expired"
         }
       ]
     },
@@ -1207,6 +1396,54 @@
           "to": "AccountDetail",
           "toState": "orders",
           "condition": ""
+        },
+        {
+          "event": "PAYMENT_METHODS",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "with saved cards"
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "PaymentMethodsBook",
+          "fromState": "list",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        },
+        {
+          "event": "REMOVE_CARD",
+          "from": "PaymentMethodsBook",
+          "fromState": "list",
+          "to": "PaymentMethodsBook",
+          "toState": "removeConfirm",
+          "condition": "component state"
+        },
+        {
+          "event": "KEEP",
+          "from": "PaymentMethodsBook",
+          "fromState": "removeConfirm",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "component state"
+        },
+        {
+          "event": "CONFIRM_REMOVE",
+          "from": "PaymentMethodsBook",
+          "fromState": "removeConfirm",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "the card is detached"
+        },
+        {
+          "event": "SET_DEFAULT",
+          "from": "PaymentMethodsBook",
+          "fromState": "list",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "saves at once; no navigation"
         }
       ]
     },
@@ -1243,7 +1480,23 @@
           "fromState": "default",
           "to": "AccountDetail",
           "toState": "orders",
-          "condition": "also from the error view"
+          "condition": ""
+        },
+        {
+          "event": "LOAD_FAILED",
+          "from": "OrderContent",
+          "fromState": "default",
+          "to": "OrderContent",
+          "toState": "error",
+          "condition": "component state: the order read fails"
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "OrderContent",
+          "fromState": "error",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
         }
       ]
     },

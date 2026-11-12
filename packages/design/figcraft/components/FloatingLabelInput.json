@@ -12,6 +12,15 @@
       "type": "variant"
     },
     {
+      "default": "default",
+      "name": "position",
+      "options": [
+        "default",
+        "resting"
+      ],
+      "type": "variant"
+    },
+    {
       "default": true,
       "name": "hasHelp",
       "type": "boolean"
@@ -24,7 +33,7 @@
   ],
   "variants": [
     {
-      "name": "invalid=false",
+      "name": "invalid=false, position=default",
       "type": "COMPONENT",
       "clip": false,
       "sizing": {
@@ -125,7 +134,7 @@
             "horizontal": "hug",
             "vertical": "hug"
           },
-          "mainComponentName": "FloatingLabel",
+          "mainComponentName": "state=floated",
           "overrides": [
             "name"
           ],
@@ -142,6 +151,7 @@
             ],
             "strokesIncluded": true
           },
+          "mainSet": "FloatingLabel",
           "absolute": {
             "horizontal": "left",
             "vertical": "top",
@@ -276,7 +286,7 @@
       ]
     },
     {
-      "name": "invalid=true",
+      "name": "invalid=true, position=default",
       "type": "COMPONENT",
       "clip": false,
       "sizing": {
@@ -377,7 +387,7 @@
             "horizontal": "hug",
             "vertical": "hug"
           },
-          "mainComponentName": "FloatingLabel",
+          "mainComponentName": "state=floated",
           "overrides": [
             "name"
           ],
@@ -394,6 +404,7 @@
             ],
             "strokesIncluded": true
           },
+          "mainSet": "FloatingLabel",
           "absolute": {
             "horizontal": "left",
             "vertical": "top",
@@ -422,6 +433,512 @@
               },
               "textAlign": "left",
               "textStyle": "S:12"
+            }
+          ]
+        },
+        {
+          "name": "trailing",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "absolute": {
+            "horizontal": "right",
+            "vertical": "center",
+            "left": 290,
+            "top": 18,
+            "right": 16,
+            "bottom": 18,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "reveal",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "width": 20,
+              "height": 20,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.667,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "help",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "width": 20,
+              "height": 20,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.667,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invalid=false, position=resting",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "input",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DEE0E3",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "height": "VariableID:53",
+            "paddingBottom": "VariableID:33",
+            "paddingHorizontal": "VariableID:41",
+            "paddingTop": "VariableID:42",
+            "stroke": "VariableID:24"
+          },
+          "mainComponentName": "invalid=false, interaction=rest, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "center",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              20,
+              16,
+              4,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "height": 56,
+          "mainSet": "Input",
+          "children": [
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:13"
+            }
+          ]
+        },
+        {
+          "name": "floatingLabel",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "mainComponentName": "state=resting",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "FloatingLabel",
+          "absolute": {
+            "horizontal": "left",
+            "vertical": "center",
+            "left": 16,
+            "top": 18,
+            "right": 300,
+            "bottom": 18,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        },
+        {
+          "name": "trailing",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "absolute": {
+            "horizontal": "right",
+            "vertical": "center",
+            "left": 290,
+            "top": 18,
+            "right": 16,
+            "bottom": 18,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "reveal",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "width": 20,
+              "height": 20,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.667,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "help",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "width": 20,
+              "height": 20,
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.667,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:19"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invalid=true, position=resting",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "input",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DC0428",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "height": "VariableID:53",
+            "paddingBottom": "VariableID:33",
+            "paddingHorizontal": "VariableID:41",
+            "paddingTop": "VariableID:42",
+            "stroke": "VariableID:137"
+          },
+          "mainComponentName": "invalid=true, interaction=rest, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "center",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              20,
+              16,
+              4,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "height": 56,
+          "mainSet": "Input",
+          "children": [
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#DC0428",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:26"
+              },
+              "textAlign": "left",
+              "textStyle": "S:13"
+            }
+          ]
+        },
+        {
+          "name": "floatingLabel",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "mainComponentName": "state=resting",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "FloatingLabel",
+          "absolute": {
+            "horizontal": "left",
+            "vertical": "center",
+            "left": 16,
+            "top": 18,
+            "right": 300,
+            "bottom": 18,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
             }
           ]
         },

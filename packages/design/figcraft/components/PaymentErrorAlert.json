@@ -1,0 +1,80 @@
+{
+  "name": "PaymentErrorAlert",
+  "page": "features/checkout",
+  "properties": [
+    {
+      "default": "Your card was declined. Please try another card or contact your bank.",
+      "name": "message",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "PaymentErrorAlert",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DC0428",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "paddingHorizontal": "VariableID:38",
+        "paddingVertical": "VariableID:38",
+        "stroke": "VariableID:26"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          12,
+          12,
+          12,
+          12
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "message",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "overrides": [
+            "characters"
+          ],
+          "textStyle": "S:8"
+        }
+      ]
+    }
+  ]
+}

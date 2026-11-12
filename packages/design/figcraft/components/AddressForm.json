@@ -394,7 +394,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -492,7 +492,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -509,6 +509,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -682,7 +683,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -780,7 +781,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -797,6 +798,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -940,7 +942,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -1038,7 +1040,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -1055,6 +1057,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -1200,7 +1203,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -1298,7 +1301,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -1315,6 +1318,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -1458,7 +1462,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -1556,7 +1560,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -1573,6 +1577,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -1716,7 +1721,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -1814,7 +1819,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -1831,6 +1836,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -2004,7 +2010,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -2102,7 +2108,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -2119,6 +2125,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -2288,7 +2295,7 @@
                                 "horizontal": "fill",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "invalid=false",
+                              "mainComponentName": "invalid=false, position=default",
                               "layout": {
                                 "mode": "horizontal",
                                 "mainAlign": "min",
@@ -2380,7 +2387,7 @@
                                     "horizontal": "hug",
                                     "vertical": "hug"
                                   },
-                                  "mainComponentName": "FloatingLabel",
+                                  "mainComponentName": "state=floated",
                                   "layout": {
                                     "mode": "horizontal",
                                     "mainAlign": "min",
@@ -2394,6 +2401,7 @@
                                     ],
                                     "strokesIncluded": true
                                   },
+                                  "mainSet": "FloatingLabel",
                                   "absolute": {
                                     "horizontal": "left",
                                     "vertical": "top",
@@ -2452,9 +2460,9 @@
                                   "absolute": {
                                     "horizontal": "right",
                                     "vertical": "center",
-                                    "left": 272,
+                                    "left": 290,
                                     "top": 18,
-                                    "right": 68,
+                                    "right": 50,
                                     "bottom": 38,
                                     "parentLayout": "horizontal"
                                   },
@@ -2539,7 +2547,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -2637,7 +2645,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -2654,6 +2662,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -2797,7 +2806,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -2895,7 +2904,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -2912,6 +2921,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -3057,7 +3067,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -3155,7 +3165,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -3172,6 +3182,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -4035,7 +4046,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -4133,7 +4144,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -4150,6 +4161,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -4323,7 +4335,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -4421,7 +4433,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -4438,6 +4450,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -4581,7 +4594,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -4679,7 +4692,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -4696,6 +4709,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -4841,7 +4855,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -4939,7 +4953,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -4956,6 +4970,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -5099,7 +5114,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -5197,7 +5212,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -5214,6 +5229,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -5357,7 +5373,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -5455,7 +5471,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -5472,6 +5488,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",
@@ -5645,7 +5662,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -5743,7 +5760,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -5760,6 +5777,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -5929,7 +5947,7 @@
                                 "horizontal": "fill",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "invalid=false",
+                              "mainComponentName": "invalid=false, position=default",
                               "layout": {
                                 "mode": "horizontal",
                                 "mainAlign": "min",
@@ -6021,7 +6039,7 @@
                                     "horizontal": "hug",
                                     "vertical": "hug"
                                   },
-                                  "mainComponentName": "FloatingLabel",
+                                  "mainComponentName": "state=floated",
                                   "layout": {
                                     "mode": "horizontal",
                                     "mainAlign": "min",
@@ -6035,6 +6053,7 @@
                                     ],
                                     "strokesIncluded": true
                                   },
+                                  "mainSet": "FloatingLabel",
                                   "absolute": {
                                     "horizontal": "left",
                                     "vertical": "top",
@@ -6093,9 +6112,9 @@
                                   "absolute": {
                                     "horizontal": "right",
                                     "vertical": "center",
-                                    "left": 123,
+                                    "left": 290,
                                     "top": 18,
-                                    "right": 68,
+                                    "right": -99,
                                     "bottom": 38,
                                     "parentLayout": "horizontal"
                                   },
@@ -6180,7 +6199,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -6278,7 +6297,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -6295,6 +6314,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -6438,7 +6458,7 @@
                             "horizontal": "fill",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "invalid=false",
+                          "mainComponentName": "invalid=false, position=default",
                           "overrides": [
                             "name"
                           ],
@@ -6536,7 +6556,7 @@
                                 "horizontal": "hug",
                                 "vertical": "hug"
                               },
-                              "mainComponentName": "FloatingLabel",
+                              "mainComponentName": "state=floated",
                               "overrides": [
                                 "props"
                               ],
@@ -6553,6 +6573,7 @@
                                 ],
                                 "strokesIncluded": true
                               },
+                              "mainSet": "FloatingLabel",
                               "absolute": {
                                 "horizontal": "left",
                                 "vertical": "top",
@@ -6698,7 +6719,7 @@
                         "horizontal": "fill",
                         "vertical": "hug"
                       },
-                      "mainComponentName": "invalid=false",
+                      "mainComponentName": "invalid=false, position=default",
                       "overrides": [
                         "name"
                       ],
@@ -6796,7 +6817,7 @@
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
-                          "mainComponentName": "FloatingLabel",
+                          "mainComponentName": "state=floated",
                           "overrides": [
                             "props"
                           ],
@@ -6813,6 +6834,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FloatingLabel",
                           "absolute": {
                             "horizontal": "left",
                             "vertical": "top",

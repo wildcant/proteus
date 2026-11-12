@@ -1406,7 +1406,7 @@
                                 "paddingVertical": "VariableID:41",
                                 "stroke": "VariableID:24"
                               },
-                              "mainComponentName": "ShppingAddressPicker",
+                              "mainComponentName": "ShippingAddressPicker",
                               "layout": {
                                 "mode": "vertical",
                                 "mainAlign": "min",
@@ -3868,7 +3868,7 @@
                                 "paddingVertical": "VariableID:41",
                                 "stroke": "VariableID:24"
                               },
-                              "mainComponentName": "ShppingAddressPicker",
+                              "mainComponentName": "ShippingAddressPicker",
                               "layout": {
                                 "mode": "vertical",
                                 "mainAlign": "min",

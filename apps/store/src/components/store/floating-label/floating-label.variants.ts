@@ -3,4 +3,12 @@ import { cva } from 'class-variance-authority'
 
 export const floatingLabel = cva('flex items-start')
 
-export const floatingLabelLabel = cva('type-caption-medium text-ink-muted')
+export const floatingLabelLabel = cva('text-ink-muted', {
+  variants: {
+    state: {
+      floated: 'type-caption-medium',
+      resting: 'type-label',
+    },
+  },
+  defaultVariants: { state: 'floated' },
+})

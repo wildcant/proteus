@@ -1,0 +1,77 @@
+{
+  "name": "SelectorNotice",
+  "page": "features/checkout",
+  "properties": [
+    {
+      "default": "We couldn't load your saved cards. Enter a card below to pay.",
+      "name": "message",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "SelectorNotice",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "paddingHorizontal": "VariableID:38",
+        "paddingVertical": "VariableID:38",
+        "stroke": "VariableID:24"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          12,
+          12,
+          12,
+          12
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "message",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:8"
+        }
+      ]
+    }
+  ]
+}

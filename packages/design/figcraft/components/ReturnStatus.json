@@ -1,0 +1,83 @@
+{
+  "name": "ReturnStatus",
+  "page": "features/checkout",
+  "properties": [
+    {
+      "default": "Completing your order…",
+      "name": "title",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "ReturnStatus",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35",
+        "maxWidth": "VariableID:75",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:55"
+      },
+      "maxWidth": 500,
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 8,
+        "padding": [
+          64,
+          16,
+          64,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "title",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "center",
+          "textStyle": "S:heading"
+        },
+        {
+          "name": "hint",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "center",
+          "textStyle": "S:8"
+        }
+      ]
+    }
+  ]
+}

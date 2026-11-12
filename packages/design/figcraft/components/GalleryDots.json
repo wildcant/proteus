@@ -1,0 +1,208 @@
+{
+  "name": "GalleryDots",
+  "page": "features/products",
+  "properties": [],
+  "variants": [
+    {
+      "name": "GalleryDots",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "center",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "dot",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:49",
+            "width": "VariableID:49"
+          },
+          "mainComponentName": "current=true",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "width": 44,
+          "height": 44,
+          "mainSet": "GalleryDot",
+          "children": [
+            {
+              "name": "mark",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:18",
+                "height": "VariableID:35",
+                "width": "VariableID:35"
+              },
+              "width": 8,
+              "height": 8
+            }
+          ]
+        },
+        {
+          "name": "dot",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:49",
+            "width": "VariableID:49"
+          },
+          "mainComponentName": "current=false",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "width": 44,
+          "height": 44,
+          "mainSet": "GalleryDot",
+          "children": [
+            {
+              "name": "mark",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#BEC2C6",
+                  "type": "solid"
+                }
+              ],
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:21",
+                "height": "VariableID:35",
+                "width": "VariableID:35"
+              },
+              "width": 8,
+              "height": 8
+            }
+          ]
+        },
+        {
+          "name": "dot",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:49",
+            "width": "VariableID:49"
+          },
+          "mainComponentName": "current=false",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "width": 44,
+          "height": 44,
+          "mainSet": "GalleryDot",
+          "children": [
+            {
+              "name": "mark",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#BEC2C6",
+                  "type": "solid"
+                }
+              ],
+              "cornerRadius": 9999,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "cornerRadius": "VariableID:83",
+                "fill": "VariableID:21",
+                "height": "VariableID:35",
+                "width": "VariableID:35"
+              },
+              "width": 8,
+              "height": 8
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

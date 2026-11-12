@@ -5,7 +5,7 @@ export const floatingLabelInput = cva('relative flex items-center')
 
 export const floatingLabelInputInput = cva('flex flex-1')
 
-export const floatingLabelInputFloatingLabel = cva('absolute top-2.5 left-4 flex')
+export const floatingLabelInputFloatingLabel = cva('absolute top-2.5 left-4 flex peer-placeholder-shown:self-center')
 
 export const floatingLabelInputTrailing = cva('absolute right-4 flex items-center gap-3 self-center')
 

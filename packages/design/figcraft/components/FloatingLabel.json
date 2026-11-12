@@ -3,6 +3,15 @@
   "page": "components/store",
   "properties": [
     {
+      "default": "floated",
+      "name": "state",
+      "options": [
+        "floated",
+        "resting"
+      ],
+      "type": "variant"
+    },
+    {
       "default": "Email*",
       "name": "label",
       "type": "text"
@@ -10,7 +19,7 @@
   ],
   "variants": [
     {
-      "name": "FloatingLabel",
+      "name": "state=floated",
       "type": "COMPONENT",
       "clip": false,
       "sizing": {
@@ -49,6 +58,49 @@
           },
           "textAlign": "left",
           "textStyle": "S:12"
+        }
+      ]
+    },
+    {
+      "name": "state=resting",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:9"
         }
       ]
     }

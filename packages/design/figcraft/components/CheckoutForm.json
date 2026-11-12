@@ -466,7 +466,7 @@
                     "paddingVertical": "VariableID:41",
                     "stroke": "VariableID:24"
                   },
-                  "mainComponentName": "ShppingAddressPicker",
+                  "mainComponentName": "ShippingAddressPicker",
                   "overrides": [
                     "name"
                   ],

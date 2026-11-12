@@ -1,10 +1,10 @@
 {
-  "name": "ShppingAddressPicker",
+  "name": "ShippingAddressPicker",
   "page": "features/checkout",
   "properties": [],
   "variants": [
     {
-      "name": "ShppingAddressPicker",
+      "name": "ShippingAddressPicker",
       "type": "COMPONENT",
       "strokes": [
         {

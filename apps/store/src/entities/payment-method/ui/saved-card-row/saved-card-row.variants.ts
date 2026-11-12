@@ -3,7 +3,15 @@ import { cva } from 'class-variance-authority'
 
 export const savedCardRow = cva('flex flex-col items-stretch')
 
-export const savedCardRowRow = cva('flex')
+export const savedCardRowRow = cva('flex', {
+  variants: {
+    state: {
+      default: '',
+      selected: 'ring-1 ring-ink ring-inset',
+    },
+  },
+  defaultVariants: { state: 'default' },
+})
 
 export const savedCardRowChoice = cva('flex flex-1 items-center gap-3')
 
@@ -14,6 +22,8 @@ export const savedCardRowNetwork = cva('flex')
 export const savedCardRowText = cva('flex flex-1 flex-col items-start gap-0.5')
 
 export const savedCardRowNumber = cva('type-label text-ink')
+
+export const savedCardRowDefaultLabel = cva('type-caption hidden text-ink-muted')
 
 export const savedCardRowExpiry = cva('type-caption text-ink-muted')
 

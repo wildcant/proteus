@@ -1,0 +1,446 @@
+{
+  "name": "CartMarketSwitch",
+  "page": "features/cart",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "sm"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "Back to United States",
+      "name": "back",
+      "type": "text"
+    },
+    {
+      "default": "Error message",
+      "name": "error",
+      "type": "text"
+    },
+    {
+      "default": true,
+      "name": "hasBack",
+      "type": "boolean"
+    },
+    {
+      "default": "It is still priced in USD · ",
+      "name": "priced",
+      "type": "text"
+    },
+    {
+      "default": "We could not move your bag to Colombia",
+      "name": "title",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFB86A",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:117",
+        "gap": "VariableID:33",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:38"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "center",
+        "crossAlign": "center",
+        "gap": 4,
+        "padding": [
+          12,
+          16,
+          12,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 390,
+      "children": [
+        {
+          "name": "title",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "icon",
+              "type": "INSTANCE",
+              "clip": true,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "mainComponentName": "name=circle-alert",
+              "overrides": [
+                "name",
+                "size"
+              ],
+              "width": 20,
+              "height": 20,
+              "mainSet": "Icon",
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 2,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "titleText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:9"
+            }
+          ]
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "center",
+          "textStyle": "S:8"
+        },
+        {
+          "name": "priced",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "pricedText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:8"
+            },
+            {
+              "name": "back",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:18"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=sm",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFB86A",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:117",
+        "gap": "VariableID:33",
+        "paddingHorizontal": "VariableID:44",
+        "paddingVertical": "VariableID:38"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "center",
+        "crossAlign": "center",
+        "gap": 4,
+        "padding": [
+          12,
+          24,
+          12,
+          24
+        ],
+        "strokesIncluded": true
+      },
+      "width": 640,
+      "children": [
+        {
+          "name": "title",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:38"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 12,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "icon",
+              "type": "INSTANCE",
+              "clip": true,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:42",
+                "width": "VariableID:42"
+              },
+              "mainComponentName": "name=circle-alert",
+              "overrides": [
+                "name",
+                "size"
+              ],
+              "width": 20,
+              "height": 20,
+              "mainSet": "Icon",
+              "children": [
+                {
+                  "name": "glyph",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 2,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:18"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "titleText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:9"
+            }
+          ]
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "center",
+          "textStyle": "S:8"
+        },
+        {
+          "name": "priced",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "pricedText",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:8"
+            },
+            {
+              "name": "back",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:18"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

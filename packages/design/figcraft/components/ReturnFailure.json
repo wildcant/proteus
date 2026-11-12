@@ -1,0 +1,180 @@
+{
+  "name": "ReturnFailure",
+  "page": "features/checkout",
+  "properties": [
+    {
+      "default": "We could not pick your order back up after your payment. If you were charged, nothing has been taken twice — contact us and we will finish it.",
+      "name": "message",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "ReturnFailure",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:44",
+        "maxWidth": "VariableID:75",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:55"
+      },
+      "maxWidth": 500,
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 24,
+        "padding": [
+          64,
+          16,
+          64,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "intro",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:heading"
+            },
+            {
+              "name": "message",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "center",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "back",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "gap": "VariableID:34",
+            "height": "VariableID:52",
+            "paddingHorizontal": "VariableID:44",
+            "stroke": "VariableID:121"
+          },
+          "mainComponentName": "variant=outline, size=default, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 6,
+            "padding": [
+              0,
+              24,
+              0,
+              24
+            ],
+            "strokesIncluded": true
+          },
+          "height": 52,
+          "mainSet": "Button",
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

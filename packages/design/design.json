@@ -66,7 +66,11 @@
       "NetworkMark › artwork": "the network's badge artwork from the icon set (payment/*): fixed fills, the svg itself in code",
       "CheckoutSection › exampleAction": "example content: the action is the caller's (Contact's Sign in link)",
       "CheckoutSection › exampleBody": "example content: the step's body is the caller's",
-      "SearchDrawer › exampleResults": "example content: the results region holds SearchResults or SearchBestSellers"
+      "SearchDrawer › exampleResults": "example content: the results region holds SearchResults or SearchBestSellers",
+      "OrderError › exampleAction": "example content: the way out is the caller's (slot actions)",
+      "NewMethodPanel › exampleForm": "example content: the gateway's own form (Stripe Payment Element iframe) is the caller's",
+      "NewMethodPanel › exampleNote": "example content: the gateway's own form is the caller's",
+      "NewMethodPanel › exampleConsent": "example content: the consent is the caller's (SaveMethodConsent)"
     },
     "inline": ["Button"],
     "fullWidth": ["Input", "NativeSelect", "Field", "RadioGroup"],
@@ -86,7 +90,8 @@
       "ProductFilters": ["clear"],
       "AlertDialog": ["action", "cancel"],
       "RouteDrawer": ["close"],
-      "Toast": ["close"]
+      "Toast": ["close"],
+      "FloatingLabelInput": ["floatingLabel"]
     },
     "interactionPrefixes": {
       "QuantityStepper": {
@@ -94,6 +99,9 @@
       },
       "DropdownMenuItem": {
         "afterCurrent": "[[data-current]+&]"
+      },
+      "FloatingLabelInput": {
+        "resting": "peer-placeholder-shown"
       }
     },
     "runtimeSizes": {
@@ -109,9 +117,23 @@
       "ProductListSkeleton › subtitleLine": "horizontal",
       "ProductListSkeleton › priceLine": "horizontal",
       "SwatchValue › image": "vertical",
-      "ProductGallery › slide": "vertical"
+      "ProductGallery › slide": "vertical",
+      "ProductDetailSkeleton › mediaFirst": "vertical",
+      "ProductDetailSkeleton › mediaSecond": "vertical",
+      "ProductDetailSkeleton › mediaWide": "vertical",
+      "ProductDetailSkeleton › swatch": "vertical",
+      "ProductDetailSkeleton › titleLine": "horizontal",
+      "OrderDetailsSkeleton › thumbnail": "vertical"
     },
-    "runtimeFills": ["CheckoutSummaryBody › image", "OrderRow › image", "OrderItems › image", "CartItem › image", "ProductCard › image", "SwatchValue › image", "ProductGallery › image"]
+    "runtimeFills": [
+      "CheckoutSummaryBody › image",
+      "OrderRow › image",
+      "OrderItems › image",
+      "CartItem › image",
+      "ProductCard › image",
+      "SwatchValue › image",
+      "ProductGallery › image"
+    ]
   },
   "designMd": {
     "output": "../../DESIGN.md",

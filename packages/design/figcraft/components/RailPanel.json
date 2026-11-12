@@ -27,10 +27,8 @@
         "vertical": "hug"
       },
       "boundVariables": {
-        "minWidth": "VariableID:67",
         "paddingVertical": "VariableID:35"
       },
-      "minWidth": 224,
       "layout": {
         "mode": "vertical",
         "mainAlign": "min",
@@ -245,10 +243,8 @@
         "vertical": "hug"
       },
       "boundVariables": {
-        "minWidth": "VariableID:67",
         "paddingVertical": "VariableID:35"
       },
-      "minWidth": 224,
       "layout": {
         "mode": "vertical",
         "mainAlign": "min",
