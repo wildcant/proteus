@@ -2,7 +2,18 @@
 # metafields the rules read; `filtro: true` also offers one as a storefront filter, in this order.
 # `origen: vendor` makes a campo the product's brand, the CSV's Vendor column, instead of a metafield.
 # A rule maps each clave to the values that satisfy it: every clave must match, each by any one of
-# its values.
+# its values. mock.shop gives every product the same Vendor, so Marca is here as a smoke test only.
+#
+# A menu entry may open a panel of `secciones` instead of its children, each one of:
+#   - nombre: Estilos
+#     mostrar: subcategorias                  # the entry's child categories
+#   - nombre: Marcas
+#     mostrar: { valores: marca, limite: 8 }  # each value of a campo among the entry's products
+#   - nombre: Destacados
+#     enlaces:                                # fixed links
+#       - { nombre: Tops, filtro: { tipo: [tops] } }      # the entry's list, filtered
+#       - { coleccion: featured }                         # or a category or collection
+# This catalogue's menu keeps the plain children.
 campos:
   - nombre: Género
     clave: genero
