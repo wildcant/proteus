@@ -1,8 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Trash2Icon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { usePrompt } from '#/components/ui/prompt/prompt'
 import { useDeleteAddress } from '#/entities/address/api/addresses'
 import {
@@ -44,7 +44,7 @@ export function DeleteAddressButton({ address, className }: { address: StoreCust
       onClick={confirmAndDelete}
       disabled={deleteAddress.isPending}
     >
-      <Trash2Icon aria-hidden="true" className={cn(deleteAddressButtonIcon(), deleteAddressButtonTrash())} />
+      <Icon name="trash-2" aria-hidden="true" className={cn(deleteAddressButtonIcon(), deleteAddressButtonTrash())} />
       <span className={deleteAddressButtonLabel()}>
         <Trans>Delete</Trans>
       </span>

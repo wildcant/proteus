@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { ShoppingBagIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui-core'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { useCart } from '#/entities/cart/api/cart'
 import { CartBadge } from '#/features/cart/components/cart-badge/cart-badge'
 import {
@@ -34,7 +34,7 @@ export function CartTrigger() {
           button's own corner land six pixels inside the bag, burying it under the counter.
           `h-5 w-5` over the drawn 16px glyph: the bag renders at 20px in the running store. */}
       <span className={cartTrigger()}>
-        <ShoppingBagIcon className={cn(cartTriggerGlyph(), cartTriggerBag())} />
+        <Icon name="bag" className={cn(cartTriggerGlyph(), cartTriggerBag())} />
         {itemCount > 0 && <CartBadge count={itemCount} className={cartTriggerBadge()} />}
       </span>
     </Button>

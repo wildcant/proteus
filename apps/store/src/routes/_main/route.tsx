@@ -2,6 +2,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Footer } from '#/components/store/footer/footer'
 import { Header } from '#/components/store/header/header'
 import { useMe } from '#/entities/customer/api/customer'
+import { NetworkArtwork } from '#/entities/payment-method/ui/network-mark/network-mark'
 import { CartDrawer } from '#/features/cart/components/cart-drawer/cart-drawer'
 import { CartMismatchBanner } from '#/features/cart/components/cart-mismatch-banner'
 import { CartTrigger } from '#/features/cart/components/cart-trigger/cart-trigger'
@@ -48,7 +49,7 @@ function MainLayout() {
       <div className="flex flex-1 flex-col">
         <Outlet />
       </div>
-      <Footer menu={menu} />
+      <Footer menu={menu} renderPaymentMark={(network) => <NetworkArtwork brand={network} size={28} />} />
     </div>
   )
 }

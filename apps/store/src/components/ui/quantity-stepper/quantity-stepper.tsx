@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Loader2Icon, MinusIcon, PlusIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   quantityStepper,
   quantityStepperCount,
@@ -84,7 +84,7 @@ export function QuantityStepper({
         onClick={() => onChange(value + 1)}
         className={quantityStepperIncrement({ size })}
       >
-        <PlusIcon className={quantityStepperIncrementIcon({ size })} />
+        <Icon name="plus" className={quantityStepperIncrementIcon({ size })} />
       </StepperButton>
     </div>
   )
@@ -99,8 +99,8 @@ export function QuantityStepper({
  * mark stays continuous as the count falls to one.
  */
 function DecrementIcon({ isRemoving, className }: { isRemoving: boolean; className: string }) {
-  if (isRemoving) return <Loader2Icon className={cn(className, 'animate-spin')} />
-  return <MinusIcon className={className} />
+  if (isRemoving) return <Icon name="loader-2" className={cn(className, 'animate-spin')} />
+  return <Icon name="minus" className={className} />
 }
 
 type StepperButtonProps = {

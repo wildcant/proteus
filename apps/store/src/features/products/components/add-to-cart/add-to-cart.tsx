@@ -1,9 +1,9 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Loader2Icon } from 'lucide-react'
 import { useState } from 'react'
 import type { StoreProductResponseProduct, StoreProductVariant } from '#/api/generated/model'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { QuantityStepper } from '#/components/ui/quantity-stepper/quantity-stepper'
 import { useAddLineItem } from '#/entities/cart/api/cart'
 import {
@@ -81,7 +81,7 @@ export function AddToCart({ product, selectedVariant, className }: AddToCartProp
         disabled={addLineItem.isPending || !selectedVariant || isSoldOut}
         onClick={handleAddToCart}
       >
-        {addLineItem.isPending ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : null}
+        {addLineItem.isPending ? <Icon name="loader-2" className="mr-2 size-4 animate-spin" /> : null}
         {isSoldOut ? <Trans>Sold out</Trans> : <Trans>Add to cart</Trans>}
       </Button>
     </div>

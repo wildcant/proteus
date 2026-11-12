@@ -1,11 +1,11 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Trash2Icon } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { StoreSavedMethod } from '#/api/generated/model'
 import { PaymentRow } from '#/components/store/payment-row/payment-row'
 import { paymentRowContent } from '#/components/store/payment-row/payment-row.variants'
 import { FieldLabel } from '#/components/ui/field-label/field-label'
+import { Icon } from '#/components/ui/icon/icon'
 import { RadioGroupItem } from '#/components/ui/radio-group-item/radio-group-item'
 import { Skeleton } from '#/components/ui/skeleton/skeleton'
 import { expiryStatus, formatExpiry } from '#/entities/payment-method/lib/expiry'
@@ -186,7 +186,7 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
               '-mr-2 shrink-0 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink',
             )}
           >
-            <Trash2Icon className={savedCardRowIcon()} />
+            <Icon name="trash-2" className={savedCardRowIcon()} />
           </button>
         </div>
       </PaymentRow>

@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PackageIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   productListNotFound,
   productListNotFoundAction,
@@ -25,7 +25,7 @@ export function ProductListNotFound({ heading, body }: { heading: ReactNode; bod
   return (
     // `mx-auto w-full` centres the capped page, which the design file draws as stretched.
     <main className={cn(productListNotFound(), 'mx-auto w-full')}>
-      <PackageIcon className={cn(productListNotFoundIcon(), productListNotFoundPackage())} strokeWidth={1.5} />
+      <Icon name="package" className={cn(productListNotFoundIcon(), productListNotFoundPackage())} strokeWidth={1.5} />
       <div className={productListNotFoundBody()}>
         <div className={productListNotFoundText()}>
           <h1 className={productListNotFoundTitle()}>{heading}</h1>

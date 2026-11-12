@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   PRODUCT_SORT_LABELS,
   PRODUCT_SORT_NAMES,
@@ -52,7 +52,8 @@ export function ProductSort({ value, onChange, className }: ProductSortProps) {
           </option>
         ))}
       </select>
-      <ChevronDownIcon
+      <Icon
+        name="chevron-down"
         aria-hidden="true"
         className={cn(productSortChevron(), productSortGlyph(), 'pointer-events-none')}
       />

@@ -1,8 +1,8 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { MoreVerticalIcon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { Button, ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover/popover'
 import { usePrompt } from '#/components/ui/prompt/prompt'
 import { useDeleteAddress } from '#/entities/address/api/addresses'
@@ -63,7 +63,7 @@ export function AddressActions({ address, className }: { address: StoreCustomerA
           />
         }
       >
-        <MoreVerticalIcon className="size-5" />
+        <Icon name="more-vertical" className="size-5" />
       </PopoverTrigger>
       {/* `static`: the instance's `relative` would place the arrow from inside the popup's border,
           1px off the Popover's own (unpositioned) placement. */}

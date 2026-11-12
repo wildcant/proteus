@@ -1,7 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'
 import type { MenuSource } from '#/components/header/menu-items'
@@ -26,6 +25,7 @@ import { ThemeToggle } from '#/components/store/theme-toggle/theme-toggle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
 import { Button } from '#/components/ui/button/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '#/components/ui/drawer/drawer'
+import { Icon } from '#/components/ui/icon/icon'
 import { useModal } from '#/lib/modal-state'
 
 /** A row's text is its own children, so the row carries the label's type. */
@@ -77,7 +77,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
               />
             }
           >
-            <XIcon className="h-5 w-5" />
+            <Icon name="x" className="h-5 w-5" />
           </DrawerClose>
         </div>
 
@@ -98,7 +98,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
                 ) : (
                   <MenuLink destination={entry} className={rowClassName}>
                     {entry.label}
-                    <ChevronRightIcon className={chevronClassName} />
+                    <Icon name="chevron-right" className={chevronClassName} />
                   </MenuLink>
                 )}
               </li>
@@ -106,7 +106,7 @@ export function SideMenu({ menu }: { menu: MenuSource }) {
             <li>
               <Link to="/account" className={rowClassName}>
                 <Trans>Account</Trans>
-                <ChevronRightIcon className={chevronClassName} />
+                <Icon name="chevron-right" className={chevronClassName} />
               </Link>
             </li>
           </ul>

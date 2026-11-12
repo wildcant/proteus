@@ -1,7 +1,7 @@
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { ShoppingBagIcon } from 'lucide-react'
 import type { StoreCartLineItem } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import { QuantityStepper } from '#/components/ui/quantity-stepper/quantity-stepper'
 import {
   cartItem,
@@ -48,7 +48,7 @@ export function CartItem({
           <img src={item.thumbnail} alt="" className={cn(cartItemImage(), 'h-full w-full object-cover')} />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-ink-subtle">
-            <ShoppingBagIcon className="h-4 w-4" />
+            <Icon name="shopping-bag" className="h-4 w-4" />
           </div>
         )}
       </div>

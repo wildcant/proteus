@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { LogOutIcon } from 'lucide-react'
 import { Panel } from '#/components/store/panel/panel'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { useLogout } from '#/entities/customer/api/auth'
 import { useSuspenseMe } from '#/entities/customer/api/customer'
 import {
@@ -75,7 +75,7 @@ export function AccountDetail() {
           not drawn yet (Button has no icon slot at this size). */}
       <div className={cn(accountDetailFooter(), 'block')}>
         <Button variant="link" onClick={logout} className={cn(accountDetailSignOut(), 'inline-flex')}>
-          <LogOutIcon />
+          <Icon name="log-out" />
           <Trans>Sign out</Trans>
         </Button>
       </div>

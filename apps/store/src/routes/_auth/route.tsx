@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
-import { ArrowLeftIcon } from 'lucide-react'
+import { Icon } from '#/components/ui/icon/icon'
 
 export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
@@ -16,7 +16,7 @@ function AuthLayout() {
       {/* Leaving has to stay one click away: with the nav gone, the wordmark is the only
           other way back and shoppers do not reliably read it as a link. */}
       <Link to="/" className="absolute top-6 left-4 inline-flex items-center gap-1.5 text-sm sm:left-6">
-        <ArrowLeftIcon className="size-4" />
+        <Icon name="arrow-left" className="size-4" />
         <Trans>Continue shopping</Trans>
       </Link>
       {/* my-auto rather than justify-center: auto margins collapse when the content is

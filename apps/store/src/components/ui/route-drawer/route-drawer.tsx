@@ -1,7 +1,6 @@
 import { cn, RouteModalProvider } from '@proteus/ui-core'
 import { type AnyFormApi, useSelector } from '@tanstack/react-form'
 import { useBlocker, useNavigate } from '@tanstack/react-router'
-import { XIcon } from 'lucide-react'
 import { type CSSProperties, type HTMLAttributes, type PropsWithChildren, useEffect, useState } from 'react'
 import {
   AlertDialog,
@@ -22,6 +21,7 @@ import {
   DrawerPopup,
   DrawerTitle,
 } from '#/components/ui/drawer/drawer'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   routeDrawer,
   routeDrawerActions,
@@ -105,7 +105,7 @@ RouteDrawer.Header = ({
     <div className={routeDrawerActions()}>
       <kbd className={cn(routeDrawerKbd(), routeDrawerKey())}>esc</kbd>
       <DrawerClose className={cn(routeDrawerClose(), 'shrink-0 cursor-pointer outline-none transition-all')}>
-        <XIcon aria-hidden="true" className={routeDrawerCloseIcon()} />
+        <Icon name="x" aria-hidden="true" className={routeDrawerCloseIcon()} />
         <span className="sr-only">{closeLabel}</span>
       </DrawerClose>
     </div>

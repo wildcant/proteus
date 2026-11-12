@@ -1,6 +1,6 @@
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@proteus/ui-core'
-import { XIcon } from 'lucide-react'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   tagChip,
   tagChipLabel,
@@ -27,7 +27,7 @@ export function TagChip({ render, chosen = false, className, children, ...props 
       children: (
         <>
           {children}
-          <XIcon aria-hidden className={cn(tagChipRemove({ chosen }), tagChipX())} strokeWidth={1.5} />
+          <Icon name="x" aria-hidden className={cn(tagChipRemove({ chosen }), tagChipX())} strokeWidth={1.5} />
         </>
       ),
     },

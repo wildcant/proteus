@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
+import type { ComponentType, ReactNode } from 'react'
 import { MenuLink } from '#/components/header/menu'
 import { type MenuSource, type MenuTarget, resolveMenuItems } from '#/components/header/menu-items'
 import {
@@ -62,30 +62,32 @@ function useFooterColumns(menu: MenuSource): FooterColumn[] {
 /**
  * Full-colour card badges, which is the one place the ink/surface/accent palette is deliberately
  * broken: a scheme mark is only recognisable in its own colours, and a shopper scans this strip
- * for a logo rather than reading it. Each asset carries its own fills, so unlike every other mark
- * in `@proteus/icons` these do not tint and do not follow the colour scheme — a `text-*` class
- * here would be a no-op.
+ * for a logo rather than reading it. Each asset carries its own fills, so unlike every icon these
+ * do not tint and do not follow the colour scheme — a `text-*` class here would be a no-op.
  *
- * They are 100x60 badges fitted onto the square icon grid, so they render 28x16.8 at `size={28}`.
+ * The artwork is the payment-method entity's, which shared chrome may not import, so the layout
+ * route fills `renderPaymentMark` with it. The badges are 100x60 fitted onto a square grid, and the
+ * route renders them 28x16.8 in a 28 square.
  *
  * Aspirational today — `payment/providers/` holds only `system`, "Manual Payment", test-only — so
  * this strip has to be reconciled against the real provider list before the store takes money.
  */
-const paymentMarks: { label: string; mark: Icon }[] = [
-  { label: 'Visa', mark: VisaIcon },
-  { label: 'Mastercard', mark: MastercardIcon },
-  { label: 'American Express', mark: AmericanexpressIcon },
-]
+const paymentNetworks = ['visa', 'mastercard', 'amex']
 
 /**
  * Empty until there are accounts to link to, and the row renders nothing at all rather than
- * pointing marks at `#` or at a brand's logged-out home page. `@proteus/icons` already exports
- * the six marks this will use.
+ * pointing marks at `#` or at a brand's logged-out home page.
  */
-const socialLinks: { label: string; href: string; mark: Icon }[] = []
+const socialLinks: { label: string; href: string; mark: ComponentType<{ size: number }> }[] = []
 
 /** `menu` is read by the layout route: shared chrome may not import the feature. */
-export function Footer({ menu }: { menu: MenuSource }) {
+export function Footer({
+  menu,
+  renderPaymentMark,
+}: {
+  menu: MenuSource
+  renderPaymentMark: (network: string) => ReactNode
+}) {
   const columns = useFooterColumns(menu)
   const year = new Date().getFullYear()
 
@@ -152,12 +154,12 @@ export function Footer({ menu }: { menu: MenuSource }) {
             </ul>
           )}
 
-          {/* Decorative — no `title`, so `@proteus/icons` renders each `aria-hidden`. They wrap
+          {/* Decorative — the route's marks are untitled, so each renders `aria-hidden`. They wrap
               rather than shrink; 24px is already the floor for a legible mark. */}
           <ul className={cn(footerPayments(), 'order-2 m-0 list-none flex-wrap justify-center p-0 lg:order-1')}>
-            {paymentMarks.map(({ label, mark: Mark }) => (
-              <li key={label} className="flex">
-                <Mark size={28} />
+            {paymentNetworks.map((network) => (
+              <li key={network} className="flex">
+                {renderPaymentMark(network)}
               </li>
             ))}
           </ul>

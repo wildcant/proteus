@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { ChevronRightIcon, PackageIcon } from 'lucide-react'
 import type { StoreOrderListResponseOrdersItem } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import { fulfillmentLabels } from '#/entities/order/lib/fulfillment-labels'
 import {
   orderRow,
@@ -42,7 +42,7 @@ export function OrderRow({ order, className }: { order: StoreOrderListResponseOr
         </div>
       </div>
 
-      <ChevronRightIcon className={cn(orderRowChevron(), orderRowGlyph(), 'shrink-0')} />
+      <Icon name="chevron-right" className={cn(orderRowChevron(), orderRowGlyph(), 'shrink-0')} />
     </Link>
   )
 }
@@ -60,7 +60,7 @@ function OrderThumbnails({ items }: { items: StoreOrderListResponseOrdersItem['i
             <img src={item.thumbnail} alt="" className="size-full object-cover" />
           ) : (
             <div className="flex size-full items-center justify-center text-ink-subtle">
-              <PackageIcon className="size-4" />
+              <Icon name="package" className="size-4" />
             </div>
           )}
         </div>

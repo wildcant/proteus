@@ -1,7 +1,7 @@
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@proteus/ui-core'
-import { SearchIcon } from 'lucide-react'
 import { searchControl, searchControlIcon } from '#/components/store/search-control/search-control.variants'
+import { Icon } from '#/components/ui/icon/icon'
 
 type SearchControlProps = useRender.ComponentProps<'div'>
 
@@ -32,7 +32,7 @@ export function SearchControl({ render, className, children, ...props }: SearchC
       ),
       children: (
         <>
-          <SearchIcon className={cn(searchControlIcon(), 'pointer-events-none shrink-0')} />
+          <Icon name="search" className={cn(searchControlIcon(), 'pointer-events-none shrink-0')} />
           {children}
         </>
       ),

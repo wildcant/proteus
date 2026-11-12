@@ -1,10 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { ChevronLeftIcon, XIcon } from 'lucide-react'
 import { type CSSProperties, useEffect, useState } from 'react'
 import { SearchForm } from '#/components/header/search-form'
 import { Button } from '#/components/ui/button/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '#/components/ui/drawer/drawer'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   searchDrawer,
   searchDrawerBack,
@@ -65,7 +65,7 @@ export function SearchDrawer() {
               />
             }
           >
-            <ChevronLeftIcon className="h-5 w-5" />
+            <Icon name="chevron-left" className="h-5 w-5" />
           </DrawerClose>
 
           {/* The field takes the width the chevron leaves on mobile; capped and auto-margined
@@ -86,7 +86,7 @@ export function SearchDrawer() {
               />
             }
           >
-            <XIcon className="h-5 w-5" />
+            <Icon name="x" className="h-5 w-5" />
           </DrawerClose>
         </div>
 

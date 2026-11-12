@@ -1,5 +1,4 @@
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { LabelText } from '#/components/form/label-text.tsx'
 import { FloatingLabel } from '#/components/store/floating-label/floating-label'
@@ -11,6 +10,7 @@ import {
   floatingLabelSelectSelect,
   floatingLabelSelectValue,
 } from '#/components/store/floating-label-select/floating-label-select.variants'
+import { Icon } from '#/components/ui/icon/icon'
 
 type FloatingLabelSelectProps = Omit<ComponentProps<'select'>, 'size'> & {
   id: string
@@ -51,7 +51,8 @@ export function FloatingLabelSelect({ id, label, className, required, children, 
       <FloatingLabel htmlFor={id} className={floatingLabelSelectFloatingLabel()}>
         <LabelText required={required}>{label}</LabelText>
       </FloatingLabel>
-      <ChevronDownIcon
+      <Icon
+        name="chevron-down"
         aria-hidden="true"
         className={cn(floatingLabelSelectChevron(), floatingLabelSelectGlyph(), 'pointer-events-none shrink-0')}
       />

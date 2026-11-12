@@ -1,10 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ShoppingBagIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui-core'
-import { InfoIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { Button, ButtonLink } from '#/components/ui/button/button'
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from '#/components/ui/drawer/drawer'
+import { Icon } from '#/components/ui/icon/icon'
 import { useCart } from '#/entities/cart/api/cart'
 import {
   cartDrawer,
@@ -81,7 +80,7 @@ export function CartDrawer() {
             }
           >
             {/* 24px inside a 44px target; at 20 the mark read as adrift in an empty button. */}
-            <XIcon className="size-6" />
+            <Icon name="x" className="size-6" />
           </DrawerClose>
         </div>
 
@@ -96,7 +95,7 @@ export function CartDrawer() {
                   stock, so the same unit can be sold twice — which makes this the honest line. */}
               <p className={cn(cartDrawerNotice(), 'm-0 shrink-0')}>
                 <span className={cn(cartDrawerNoticeIcon(), 'shrink-0')}>
-                  <InfoIcon className={cn(cartDrawerNoticeGlyph(), cartDrawerInfo())} aria-hidden="true" />
+                  <Icon name="info" className={cn(cartDrawerNoticeGlyph(), cartDrawerInfo())} aria-hidden="true" />
                 </span>
                 <span>
                   <Trans>
@@ -155,7 +154,7 @@ export function CartDrawer() {
               {/* "Checkout", not "securely": that is a payment claim one test-only provider cannot make.
                   The bag glyph's gap is the caller's: Button has no icon slot at size default. */}
               <ButtonLink to="/checkout" className={cn(cartDrawerCheckout(), 'w-full gap-2')}>
-                <ShoppingBagIcon className="h-4 w-4" />
+                <Icon name="bag" className="h-4 w-4" />
                 <Trans>Checkout</Trans>
               </ButtonLink>
             </div>

@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useNavigate } from '@tanstack/react-router'
-import { XIcon } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
 import { SearchControl } from '#/components/store/search-control/search-control'
+import { Icon } from '#/components/ui/icon/icon'
 
 type SearchFormProps = {
   className?: string
@@ -80,7 +80,7 @@ export function SearchForm({ className, focusOnMount, value, onChange }: SearchF
           }}
           className="shrink-0 text-ink-muted hover:text-ink"
         >
-          <XIcon className="size-4" />
+          <Icon name="x" className="size-4" />
         </button>
       )}
     </SearchControl>

@@ -1,7 +1,7 @@
 import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox'
 import { cn } from '@proteus/ui-core'
-import { CheckIcon } from 'lucide-react'
 import { checkbox, checkboxIndicator } from '#/components/ui/checkbox/checkbox.variants'
+import { Icon } from '#/components/ui/icon/icon'
 
 type CheckboxProps = Omit<CheckboxPrimitive.Root.Props, 'className'> & { className?: string }
 
@@ -23,7 +23,7 @@ export function Checkbox({ className, ...props }: CheckboxProps) {
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
         className={(state) => checkboxIndicator({ checked: state.checked })}
-        render={<CheckIcon />}
+        render={<Icon name="check" />}
       />
     </CheckboxPrimitive.Root>
   )

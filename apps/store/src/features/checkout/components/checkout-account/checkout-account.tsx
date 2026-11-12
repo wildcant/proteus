@@ -1,7 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { MoreVerticalIcon } from 'lucide-react'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover/popover'
 import {
   checkoutAccount,
@@ -60,7 +60,7 @@ export function CheckoutAccount({ email, onSignOut, className }: CheckoutAccount
             />
           }
         >
-          <MoreVerticalIcon className="size-5" />
+          <Icon name="more-vertical" className="size-5" />
         </PopoverTrigger>
         <PopoverContent>
           {/* The open menu is not drawn for this row; it is AddressActions' look. */}

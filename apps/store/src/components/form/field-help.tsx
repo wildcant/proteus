@@ -1,7 +1,7 @@
 import { cn } from '@proteus/ui-core'
-import { CircleHelpIcon } from 'lucide-react'
 import { useState } from 'react'
 import { TRAILING_CONTROL } from '#/components/form/trailing-control.ts'
+import { Icon } from '#/components/ui/icon/icon'
 import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip/tooltip'
 
 /**
@@ -23,7 +23,7 @@ export function FieldHelp({ children, className }: { children: string; className
         onClick={() => setIsOpen((open) => !open)}
         render={<button type="button" className={cn(TRAILING_CONTROL, className)} />}
       >
-        <CircleHelpIcon aria-hidden="true" className="size-5" />
+        <Icon name="circle-help" aria-hidden="true" className="size-5" />
         <span className="sr-only">{children}</span>
       </TooltipTrigger>
       <TooltipContent>{children}</TooltipContent>

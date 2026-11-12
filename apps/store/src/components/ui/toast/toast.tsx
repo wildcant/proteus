@@ -1,6 +1,6 @@
 import { Toast as ToastPrimitive } from '@base-ui/react/toast'
 import { cn, toast } from '@proteus/ui-core'
-import { OctagonXIcon, XIcon } from 'lucide-react'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   toastClose,
   toastCloseIcon,
@@ -53,7 +53,7 @@ function ToastList({ closeLabel }: { closeLabel: string }) {
         )}
       >
         {toastItem.type === 'error' && (
-          <OctagonXIcon data-slot="toast-icon" aria-hidden="true" className={cn(toastIcon(), 'shrink-0')} />
+          <Icon name="octagon-x" data-slot="toast-icon" aria-hidden="true" className={cn(toastIcon(), 'shrink-0')} />
         )}
         <div className={cn(toastText(), 'min-w-0')}>
           <ToastPrimitive.Title data-slot="toast-title" className={toastTitle()} />
@@ -67,7 +67,7 @@ function ToastList({ closeLabel }: { closeLabel: string }) {
             "relative shrink-0 cursor-pointer outline-none transition-all after:absolute after:-inset-2 after:content-['']",
           )}
         >
-          <XIcon aria-hidden="true" className={toastCloseIcon()} />
+          <Icon name="x" aria-hidden="true" className={toastCloseIcon()} />
         </ToastPrimitive.Close>
       </ToastPrimitive.Content>
     </ToastPrimitive.Root>

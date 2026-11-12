@@ -1,9 +1,9 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PlusIcon } from 'lucide-react'
 import { Suspense } from 'react'
 import { BackLink } from '#/components/store/back-link/back-link'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { RadioGroup } from '#/components/ui/radio-group/radio-group'
 import { Skeleton } from '#/components/ui/skeleton/skeleton'
 import { useSuspenseAddresses, useUpdateAddress } from '#/entities/address/api/addresses'
@@ -51,7 +51,7 @@ export function AddressBook() {
             <MainAddressPanel className={addressBookMainAddress()} />
           </Suspense>
           <ButtonLink to="/account/addresses/new" className={addressBookAddAddress()}>
-            <PlusIcon />
+            <Icon name="plus" />
             <Trans>Add an address</Trans>
           </ButtonLink>
         </div>

@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#/components/ui/collapsible/collapsible'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   checkoutSummary,
   checkoutSummaryBody,
@@ -73,7 +73,8 @@ function CheckoutSummaryDisclosure({ cart }: CheckoutSummaryProps) {
           <span className={checkoutSummaryLabelText()}>
             <Trans>Order summary</Trans>
           </span>
-          <ChevronDownIcon
+          <Icon
+            name="chevron-down"
             className={cn(
               checkoutSummaryChevron(),
               checkoutSummaryGlyph(),

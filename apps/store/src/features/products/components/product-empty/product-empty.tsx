@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PackageIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   productEmpty,
   productEmptyAction,
@@ -81,7 +81,7 @@ function EmptyMessage({
 }) {
   return (
     <div className={cn(productEmpty(), className)}>
-      <PackageIcon className={cn(productEmptyIcon(), productEmptyPackage())} strokeWidth={1.5} />
+      <Icon name="package" className={cn(productEmptyIcon(), productEmptyPackage())} strokeWidth={1.5} />
       <div className={productEmptyBody()}>
         <p className={productEmptyMessage()}>{message}</p>
         {children ? <div className={productEmptyAction()}>{children}</div> : null}

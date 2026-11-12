@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { PackageIcon } from 'lucide-react'
 import type { StoreProductListItem } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   productCard,
   productCardImage,
@@ -49,7 +49,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         ) : (
           // Not drawn yet (every seeded product has a thumbnail).
           <div className="flex h-full w-full items-center justify-center text-line">
-            <PackageIcon className="h-10 w-10" />
+            <Icon name="package" className="h-10 w-10" />
           </div>
         )}
         {/* Inside the image box and a sibling of the photograph, so the hover zoom moves the

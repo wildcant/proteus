@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { useRouterState } from '@tanstack/react-router'
-import { CircleAlertIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { Icon } from '#/components/ui/icon/icon'
 import { useCart, useSwitchCartMarket } from '#/entities/cart/api/cart'
 import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
@@ -73,7 +73,7 @@ export function CartMarketSwitch() {
       className="flex flex-col items-center justify-center gap-1 bg-orange-300 px-4 py-3 text-center text-sm sm:px-6"
     >
       <span className="flex items-center gap-2 font-medium sm:gap-3">
-        <CircleAlertIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+        <Icon name="circle-alert" className="h-5 w-5 shrink-0" aria-hidden="true" />
         <Trans>We could not move your bag to {current.displayName}</Trans>
       </span>
       <span>{switchMarket.error.message}</span>

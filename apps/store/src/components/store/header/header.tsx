@@ -1,8 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { UserIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { MenuIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { MenuSource } from '#/components/header/menu-items'
 import { SearchBarTrigger, SearchIconTrigger } from '#/components/header/search-triggers'
@@ -23,6 +21,7 @@ import { Nav } from '#/components/store/nav/nav'
 import { SideMenu } from '#/components/store/side-menu/side-menu'
 import { Wordmark } from '#/components/store/wordmark/wordmark'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { useModal } from '#/lib/modal-state'
 
 /**
@@ -59,7 +58,7 @@ export function Header({
             className={cn(headerMenuButton(), '-ml-2')}
             onClick={() => setMenuOpen(true)}
           >
-            <MenuIcon className="h-5 w-5" />
+            <Icon name="menu" className="h-5 w-5" />
           </Button>
 
           <SearchIconTrigger className={headerSearchButton()} />
@@ -76,7 +75,7 @@ export function Header({
               bar because it is the one the shopper reaches for mid-task. */}
           <Link to="/account">
             <Button variant="ghost" size="icon" aria-label={t`Account`} className={headerAccountButton()}>
-              <UserIcon className="h-5 w-5" />
+              <Icon name="user" className="h-5 w-5" />
             </Button>
           </Link>
 

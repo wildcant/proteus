@@ -1,8 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PackageIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { StoreProductImage } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import { GalleryDots } from '#/features/products/components/gallery-dots'
 import {
   productGallery,
@@ -61,7 +61,7 @@ export function ProductGallery({ images, thumbnail, alt, variantId, className }:
     return (
       // Not drawn yet: every seeded product has a photograph.
       <div className={cn('flex aspect-4/5 w-full items-center justify-center bg-surface-subtle text-line', className)}>
-        <PackageIcon className="size-16" />
+        <Icon name="package" className="size-16" />
       </div>
     )
   }

@@ -1,5 +1,5 @@
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
+import { Icon } from '#/components/ui/icon/icon'
 import { PopoverTrigger } from '#/components/ui/popover/popover'
 import {
   filterTrigger,
@@ -22,7 +22,12 @@ export function FilterTrigger({ chosen, className, children, ...props }: FilterT
       {...props}
     >
       {children}
-      <ChevronDownIcon aria-hidden className={cn(filterTriggerChevron(), filterTriggerGlyph())} strokeWidth={1.5} />
+      <Icon
+        name="chevron-down"
+        aria-hidden
+        className={cn(filterTriggerChevron(), filterTriggerGlyph())}
+        strokeWidth={1.5}
+      />
     </PopoverTrigger>
   )
 }

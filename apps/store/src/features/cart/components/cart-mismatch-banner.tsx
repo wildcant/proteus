@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
-import { CircleAlertIcon } from 'lucide-react'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { useCart, useTransferCart } from '#/entities/cart/api/cart'
 
 /**
@@ -18,7 +18,7 @@ export function CartMismatchBanner({ customerId }: { customerId: string | undefi
 
   return (
     <div className="flex items-center justify-center gap-2 bg-orange-300 px-4 py-3 text-sm sm:gap-3 sm:px-6">
-      <CircleAlertIcon className="h-5 w-5 shrink-0" />
+      <Icon name="circle-alert" className="h-5 w-5 shrink-0" />
       <span>
         <Trans>Something went wrong when we tried to transfer your cart</Trans>
       </span>

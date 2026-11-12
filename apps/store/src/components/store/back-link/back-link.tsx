@@ -1,6 +1,5 @@
 import { cn } from '@proteus/ui-core'
 import type { LinkProps } from '@tanstack/react-router'
-import { ChevronLeftIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import {
   backLink,
@@ -9,6 +8,7 @@ import {
   backLinkLabel,
 } from '#/components/store/back-link/back-link.variants'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 
 type BackLinkProps = Pick<LinkProps, 'to'> & {
   children: ReactNode
@@ -28,7 +28,7 @@ export function BackLink({ to, className, children }: BackLinkProps) {
     // strut leaves 1.5px under it that the caller's drawn flex column drops.
     <div className={cn(className, 'block')}>
       <ButtonLink variant="link" to={to} className={cn(backLink(), 'inline-flex')}>
-        <ChevronLeftIcon aria-hidden="true" className={cn(backLinkChevron(), backLinkGlyph())} />
+        <Icon name="chevron-left" aria-hidden="true" className={cn(backLinkChevron(), backLinkGlyph())} />
         <span className={backLinkLabel()}>{children}</span>
       </ButtonLink>
     </div>

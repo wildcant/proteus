@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
-import { ArrowLeftIcon } from 'lucide-react'
 import { Wordmark } from '#/components/store/wordmark/wordmark'
+import { Icon } from '#/components/ui/icon/icon'
 
 export const Route = createFileRoute('/_checkout')({
   component: CheckoutLayout,
@@ -17,7 +17,7 @@ function CheckoutLayout() {
             search={{ modal: 'cart' }}
             className="inline-flex items-center gap-1.5 font-medium text-ink-muted text-sm no-underline hover:text-ink"
           >
-            <ArrowLeftIcon className="h-4 w-4" />
+            <Icon name="arrow-left" className="h-4 w-4" />
             <Trans>Back to cart</Trans>
           </Link>
           <Wordmark className="justify-self-center" />

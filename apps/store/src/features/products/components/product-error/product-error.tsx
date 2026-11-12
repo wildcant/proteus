@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PackageIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   productError,
   productErrorAction,
@@ -28,7 +28,7 @@ export function ProductError() {
   return (
     // `mx-auto w-full` centres the capped page, which the design file draws as stretched.
     <main className={cn(productError(), 'mx-auto w-full')}>
-      <PackageIcon className={cn(productErrorIcon(), productErrorPackage())} strokeWidth={1.5} />
+      <Icon name="package" className={cn(productErrorIcon(), productErrorPackage())} strokeWidth={1.5} />
       <div className={productErrorBody()}>
         <div className={productErrorText()}>
           <h1 className={productErrorTitle()}>

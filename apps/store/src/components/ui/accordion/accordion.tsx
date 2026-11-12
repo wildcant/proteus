@@ -1,6 +1,5 @@
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion'
 import { cn } from '@proteus/ui-core'
-import { MinusIcon, PlusIcon } from 'lucide-react'
 import { createContext, useContext } from 'react'
 import {
   accordion,
@@ -10,6 +9,7 @@ import {
   accordionLabel,
   accordionTrigger,
 } from '#/components/ui/accordion/accordion.variants'
+import { Icon } from '#/components/ui/icon/icon'
 
 /** `menu` is the side menu's rows, `section` a row nested inside one, `footer` the phone footer's link columns. */
 type AccordionVariant = 'menu' | 'footer' | 'section'
@@ -55,11 +55,13 @@ export function AccordionTrigger({ className, children, ...props }: AccordionPri
         {...props}
       >
         <span className={accordionLabel({ variant })}>{children}</span>
-        <PlusIcon
+        <Icon
+          name="plus"
           aria-hidden="true"
           className={cn(accordionIcon(), 'pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden')}
         />
-        <MinusIcon
+        <Icon
+          name="minus"
           aria-hidden="true"
           className={cn(
             accordionIcon(),

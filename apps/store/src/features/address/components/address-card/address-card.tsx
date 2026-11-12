@@ -1,10 +1,10 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PencilIcon } from 'lucide-react'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import { ButtonLink } from '#/components/ui/button/button'
 import { Field } from '#/components/ui/field/field'
 import { FieldLabel } from '#/components/ui/field-label/field-label'
+import { Icon } from '#/components/ui/icon/icon'
 import { RadioGroupItem } from '#/components/ui/radio-group-item/radio-group-item'
 import { AddressLines } from '#/entities/address/ui/address-lines/address-lines'
 import {
@@ -55,7 +55,7 @@ export function AddressCard({ address, isDefault, className }: AddressCardProps)
           params={{ addressId: address.id }}
           className={addressCardEdit()}
         >
-          <PencilIcon />
+          <Icon name="pencil" />
           <Trans>Edit</Trans>
         </ButtonLink>
         <DeleteAddressButton address={address} className={addressCardDelete()} />

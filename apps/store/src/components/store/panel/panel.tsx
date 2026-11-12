@@ -1,6 +1,5 @@
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@proteus/ui-core'
-import { ChevronRightIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import {
   panel,
@@ -11,6 +10,7 @@ import {
   panelHeader,
   panelTitle,
 } from '#/components/store/panel/panel.variants'
+import { Icon } from '#/components/ui/icon/icon'
 
 type PanelProps = useRender.ComponentProps<'div'> & {
   title: string
@@ -43,7 +43,7 @@ export function Panel({ render, title, description, chevron, className, children
         <>
           <div className={panelHeader()}>
             <h2 className={panelTitle()}>{title}</h2>
-            {chevron ? <ChevronRightIcon className={cn(panelChevron(), 'shrink-0')} /> : null}
+            {chevron ? <Icon name="chevron-right" className={cn(panelChevron(), 'shrink-0')} /> : null}
           </div>
           {description ? (
             <div className={panelDescription()}>

@@ -1,11 +1,11 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PlusIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { TranslatedFieldError } from '#/components/form/field-errors'
 import { ButtonLink } from '#/components/ui/button/button'
 import { Field, FieldGroup, FieldSet } from '#/components/ui/field/field'
 import { FieldLabel } from '#/components/ui/field-label/field-label'
+import { Icon } from '#/components/ui/icon/icon'
 import { RadioGroup } from '#/components/ui/radio-group/radio-group'
 import { RadioGroupItem } from '#/components/ui/radio-group-item/radio-group-item'
 import { AddressLines } from '#/entities/address/ui/address-lines/address-lines'
@@ -134,7 +134,7 @@ export const ShippingAddressPicker = withForm({
                       to="/checkout/addresses/new"
                       className={cn(shippingAddressPickerUseDifferent(), 'inline-flex gap-2')}
                     >
-                      <PlusIcon className="size-4" />
+                      <Icon name="plus" className="size-4" />
                       <Trans>Use a different address</Trans>
                     </ButtonLink>
                   </div>

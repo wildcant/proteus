@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PackageIcon } from 'lucide-react'
 import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   orderItems,
   orderItemsCount,
@@ -42,7 +42,7 @@ export function OrderItems({ order, className }: { order: StoreOrderResponseOrde
                 <img src={item.thumbnail} alt="" className={cn(orderItemsImage(), 'h-full w-full object-cover')} />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-ink-subtle">
-                  <PackageIcon className="h-4 w-4" />
+                  <Icon name="package" className="h-4 w-4" />
                 </div>
               )}
             </div>

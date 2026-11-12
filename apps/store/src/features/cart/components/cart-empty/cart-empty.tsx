@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { ShoppingBagIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   cartEmpty,
   cartEmptyAction,
@@ -21,7 +21,7 @@ export function CartEmpty() {
   return (
     // `flex-1`: it fills the panel below the header, which the design draws as its own frame.
     <div className={cn(cartEmpty(), 'flex-1')}>
-      <ShoppingBagIcon className={cn(cartEmptyIcon(), cartEmptyBag())} />
+      <Icon name="shopping-bag" className={cn(cartEmptyIcon(), cartEmptyBag())} />
       <div className={cartEmptyBody()}>
         <div className={cartEmptyText()}>
           <h2 className={cn(cartEmptyTitle(), 'm-0')}>

@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { PackageIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   ordersEmpty,
   ordersEmptyAction,
@@ -16,7 +16,7 @@ import {
 export function OrdersEmpty({ className }: { className?: string }) {
   return (
     <div className={cn(ordersEmpty(), className)}>
-      <PackageIcon className={cn(ordersEmptyIcon(), ordersEmptyPackage())} strokeWidth={1.5} />
+      <Icon name="package" className={cn(ordersEmptyIcon(), ordersEmptyPackage())} strokeWidth={1.5} />
       <div className={ordersEmptyMessage()}>
         <p className={ordersEmptyMessageText()}>
           <Trans>You haven't made any orders yet. When you make an order it'll show up here.</Trans>

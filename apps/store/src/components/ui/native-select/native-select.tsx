@@ -1,6 +1,6 @@
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
+import { Icon } from '#/components/ui/icon/icon'
 import { nativeSelect, nativeSelectIcon, nativeSelectValue } from '#/components/ui/native-select/native-select.variants'
 
 type NativeSelectProps = Omit<ComponentProps<'select'>, 'size'> & {
@@ -29,7 +29,8 @@ export function NativeSelect({ className, wrapperClassName, ...props }: NativeSe
         )}
         {...props}
       />
-      <ChevronDownIcon
+      <Icon
+        name="chevron-down"
         className={cn(nativeSelectIcon(), 'pointer-events-none select-none')}
         aria-hidden="true"
         data-slot="native-select-icon"

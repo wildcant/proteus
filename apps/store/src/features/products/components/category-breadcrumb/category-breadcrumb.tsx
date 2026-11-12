@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
-import { ChevronRightIcon } from 'lucide-react'
 import { Fragment } from 'react'
 import type { StoreProductCategoryTreeNode } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   categoryBreadcrumb,
   categoryBreadcrumbChevron,
@@ -29,7 +29,7 @@ export function CategoryBreadcrumb({ ancestors }: { ancestors: StoreProductCateg
         {ancestors.map((ancestor) => (
           <Fragment key={ancestor.id}>
             <li aria-hidden className={cn(categoryBreadcrumbChevron(), 'flex')}>
-              <ChevronRightIcon className={categoryBreadcrumbSeparator()} />
+              <Icon name="chevron-right" className={categoryBreadcrumbSeparator()} />
             </li>
             <li className="flex">
               <Link to="/categories/$handle" params={{ handle: ancestor.handle }} className={categoryBreadcrumbLink()}>

@@ -1,8 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { getRouteApi } from '@tanstack/react-router'
-import { ChevronLeftIcon } from 'lucide-react'
 import { ButtonLink } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { useSuspenseOrder } from '#/entities/order/api/orders'
 import {
   orderContent,
@@ -40,7 +40,7 @@ export function OrderContent() {
             drawn yet (Button has no icon slot at this size). */}
         <div className="block">
           <ButtonLink variant="muted" to="/account" className={cn(orderContentBack(), 'inline-flex')}>
-            <ChevronLeftIcon />
+            <Icon name="chevron-left" />
             <Trans>Account</Trans>
           </ButtonLink>
         </div>

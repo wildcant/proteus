@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { type ComponentProps, useState } from 'react'
 import { FieldHelp } from '#/components/form/field-help.tsx'
 import { LabelText } from '#/components/form/label-text.tsx'
@@ -16,6 +15,7 @@ import {
   floatingLabelInputRevealGlyph,
   floatingLabelInputTrailing,
 } from '#/components/store/floating-label-input/floating-label-input.variants'
+import { Icon } from '#/components/ui/icon/icon'
 import { Input } from '#/components/ui/input/input'
 
 type FloatingInputProps = Omit<ComponentProps<typeof Input>, 'placeholder'>
@@ -85,7 +85,7 @@ export function FloatingLabelInput({
               // The glyph's colour is on the button that holds it, so its hover reaches the glyph.
               className={cn(floatingLabelInputReveal(), floatingLabelInputRevealGlyph(), TRAILING_CONTROL)}
             >
-              {isRevealed ? <EyeOffIcon className="size-5" /> : <EyeIcon className="size-5" />}
+              {isRevealed ? <Icon name="eye-off" className="size-5" /> : <Icon name="eye" className="size-5" />}
             </button>
           )}
           {!!help && (

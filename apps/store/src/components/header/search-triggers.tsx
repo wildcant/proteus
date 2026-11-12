@@ -1,9 +1,9 @@
 import { useLingui } from '@lingui/react/macro'
-import { SearchIcon } from 'lucide-react'
 import { SEARCH_PLACEHOLDER } from '#/components/header/constants'
 import { SearchControl } from '#/components/store/search-control/search-control'
 import { searchControlPlaceholder } from '#/components/store/search-control/search-control.variants'
 import { Button } from '#/components/ui/button/button'
+import { Icon } from '#/components/ui/icon/icon'
 import { useModal } from '#/lib/modal-state'
 
 /**
@@ -46,7 +46,7 @@ export function SearchIconTrigger({ className }: SearchIconTriggerProps) {
 
   return (
     <Button variant="ghost" size="icon" aria-label={t`Search`} className={className} onClick={() => setOpen(true)}>
-      <SearchIcon className="h-5 w-5" />
+      <Icon name="search" className="h-5 w-5" />
     </Button>
   )
 }

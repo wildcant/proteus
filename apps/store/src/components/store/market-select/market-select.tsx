@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
 import {
   marketSelect,
   marketSelectChevron,
@@ -9,6 +8,7 @@ import {
 } from '#/components/store/market-select/market-select.variants'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '#/components/ui/dropdown-menu/dropdown-menu'
 import { DropdownMenuItem } from '#/components/ui/dropdown-menu-item/dropdown-menu-item'
+import { Icon } from '#/components/ui/icon/icon'
 import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
 
@@ -42,7 +42,7 @@ export function MarketSelect({ className }: { className?: string }) {
       >
         <MarketFlag iso2={current.iso2} className={marketSelectFlag()} />
         {current.displayName}
-        <ChevronDownIcon aria-hidden="true" className={marketSelectChevron()} />
+        <Icon name="chevron-down" aria-hidden="true" className={marketSelectChevron()} />
       </DropdownMenuTrigger>
 
       {/* Above, because this lives on the footer's last bar and there is nothing below it, and

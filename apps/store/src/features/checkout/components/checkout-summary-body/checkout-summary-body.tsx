@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
-import { ShoppingBagIcon } from '@proteus/icons'
 import { cn } from '@proteus/ui-core'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
 import {
   checkoutSummaryBody,
   checkoutSummaryBodyCount,
@@ -53,7 +53,7 @@ export function CheckoutSummaryBody({ cart, className }: { cart: StoreCartDetail
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-ink-subtle">
-                    <ShoppingBagIcon className="h-4 w-4" />
+                    <Icon name="bag" className="h-4 w-4" />
                   </div>
                 )}
               </div>

@@ -1,5 +1,4 @@
 import { cn } from '@proteus/ui-core'
-import { ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
 import { type MenuGroup, MenuLink } from '#/components/header/menu'
 import { navChevron, navGlyph, navLabel, navTrigger } from '#/components/store/nav/nav.variants'
@@ -10,6 +9,7 @@ import {
   railPanelShopAll,
   railPanelShopAllLabel,
 } from '#/components/store/rail-panel/rail-panel.variants'
+import { Icon } from '#/components/ui/icon/icon'
 import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover/popover'
 
 /**
@@ -35,7 +35,7 @@ export function RailPanel({ group }: { group: MenuGroup }) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger className={cn(navTrigger(), 'cursor-pointer')}>
         <span className={cn(navLabel(), HOVER_FADE)}>{group.label}</span>
-        <ChevronDownIcon className={cn(navChevron(), navGlyph(), HOVER_FADE)} />
+        <Icon name="chevron-down" className={cn(navChevron(), navGlyph(), HOVER_FADE)} />
       </PopoverTrigger>
       {/* The panel is the popup itself, so its minimum width includes the popup's border: the set
           draws the panel inside the border, 2px wider than the store runs. Sections are not drawn
