@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { eq } from 'drizzle-orm'
-import { productMetafieldDefinitionTable } from '../../../src/schema.gen.js'
+import { productMetafieldDefinitionTable, productMetafieldTable } from '../../../src/schema.gen.js'
 import { db } from '../../db/client.js'
 
 type CreateProductMetafieldDefinition = typeof productMetafieldDefinitionTable.$inferInsert
@@ -31,6 +31,40 @@ export async function createProductMetafieldDefinition(overrides?: Partial<Creat
     ...definition,
     [Symbol.asyncDispose]: async () => {
       await db.delete(productMetafieldDefinitionTable).where(eq(productMetafieldDefinitionTable.id, definition.id))
+    },
+  }
+}
+
+/**
+ * Gives a product's metafield its values, one row each, in order. Deleting the product or the
+ * definition deletes them with it — both references cascade — so disposing either is enough.
+ */
+export async function createProductMetafield({
+  productId,
+  definitionId,
+  values,
+}: {
+  productId: string
+  definitionId: string
+  values: string[]
+}) {
+  const rows = await db
+    .insert(productMetafieldTable)
+    .values(
+      values.map((value, position) => ({
+        id: `pmf_${faker.string.alphanumeric(32)}`,
+        productId,
+        definitionId,
+        value,
+        position,
+      })),
+    )
+    .returning()
+
+  return {
+    rows,
+    [Symbol.asyncDispose]: async () => {
+      await Promise.all(rows.map((row) => db.delete(productMetafieldTable).where(eq(productMetafieldTable.id, row.id))))
     },
   }
 }

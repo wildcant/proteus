@@ -49,12 +49,12 @@ export const PRODUCT_SORT_LABELS: Record<ProductSort, MessageDescriptor> = {
 
 /**
  * What a page narrows its product list to — a category or collection handle — on top of the
- * shopper's own search, Tags, sort and page. Everything the list request takes that the list does
+ * shopper's own search, Tags, metafield filters, sort and page. Everything the list request takes that the list does
  * not set itself, so a filter the API gains is a scope without a change here.
  */
 export type ProductListScope = Omit<
   ListStoreProductsParams,
-  'offset' | 'limit' | 'order' | 'q' | 'tag' | 'countryCode' | 'cartId'
+  'offset' | 'limit' | 'order' | 'q' | 'tag' | 'filter' | 'countryCode' | 'cartId'
 >
 
 /**
@@ -64,6 +64,7 @@ export type ProductListScope = Omit<
 export const productsPageQuery = ({
   q,
   tag,
+  filter,
   sort,
   offset,
   scope,
@@ -72,6 +73,8 @@ export const productsPageQuery = ({
   q?: string
   /** The chosen Tag values: the list shows products carrying any of them. */
   tag?: string[]
+  /** The chosen metafield values as `<key>:<value>`: any value of a key, every key. */
+  filter?: string[]
   sort?: ProductSort
   offset?: number
   /** Spread under the page's own params, so a scope can never override the shopper's search. */
@@ -88,6 +91,7 @@ export const productsPageQuery = ({
   limit: PRODUCTS_DEFAULT_LIMIT,
   q,
   tag,
+  filter,
   order: PRODUCT_SORTS[sort ?? PRODUCT_SORT_DEFAULT],
   countryCode,
 })
