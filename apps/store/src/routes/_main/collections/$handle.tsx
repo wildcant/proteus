@@ -4,8 +4,8 @@ import { collectionQueryOptions, useSuspenseCollection } from '#/features/produc
 import { ensureProductListData } from '#/features/products/api/product-list'
 import type { ProductListScope } from '#/features/products/api/products'
 import { CollectionHero } from '#/features/products/components/collection-hero'
-import { ProductListNotFound } from '#/features/products/components/product-list-not-found'
-import { ProductListPage } from '#/features/products/components/product-list-page'
+import { ProductListNotFound } from '#/features/products/components/product-list-not-found/product-list-not-found'
+import { ProductListPage } from '#/features/products/components/product-list-page/product-list-page'
 import { productListRouteOptions } from '#/features/products/utils/product-list-route'
 
 const scopeFor = (handle: string): ProductListScope => ({ collection: handle })

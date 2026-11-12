@@ -8,7 +8,8 @@ export function CollectionHero({ collection }: { collection: StoreProductCollect
   if (!collection.thumbnail) return null
 
   return (
-    <div className="mt-6 aspect-4/3 overflow-hidden bg-surface-subtle sm:aspect-21/9">
+    // `mt-2` on top of the header intro slot's `gap-4`: 24px under the title, as before the slot.
+    <div className="mt-2aspect-4/3 overflow-hidden bg-surface-subtle sm:aspect-21/9">
       <img
         src={collection.thumbnail}
         alt={collection.title}
