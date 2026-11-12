@@ -15,7 +15,7 @@ import type { ProductListSearch } from '#/features/products/utils/product-list-s
  * links to "Shop all"; the home page is already that.
  */
 export function ProductEmpty({ search, isScoped }: { search: ProductListSearch; isScoped: boolean }) {
-  const { q, tag, filter } = search
+  const { q, tag, filter, minPrice, maxPrice } = search
 
   if (q) {
     return (
@@ -28,12 +28,19 @@ export function ProductEmpty({ search, isScoped }: { search: ProductListSearch; 
     )
   }
 
-  if (tag || filter) {
+  if (tag || filter || minPrice !== undefined || maxPrice !== undefined) {
     return (
       <EmptyMessage message={<Trans>No products match the chosen filters.</Trans>}>
         <ButtonLink
           to="."
-          search={(previous) => ({ ...previous, tag: undefined, filter: undefined, offset: undefined })}
+          search={(previous) => ({
+            ...previous,
+            tag: undefined,
+            filter: undefined,
+            minPrice: undefined,
+            maxPrice: undefined,
+            offset: undefined,
+          })}
         >
           <Trans>Clear filters</Trans>
         </ButtonLink>

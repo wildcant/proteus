@@ -280,7 +280,7 @@ msgstr "City"
 msgid "Clear all"
 msgstr "Clear all"
 
-#: src/features/products/components/product-empty.tsx:38
+#: src/features/products/components/product-empty.tsx:45
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -688,7 +688,7 @@ msgstr "No products match “{q}”."
 msgid "No products match the chosen filters."
 msgstr "No products match the chosen filters."
 
-#: src/features/products/components/product-empty.tsx:45
+#: src/features/products/components/product-empty.tsx:52
 msgid "No products yet."
 msgstr "No products yet."
 
@@ -966,7 +966,7 @@ msgstr "Shop"
 #: src/components/footer.tsx:29
 #: src/components/header/menu.tsx:36
 #: src/features/products/components/category-breadcrumb.tsx:20
-#: src/features/products/components/product-empty.tsx:48
+#: src/features/products/components/product-empty.tsx:55
 #: src/features/products/components/product-list-not-found.tsx:20
 msgid "Shop all"
 msgstr "Shop all"

@@ -68,6 +68,12 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
    * Not a column, as `tagId`.
    */
   optionValues?: Record<string, string[]>
+  /**
+   * The products the shopper's price range keeps, resolved by the caller from pricing. A selection
+   * like `metafields`: a filter count applies it, but it never narrows which values are offered.
+   * Not a column, as `tagId`.
+   */
+  pricedProductIds?: string[]
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */

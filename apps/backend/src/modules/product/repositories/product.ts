@@ -71,11 +71,12 @@ export class ProductRepository extends BaseRepository(productTable) {
    */
   async findMetafieldValueCounts(
     definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'key' | 'source'>,
-    { tagValue, metafields, optionValues, ...scope }: FilterableProductProps,
+    { tagValue, metafields, optionValues, pricedProductIds, ...scope }: FilterableProductProps,
     context?: Context,
   ): Promise<ProductFilterValueDTO[]> {
     const { [definition.key]: _own, ...otherMetafields } = metafields ?? {}
-    const narrowed = this.extraWhere({ tagValue, optionValues, metafields: otherMetafields }) ?? sql`TRUE`
+    const narrowed =
+      this.extraWhere({ tagValue, optionValues, pricedProductIds, metafields: otherMetafields }) ?? sql`TRUE`
     const count = sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number)
     const client = this.getClient(context)
     if (definition.source === 'vendor') {
@@ -108,7 +109,13 @@ export class ProductRepository extends BaseRepository(productTable) {
 
   /** The options the products `filters` match offer, by title. Only `filters`' scope applies: its selections narrow counts, not this. */
   async findOfferedOptions(
-    { tagValue: _tag, metafields: _metafields, optionValues: _options, ...scope }: FilterableProductProps,
+    {
+      tagValue: _tag,
+      metafields: _metafields,
+      optionValues: _options,
+      pricedProductIds: _priced,
+      ...scope
+    }: FilterableProductProps,
     context?: Context,
   ): Promise<Array<{ id: string; title: string }>> {
     const client = this.getClient(context)
@@ -130,11 +137,12 @@ export class ProductRepository extends BaseRepository(productTable) {
    */
   async findOptionValueCounts(
     option: { id: string; title: string },
-    { tagValue, metafields, optionValues, ...scope }: FilterableProductProps,
+    { tagValue, metafields, optionValues, pricedProductIds, ...scope }: FilterableProductProps,
     context?: Context,
   ): Promise<ProductFilterValueDTO[]> {
     const { [option.title]: _own, ...otherOptions } = optionValues ?? {}
-    const narrowed = this.extraWhere({ tagValue, metafields, optionValues: otherOptions }) ?? sql`TRUE`
+    const narrowed =
+      this.extraWhere({ tagValue, metafields, pricedProductIds, optionValues: otherOptions }) ?? sql`TRUE`
     const client = this.getClient(context)
     return client
       .select({
@@ -173,6 +181,7 @@ export class ProductRepository extends BaseRepository(productTable) {
       tagValue,
       metafields = {},
       optionValues = {},
+      pricedProductIds,
       includeDescendants = false,
       visibleOnly = false,
     } = filters
@@ -192,6 +201,10 @@ export class ProductRepository extends BaseRepository(productTable) {
     }
     for (const [title, values] of Object.entries(optionValues)) {
       if (values.length > 0) clauses.push(this.offersOptionValue(title, values))
+    }
+    if (pricedProductIds !== undefined) {
+      // A range nothing is priced in keeps nothing; `inArray` with no values is no valid SQL.
+      clauses.push(pricedProductIds.length > 0 ? inArray(this.table.id, pricedProductIds) : sql`FALSE`)
     }
     return clauses.length > 0 ? and(...clauses) : undefined
   }

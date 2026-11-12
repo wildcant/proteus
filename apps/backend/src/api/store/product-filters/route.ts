@@ -18,10 +18,13 @@ export const GET = async (
 ): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
   const { category, collection, tag, filter, minPrice, maxPrice, ...columnFilters } = req.validatedQuery.filters
-  const { variants, priceByVariantId } = await listSellableProducts(req.scope, req.pricingContext)
-  // The price range scopes the filters the way it scopes the list, so a count is never one the list
-  // cannot reach.
-  const productIds = productsPricedWithin(variants, priceByVariantId, { minPrice, maxPrice })
+  const { productIds, variants, priceByVariantId } = await listSellableProducts(req.scope, req.pricingContext)
+  // The price range is a selection like the others: it moves the counts, so a range that keeps
+  // nothing leaves every filter in place at 0 rather than taking them away.
+  const hasPriceRange = minPrice !== undefined || maxPrice !== undefined
+  const pricedProductIds = hasPriceRange
+    ? productsPricedWithin(variants, priceByVariantId, { minPrice, maxPrice })
+    : undefined
 
   // An empty filter array would reach the query builder as `inArray(column, [])`.
   if (productIds.length === 0) return { status: 200, json: { filters: [] } }
@@ -32,6 +35,7 @@ export const GET = async (
     ...buildStoreGroupingFilters({ category, collection, tag, filter }),
     status: 'published',
     id: productIds,
+    pricedProductIds,
   })
   return { status: 200, json: { filters } }
 }

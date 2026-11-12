@@ -302,12 +302,17 @@ test.describe('Filter by option and price', () => {
     expect(await listOf('minPrice=301')).toEqual([boot.id])
     expect(await listOf('maxPrice=99')).toEqual([])
     expect(await listOf('maxPrice=150&filter=option.Color:Negro')).toEqual([runner.id])
-    // The range narrows the products the filters count over.
+    // The range narrows every count but never the values offered, so a range that keeps nothing
+    // leaves every filter in place, at 0.
     expect(await filtersOf('minPrice=301')).toEqual({
-      'Género (genero)': ['men 1'],
-      'Color (option.Color)': ['Negro 1'],
-      'Talla (option.Talla)': ['11 1'],
+      'Género (genero)': ['men 1', 'women 0'],
+      'Color (option.Color)': ['Negro 1', 'Blanco 0'],
+      'Talla (option.Talla)': ['9 0', '10 0', '11 1'],
     })
-    expect(await filtersOf('maxPrice=99')).toEqual({})
+    expect(await filtersOf('maxPrice=99')).toEqual({
+      'Género (genero)': ['men 0', 'women 0'],
+      'Color (option.Color)': ['Negro 0', 'Blanco 0'],
+      'Talla (option.Talla)': ['9 0', '10 0', '11 0'],
+    })
   })
 })
