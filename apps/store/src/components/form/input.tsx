@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { cn, Input } from '@proteus/ui'
+import { Input } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { type ComponentProps, useState } from 'react'
 import { FieldHelp } from '#/components/form/field-help.tsx'

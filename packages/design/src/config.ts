@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 export const CONFIG_FILE = 'design.json'
 /**
  * Where this machine keeps the design file and FigCraft's CLI. Gitignored: those paths are personal,
- * and only `tokens:export` needs them. Beside the config file, same shape as `Local`.
+ * and only the `--export` runs need them. Beside the config file, same shape as `Local`.
  */
 const LOCAL_CONFIG_FILE = 'design.local.json'
 
@@ -28,10 +28,7 @@ type ThemeMode = {
 /** One Viewport mode and the viewport width it is designed at. The first mode is the base (mobile first). */
 type ViewportMode = { mode: string; width: number }
 
-/** The shared settings, committed. */
-type Config = {
-  /** Folder for the exported FigCraft JSON (committed, so `tokens` runs without FigCraft). */
-  snapshot: string
+type TokensSection = {
   output: {
     /** Tailwind v4 stylesheet: `@theme`, the colour modes, the responsive sizes and the text style classes. */
     css: string
@@ -64,15 +61,59 @@ type Config = {
   rootFontSize?: number
 }
 
-/** The config with every path absolute and every default filled in. */
-export type ResolvedConfig = Required<Omit<Config, 'viewport' | 'output'>> & {
+type ComponentsSection = {
+  /** The app's `src` folder; the page a set sits on picks the folder under it. */
   root: string
-  /** Only `tokens:export` needs it; a build from the snapshot runs without. */
+  /** Sets drawn in the design file that never become variants files: name -> why. */
+  notExported?: Record<string, string>
+  /** Pages whose sets are never exported (system screens composed in code), besides `app/*` and `flows`. */
+  skippedPages?: string[]
+  /** Layers that get no cva: `Set › layer` -> why. */
+  notStyledLayers?: Record<string, string>
+  /** Sizes set at run time, which the design only previews: `Set › layer` -> the axis left to code. */
+  runtimeSizes?: Record<string, 'horizontal' | 'vertical'>
+  /** Fills that are data, which the design shows one example of: `Set › layer`. The component passes the colour. */
+  runtimeFills?: string[]
+}
+
+type DesignMdSection = {
+  /** The DESIGN.md whose frontmatter is generated; its prose is left alone. */
+  output: string
+  name: string
+  description: string
+}
+
+/** The shared settings, committed. One section per exporter. */
+type Config = {
+  /** Folder for the exported FigCraft JSON (committed, so the builds run without FigCraft). */
+  snapshot: string
+  tokens: TokensSection
+  components?: ComponentsSection
+  designMd?: DesignMdSection
+}
+
+export type FigCraftLocation = {
+  /** Only the `--export` runs need it; a build from the snapshot runs without. */
   file: string | undefined
   cli: string
-  viewport: Config['viewport']
+}
+
+/** The tokens section with every path absolute and every default filled in. */
+export type TokensConfig = Required<Omit<TokensSection, 'viewport' | 'output' | 'textStyles'>> & {
+  viewport: TokensSection['viewport']
   output: { css: string; ts: string | undefined }
-  textStyles: Required<NonNullable<Config['textStyles']>>
+  textStyles: Required<NonNullable<TokensSection['textStyles']>>
+}
+
+export type ComponentsConfig = Required<ComponentsSection>
+
+export type ResolvedConfig = {
+  root: string
+  snapshot: string
+  figcraft: FigCraftLocation
+  tokens: TokensConfig
+  components: ComponentsConfig | undefined
+  designMd: DesignMdSection | undefined
 }
 
 export function loadConfig(path: string): ResolvedConfig {
@@ -83,17 +124,31 @@ export function loadConfig(path: string): ResolvedConfig {
   const localPath = join(root, LOCAL_CONFIG_FILE)
   const local = existsSync(localPath) ? (JSON.parse(readFileSync(localPath, 'utf8')) as Local) : {}
   const file = process.env.FIGCRAFT_FILE ?? local.file
+  const { tokens, components, designMd } = config
   return {
     root,
-    file: file ? expandHome(file) : undefined,
-    cli: expandHome(process.env.FIGCRAFT_CLI ?? local.cli ?? 'figcraft-cli'),
     snapshot: fromRoot(config.snapshot),
-    output: { css: fromRoot(config.output.css), ts: config.output.ts ? fromRoot(config.output.ts) : undefined },
-    theme: config.theme,
-    viewport: config.viewport,
-    textStyles: { prefix: config.textStyles?.prefix ?? 'type-', form: config.textStyles?.form ?? 'utility' },
-    paletteInTheme: config.paletteInTheme ?? false,
-    rootFontSize: config.rootFontSize ?? 16,
+    figcraft: {
+      file: file ? expandHome(file) : undefined,
+      cli: expandHome(process.env.FIGCRAFT_CLI ?? local.cli ?? 'figcraft-cli'),
+    },
+    tokens: {
+      output: { css: fromRoot(tokens.output.css), ts: tokens.output.ts ? fromRoot(tokens.output.ts) : undefined },
+      theme: tokens.theme,
+      viewport: tokens.viewport,
+      textStyles: { prefix: tokens.textStyles?.prefix ?? 'type-', form: tokens.textStyles?.form ?? 'utility' },
+      paletteInTheme: tokens.paletteInTheme ?? false,
+      rootFontSize: tokens.rootFontSize ?? 16,
+    },
+    components: components && {
+      root: fromRoot(components.root),
+      notExported: components.notExported ?? {},
+      skippedPages: components.skippedPages ?? [],
+      notStyledLayers: components.notStyledLayers ?? {},
+      runtimeSizes: components.runtimeSizes ?? {},
+      runtimeFills: components.runtimeFills ?? [],
+    },
+    designMd: designMd && { ...designMd, output: fromRoot(designMd.output) },
   }
 }
 
@@ -102,11 +157,17 @@ function validate(config: Config, path: string) {
     throw new Error(`${path}: ${message}`)
   }
   if (!config.snapshot) fail('`snapshot` is required')
-  if (!config.output?.css) fail('`output.css` is required')
-  if (!config.theme?.collection || !config.theme.modes?.length)
-    fail('`theme.collection` and `theme.modes` are required')
-  if (config.viewport?.scale === 'fluid' && config.viewport.modes.length !== 2) {
-    fail('a fluid `viewport` interpolates between exactly two modes')
+  const tokens = config.tokens
+  if (!tokens?.output?.css) fail('`tokens.output.css` is required')
+  if (!tokens.theme?.collection || !tokens.theme.modes?.length) {
+    fail('`tokens.theme.collection` and `tokens.theme.modes` are required')
+  }
+  if (tokens.viewport?.scale === 'fluid' && tokens.viewport.modes.length !== 2) {
+    fail('a fluid `tokens.viewport` interpolates between exactly two modes')
+  }
+  if (config.components && !config.components.root) fail('`components.root` is required')
+  if (config.designMd && !(config.designMd.output && config.designMd.name && config.designMd.description)) {
+    fail('`designMd` needs `output`, `name` and `description`')
   }
 }
 

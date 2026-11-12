@@ -1,40 +1,53 @@
 {
   "snapshot": "figcraft",
-  "output": {
-    "css": "tokens/tokens.gen.css"
-  },
-  "theme": {
-    "collection": "Theme",
-    "modes": [
-      {
-        "mode": "Light",
-        "selector": ":root"
-      },
-      {
-        "mode": "Dark",
-        "selector": ":root[data-theme=\"dark\"]",
-        "media": {
-          "query": "(prefers-color-scheme: dark)",
-          "selector": ":root:not([data-theme=\"light\"])"
+  "tokens": {
+    "output": {
+      "css": "tokens/tokens.gen.css"
+    },
+    "theme": {
+      "collection": "Theme",
+      "modes": [
+        {
+          "mode": "Light",
+          "selector": ":root"
+        },
+        {
+          "mode": "Dark",
+          "selector": ":root[data-theme=\"dark\"]",
+          "media": {
+            "query": "(prefers-color-scheme: dark)",
+            "selector": ":root:not([data-theme=\"light\"])"
+          }
         }
-      }
-    ]
+      ]
+    },
+    "viewport": {
+      "collection": "Viewport",
+      "modes": [
+        {
+          "mode": "Mobile",
+          "width": 375
+        },
+        {
+          "mode": "Desktop",
+          "width": 1440
+        }
+      ],
+      "scale": "fluid"
+    },
+    "textStyles": {
+      "form": "doubled"
+    }
   },
-  "viewport": {
-    "collection": "Viewport",
-    "modes": [
-      {
-        "mode": "Mobile",
-        "width": 375
-      },
-      {
-        "mode": "Desktop",
-        "width": 1440
-      }
-    ],
-    "scale": "fluid"
+  "components": {
+    "root": "../../apps/store/src",
+    "notExported": {
+      "Icon": "exported by the icons exporter"
+    }
   },
-  "textStyles": {
-    "form": "doubled"
+  "designMd": {
+    "output": "../../DESIGN.md",
+    "name": "Proteus",
+    "description": "The storefront's design system, drawn in the FigCraft design file and generated into code."
   }
 }

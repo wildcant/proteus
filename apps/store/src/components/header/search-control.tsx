@@ -1,4 +1,5 @@
-import { cn, useRender } from '@proteus/ui'
+import { useRender } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { SearchIcon } from 'lucide-react'
 
 type SearchControlProps = useRender.ComponentProps<'div'>

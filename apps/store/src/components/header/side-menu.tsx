@@ -4,12 +4,12 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  cn,
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerTitle,
 } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon, XIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'

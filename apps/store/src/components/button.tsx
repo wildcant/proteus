@@ -1,4 +1,5 @@
-import { Button as BaseButton, buttonVariants, cn } from '@proteus/ui'
+import { Button as BaseButton, buttonVariants } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { createLink } from '@tanstack/react-router'
 import type { ComponentProps } from 'react'
 

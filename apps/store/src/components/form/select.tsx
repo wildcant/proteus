@@ -1,4 +1,4 @@
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { FloatingLabel } from '#/components/form/floating-label.tsx'

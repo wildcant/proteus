@@ -8,12 +8,12 @@
 //
 // Colour roles go through an indirection (`--color-ink: var(--ink)`) so a mode only swaps the raw
 // variable, and every utility (`text-ink`, `bg-ink/40`) follows without a dark: variant.
-import type { ResolvedConfig } from './config.ts'
+import type { TokensConfig } from '../config.ts'
 import { type Entry, type Length, round, type Tokens, type TypeToken } from './tokens.ts'
 
 type Declarations = [property: string, value: string][]
 
-export function renderCss(tokens: Tokens, config: ResolvedConfig): string {
+export function renderCss(tokens: Tokens, config: TokensConfig): string {
   const rem = (px: number) => (px === 0 ? '0' : `${round(px / config.rootFontSize, 4)}rem`)
   const viewport = config.viewport
 
@@ -103,7 +103,7 @@ export function renderCss(tokens: Tokens, config: ResolvedConfig): string {
 
 function typeClass(
   style: TypeToken,
-  config: ResolvedConfig,
+  config: TokensConfig,
   length: (suffix: string, value: Length) => string,
 ): { name: string; declarations: Declarations } {
   const declarations: Declarations = [

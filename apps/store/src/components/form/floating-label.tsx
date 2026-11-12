@@ -1,4 +1,5 @@
-import { cn, Label } from '@proteus/ui'
+import { Label } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import type { ComponentProps } from 'react'
 
 type FloatingLabelProps = ComponentProps<typeof Label>

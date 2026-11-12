@@ -2,9 +2,9 @@ import {
   Popover as BasePopover,
   PopoverContent as BasePopoverContent,
   PopoverTrigger as BasePopoverTrigger,
-  cn,
   PopoverArrow,
 } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import type { ComponentProps } from 'react'
 
 /**

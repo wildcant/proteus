@@ -14,7 +14,7 @@
 //   Text styles          type/<name>                one class each
 //
 // A name outside these prefixes is kept in `other` (TS output only) rather than dropped in silence.
-import type { ResolvedConfig } from './config.ts'
+import type { TokensConfig } from '../config.ts'
 import type { Rgba, Snapshot, TextStyle, Variable, VariableValue } from './snapshot.ts'
 
 /** A length in px: one value, or one per viewport mode. */
@@ -73,7 +73,7 @@ const WEIGHTS: Record<string, number> = {
   heavy: 900,
 }
 
-export function buildTokens(snapshot: Snapshot, config: ResolvedConfig): Tokens {
+export function buildTokens(snapshot: Snapshot, config: TokensConfig): Tokens {
   const collections = Object.values(snapshot.collections)
   const variables = snapshot.variables
   const collectionNamed = (name: string) => {

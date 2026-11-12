@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import type { ResolvedConfig } from '../config.ts'
-import { renderCss } from '../render-css.ts'
-import { renderTs } from '../render-ts.ts'
-import type { Snapshot, TextStyle, Variable } from '../snapshot.ts'
-import { buildTokens } from '../tokens.ts'
+import type { TokensConfig } from '../config.ts'
+import { renderCss } from '../tokens/render-css.ts'
+import { renderTs } from '../tokens/render-ts.ts'
+import type { Snapshot, TextStyle, Variable } from '../tokens/snapshot.ts'
+import { buildTokens } from '../tokens/tokens.ts'
 
 const PRIMITIVES = 'VariableCollectionId:1'
 const THEME = 'VariableCollectionId:2'
@@ -78,12 +78,8 @@ const display: TextStyle = {
   },
 }
 
-function config(overrides: Partial<ResolvedConfig> = {}): ResolvedConfig {
+function config(overrides: Partial<TokensConfig> = {}): TokensConfig {
   return {
-    root: '/project',
-    file: '/designs/Shop.figcraft',
-    cli: 'figcraft-cli',
-    snapshot: '/project/design',
     output: { css: '/project/tokens.gen.css', ts: '/project/tokens.gen.ts' },
     theme: {
       collection: 'Theme',
@@ -111,7 +107,7 @@ function config(overrides: Partial<ResolvedConfig> = {}): ResolvedConfig {
   }
 }
 
-describe('design', () => {
+describe('tokens', () => {
   it('turns the design file into a Tailwind theme: colour modes, fluid sizes, text style classes and raw values', () => {
     const tokens = buildTokens(snapshot([display]), config())
     const css = renderCss(tokens, config())

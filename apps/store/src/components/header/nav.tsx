@@ -1,4 +1,4 @@
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
 import { isMenuGroup, type MenuGroup, MenuLink, useMenuEntries } from '#/components/header/menu'

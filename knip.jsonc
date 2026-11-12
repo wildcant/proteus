@@ -116,6 +116,11 @@
       // `src/build-icons/` generates the icon components at build time and ships nothing.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!src/build-icons/**!"]
     },
+    "packages/design": {
+      // `src/__tests__/fixtures.ts` is the exporters' shared test snapshot. Test code, so only the
+      // default run should ask whether anything reaches it.
+      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!", "!src/__tests__/**!"]
+    },
     "packages/http-schemas": {
       // Read by the `lingui` CLI, which knip does not follow from the i18n:* scripts.
       "entry": ["lingui.config.ts"]

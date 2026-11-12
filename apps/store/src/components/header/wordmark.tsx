@@ -1,4 +1,4 @@
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 
 /**

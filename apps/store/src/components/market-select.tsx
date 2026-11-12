@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
 import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'

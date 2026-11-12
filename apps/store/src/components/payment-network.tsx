@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { AmericanexpressIcon, type Icon, MastercardIcon, VisaIcon } from '@proteus/icons'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { ACCEPTED_CARD_NETWORKS, networkName } from '#/lib/card-networks'
 
 /**

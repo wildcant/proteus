@@ -1,4 +1,4 @@
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 

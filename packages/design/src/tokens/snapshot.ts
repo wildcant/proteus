@@ -1,12 +1,11 @@
 // The FigCraft exports the tokens are built from: `variable.export` (the variables JSON, same shape as
 // Figma's REST `GET /v1/files/:key/variables/local`) and `style.list` (the text styles). Both are
 // committed, so the build runs on any machine and in CI without FigCraft.
-import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
-import type { ResolvedConfig } from './config.ts'
+import type { ResolvedConfig } from '../config.ts'
+import { withFigCraft } from '../figcraft.ts'
 
 export type Rgba = { r: number; g: number; b: number; a: number }
 type Alias = { type: 'VARIABLE_ALIAS'; id: string }
@@ -76,41 +75,14 @@ function fromFigCraft({ style, ...textStyle }: RawTextStyle): TextStyle {
   }
 }
 
-/** Runs the headless FigCraft CLI on the design file and writes the snapshot. */
-export function exportSnapshot(config: ResolvedConfig) {
-  const file = config.file
-  if (!file) {
-    throw new Error('no design file: set `file` in design.local.json (gitignored, beside design.json) or FIGCRAFT_FILE')
-  }
+/** Refreshes the token half of the snapshot from the design file. */
+export function exportTokenSnapshot(config: ResolvedConfig) {
   mkdirSync(config.snapshot, { recursive: true })
-  const work = mkdtempSync(join(tmpdir(), 'design-'))
-  try {
-    const script = join(work, 'export.jsonl')
-    const steps = [
+  const [, textStyles] = withFigCraft(config.figcraft, config.snapshot, (run) =>
+    run([
       { command: 'variable.export', params: { format: 'json', path: join(config.snapshot, VARIABLES_FILE) } },
       { command: 'style.list', params: { type: 'text' } },
-    ]
-    writeFileSync(script, steps.map((step) => JSON.stringify(step)).join('\n'))
-    // The CLI only reads and writes inside the roots it is given: the design folder, the work folder
-    // and the snapshot folder.
-    const roots = [
-      ['--automation-read-root', dirname(file)],
-      ['--automation-read-root', work],
-      ['--automation-write-root', config.snapshot],
-    ].flat()
-    const output = execFileSync(config.cli, ['run', script, '--in', file, ...roots], {
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
-    })
-    const results = output
-      .trim()
-      .split('\n')
-      .map((line) => JSON.parse(line) as { command: string; ok: boolean; result: unknown })
-    const failed = results.find((step) => !step.ok)
-    if (failed) throw new Error(`FigCraft ${failed.command} failed: ${JSON.stringify(failed)}`)
-    const textStyles = results.find((step) => step.command === 'style.list')?.result
-    writeFileSync(join(config.snapshot, TEXT_STYLES_FILE), `${JSON.stringify(textStyles, null, 2)}\n`)
-  } finally {
-    rmSync(work, { recursive: true, force: true })
-  }
+    ]),
+  )
+  writeFileSync(join(config.snapshot, TEXT_STYLES_FILE), `${JSON.stringify(textStyles, null, 2)}\n`)
 }

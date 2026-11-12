@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { cn } from '@proteus/ui'
+import { cn } from '@proteus/ui-core'
 
 type PaginationProps = {
   /** Index of the first item on the current page, as the API reports it. */

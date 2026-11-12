@@ -6,9 +6,14 @@
     "./tokens.css": "./tokens/tokens.gen.css"
   },
   "scripts": {
-    "tokens": "node src/cli.ts",
-    "tokens:export": "node src/cli.ts --export",
-    "tokens:check": "node src/cli.ts --check",
+    "tokens": "node src/cli.ts tokens",
+    "tokens:export": "node src/cli.ts tokens --export",
+    "tokens:check": "node src/cli.ts tokens --check",
+    "components": "node src/cli.ts components",
+    "components:export": "node src/cli.ts components --export",
+    "components:check": "node src/cli.ts components --check",
+    "design-md": "node src/cli.ts design-md",
+    "design-md:check": "node src/cli.ts design-md --check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
