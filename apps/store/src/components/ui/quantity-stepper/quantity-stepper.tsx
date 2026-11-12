@@ -36,6 +36,8 @@ type QuantityStepperProps = {
   /** Swaps the minus for a spinner while the removal is in flight. */
   isRemoving?: boolean
   size?: QuantityStepperSize
+  /** The caller's layout, on the root. */
+  className?: string
 }
 
 /**
@@ -55,12 +57,13 @@ export function QuantityStepper({
   onRemove,
   isRemoving = false,
   size = 'xs',
+  className,
 }: QuantityStepperProps) {
   const { t } = useLingui()
   const removesAtMin = onRemove !== undefined && value <= min
 
   return (
-    <div className={quantityStepper({ size })}>
+    <div className={cn(quantityStepper({ size }), className)}>
       <StepperButton
         // Announced as destructive because it is: at the minimum the decrement empties the row.
         label={removesAtMin ? t`Remove ${label}` : t`Decrease quantity for ${label}`}

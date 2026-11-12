@@ -51,7 +51,7 @@ export function FloatingLabelInput({
   const trailingCount = (isPassword ? 1 : 0) + (help ? 1 : 0)
 
   return (
-    <div className={floatingLabelInput()}>
+    <div className={cn(floatingLabelInput(), className)}>
       <FloatingInput
         id={id}
         // aria-required rather than the `required` attribute: the latter hands validation
@@ -60,12 +60,7 @@ export function FloatingLabelInput({
         type={isPassword && isRevealed ? 'text' : type}
         // Right padding clears the trailing gutter: 16px of it, plus a 20px icon per control
         // and the 12px between them.
-        className={cn(
-          floatingLabelInputInput(),
-          trailingCount === 1 && 'pr-12',
-          trailingCount === 2 && 'pr-20',
-          className,
-        )}
+        className={cn(floatingLabelInputInput(), trailingCount === 1 && 'pr-12', trailingCount === 2 && 'pr-20')}
         {...props}
       />
       {/* On top of `FloatingLabel`: rest centred while empty and unfocused, float on either. */}

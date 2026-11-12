@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { addressesQueryOptions } from '#/entities/address/api/addresses'
-import { AddressBook } from '#/features/address/components/address-book'
+import { AddressBook } from '#/features/address/components/address-book/address-book'
 
 export const Route = createFileRoute('/_main/_authed/account/addresses')({
   // Fire-and-forget, so the page header paints while the list is still in flight.

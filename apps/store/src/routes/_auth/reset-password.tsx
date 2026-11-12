@@ -4,8 +4,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
 import { ButtonLink } from '#/components/ui/button/button'
-import { AuthHeading } from '#/features/auth/components/auth-heading'
-import { ResetPasswordForm } from '#/features/auth/components/reset-password-form'
+import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
+import { ResetPasswordForm } from '#/features/auth/components/reset-password-form/reset-password-form'
 
 const searchSchema = z.object({
   token: z.string().min(1),

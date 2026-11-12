@@ -3,8 +3,8 @@ import { toast } from '@proteus/ui-core'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ButtonLink } from '#/components/ui/button/button'
-import { AuthHeading } from '#/features/auth/components/auth-heading'
-import { ForgotPasswordForm } from '#/features/auth/components/forgot-password-form'
+import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
+import { ForgotPasswordForm } from '#/features/auth/components/forgot-password-form/forgot-password-form'
 
 export const Route = createFileRoute('/_auth/forgot-password')({
   component: ForgotPasswordPage,

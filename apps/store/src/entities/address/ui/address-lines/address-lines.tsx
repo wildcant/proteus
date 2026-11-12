@@ -1,3 +1,5 @@
+import { cn } from '@proteus/ui-core'
+import type { VariantProps } from 'class-variance-authority'
 import type { StoreCustomerAddress } from '#/api/generated/model'
 import {
   addressLines,
@@ -35,7 +37,18 @@ type PostalFields = Pick<
  * beside them; one long line uses the width it is given and wraps when it is not — which is what
  * the narrow Main address panel needs.
  */
-export function AddressLines({ address }: { address: PostalFields }) {
+type Weight = VariantProps<typeof addressLinesRecipient>['weight']
+
+/** `weight="medium"` inside a FieldLabel, where the lines are the label of a choice (checkout). */
+export function AddressLines({
+  address,
+  weight,
+  className,
+}: {
+  address: PostalFields
+  weight?: Weight
+  className?: string
+}) {
   const recipient = [address.firstName, address.lastName].filter(Boolean).join(' ')
   const postal = [
     address.address1,
@@ -49,14 +62,14 @@ export function AddressLines({ address }: { address: PostalFields }) {
     .join(', ')
 
   return (
-    <div className={addressLines()}>
-      {recipient ? <p className={addressLinesRecipient()}>{recipient}</p> : null}
+    <div className={cn(addressLines(), className)}>
+      {recipient ? <p className={addressLinesRecipient({ weight })}>{recipient}</p> : null}
       {/* Not drawn: no seeded address has a company. It reads as one more postal line. */}
-      {address.company ? <p className={addressLinesPostal()}>{address.company}</p> : null}
-      <p className={addressLinesPostal()}>{postal}</p>
+      {address.company ? <p className={addressLinesPostal({ weight })}>{address.company}</p> : null}
+      <p className={addressLinesPostal({ weight })}>{postal}</p>
       {address.phone ? (
         <div className={addressLinesPhone()}>
-          <p className={addressLinesPhoneText()}>{address.phone}</p>
+          <p className={addressLinesPhoneText({ weight })}>{address.phone}</p>
         </div>
       ) : null}
     </div>

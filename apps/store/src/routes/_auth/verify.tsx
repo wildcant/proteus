@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { ButtonLink } from '#/components/ui/button/button'
 import { confirmVerification } from '#/features/auth/api/auth'
-import { AuthHeading } from '#/features/auth/components/auth-heading'
+import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
 import { getToken } from '#/lib/auth-token'
 
 const verifySearchSchema = z.object({

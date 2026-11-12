@@ -72,19 +72,18 @@ export function CartItem({
         <div className={cartItemFooter()}>
           <span className={cartItemPrice()}>{formatPrice(item.unitPrice, currencyCode)}</span>
 
-          <div className={cartItemQuantity()}>
-            <QuantityStepper
-              size="xs"
-              label={item.title}
-              value={quantity}
-              min={1}
-              max={MAX_QUANTITY}
-              disabled={isRemoving}
-              isRemoving={isRemoving}
-              onChange={setQuantity}
-              onRemove={remove}
-            />
-          </div>
+          <QuantityStepper
+            size="xs"
+            label={item.title}
+            value={quantity}
+            min={1}
+            max={MAX_QUANTITY}
+            disabled={isRemoving}
+            isRemoving={isRemoving}
+            onChange={setQuantity}
+            onRemove={remove}
+            className={cartItemQuantity()}
+          />
         </div>
       </div>
     </li>

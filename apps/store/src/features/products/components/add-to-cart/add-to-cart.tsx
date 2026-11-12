@@ -64,16 +64,15 @@ export function AddToCart({ product, selectedVariant, className }: AddToCartProp
     // they are at opposite edges, and a bar outranking a sticky header is a bug waiting for a
     // short viewport. The page's own gutters are restated here because `fixed` escapes them.
     <div className={cn(addToCart(), 'fixed inset-x-0 bottom-4 z-40 lg:static lg:z-auto', className)}>
-      <div className={addToCartQuantity()}>
-        <QuantityStepper
-          label={product.title}
-          value={quantity}
-          onChange={setQuantity}
-          min={1}
-          max={MAX_QUANTITY}
-          size="lg"
-        />
-      </div>
+      <QuantityStepper
+        label={product.title}
+        value={quantity}
+        onChange={setQuantity}
+        min={1}
+        max={MAX_QUANTITY}
+        size="lg"
+        className={addToCartQuantity()}
+      />
 
       {/* Relabelled as well as disabled: a dead "Add to cart" is a button a shopper presses twice
           before deciding the site is broken, which is the trip to checkout this replaces. */}

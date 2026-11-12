@@ -15,10 +15,14 @@ import {
   productDetailInfo,
   productDetailPicker,
   productDetailPrice,
+  productDetailPricing,
   productDetailProductsLink,
   productDetailSeparator,
   productDetailSpecs,
+  productDetailStock,
+  productDetailSubtitle,
   productDetailTitle,
+  productDetailTitleGroup,
 } from '#/features/products/components/product-detail/product-detail.variants'
 import { ProductError } from '#/features/products/components/product-error/product-error'
 import { ProductGallery } from '#/features/products/components/product-gallery/product-gallery'
@@ -80,25 +84,22 @@ export function ProductDetail() {
 
         <div className={cn(productDetailInfo(), 'shrink-0 lg:sticky lg:top-24 lg:self-start')}>
           <div className={productDetailHeading()}>
-            {/* The fit line is not drawn yet (no seeded product has one), so it groups with the
-                title and keeps its own 8px. */}
-            <div className="self-stretch">
-              {!!product.subtitle && <p className="mb-2 text-ink-subtle text-xs">{product.subtitle}</p>}
+            <div className={productDetailTitleGroup()}>
+              {!!product.subtitle && <p className={productDetailSubtitle()}>{product.subtitle}</p>}
               <h1 className={productDetailTitle()}>{product.title}</h1>
             </div>
             {!!selectedVariant && (
               // Under the price and above the picker: the stock line is an answer about the variant
               // the shopper is currently on, so it belongs beside the other one — and ahead of the
-              // control that changes which variant that is. Not drawn in the heading, so it keeps
-              // its own 8px under the price.
-              <div>
+              // control that changes which variant that is.
+              <div className={productDetailPricing()}>
                 <p className={cn(productDetailPrice(), 'tabular-nums')}>
                   {formatPrice(
                     selectedVariant.calculatedPrice.calculatedAmount,
                     selectedVariant.calculatedPrice.currencyCode,
                   )}
                 </p>
-                <VariantStock stock={selectedVariant.stock} className="mt-2" />
+                <VariantStock stock={selectedVariant.stock} className={productDetailStock()} />
               </div>
             )}
           </div>

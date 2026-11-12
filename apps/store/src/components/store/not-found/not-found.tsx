@@ -48,7 +48,7 @@ export function NotFound() {
         </div>
         {/* Centred as the store runs it: the set's stretched action, capped at 280px, would sit at
             the start. An instance can't override padding, so the wider desktop button is set here. */}
-        <div className={cn(notFoundAction(), 'w-full self-center')}>
+        <div className={notFoundAction()}>
           <ButtonLink to="/" className={cn(notFoundButton(), 'sm:px-10')}>
             <Trans>Back to home</Trans>
           </ButtonLink>

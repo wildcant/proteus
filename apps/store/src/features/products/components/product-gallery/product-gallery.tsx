@@ -101,8 +101,9 @@ export function ProductGallery({ images, thumbnail, alt, variantId, className }:
             <li
               key={image.id}
               // One slide per viewport in the carousel: `w-full flex-none` over the set's `flex-1`,
-              // which would share the strip between the slides (`components.runtimeSizes`).
-              className={cn(productGallerySlide(), 'w-full flex-none snap-start', spansBoth && 'lg:col-span-2')}
+              // which would share the strip between the slides (`components.runtimeSizes`). The set
+              // draws the spanning slide, so its export spans every slide; which ones span is data.
+              className={cn(productGallerySlide(), 'w-full flex-none snap-start', !spansBoth && 'lg:col-span-1')}
             >
               <img
                 // Full width in the carousel; half the mosaic from `lg`, unless the slot spans both.

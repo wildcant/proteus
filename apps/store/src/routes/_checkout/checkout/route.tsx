@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { cartQueryOptions } from '#/entities/cart/api/cart'
-import { CheckoutContent } from '#/features/checkout/components/checkout-content'
+import { CheckoutContent } from '#/features/checkout/components/checkout-content/checkout-content'
 import { CheckoutSkeleton } from '#/features/checkout/components/checkout-skeleton'
 
 // No `validateSearch`: checkout is one page, so there is no step to put in the URL. Leaving the
