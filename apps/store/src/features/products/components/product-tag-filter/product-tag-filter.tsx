@@ -1,12 +1,13 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import { useNavigate } from '@tanstack/react-router'
 import { productTagValuesQuery, useSuspenseProductTagValues } from '#/features/products/api/product-tags'
 import {
   productTagFilter,
   productTagFilterChip,
 } from '#/features/products/components/product-tag-filter/product-tag-filter.variants'
 import { TagChip } from '#/features/products/components/tag-chip/tag-chip'
-import type { ProductListView } from '#/features/products/utils/product-list-search'
+import type { ProductListView } from '#/features/products/types/product-list-view'
 import { useMarket } from '#/hooks/use-market'
 
 /**
@@ -17,13 +18,9 @@ import { useMarket } from '#/hooks/use-market'
  * A chosen value the list no longer offers — a stale link, a Tag since deleted — still gets its
  * chip, so the shopper can always take it away.
  */
-export function ProductTagFilter({
-  scope,
-  search,
-  onSearchChange,
-  className,
-}: ProductListView & { className?: string }) {
+export function ProductTagFilter({ scope, search, links, className }: ProductListView & { className?: string }) {
   const { t } = useLingui()
+  const navigate = useNavigate()
   const { current } = useMarket()
   const values = useSuspenseProductTagValues(productTagValuesQuery({ scope, q: search.q, countryCode: current.iso2 }))
   const chosen = search.tag ?? []
@@ -35,7 +32,7 @@ export function ProductTagFilter({
     const next = chosen.includes(value) ? chosen.filter((tag) => tag !== value) : [...chosen, value]
     // Absent rather than empty, so an unfiltered list keeps its bare URL; page 1, because the old
     // page number belongs to another list.
-    onSearchChange({ tag: next.length > 0 ? next : undefined, offset: undefined })
+    navigate(links.tag({ tag: next.length > 0 ? next : undefined, offset: undefined }))
   }
 
   return (

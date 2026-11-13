@@ -286,7 +286,7 @@
                                       "type": "solid"
                                     }
                                   ],
-                                  "cornerRadius": 1.6
+                                  "cornerRadius": 0.96
                                 },
                                 {
                                   "name": "Vector",
@@ -337,6 +337,10 @@
                                       "type": "solid"
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "viewport",
+                                  "type": "RECTANGLE"
                                 }
                               ]
                             }
@@ -391,7 +395,7 @@
                                       "type": "solid"
                                     }
                                   ],
-                                  "cornerRadius": 1.6
+                                  "cornerRadius": 0.96
                                 },
                                 {
                                   "name": "Rectangle",
@@ -443,6 +447,10 @@
                                       "type": "solid"
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "viewport",
+                                  "type": "RECTANGLE"
                                 }
                               ]
                             }
@@ -497,7 +505,7 @@
                                       "type": "solid"
                                     }
                                   ],
-                                  "cornerRadius": 1.6
+                                  "cornerRadius": 0.96
                                 },
                                 {
                                   "name": "Vector",
@@ -518,6 +526,10 @@
                                       "type": "solid"
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "viewport",
+                                  "type": "RECTANGLE"
                                 }
                               ]
                             }
@@ -949,7 +961,7 @@
                                       "type": "solid"
                                     }
                                   ],
-                                  "cornerRadius": 1.6
+                                  "cornerRadius": 0.96
                                 },
                                 {
                                   "name": "Vector",
@@ -1000,6 +1012,10 @@
                                       "type": "solid"
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "viewport",
+                                  "type": "RECTANGLE"
                                 }
                               ]
                             }
@@ -1054,7 +1070,7 @@
                                       "type": "solid"
                                     }
                                   ],
-                                  "cornerRadius": 1.6
+                                  "cornerRadius": 0.96
                                 },
                                 {
                                   "name": "Rectangle",
@@ -1106,6 +1122,10 @@
                                       "type": "solid"
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "viewport",
+                                  "type": "RECTANGLE"
                                 }
                               ]
                             }
@@ -1160,7 +1180,7 @@
                                       "type": "solid"
                                     }
                                   ],
-                                  "cornerRadius": 1.6
+                                  "cornerRadius": 0.96
                                 },
                                 {
                                   "name": "Vector",
@@ -1181,6 +1201,10 @@
                                       "type": "solid"
                                     }
                                   ]
+                                },
+                                {
+                                  "name": "viewport",
+                                  "type": "RECTANGLE"
                                 }
                               ]
                             }

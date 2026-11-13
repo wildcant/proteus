@@ -1,5 +1,6 @@
 import { Plural, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import { useNavigate } from '@tanstack/react-router'
 import { type ReactNode, Suspense } from 'react'
 import { PRODUCT_SORT_DEFAULT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
 import { ProductFilters } from '#/features/products/components/product-filters/product-filters'
@@ -18,7 +19,7 @@ import {
 } from '#/features/products/components/product-list-header/product-list-header.variants'
 import { ProductSort } from '#/features/products/components/product-sort/product-sort'
 import { ProductTagFilter } from '#/features/products/components/product-tag-filter/product-tag-filter'
-import type { ProductListView } from '#/features/products/utils/product-list-search'
+import type { ProductListView } from '#/features/products/types/product-list-view'
 import { useMarket } from '#/hooks/use-market'
 
 type ProductListHeaderProps = ProductListView & {
@@ -44,13 +45,14 @@ type ProductListHeaderProps = ProductListView & {
 export function ProductListHeader({
   scope,
   search,
-  onSearchChange,
+  links,
   heading,
   eyebrow,
   children,
   className,
 }: ProductListHeaderProps) {
   const { t } = useLingui()
+  const navigate = useNavigate()
   const { q, sort } = search
 
   return (
@@ -67,20 +69,10 @@ export function ProductListHeader({
       </div>
       {/* Its own boundary, so a slow answer leaves the title and the bar in place. */}
       <Suspense fallback={null}>
-        <ProductTagFilter
-          scope={scope}
-          search={search}
-          onSearchChange={onSearchChange}
-          className={productListHeaderTagFilter()}
-        />
+        <ProductTagFilter scope={scope} search={search} links={links} className={productListHeaderTagFilter()} />
       </Suspense>
       <Suspense fallback={null}>
-        <ProductFilters
-          scope={scope}
-          search={search}
-          onSearchChange={onSearchChange}
-          className={productListHeaderFilters()}
-        />
+        <ProductFilters scope={scope} search={search} links={links} className={productListHeaderFilters()} />
       </Suspense>
 
       {/* Sticky at every width, not just on a phone: the reference only needs a rail above `lg`
@@ -93,12 +85,14 @@ export function ProductListHeader({
         <ProductSort
           value={sort ?? PRODUCT_SORT_DEFAULT}
           onChange={(next) =>
-            onSearchChange({
-              // The default stays absent from the URL, so `/` remains that exact string.
-              sort: next === PRODUCT_SORT_DEFAULT ? undefined : next,
-              // A shopper on page 5 of one order has no page 5 in mind in another.
-              offset: undefined,
-            })
+            navigate(
+              links.sort({
+                // The default stays absent from the URL, so `/` remains that exact string.
+                sort: next === PRODUCT_SORT_DEFAULT ? undefined : next,
+                // A shopper on page 5 of one order has no page 5 in mind in another.
+                offset: undefined,
+              }),
+            )
           }
           className={productListHeaderSort()}
         />

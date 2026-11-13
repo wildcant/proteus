@@ -1,5 +1,5 @@
 import { cn } from '@proteus/ui-core'
-import { useRouterState } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { Pagination } from '#/components/store/pagination/pagination'
 import { PRODUCTS_DEFAULT_LIMIT, productsPageQuery, useSuspenseProducts } from '#/features/products/api/products'
 import { ProductEmpty } from '#/features/products/components/product-empty/product-empty'
@@ -10,17 +10,11 @@ import {
   productListPagination,
   productListResults,
 } from '#/features/products/components/product-list/product-list.variants'
-import type { ProductListLinks } from '#/features/products/types/links'
-import type { ProductListView } from '#/features/products/utils/product-list-search'
+import type { ProductListView } from '#/features/products/types/product-list-view'
 import { useMarket } from '#/hooks/use-market'
 
-export function ProductList({
-  scope,
-  search,
-  onSearchChange,
-  links,
-  className,
-}: ProductListView & { links: ProductListLinks; className?: string }) {
+export function ProductList({ scope, search, links, className }: ProductListView & { className?: string }) {
+  const navigate = useNavigate()
   const { offset } = search
   const { current } = useMarket()
   const { products, count } = useSuspenseProducts(productsPageQuery({ ...search, scope, countryCode: current.iso2 }))
@@ -38,6 +32,7 @@ export function ProductList({
     return (
       <ProductEmpty
         search={search}
+        links={links}
         shopAllLink={Object.keys(scope).length > 0 ? links.shopAll : undefined}
         className={className}
       />
@@ -59,7 +54,7 @@ export function ProductList({
         count={count}
         // Page 1 is written as `undefined`, not `offset=0`, so the default stays out of the URL
         // the way `sort`'s does.
-        onOffsetChange={(next) => onSearchChange({ offset: next || undefined })}
+        onOffsetChange={(next) => navigate(links.page({ offset: next || undefined }))}
         className={productListPagination()}
       />
     </div>

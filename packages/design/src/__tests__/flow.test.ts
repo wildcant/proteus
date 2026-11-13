@@ -25,8 +25,9 @@ const snapshot: FlowSnapshot = {
         transition('PRODUCT', 'ProductListPage/default', 'ProductDetail/default'),
         // The same state drawn twice on the map is one transition.
         transition('PRODUCT', 'ProductListPage/default', 'ProductDetail/default'),
-        // Kept although it stays on the screen: on the web it changes the URL's search params.
-        transition('FILTER', 'ProductListPage/category', 'ProductListPage/category', "a filter's chip"),
+        // Drawn to `./state`: it stays on whichever route shows the screen and changes its search, so one screen
+        // covers the home page, a category and a collection.
+        transition('FILTER', 'ProductListPage/category', './category', "a filter's chip"),
         transition('OPEN_BAG', 'Root/default', 'Root/bag'),
       ],
     },
@@ -61,7 +62,7 @@ describe('flow', () => {
         "    SAVE: [{ from: 'addressEdit', to: 'AddressBook', state: 'default' }],",
         '  },',
         '  ProductListPage: {',
-        "    FILTER: [{ from: 'category', to: 'ProductListPage', state: 'category', condition: 'a filter\\'s chip' }],",
+        "    FILTER: [{ from: 'category', to: '.', state: 'category', condition: 'a filter\\'s chip' }],",
         "    PRODUCT: [{ from: 'default', to: 'ProductDetail', state: 'default' }],",
         '  },',
         '  Root: {',
@@ -88,12 +89,14 @@ describe('flow', () => {
           transitions: [
             transition('CHECKOUT', 'Root/bag', 'Checkout/default'),
             transition('CLOSE', 'Root/menu', 'Root/default'),
+            // `.` is the screen it is drawn from, so its state is that screen's.
+            transition('SORT', 'ProductDetail/default', './sorted'),
           ],
         },
       ],
     }
     expect(() => buildFlow(broken)).toThrow(
-      "flows can't be generated:\n  Checkout: Checkout is not a screen set\n  Checkout: Root has no state menu",
+      "flows can't be generated:\n  Checkout: Checkout is not a screen set\n  Checkout: Root has no state menu\n  Checkout: ProductDetail has no state sorted",
     )
   })
 })

@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import { useNavigate } from '@tanstack/react-router'
 import { productFiltersQuery, useSuspenseProductFilters } from '#/features/products/api/product-filters'
 import { FilterMenu } from '#/features/products/components/filter-menu/filter-menu'
 import { PriceMenu } from '#/features/products/components/price-menu/price-menu'
@@ -9,7 +10,7 @@ import {
   productFiltersClearLabel,
   productFiltersFilter,
 } from '#/features/products/components/product-filters/product-filters.variants'
-import type { ProductListView } from '#/features/products/utils/product-list-search'
+import type { ProductListView } from '#/features/products/types/product-list-view'
 import { useMarket } from '#/hooks/use-market'
 
 /** `genero:women` → the key and the value, which keeps any later colon. */
@@ -28,8 +29,9 @@ const splitSelection = (selection: string) => {
  * A chosen value the list no longer offers — a stale link — still gets its checkbox, so the shopper
  * can always take it away.
  */
-export function ProductFilters({ scope, search, onSearchChange, className }: ProductListView & { className?: string }) {
+export function ProductFilters({ scope, search, links, className }: ProductListView & { className?: string }) {
   const { t } = useLingui()
+  const navigate = useNavigate()
   const { current } = useMarket()
   const chosen = search.filter ?? []
   const { minPrice, maxPrice } = search
@@ -52,7 +54,8 @@ export function ProductFilters({ scope, search, onSearchChange, className }: Pro
 
   // Absent rather than empty, so an unfiltered list keeps its bare URL; page 1, because the old page
   // number belongs to another list.
-  const write = (next: string[]) => onSearchChange({ filter: next.length > 0 ? next : undefined, offset: undefined })
+  const write = (next: string[]) =>
+    navigate(links.filter({ filter: next.length > 0 ? next : undefined, offset: undefined }))
   const toggle = (key: string, value: string) => {
     const selection = `${key}:${value}`
     write(chosen.includes(selection) ? chosen.filter((other) => other !== selection) : [...chosen, selection])
@@ -75,14 +78,16 @@ export function ProductFilters({ scope, search, onSearchChange, className }: Pro
         key={`${minPrice}-${maxPrice}`}
         minPrice={minPrice}
         maxPrice={maxPrice}
-        onApply={(range) => onSearchChange({ ...range, offset: undefined })}
+        onApply={(range) => navigate(links.filter({ ...range, offset: undefined }))}
         className={productFiltersFilter()}
       />
       {chosen.length > 0 || hasPrice ? (
         <button
           type="button"
           onClick={() =>
-            onSearchChange({ filter: undefined, minPrice: undefined, maxPrice: undefined, offset: undefined })
+            navigate(
+              links.clearFilters({ filter: undefined, minPrice: undefined, maxPrice: undefined, offset: undefined }),
+            )
           }
           className={productFiltersClear()}
         >

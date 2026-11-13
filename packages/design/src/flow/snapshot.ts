@@ -4,9 +4,10 @@
 // Each section of the `flows` page is one flow. Each of its groups whose pluginData.kind is "flowEvent" is one
 // transition: an event (SCREAMING_SNAKE_CASE) from `Screen/state` to `Screen/state`, with a condition in plain words.
 // A group drawn by hand without pluginData is read from its name (`EVENT · From/state → To/state`) and the text
-// `condition` in its `label` frame. The states of each screen are the `state` values of its screen set's variants,
-// on the `app/*` pages or, for the `Root` pseudo-screen, on the `flows` page itself. A variant is named
-// `state=…, viewport=…` in any order; only `state` is read.
+// `condition` in its `label` frame. A target `./state` stays on the current route and changes only its search.
+// The states of each screen are the `state` values of its screen set's variants, on the `app/*` pages or, for the
+// `Root` pseudo-screen, on the `flows` page itself. A variant is named `state=…, viewport=…` in any order; only
+// `state` is read.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -29,7 +30,8 @@ export type FlowSnapshot = {
 
 const FLOWS_FILE = 'flows.json'
 const PAGE = 'flows'
-const NAME = /^([A-Z_]+) · (\w+)\/(\w+) → (\w+)\/(\w+)$/
+// The target may be `.`, the current route (`SORT · ProductListPage/default → ./default`).
+const NAME = /^([A-Z_]+) · (\w+)\/(\w+) → (\w+|\.)\/(\w+)$/
 // Design-only frames: never read as screens or transitions.
 const REFERENCE = /^Reference · /
 

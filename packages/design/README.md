@@ -130,10 +130,16 @@ plus the `Root` pseudo-screen set on `flows` (the header-level transitions). The
 event, the transitions drawn, including those that stay on their screen, since on the web they change
 the URL. Without a `flows` page it writes an empty map, which is valid.
 
+A transition drawn to `./state` (`SORT · ProductListPage/default → ./default`) stays on the current
+route, whichever renders the screen, and changes only its search. It is written as `to: '.'`, its state
+checked against the source screen's, and the store's `flowLinks` turns it into `{ to: '.', search }`
+with the given params merged over the current ones, so one screen (a product list) serves several
+routes (home, a category, a collection) without its feature knowing which.
+
 `flow:check` also holds the map, the store's hand-written screen table (`src/navigation/screens.ts`)
 and the route tree (`routeTree.gen.ts` and the route files) to each other. It fails when:
 
-- a target on the map has no entry in the screen table;
+- a target on the map has no entry in the screen table (a `.` target needs none);
 - a screen on the map has no route there, or an entry names a route or a state that doesn't exist;
 - a route is no screen's, or a leaf route doesn't render the screen its entry names, itself or through
   a layout above it (a drawer is a state of the screen it covers; a layout that renders a screen, as

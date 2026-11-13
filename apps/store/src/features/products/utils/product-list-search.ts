@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PRODUCT_SORT_NAMES, type ProductListScope } from '#/features/products/api/products'
+import { PRODUCT_SORT_NAMES } from '#/features/products/api/products'
 
 /** A repeated key read as a list: one `?tag=cotton` is one value. */
 const repeatedKey = <T extends z.ZodType>(item: T) =>
@@ -38,15 +38,3 @@ export const productListSearchSchema = z.object({
 })
 
 export type ProductListSearch = z.infer<typeof productListSearchSchema>
-
-/**
- * What a page hands both `ProductListHeader` and `ProductList`, so the header's count and the grid
- * read one request. The page owns its URL — it validates `search` and navigates on
- * `onSearchChange` through its own route — because a list reading the search non-strictly would
- * see every route's search params, not this page's.
- */
-export type ProductListView = {
-  scope: ProductListScope
-  search: ProductListSearch
-  onSearchChange: (update: Partial<ProductListSearch>) => void
-}

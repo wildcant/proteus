@@ -110,15 +110,18 @@ How to draw one (all inside the flow's section, coordinates in the section's spa
 4. `object.group {ids: [line, label], name: "EVENT · From → To"}`, with From and To as `Screen/state` (`ADD_TO_BAG · Product/default → Product/bagOpen`).
 5. `node.set` on the group: `pluginData: {kind: "flowEvent", event, from, to, condition, fromNode, toNode}` (`fromNode` and `toNode` are the instance ids, as strings; `condition` is "" when there is none).
 
+An event that only changes the search params of the page it is on (filter, sort, page, a tag, clearing them) is drawn to `./state`, not `Screen/state`: `.` is the current route, whichever renders the screen (`SORT · ProductListPage/default → ./default`, `pluginData.to: "./default"`). The arrow still ends on the state it shows (a self-loop when that is the state it starts from); the state is the screen's own. Write `Screen/state` when the event leads to that screen's own route, as `ALL_PRODUCTS` leads to the home page.
+
 Which states go on the map: the state the shopper lands on, plus every state where the flow branches; a variant whose ways in and out match another's stays off. Draw every way out the code has, `BACK` and `CLOSE` included. Header-level transitions (search, bag, account menu, market, theme) are drawn once, from a `Root` pseudo-screen, not on every screen.
 
 How the exporter reads the map:
 
 - Each section on page `flows` is one flow; its name is the flow's name (`Browse → Checkout`).
 - Every `GROUP` child of a section whose `pluginData.kind` is `flowEvent` is one transition. `from` and `to` split on `/` into the screen set and its `state`.
-- Fallback when `pluginData` is missing: parse the group name with `^([A-Z_]+) · (\w+)/(\w+) → (\w+)/(\w+)$`, and the condition from the child text `condition` inside `label`.
+- Fallback when `pluginData` is missing: parse the group name with `^([A-Z_]+) · (\w+)/(\w+) → (\w+|\.)/(\w+)$`, and the condition from the child text `condition` inside `label`.
+- A target `./state` is written to `flow.gen.ts` as `to: '.'`; its state must be one of the source screen's.
 - Duplicated instances of one state are the same state; transitions deduplicate on (from, event, to, condition).
-- `check:flow` fails when a target doesn't exist, a screen has no route in the screen table, or a leaf route doesn't use its own screen.
+- `check:flow` fails when a target (other than `.`) doesn't exist, a screen has no route in the screen table, or a leaf route doesn't use its own screen.
 
 ## Export quirks
 

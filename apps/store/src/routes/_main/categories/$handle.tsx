@@ -16,6 +16,13 @@ const links = flowLinks('ProductListPage')
 const listLinks: ProductListLinks = {
   product: (productId) => links.PRODUCT({ params: { productId } }),
   shopAll: links.SHOP_ALL(),
+  // These stay on whichever list route is showing: the home page, a category or a collection.
+  filter: links.FILTER,
+  tag: links.TAG,
+  sort: links.SORT,
+  page: links.PAGE,
+  clearFilters: links.CLEAR_FILTERS,
+  clearSearch: links.CLEAR_SEARCH,
 }
 const categoryLink = (handle: string) => links.CATEGORY({ params: { handle } })
 
@@ -47,7 +54,6 @@ function CategoryPage() {
   const { category, ancestors } = trail
   return (
     <ProductListPage
-      from={Route.fullPath}
       links={listLinks}
       scope={scopeFor(handle)}
       search={search}

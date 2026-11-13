@@ -12,12 +12,17 @@ import { type ScreenKey, screens } from '#/navigation/screens'
 //
 // Pure, so it runs the same during SSR, and a link is a real <a href>. Events that stay on their screen are kept:
 // they change the URL (search params, a drawer's route). An event with one target takes the link's own options
-// (params, search, replace…); one with several takes the target first.
+// (params, search, replace…); one with several takes the target first. An event drawn to `./state` stays on the
+// current route, whichever renders the screen, and takes the search params to change, merged over the current ones:
+//
+//   <ProductListPage links={{ sort: links.SORT }} />   // the feature: navigate(links.sort({ sort, offset }))
 
 type Flow = typeof flow
 /** A screen with a way out on the map. */
 type FlowScreen = keyof Flow
 type Transition = { readonly to: string; readonly state: string }
+/** The target of a transition drawn to `./state`: the current route. */
+type Stay = { readonly to: '.' }
 
 /** The table entry a transition lands on: its state's own entry when the table has one, else its screen's. */
 type EntryOf<T extends Transition> = T extends unknown
@@ -46,11 +51,18 @@ type Action<K extends ScreenKey> =
     ? <Target extends K>(target: Target, ...options: OptionsArgument<Target>) => FlowLink<Target>
     : (...options: OptionsArgument<K>) => FlowLink<K>
 
-export type FlowLinks<S extends FlowScreen> = { [E in keyof Flow[S]]: Action<TargetsOf<S, E>> }
+/** Link options that stay on the current route and change its search. */
+export type StayLink = LinkOptions<RegisteredRouter, string, '.'>
+type StayAction = (search: Record<string, unknown>, options?: Omit<StayLink, 'to' | 'search'>) => StayLink
+
+export type FlowLinks<S extends FlowScreen> = {
+  [E in keyof Flow[S]]: Flow[S][E] extends readonly Stay[] ? StayAction : Action<TargetsOf<S, E>>
+}
 
 export function flowLinks<S extends FlowScreen>(screen: S): FlowLinks<S> {
   const events: Record<string, readonly Transition[]> = flow[screen]
   const actions = Object.entries(events).map(([event, transitions]) => {
+    if (transitions.every(({ to }) => to === '.')) return [event, stayLink] as const
     const [only, ...others] = [...new Set(transitions.map(entryOf))]
     const action =
       others.length > 0 || !only
@@ -59,6 +71,10 @@ export function flowLinks<S extends FlowScreen>(screen: S): FlowLinks<S> {
     return [event, action] as const
   })
   return Object.fromEntries(actions) as FlowLinks<S>
+}
+
+function stayLink(search: Record<string, unknown>, options: object = {}) {
+  return { ...options, to: '.', search: (current: Record<string, unknown>) => ({ ...current, ...search }) }
 }
 
 function entryOf({ to, state }: Transition): ScreenKey {

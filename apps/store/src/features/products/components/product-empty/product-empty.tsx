@@ -11,11 +11,13 @@ import {
   productEmptyMessage,
   productEmptyPackage,
 } from '#/features/products/components/product-empty/product-empty.variants'
+import type { ProductListLinks } from '#/features/products/types/links'
 import type { ProductListSearch } from '#/features/products/utils/product-list-search'
 import type { LinkTarget } from '#/lib/link-target'
 
 type ProductEmptyProps = {
   search: ProductListSearch
+  links: Pick<ProductListLinks, 'clearSearch' | 'clearFilters'>
   /** SHOP_ALL, on a scoped list only: the home page is already all of it. */
   shopAllLink?: LinkTarget
   className?: string
@@ -31,14 +33,14 @@ type ProductEmptyProps = {
  * searched list stays scoped and keeps its search. A scoped list with nothing in it at all
  * links to "Shop all"; the home page is already that.
  */
-export function ProductEmpty({ search, shopAllLink, className }: ProductEmptyProps) {
+export function ProductEmpty({ search, links, shopAllLink, className }: ProductEmptyProps) {
   const { q, tag, filter, minPrice, maxPrice } = search
 
   if (q) {
     return (
       // The header search panel's own phrasing, so the same miss reads the same either way.
       <EmptyMessage className={className} message={<Trans>No products match &ldquo;{q}&rdquo;.</Trans>}>
-        <ButtonLink to="." search={(previous) => ({ ...previous, q: undefined, offset: undefined })}>
+        <ButtonLink {...links.clearSearch({ q: undefined, offset: undefined })}>
           <Trans>Clear search</Trans>
         </ButtonLink>
       </EmptyMessage>
@@ -49,9 +51,7 @@ export function ProductEmpty({ search, shopAllLink, className }: ProductEmptyPro
     return (
       <EmptyMessage className={className} message={<Trans>No products match the chosen filters.</Trans>}>
         <ButtonLink
-          to="."
-          search={(previous) => ({
-            ...previous,
+          {...links.clearFilters({
             tag: undefined,
             filter: undefined,
             minPrice: undefined,

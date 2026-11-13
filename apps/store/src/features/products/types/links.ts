@@ -1,3 +1,4 @@
+import type { ProductListSearch } from '#/features/products/utils/product-list-search'
 import type { LinkTarget } from '#/lib/link-target'
 
 /** A product card's link, its PRODUCT event on the screen the card is on. */
@@ -16,11 +17,23 @@ export type SearchLinks = {
   bestSellers: LinkTarget
 }
 
-/** A product list page's ways off the page, the `ProductListPage` screen's. */
+/**
+ * An event that stays on the list's own route, whichever that is (`./state` on the flow map): the search params it
+ * changes, merged over the current ones.
+ */
+export type SearchLink = (update: Partial<ProductListSearch>) => LinkTarget
+
+/** A product list page's ways out, the `ProductListPage` screen's. */
 export type ProductListLinks = {
   product: ProductLinkTo
   /** SHOP_ALL, from a scoped list with nothing in it. */
   shopAll: LinkTarget
+  filter: SearchLink
+  tag: SearchLink
+  sort: SearchLink
+  page: SearchLink
+  clearFilters: SearchLink
+  clearSearch: SearchLink
 }
 
 /** A product page's ways out, the `ProductDetail` screen's. */

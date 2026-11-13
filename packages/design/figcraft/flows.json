@@ -538,7 +538,7 @@
           "event": "SORT",
           "from": "ProductListPage",
           "fromState": "default",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "default",
           "condition": "?sort"
         },
@@ -546,7 +546,7 @@
           "event": "PAGE",
           "from": "ProductListPage",
           "fromState": "default",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "default",
           "condition": "previous or next (?offset)"
         },
@@ -578,7 +578,7 @@
           "event": "FILTER",
           "from": "ProductListPage",
           "fromState": "filterOpen",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "filtered",
           "condition": "a filter value (?filter)"
         },
@@ -634,7 +634,7 @@
           "event": "TAG",
           "from": "ProductListPage",
           "fromState": "default",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "filtered",
           "condition": "a tag chip (?tag)"
         },
@@ -642,7 +642,7 @@
           "event": "CLEAR_FILTERS",
           "from": "ProductListPage",
           "fromState": "filtered",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "default",
           "condition": "also when no product matches the filters"
         },
@@ -778,7 +778,7 @@
           "event": "CLEAR_SEARCH",
           "from": "ProductListPage",
           "fromState": "searchNoMatch",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "default",
           "condition": ""
         },
