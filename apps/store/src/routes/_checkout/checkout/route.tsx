@@ -2,7 +2,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { cartQueryOptions } from '#/entities/cart/api/cart'
 import { CheckoutContent } from '#/features/checkout/components/checkout-content/checkout-content'
-import { CheckoutSkeleton } from '#/features/checkout/components/checkout-skeleton'
+import { CheckoutSkeleton } from '#/features/checkout/components/checkout-skeleton/checkout-skeleton'
 import type { CheckoutLinks } from '#/features/checkout/types/links'
 import { flowLinks } from '#/navigation/links'
 

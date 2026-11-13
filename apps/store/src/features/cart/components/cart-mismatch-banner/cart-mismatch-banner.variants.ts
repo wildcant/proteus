@@ -5,7 +5,7 @@ export const cartMismatchBanner = cva('flex items-center justify-center gap-2 bg
 
 export const cartMismatchBannerIcon = cva('h-5 w-5 text-ink')
 
-export const cartMismatchBannerMessage = cva('type-body-compact flex-1 text-ink sm:w-auto')
+export const cartMismatchBannerMessage = cva('type-body-compact flex-1 text-ink sm:flex-initial')
 
 export const cartMismatchBannerSeparator = cva('type-body-compact text-ink')
 

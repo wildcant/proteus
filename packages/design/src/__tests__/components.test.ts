@@ -220,6 +220,27 @@ describe('components', () => {
     expect(source).not.toContain('viewport')
   })
 
+  it('undoes a fill at a larger breakpoint with the CSS default, and leaves a layer only a boolean shows to code', () => {
+    const bannerVariant = (viewport: 'mobile' | 'sm'): Layer => ({
+      ...frame(`viewport=${viewport}`, 'horizontal'),
+      type: 'COMPONENT',
+      children: [
+        text('message', 'body', 'c:ink', { sizing: { horizontal: viewport === 'mobile' ? 'fill' : 'hug' } }),
+        text('note', 'body', 'c:ink', { visible: false }),
+      ],
+    })
+    const banner: ComponentSet = {
+      name: 'Banner',
+      page: 'components/store',
+      properties: [variantProperty('viewport', ['mobile', 'sm']), { name: 'hasNote', type: 'boolean', default: false }],
+      variants: [bannerVariant('mobile'), bannerVariant('sm')],
+    }
+    const source = buildComponents([banner], context).files.get('/shop/src/components/store/banner/banner.variants.ts')
+
+    expect(source).toContain("export const bannerMessage = cva('flex-1 sm:flex-initial type-body text-ink')")
+    expect(source).toContain("export const bannerNote = cva('type-body text-ink')")
+  })
+
   it('stops on a value that is not a token, naming the layer', () => {
     const badge = single('Badge', 'components/ui', {
       variants: [

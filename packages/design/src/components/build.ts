@@ -142,7 +142,13 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
 
   const qualified = qualifiedNames(set.variants)
   const textProps = new Set(set.properties.filter((p) => p.type === 'text').map((p) => p.name))
+  // A layer no variant shows is one a boolean property turns on (SavedCardRow's `hasDefault`, default off): the
+  // code decides whether it renders, so its classes are the ones it has when shown, not `hidden`.
+  const neverShown = set.properties.some((p) => p.type === 'boolean')
+    ? layersNeverShown(set.variants)
+    : new Set<string>()
   const ctx: SlotContext = {
+    neverShown,
     token,
     spaceByValue: byValue('space/'),
     strokeByValue: byValue('stroke/'),
@@ -487,6 +493,9 @@ const RESETS: Record<string, string> = {
   textAlign: 'text-start',
 }
 
+/** A fill along the parent's axis is `flex-1`, not a width: what undoes it is the CSS default. */
+const FILL_RESETS: Record<string, string> = { 'flex-1': 'flex-initial' }
+
 /**
  * One slot across the viewports drawn for a variant, smallest first -> the mobile classes, then for each larger
  * viewport only the classes that differ from the next one down, under its prefix.
@@ -501,7 +510,7 @@ function responsive(values: (readonly [string, string])[], slot: string, fail: (
     const before = new Set(split(previous))
     const added = split(cls).filter((c) => !before.has(c))
     if (added.length === 0) {
-      const reset = RESETS[slot]
+      const reset = FILL_RESETS[previous] ?? RESETS[slot]
       if (reset === undefined || cls !== '') {
         fail(`${slot} changes from "${previous}" to "${cls}" at ${viewport}; no class undoes that`)
       } else if (reset) out.push(`${viewport}:${reset}`)
@@ -676,12 +685,25 @@ type SlotContext = {
   leading: Record<string, number | undefined>
   config: ComponentsConfig
   setName: string
+  /** Names of the layers hidden in every variant: a boolean property shows them. */
+  neverShown: Set<string>
   /** The layer is the component itself. */
   isRoot: boolean
   /** The parent's auto layout stretches its children across (items-stretch). */
   parentStretches: boolean
   note: (message: string) => void
   fail: (message: string) => string
+}
+
+function layersNeverShown(variants: Layer[]) {
+  const hidden = new Set<string>()
+  const shown = new Set<string>()
+  const visit = (node: Layer) => {
+    ;(node.visible === false ? hidden : shown).add(node.name)
+    for (const child of node.children ?? []) visit(child)
+  }
+  for (const variant of variants) visit(variant)
+  return new Set([...hidden].filter((name) => !shown.has(name)))
 }
 
 // A slot's content is the caller's: only the slot frame itself is styled. Its default text, when named after a
@@ -697,7 +719,7 @@ function layerSlots(node: Layer, parentLayout: string | undefined, ctx: SlotCont
   const key = ctx.isRoot ? ctx.setName : `${ctx.setName} › ${node.name}`
   const flex = ctx.isRoot && ctx.config.inline.includes(ctx.setName) ? 'inline-flex' : 'flex'
   const display = node.layout?.mode === 'grid' ? 'grid' : node.layout ? flex : ''
-  const s: Slots = { display: node.visible === false ? 'hidden' : display }
+  const s: Slots = { display: node.visible === false && !ctx.neverShown.has(node.name) ? 'hidden' : display }
   // A nested instance's opacity is its main's: the child's own look (a faded variant), not this layer's. An override of
   // it is caught with the other visual overrides.
   if (node.type !== 'INSTANCE' && node.opacity != null && node.opacity < 1)

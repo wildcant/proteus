@@ -4,8 +4,8 @@ import { Suspense } from 'react'
 import { ButtonLink } from '#/components/ui/button/button'
 import { orderQueryOptions } from '#/entities/order/api/orders'
 import { OrderConfirmedContent } from '#/features/orders/components/order-confirmed-content/order-confirmed-content'
-import { OrderConfirmedSkeleton } from '#/features/orders/components/order-confirmed-skeleton'
-import { OrderError } from '#/features/orders/components/order-error'
+import { OrderConfirmedSkeleton } from '#/features/orders/components/order-confirmed-skeleton/order-confirmed-skeleton'
+import { OrderError } from '#/features/orders/components/order-error/order-error'
 import { flowLinks } from '#/navigation/links'
 
 export const Route = createFileRoute('/_main/order/$orderId/confirmed')({

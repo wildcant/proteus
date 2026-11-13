@@ -1,8 +1,19 @@
 import { Trans } from '@lingui/react/macro'
+import { cn } from '@proteus/ui-core'
 import { useRouterState } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { Icon } from '#/components/ui/icon/icon'
 import { useCart, useSwitchCartMarket } from '#/entities/cart/api/cart'
+import {
+  cartMarketSwitch,
+  cartMarketSwitchBack,
+  cartMarketSwitchError,
+  cartMarketSwitchIcon,
+  cartMarketSwitchPriced,
+  cartMarketSwitchPricedText,
+  cartMarketSwitchTitle,
+  cartMarketSwitchTitleText,
+} from '#/features/cart/components/cart-market-switch/cart-market-switch.variants'
 import { useMarket } from '#/hooks/use-market'
 import { marketHref } from '#/lib/market'
 
@@ -68,30 +79,27 @@ export function CartMarketSwitch() {
   const [previous] = priced.length === 1 ? priced : []
 
   return (
-    <div
-      role="alert"
-      className="flex flex-col items-center justify-center gap-1 bg-orange-300 px-4 py-3 text-center text-sm sm:px-6"
-    >
-      <span className="flex items-center gap-2 font-medium sm:gap-3">
-        <Icon name="circle-alert" className="h-5 w-5 shrink-0" aria-hidden="true" />
-        <Trans>We could not move your bag to {current.displayName}</Trans>
+    <div role="alert" className={cartMarketSwitch()}>
+      <span className={cartMarketSwitchTitle()}>
+        <Icon name="circle-alert" className={cn(cartMarketSwitchIcon(), 'shrink-0')} aria-hidden="true" />
+        <span className={cartMarketSwitchTitleText()}>
+          <Trans>We could not move your bag to {current.displayName}</Trans>
+        </span>
       </span>
-      <span>{switchMarket.error.message}</span>
-      <span>
-        <Trans>It is still priced in {stale.currencyCode.toUpperCase()}</Trans>
+      <span className={cartMarketSwitchError()}>{switchMarket.error.message}</span>
+      <span className={cartMarketSwitchPriced()}>
+        <span className={cartMarketSwitchPricedText()}>
+          <Trans>It is still priced in {stale.currencyCode.toUpperCase()}</Trans>
+          {/* A flex item drops its trailing space, so the gap before the link is a no-break one. */}
+          {!!previous && ' ·\u00a0'}
+        </span>
         {!!previous && (
-          <>
-            {' · '}
-            {/* A document navigation, for the reason the market control gives: the rewrite is
-                fixed when the router is created, so a client-side navigation would land the
-                shopper back in the market they are trying to leave. */}
-            <a
-              className="font-bold underline underline-offset-4"
-              href={marketHref(previous.localeCode, location, markets)}
-            >
-              <Trans>Back to {previous.displayName}</Trans>
-            </a>
-          </>
+          // A document navigation, for the reason the market control gives: the rewrite is fixed
+          // when the router is created, so a client-side navigation would land the shopper back in
+          // the market they are trying to leave.
+          <a className={cartMarketSwitchBack()} href={marketHref(previous.localeCode, location, markets)}>
+            <Trans>Back to {previous.displayName}</Trans>
+          </a>
         )}
       </span>
     </div>

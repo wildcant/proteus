@@ -1,5 +1,6 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { cn } from '@proteus/ui-core'
+import type { VariantProps } from 'class-variance-authority'
 import { popover, popoverArrow, popoverContent } from '#/components/ui/popover/popover.variants'
 
 export function Popover(props: PopoverPrimitive.Root.Props) {
@@ -11,7 +12,8 @@ export function PopoverTrigger(props: PopoverPrimitive.Trigger.Props) {
 }
 
 type PopoverContentProps = PopoverPrimitive.Popup.Props &
-  Pick<PopoverPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'>
+  Pick<PopoverPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'> &
+  VariantProps<typeof popover>
 
 const POPUP_MOTION =
   'data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:fade-in-0 data-open:zoom-in-95 data-closed:fade-out-0 data-closed:zoom-out-95 origin-(--transform-origin) duration-100 data-closed:animate-out data-open:animate-in'
@@ -31,7 +33,7 @@ const ARROW_PLACEMENT = [
 /**
  * The store's popover: a short menu, so it sizes to its items, which are full-width buttons carrying
  * their own `h-10 px-3`. The arrow is built in rather than left to a call site that can forget it.
- * The caller's content is the set's `content` slot.
+ * The caller's content is the set's `content` slot; `size="rail"` is the header's category panel.
  */
 export function PopoverContent({
   align = 'center',
@@ -39,6 +41,7 @@ export function PopoverContent({
   side = 'bottom',
   // Clears the arrow's own height, so the tip stops short of the trigger rather than into it.
   sideOffset = 18,
+  size,
   className,
   children,
   ...props
@@ -54,7 +57,7 @@ export function PopoverContent({
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
-          className={cn(popover(), POPUP_MOTION, 'z-50 outline-hidden', className)}
+          className={cn(popover({ size }), POPUP_MOTION, 'z-50 outline-hidden', className)}
           {...props}
         >
           <PopoverPrimitive.Arrow data-slot="popover-arrow" className={cn(popoverArrow(), ARROW_PLACEMENT)} />

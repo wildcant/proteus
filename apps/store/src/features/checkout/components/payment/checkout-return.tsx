@@ -1,8 +1,8 @@
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { useEffect, useRef, useState } from 'react'
-import { ButtonLink } from '#/components/ui/button/button'
 import { useCart } from '#/entities/cart/api/cart'
-import type { LinkTarget } from '#/lib/link-target'
+import { ReturnFailure } from '#/features/checkout/components/return-failure/return-failure'
+import { ReturnStatus } from '#/features/checkout/components/return-status/return-status'
 import { usePaymentProviders } from '../../api/checkout'
 import { useCompleteOrder } from '../../hooks/use-complete-order'
 import type { CheckoutReturnLinks } from '../../types/links'
@@ -113,31 +113,4 @@ function ResumeRedirect({ adapter, query, links }: { adapter: StorePaymentAdapte
   }
 
   return <ReturnStatus title={t`Completing your order…`} />
-}
-
-function ReturnStatus({ title }: { title: string }) {
-  return (
-    <div className="mx-auto w-full max-w-125 px-4 py-16 text-center">
-      <h1 className="type-heading m-0 text-ink">{title}</h1>
-      <p className="mt-2 text-ink-muted text-sm">
-        <Trans>Do not close this tab.</Trans>
-      </p>
-    </div>
-  )
-}
-
-function ReturnFailure({ message, checkoutLink }: { message: string; checkoutLink: LinkTarget }) {
-  return (
-    <div className="mx-auto w-full max-w-125 px-4 py-16 text-center">
-      <h1 className="type-heading m-0 text-ink">
-        <Trans>Your payment did not finish</Trans>
-      </h1>
-      <p role="alert" className="mt-2 text-ink-muted text-sm">
-        {message}
-      </p>
-      <ButtonLink {...checkoutLink} variant="outline" className="mt-6">
-        <Trans>Back to checkout</Trans>
-      </ButtonLink>
-    </div>
-  )
 }
