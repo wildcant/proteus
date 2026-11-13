@@ -5,6 +5,7 @@ import { BaseRepository } from '../../../core/utils/base-repository.js'
 import { productTable } from '../models/product.js'
 import { productMetafieldTable } from '../models/product-metafield.js'
 import { productMetafieldDefinitionTable } from '../models/product-metafield-definition.js'
+import { productTypeTable } from '../models/product-type.js'
 
 type MetafieldRow = { productId: string; key: string; name: string; value: string }
 
@@ -58,19 +59,21 @@ export class ProductMetafieldRepository extends BaseRepository(productMetafieldT
   }
 
   /**
-   * Every product's field values as sets by key, in two queries: its live metafield values, and its
-   * brand under the vendor field's key when one is defined. A product with none maps to an empty map.
+   * Every product's field values as sets by key, in three queries: its live metafield values, its
+   * brand under the vendor field's key, and its Product Type under the type field's key, each when
+   * that field is defined. A product with none maps to an empty map.
    */
   async findFieldValuesOfProducts(
     productIds: string[],
     context?: Context,
   ): Promise<Map<string, Map<string, Set<string>>>> {
     const byProduct = new Map<string, Map<string, Set<string>>>(productIds.map((productId) => [productId, new Map()]))
-    const [metafieldRows, brandRows] = await Promise.all([
+    const [metafieldRows, brandRows, typeRows] = await Promise.all([
       this.findRows(productIds, context),
       this.findBrandRows(productIds, context),
+      this.findTypeRows(productIds, context),
     ])
-    for (const row of [...metafieldRows, ...brandRows]) {
+    for (const row of [...metafieldRows, ...brandRows, ...typeRows]) {
       const fields = byProduct.get(row.productId)
       if (!fields) continue
       const values = fields.get(row.key) ?? new Set<string>()
@@ -139,5 +142,29 @@ export class ProductMetafieldRepository extends BaseRepository(productMetafieldT
       )
       .where(and(inArray(productTable.id, productIds), isNotNull(productTable.brand)))
     return rows.flatMap((row) => (row.value === null ? [] : [{ ...row, value: row.value }]))
+  }
+
+  /** Each product's live Product Type under the type field's key; none when no field is the type's. */
+  private async findTypeRows(
+    productIds: string[],
+    context?: Context,
+  ): Promise<{ productId: string; key: string; value: string }[]> {
+    if (productIds.length === 0) return []
+    return this.getClient(context)
+      .select({
+        productId: productTable.id,
+        key: productMetafieldDefinitionTable.key,
+        value: productTypeTable.value,
+      })
+      .from(productTable)
+      .innerJoin(
+        productTypeTable,
+        and(eq(productTypeTable.id, productTable.typeId), isNull(productTypeTable.deletedAt)),
+      )
+      .innerJoin(
+        productMetafieldDefinitionTable,
+        and(eq(productMetafieldDefinitionTable.source, 'type'), isNull(productMetafieldDefinitionTable.deletedAt)),
+      )
+      .where(inArray(productTable.id, productIds))
   }
 }

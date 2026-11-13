@@ -190,7 +190,7 @@ test.describe('parseCatalogStructure', () => {
       { path: 'campos[0].clave', message: 'Must be 2 to 64 lowercase letters, digits, "-" or "_", like "genero".' },
       { path: 'campos[1].clave', message: 'Must be a clave.' },
       { path: 'campos[2].filtro', message: 'Must be true or false.' },
-      { path: 'campos[3].origen', message: 'Must be "vendor", or left out for a metafield.' },
+      { path: 'campos[3].origen', message: 'Must be "vendor" or "type", or left out for a metafield.' },
       { path: 'categorias[0].regla', message: 'Must hold at least one condition.' },
       {
         path: 'categorias[0].hijos[0].handle',
@@ -206,7 +206,8 @@ test.describe('parseCatalogStructure', () => {
       { path: 'menu[1].secciones[1].mostrar.limite', message: 'Must be a positive whole number.' },
       {
         path: 'menu[1].secciones[2].mostrar',
-        message: 'Must be "subcategorias" or "{ valores: <clave>, limite: <n> }".',
+        message:
+          'Must be "subcategorias", "{ valores: <clave>, limite: <n> }", "{ valores: <clave>, agrupar: <clave>, grupos: <n>, limite: <n> }" or "{ opcion: <option> }".',
       },
       {
         path: 'menu[1].secciones[3].enlaces[0].filtro.modelo',
@@ -274,6 +275,128 @@ test.describe('parseCatalogStructure', () => {
       { path: 'menu[2].secciones[3].enlaces[4]', message: oneTarget },
       { path: 'menu[2].secciones[3].enlaces[5]', message: oneTarget },
       { path: 'menu[3].secciones[0].mostrar', message: 'A collection has no subcategorias.' },
+    ])
+  })
+
+  test('reads a type campo, grouped values, an option section, a section nota and an entry pie', async ({ expect }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'campos:',
+        '  - { nombre: Marca, clave: marca, origen: vendor }',
+        '  - { nombre: Tipo, clave: tipo, origen: type, filtro: true }',
+        '  - { nombre: Modelo, clave: modelo }',
+        'categorias:',
+        '  - { nombre: Tenis, handle: tenis, regla: { tipo: [tenis] } }',
+        'colecciones:',
+        '  - { nombre: Los más buscados, handle: los-mas-buscados }',
+        'menu:',
+        '  - categoria: tenis',
+        '    secciones:',
+        '      - nombre: Marcas',
+        '        mostrar: { valores: modelo, agrupar: marca, grupos: 6, limite: 6 }',
+        '      - nombre: Talla',
+        '        mostrar: { opcion: Talla }',
+        '        nota: Te mostramos solo lo que hay en tu talla.',
+        '    pie:',
+        '      - { nombre: Ver todas las marcas, categoria: tenis }',
+        '      - { coleccion: los-mas-buscados }',
+      ]),
+    )
+
+    expect(errors).toEqual([])
+    expect(structure?.metafields[1]).toEqual({ name: 'Tipo', key: 'tipo', filterable: true, source: 'type' })
+    expect(structure?.menu).toEqual([
+      {
+        type: 'category',
+        handle: 'tenis',
+        sections: [
+          { type: 'groups', name: 'Marcas', key: 'modelo', groupKey: 'marca', groups: 6, limit: 6 },
+          { type: 'option', name: 'Talla', option: 'Talla', note: 'Te mostramos solo lo que hay en tu talla.' },
+        ],
+        footer: [
+          { type: 'category', handle: 'tenis', name: 'Ver todas las marcas' },
+          { type: 'collection', handle: 'los-mas-buscados', name: null },
+        ],
+      },
+    ])
+  })
+
+  test('refuses a second type campo, a grouping without its campo or on itself, an empty option, a nota that is not text and a pie link to nothing', async ({
+    expect,
+  }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'campos:',
+        '  - { nombre: Marca, clave: marca, origen: vendor }',
+        '  - { nombre: Tipo, clave: tipo, origen: type }',
+        '  - { nombre: Clase, clave: clase, origen: type }',
+        '  - { nombre: Modelo, clave: modelo }',
+        'categorias:',
+        '  - { nombre: Tenis, handle: tenis }',
+        'menu:',
+        '  - categoria: tenis',
+        '    secciones:',
+        '      - nombre: Sin agrupar',
+        '        mostrar: { valores: modelo, grupos: 6 }',
+        '      - nombre: Sobre sí mismo',
+        '        mostrar: { valores: modelo, agrupar: modelo }',
+        '      - nombre: Agrupar sin campo',
+        '        mostrar: { valores: modelo, agrupar: linea, grupos: 0 }',
+        '      - nombre: Talla',
+        '        mostrar: { opcion: "" }',
+        '      - nombre: Mezcla',
+        '        mostrar: { opcion: Talla, valores: modelo }',
+        '      - nombre: Nota',
+        '        mostrar: subcategorias',
+        '        nota: [uno]',
+        '    pie:',
+        '      - { categoria: hombre }',
+        '      - { nombre: Dos, categoria: tenis, coleccion: rebajas }',
+      ]),
+    )
+
+    expect(structure).toBeNull()
+    expect(errors).toEqual([
+      { path: 'menu[0].secciones[2].mostrar.grupos', message: 'Must be a positive whole number.' },
+      { path: 'menu[0].secciones[3].mostrar.opcion', message: 'Must not be empty.' },
+      {
+        path: 'menu[0].secciones[4].mostrar',
+        message:
+          'Must be "subcategorias", "{ valores: <clave>, limite: <n> }", "{ valores: <clave>, agrupar: <clave>, grupos: <n>, limite: <n> }" or "{ opcion: <option> }".',
+      },
+      { path: 'menu[0].secciones[5].nota', message: 'Must be a name.' },
+    ])
+
+    // The shape is right; what it names is checked next.
+    const named = parseCatalogStructure(
+      yaml([
+        'campos:',
+        '  - { nombre: Tipo, clave: tipo, origen: type }',
+        '  - { nombre: Clase, clave: clase, origen: type }',
+        '  - { nombre: Modelo, clave: modelo }',
+        'categorias:',
+        '  - { nombre: Tenis, handle: tenis }',
+        'menu:',
+        '  - categoria: tenis',
+        '    secciones:',
+        '      - nombre: Sin agrupar',
+        '        mostrar: { valores: modelo, grupos: 6 }',
+        '      - nombre: Sobre sí mismo',
+        '        mostrar: { valores: modelo, agrupar: modelo }',
+        '      - nombre: Agrupar sin campo',
+        '        mostrar: { valores: modelo, agrupar: linea }',
+        '    pie:',
+        '      - { categoria: hombre }',
+        '      - { nombre: Dos, categoria: tenis, coleccion: rebajas }',
+      ]),
+    )
+    expect(named.errors).toEqual([
+      { path: 'campos[1].origen', message: 'Only one campo can be the type; "tipo" already is.' },
+      { path: 'menu[0].secciones[0].mostrar.grupos', message: 'grupos needs agrupar, the campo to group by.' },
+      { path: 'menu[0].secciones[1].mostrar.agrupar', message: 'Must be a different campo from valores.' },
+      { path: 'menu[0].secciones[2].mostrar.agrupar', message: 'No campo in the file has the clave "linea".' },
+      { path: 'menu[0].pie[0].categoria', message: 'No category in the file has the handle "hombre".' },
+      { path: 'menu[0].pie[1]', message: 'Must have exactly one of filtro, categoria or coleccion.' },
     ])
   })
 

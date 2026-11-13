@@ -28,6 +28,7 @@ import type {
   ProductCategoryTreeNodeDTO,
   ProductCollectionDTO,
   ProductDTO,
+  ProductFieldGroupDTO,
   ProductFieldSource,
   ProductFilterDTO,
   ProductGroupingRuleDTO,
@@ -275,7 +276,7 @@ export class ProductModuleService implements IProductModuleService {
       }
       await this.replaceProductGroupings(productIds, groupingIds, transactionContext)
       if (metafields) await this.writeProductMetafields(productIds, metafields, transactionContext)
-      if (this.writesGroupings(groupingIds, metafields, productData.brand)) {
+      if (this.writesGroupings(groupingIds, metafields, productData)) {
         await this.syncRuleMemberships({ productIds }, transactionContext)
       }
 
@@ -319,7 +320,7 @@ export class ProductModuleService implements IProductModuleService {
       if (images) await this.replaceProductImages(productId, images, transactionContext)
       await this.replaceProductGroupings([productId], groupingIds, transactionContext)
       if (metafields) await this.writeProductMetafields([productId], metafields, transactionContext)
-      if (this.writesGroupings(groupingIds, metafields, productData.brand)) {
+      if (this.writesGroupings(groupingIds, metafields, productData)) {
         await this.syncRuleMemberships({ productIds: [productId] }, transactionContext)
       }
 
@@ -999,6 +1000,31 @@ export class ProductModuleService implements IProductModuleService {
     return values.map(({ value }) => value)
   }
 
+  async listProductFieldGroups(
+    key: string,
+    groupKey: string,
+    filters: FilterableProductProps,
+    context?: Context,
+  ): Promise<ProductFieldGroupDTO[]> {
+    const definitions = await this.productMetafieldDefinitionRepository.find(
+      { key: [key, groupKey] },
+      undefined,
+      context,
+    )
+    const definition = definitions.find((candidate) => candidate.key === key)
+    const groupDefinition = definitions.find((candidate) => candidate.key === groupKey)
+    if (!definition || !groupDefinition) return []
+    return this.productRepository.findFieldGroupCounts(definition, groupDefinition, filters, context)
+  }
+
+  async listOfferedOptionValues(title: string, filters: FilterableProductProps, context?: Context): Promise<string[]> {
+    const [option] = await this.productOptionService.listProductOptions({ title }, undefined, context)
+    if (!option) return []
+    // Scope only, no selections: every value offered counts at least one product.
+    const values = await this.productRepository.findOptionValueCounts(option, filters, context)
+    return values.map(({ value }) => value)
+  }
+
   async listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]> {
     return this.productMetafieldDefinitionRepository.find(undefined, { order: { rank: 'ASC', key: 'ASC' } }, context)
   }
@@ -1284,15 +1310,21 @@ export class ProductModuleService implements IProductModuleService {
   }
 
   /**
-   * Whether a product write set its metafields or brand, which rules read, or its Categories or
-   * Collections, which a ruled one puts back as its rule says.
+   * Whether a product write set its metafields, brand or Product Type, which rules read, or its
+   * Categories or Collections, which a ruled one puts back as its rule says.
    */
   private writesGroupings(
     { categoryIds, collectionIds }: ProductGroupingIdsDTO,
     metafields: ProductMetafieldValuesDTO | undefined,
-    brand: string | null | undefined,
+    { brand, typeId }: { brand?: string | null; typeId?: string | null },
   ): boolean {
-    return categoryIds !== undefined || collectionIds !== undefined || metafields !== undefined || brand !== undefined
+    return (
+      categoryIds !== undefined ||
+      collectionIds !== undefined ||
+      metafields !== undefined ||
+      brand !== undefined ||
+      typeId !== undefined
+    )
   }
 
   /** Each key named replaces that metafield's values on every product; a key with no definition is refused. */

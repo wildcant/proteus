@@ -10,20 +10,25 @@ export type MenuLinkTo = (target?: MenuTarget) => LinkTarget
 /** One destination, with the link the route made for it. */
 type MenuDestination = { key: string; label: string; link: LinkTarget }
 
-/** One titled column of an entry's panel, its links resolved. */
-type MenuGroupSection = Omit<MenuSection, 'links'> & { links: MenuDestination[] }
+/** One titled column of an entry's panel, its links resolved and its "View all" labelled. */
+type MenuGroupSection = Omit<MenuSection, 'links' | 'viewAll'> & {
+  links: MenuDestination[]
+  viewAll: MenuDestination | null
+}
 
 /**
- * A menu entry that opens rather than navigates, so its own page is `shopAll`, "Shop all <name>".
- * A Category with children lists them in `links`; an entry with sections lays them out as titled
- * columns in `sections` instead, and has no `links`.
+ * A menu entry that opens rather than navigates. A Category with children lists them in `links`
+ * under `shopAll`, "Shop all <name>". An entry with sections lays them out as titled columns in
+ * `sections` instead, with `footer` set apart below, and has neither `links` nor `shopAll`: its
+ * columns say where "View all" goes.
  */
 export type MenuGroup = {
   key: string
   label: string
-  shopAll: MenuDestination
+  shopAll: MenuDestination | null
   links: MenuDestination[]
   sections: MenuGroupSection[]
+  footer: MenuDestination[]
 }
 
 type MenuEntry = MenuDestination | MenuGroup
@@ -43,17 +48,24 @@ export function useMenuEntries(source: MenuSource, linkTo: MenuLinkTo): MenuEntr
     label,
     link: linkTo(target),
   })
+  // "View all", or "View all Adidas" when the column is narrower than the entry.
+  const viewAllLabel = (name: string | null) => (name ? t`View all ${name}` : t`View all`)
 
   return [
     destination({ key: 'shop-all', label: t`Shop all` }),
-    ...resolveMenuItems(source).map(({ key, label: name, target, children, sections }): MenuEntry => {
+    ...resolveMenuItems(source).map(({ key, label: name, target, children, sections, footer }): MenuEntry => {
       if (children.length === 0 && sections.length === 0) return destination({ key, label: name, target })
       return {
         key,
         label: name,
-        shopAll: destination({ key, label: t`Shop all ${name}`, target }),
+        shopAll: sections.length > 0 ? null : destination({ key, label: t`Shop all ${name}`, target }),
         links: children.map(destination),
-        sections: sections.map((section) => ({ ...section, links: section.links.map(destination) })),
+        sections: sections.map(({ viewAll, ...section }) => ({
+          ...section,
+          links: section.links.map(destination),
+          viewAll: viewAll ? destination({ ...viewAll, label: viewAllLabel(viewAll.name) }) : null,
+        })),
+        footer: footer.map(destination),
       }
     }),
   ]

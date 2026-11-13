@@ -22,8 +22,8 @@ type InjectedDependencies = {
   withTransaction: WithTransaction
 }
 
-/** Each scoped product's field values by key, and which key is the brand's. */
-type ProductFacts = { fieldsOf: Map<string, Map<string, Set<string>>>; vendorKey: string | undefined }
+/** Each scoped product's field values by key, and which keys match ignoring case: the brand's and the type's. */
+type ProductFacts = { fieldsOf: Map<string, Map<string, Set<string>>>; caseInsensitiveKeys: ReadonlySet<string> }
 
 type RuledGrouping = { id: string; rule: ProductGroupingRuleDTO | null }
 
@@ -81,11 +81,15 @@ export class ProductRuleMembershipService {
         )
       if (scopedProductIds.length === 0) return
 
-      const [fieldsOf, [vendorField]] = await Promise.all([
+      const [fieldsOf, builtinFields] = await Promise.all([
         this.productMetafieldRepository.findFieldValuesOfProducts(scopedProductIds, transactionContext),
-        this.productMetafieldDefinitionRepository.find({ source: 'vendor' }, { select: ['key'] }, transactionContext),
+        this.productMetafieldDefinitionRepository.find(
+          { source: ['vendor', 'type'] },
+          { select: ['key'] },
+          transactionContext,
+        ),
       ])
-      const facts = { fieldsOf, vendorKey: vendorField?.key }
+      const facts = { fieldsOf, caseInsensitiveKeys: new Set(builtinFields.map((field) => field.key)) }
 
       await this.applyRules(this.productProductCategoryRepository, categories, facts, transactionContext)
       await this.applyRules(this.productProductCollectionRepository, collections, facts, transactionContext)
@@ -111,7 +115,7 @@ export class ProductRuleMembershipService {
   private async applyRules(
     pivot: MembershipPivot,
     groupings: RuledGrouping[],
-    { fieldsOf, vendorKey }: ProductFacts,
+    { fieldsOf, caseInsensitiveKeys }: ProductFacts,
     context: Context,
   ): Promise<void> {
     if (groupings.length === 0) return
@@ -124,7 +128,7 @@ export class ProductRuleMembershipService {
         const remove: string[] = []
         for (const [productId, fields] of fieldsOf) {
           const isMember = membershipsOf.get(productId)?.some((grouping) => grouping.id === id) ?? false
-          const matches = matchesGroupingRule(rule, fields, vendorKey)
+          const matches = matchesGroupingRule(rule, fields, caseInsensitiveKeys)
           if (matches && !isMember) add.push(productId)
           if (!matches && isMember) remove.push(productId)
         }

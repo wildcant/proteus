@@ -2986,7 +2986,8 @@
             "type": "string",
             "enum": [
               "metafield",
-              "vendor"
+              "vendor",
+              "type"
             ]
           }
         },
@@ -3073,6 +3074,12 @@
             "items": {
               "$ref": "#/components/schemas/AdminNavigationSection"
             }
+          },
+          "footer": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminNavigationLink"
+            }
           }
         },
         "required": [
@@ -3093,6 +3100,9 @@
                 ]
               },
               "name": {
+                "type": "string"
+              },
+              "note": {
                 "type": "string"
               }
             },
@@ -3121,6 +3131,9 @@
                   "integer",
                   "null"
                 ]
+              },
+              "note": {
+                "type": "string"
               }
             },
             "required": [
@@ -3128,6 +3141,74 @@
               "name",
               "key",
               "limit"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "groups"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "groupKey": {
+                "type": "string"
+              },
+              "groups": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "limit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "key",
+              "groupKey",
+              "groups",
+              "limit"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "option"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "option": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "option"
             ]
           },
           {
@@ -3147,6 +3228,9 @@
                 "items": {
                   "$ref": "#/components/schemas/AdminNavigationLink"
                 }
+              },
+              "note": {
+                "type": "string"
               }
             },
             "required": [

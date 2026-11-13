@@ -3,7 +3,16 @@ import { config } from '@dotenvx/dotenvx'
 import { configDefaults, defineConfig, type ViteUserConfig } from 'vitest/config'
 import { WORKER_COUNT } from './tests/setup/database-url.js'
 
-const { parsed: testEnv } = config({ path: resolve(__dirname, '../../.env.test'), override: true })
+/**
+ * `.env.test`, then this checkout's own `.env.test.local` when there is one (gitignored): two
+ * checkouts sharing the test container name their own databases there, e.g.
+ * `POOLER_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5433/proteus_dev_test`.
+ */
+const { parsed: testEnv } = config({
+  path: [resolve(__dirname, '../../.env.test'), resolve(__dirname, '../../.env.test.local')],
+  override: true,
+  ignore: ['MISSING_ENV_FILE'],
+})
 
 /**
  * Exported so `vitest.temporal.config.ts` can run the same files with the same aliases and the same

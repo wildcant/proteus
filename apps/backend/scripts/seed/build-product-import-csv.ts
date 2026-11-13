@@ -11,8 +11,8 @@ import { SEED_IMAGE_DIR, seedImageFile } from './seed-images.js'
  * names. Both outputs are committed, so seeding never reaches the network; rerun this only to change
  * the catalogue. The Género, Tipo and Colecciones metafields are what `catalog-structure.yaml`'s rules
  * read: Género and Tipo come from mock.shop's own collections, Colecciones' `featured` too, and the
- * rest — the Essentials and Active collections, the material tags, the product type — from
- * `ENRICHMENT`.
+ * rest — the Essentials and Active collections, the material tags, the product type, the brand
+ * (Vendor) and the Modelo metafield the menu groups by brand — from `ENRICHMENT`.
  */
 
 const MOCK_SHOP_API = 'https://demostore.mock.shop/api'
@@ -28,7 +28,7 @@ const QUERY = `{
   products(first: 100) {
     pageInfo { hasNextPage }
     nodes {
-      handle title descriptionHtml vendor tags
+      handle title descriptionHtml tags
       collections(first: 20) { nodes { handle } }
       options { name }
       images(first: 50) { nodes { url altText } }
@@ -49,7 +49,6 @@ type MockShopProduct = {
   handle: string
   title: string
   descriptionHtml: string
-  vendor: string
   tags: string[]
   collections: { nodes: Array<{ handle: string }> }
   options: Array<{ name: string }>
@@ -77,6 +76,13 @@ const MOCK_SHOP_COLLECTIONS = ['featured']
 
 type Enrichment = {
   type: string
+  /**
+   * The Vendor. mock.shop sells everything as "Mock.shop", which leaves the store's brand filter and
+   * the menu's brand columns nothing to show, so each product gets one of a few made-up brands.
+   */
+  brand: string
+  /** The product's line within its brand, the Modelo metafield. */
+  model: string
   /** Collections beyond mock.shop's own `featured`. */
   collections?: Array<'essentials' | 'active'>
   materials?: Array<'cotton' | 'organic-cotton' | 'leather' | 'canvas' | 'nylon'>
@@ -88,35 +94,71 @@ type Enrichment = {
  * title and a material only where the description names one of the seed's materials.
  */
 const ENRICHMENT: Record<string, Enrichment> = {
-  'hoodie-old': { type: 'Hoodie', collections: ['essentials', 'active'], materials: ['cotton'] },
-  'men-t-shirt': { type: 'T-shirt', collections: ['essentials'], materials: ['organic-cotton'] },
-  'women-t-shirt': { type: 'T-shirt', collections: ['essentials'], materials: ['organic-cotton'] },
-  'men-crewneck': { type: 'Crewneck', collections: ['essentials'], materials: ['cotton'] },
-  'women-crewneck': { type: 'Crewneck', collections: ['essentials'], materials: ['cotton'] },
-  sweatpants: { type: 'Sweatpants', collections: ['essentials'] },
-  shorts: { type: 'Shorts', collections: ['active'], materials: ['nylon'] },
-  'workout-shirt': { type: 'T-shirt', collections: ['active'], materials: ['nylon'] },
-  leggings: { type: 'Leggings', collections: ['active'] },
-  'gray-runners': { type: 'Running Shoes', collections: ['active'] },
-  'high-top-sneakers': { type: 'Sneakers' },
-  'white-leather-sneakers': { type: 'Sneakers', materials: ['leather'] },
-  'gray-leather-sneakers': { type: 'Sneakers', materials: ['leather'] },
-  'canvas-sneakers': { type: 'Sneakers', materials: ['canvas'] },
-  hoodie: { type: 'Hoodie', materials: ['cotton'] },
-  'soft-cotton-hoodie-in-jam': { type: 'Hoodie', materials: ['cotton'] },
-  'soft-cotton-hoodie-in-clay': { type: 'Hoodie', materials: ['cotton'] },
-  'soft-cotton-hoodie-in-ocean': { type: 'Hoodie', materials: ['cotton'] },
-  'soft-cotton-hoodie-in-violet': { type: 'Hoodie', materials: ['cotton'] },
-  'soft-cotton-hoodie-in-green': { type: 'Hoodie', materials: ['cotton'] },
-  'half-zip': { type: 'Sweatshirt' },
-  'light-puffer': { type: 'Jacket', materials: ['nylon'] },
-  puffer: { type: 'Jacket', materials: ['nylon'] },
-  'puffer-jacket': { type: 'Jacket', materials: ['nylon'] },
-  'black-sunnies': { type: 'Sunglasses' },
-  'clear-sunnies': { type: 'Sunglasses' },
-  beanie: { type: 'Hat' },
-  slides: { type: 'Sandals' },
-  frontpack: { type: 'Bag' },
+  'hoodie-old': {
+    type: 'Hoodie',
+    brand: 'Northline',
+    model: 'Classic Hoodie',
+    collections: ['essentials', 'active'],
+    materials: ['cotton'],
+  },
+  'men-t-shirt': {
+    type: 'T-shirt',
+    brand: 'Northline',
+    model: 'Everyday Tee',
+    collections: ['essentials'],
+    materials: ['organic-cotton'],
+  },
+  'women-t-shirt': {
+    type: 'T-shirt',
+    brand: 'Northline',
+    model: 'Everyday Tee',
+    collections: ['essentials'],
+    materials: ['organic-cotton'],
+  },
+  'men-crewneck': {
+    type: 'Crewneck',
+    brand: 'Northline',
+    model: 'Crewneck',
+    collections: ['essentials'],
+    materials: ['cotton'],
+  },
+  'women-crewneck': {
+    type: 'Crewneck',
+    brand: 'Northline',
+    model: 'Crewneck',
+    collections: ['essentials'],
+    materials: ['cotton'],
+  },
+  sweatpants: { type: 'Sweatpants', brand: 'Northline', model: 'Jogger', collections: ['essentials'] },
+  shorts: { type: 'Shorts', brand: 'Kinetic', model: 'Stride Short', collections: ['active'], materials: ['nylon'] },
+  'workout-shirt': {
+    type: 'T-shirt',
+    brand: 'Kinetic',
+    model: 'Training Tee',
+    collections: ['active'],
+    materials: ['nylon'],
+  },
+  leggings: { type: 'Leggings', brand: 'Kinetic', model: 'Flow Legging', collections: ['active'] },
+  'gray-runners': { type: 'Running Shoes', brand: 'Kinetic', model: 'Pace Runner', collections: ['active'] },
+  'high-top-sneakers': { type: 'Sneakers', brand: 'Arco', model: 'Court High' },
+  'white-leather-sneakers': { type: 'Sneakers', brand: 'Arco', model: 'Court Low', materials: ['leather'] },
+  'gray-leather-sneakers': { type: 'Sneakers', brand: 'Arco', model: 'Court Low', materials: ['leather'] },
+  'canvas-sneakers': { type: 'Sneakers', brand: 'Vela', model: 'Canvas Classic', materials: ['canvas'] },
+  hoodie: { type: 'Hoodie', brand: 'Northline', model: 'Classic Hoodie', materials: ['cotton'] },
+  'soft-cotton-hoodie-in-jam': { type: 'Hoodie', brand: 'Northline', model: 'Soft Hoodie', materials: ['cotton'] },
+  'soft-cotton-hoodie-in-clay': { type: 'Hoodie', brand: 'Northline', model: 'Soft Hoodie', materials: ['cotton'] },
+  'soft-cotton-hoodie-in-ocean': { type: 'Hoodie', brand: 'Northline', model: 'Soft Hoodie', materials: ['cotton'] },
+  'soft-cotton-hoodie-in-violet': { type: 'Hoodie', brand: 'Northline', model: 'Soft Hoodie', materials: ['cotton'] },
+  'soft-cotton-hoodie-in-green': { type: 'Hoodie', brand: 'Northline', model: 'Soft Hoodie', materials: ['cotton'] },
+  'half-zip': { type: 'Sweatshirt', brand: 'Kinetic', model: 'Half Zip' },
+  'light-puffer': { type: 'Jacket', brand: 'Summit', model: 'Light Puffer', materials: ['nylon'] },
+  puffer: { type: 'Jacket', brand: 'Summit', model: 'Puffer', materials: ['nylon'] },
+  'puffer-jacket': { type: 'Jacket', brand: 'Summit', model: 'Puffer', materials: ['nylon'] },
+  'black-sunnies': { type: 'Sunglasses', brand: 'Summit', model: 'Sunnies' },
+  'clear-sunnies': { type: 'Sunglasses', brand: 'Summit', model: 'Sunnies' },
+  beanie: { type: 'Hat', brand: 'Summit', model: 'Beanie' },
+  slides: { type: 'Sandals', brand: 'Vela', model: 'Slide' },
+  frontpack: { type: 'Bag', brand: 'Summit', model: 'Frontpack' },
 }
 
 /**
@@ -163,6 +205,7 @@ const HEADER = [
   'Género (product.metafields.custom.genero)',
   'Tipo (product.metafields.custom.tipo)',
   'Colecciones (product.metafields.custom.colecciones)',
+  'Modelo (product.metafields.custom.modelo)',
 ] as const
 
 type Row = Record<(typeof HEADER)[number], string>
@@ -194,6 +237,7 @@ function metafieldsFor(product: MockShopProduct, enrichment: Enrichment) {
     'Colecciones (product.metafields.custom.colecciones)': listCell(
       [...pick(MOCK_SHOP_COLLECTIONS), ...(enrichment.collections ?? [])].sort(),
     ),
+    'Modelo (product.metafields.custom.modelo)': enrichment.model,
   }
 }
 
@@ -214,7 +258,7 @@ function rowsFor(product: MockShopProduct, stockedSkus: Set<string>): Row[] {
       Object.assign(row, {
         Title: product.title,
         Description: plainText(product.descriptionHtml),
-        Vendor: product.vendor,
+        Vendor: enrichment.brand,
         Type: enrichment.type,
         Tags: [...(enrichment.materials ?? [])].sort().join(', '),
         'Published on online store': 'TRUE',

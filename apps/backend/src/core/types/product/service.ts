@@ -25,6 +25,7 @@ import type {
   ProductCategoryTreeNodeDTO,
   ProductCollectionDTO,
   ProductDTO,
+  ProductFieldGroupDTO,
   ProductFilterDTO,
   ProductGroupingsDTO,
   ProductImageDTO,
@@ -317,6 +318,22 @@ export type IProductModuleService = {
    * or not — on the products matching `filters`, sorted. Empty for a key no definition has.
    */
   listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]>
+  /**
+   * The values of the field `key` on the products matching `filters`, grouped by the field
+   * `groupKey`: models by brand. Groups come most products first, and so do the values in each;
+   * ties go alphabetically. Empty when either key has no definition.
+   */
+  listProductFieldGroups(
+    key: string,
+    groupKey: string,
+    filters: FilterableProductProps,
+    context?: Context,
+  ): Promise<ProductFieldGroupDTO[]>
+  /**
+   * The values of the option titled `title` that the products matching `filters` offer, in the
+   * option's own order (sizes small to large). Empty for a title no option has.
+   */
+  listOfferedOptionValues(title: string, filters: FilterableProductProps, context?: Context): Promise<string[]>
   /** The live metafield definitions, by key. */
   listMetafieldDefinitions(context?: Context): Promise<ProductMetafieldDefinitionDTO[]>
   /**

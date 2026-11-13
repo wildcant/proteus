@@ -8,7 +8,11 @@ import type {
   ProductGroupingRuleDTO,
   ProductMetafieldType,
 } from '../../src/core/types/product/common.js'
-import type { StoreNavigationEntryDTO, StoreNavigationSectionDTO } from '../../src/core/types/store/common.js'
+import type {
+  StoreNavigationEntryDTO,
+  StoreNavigationLinkDTO,
+  StoreNavigationSectionDTO,
+} from '../../src/core/types/store/common.js'
 import { parseCatalogStructure } from '../../src/modules/product/utils/catalog-structure/parse-catalog-structure.js'
 import { matchesGroupingRule } from '../../src/modules/product/utils/grouping-rule.js'
 import { parseShopifyCsv } from '../../src/modules/product/utils/shopify-csv/parse-shopify-csv.js'
@@ -21,8 +25,8 @@ import { parseShopifyCsv } from '../../src/modules/product/utils/shopify-csv/par
  *   pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [estructura.yaml] [catalogo.csv]
  *
  * Prints the manifest as JSON; with no path it reads the seed `catalog-structure.yaml`. A menu with a
- * `valores` section needs the product CSV: Shopify menus are static, so the values are read off the
- * CSV's products and written out as menu items.
+ * `valores`, grouped `valores` or `opcion` section needs the product CSV: Shopify menus are static, so
+ * the values are read off the CSV's products and written out as menu items.
  */
 
 /** A product metafield definition. Every one is created as a collection condition, which is what Proteus' rules read it for. */
@@ -35,15 +39,19 @@ type ShopifyMetafieldDefinition = {
 
 /**
  * One storefront filter in Search & Discovery, in the structure file's campo order: a product
- * metafield (`custom.genero`), or the built-in Vendor, which the app lists as "Brand".
+ * metafield (`custom.genero`), the built-in Vendor, which the app lists as "Brand", or the built-in
+ * Product type.
  */
-type ShopifyFilter = { name: string; source: 'metafield'; metafield: string } | { name: string; source: 'vendor' }
+type ShopifyFilter =
+  | { name: string; source: 'metafield'; metafield: string }
+  | { name: string; source: 'vendor' | 'type' }
 
 /**
- * One collection condition: the product's `metafield` (`custom.genero`) list holds `value`, or its
- * Vendor (`field: 'vendor'`, "Proveedor es igual a") is `value`.
+ * One collection condition: the product's `metafield` (`custom.genero`) list holds `value`, its
+ * Vendor (`field: 'vendor'`, "Proveedor es igual a") is `value`, or its Product type
+ * (`field: 'type'`, "Tipo de producto es igual a") is `value`.
  */
-type ShopifyCollectionCondition = { metafield: string; value: string } | { field: 'vendor'; value: string }
+type ShopifyCollectionCondition = { metafield: string; value: string } | { field: 'vendor' | 'type'; value: string }
 
 /** A smart collection's conditions, matched on all of them or on any of them. */
 type ShopifyCollectionRule = { applies: 'all' | 'any'; conditions: ShopifyCollectionCondition[] }
@@ -72,8 +80,14 @@ type ShopifyStructureManifest = {
   menu: ShopifyMenuItem[]
 }
 
-/** What a `valores` section reads of a CSV product. */
-type ManifestProduct = Pick<ImportedProductDTO, 'brand' | 'metafields'>
+/** What a menu section reads of a CSV product. */
+type ManifestProduct = Pick<ImportedProductDTO, 'brand' | 'type' | 'metafields' | 'options'>
+
+/** Which campos are the product's built-in Vendor and Product type, by key. */
+type BuiltinKeys = { vendorKey: string | undefined; typeKey: string | undefined }
+
+/** One value of a field among the products a rule matches, with how many hold it. */
+type ValueCount = { value: string; count: number }
 
 const DEFAULT_STRUCTURE_PATH = path.join(import.meta.dirname, '../seed/catalog-structure.yaml')
 
@@ -82,21 +96,27 @@ const DEFAULT_STRUCTURE_PATH = path.join(import.meta.dirname, '../seed/catalog-s
  * names, and the menu's link picker finds a collection by title. Its menu item keeps the plain name.
  *
  * A menu entry with sections gets one child per section, holding that section's links, so the tree
- * stays within Shopify's three levels (Hombre › Marcas › Nike). `products` are the CSV's, which a
- * `valores` section reads its values from; it is required only when the menu has one.
+ * stays within Shopify's three levels (Hombre › Marcas › Nike). A grouped section gets one child per
+ * group instead (Tenis › Adidas › Samba), the group itself linking the entry filtered by it, and the
+ * entry's `pie` links follow its sections. A section's `nota` has no place in a Shopify menu.
+ * `products` are the CSV's, which `valores` and `opcion` sections read their values from; it is
+ * required only when the menu has one.
  */
 export function buildStructureManifest(
   structure: CatalogStructureDTO,
   products?: ManifestProduct[],
 ): ShopifyStructureManifest {
-  const vendorKey = structure.metafields.find((metafield) => metafield.source === 'vendor')?.key
+  const builtins: BuiltinKeys = {
+    vendorKey: structure.metafields.find((metafield) => metafield.source === 'vendor')?.key,
+    typeKey: structure.metafields.find((metafield) => metafield.source === 'type')?.key,
+  }
   const collections: ShopifyCollection[] = []
   const categoryItems = new Map<string, ShopifyMenuItem>()
   const categories = new Map<string, CatalogStructureCategoryDTO>()
 
   const visit = (category: CatalogStructureCategoryDTO, ancestors: string[]): ShopifyMenuItem => {
     const titles = [...ancestors, category.name]
-    collections.push(toCollection(titles.join(' › '), category.handle, category.rule, vendorKey))
+    collections.push(toCollection(titles.join(' › '), category.handle, category.rule, builtins))
     const item = {
       title: category.name,
       collectionHandle: category.handle,
@@ -111,49 +131,100 @@ export function buildStructureManifest(
 
   const collectionsByHandle = new Map(structure.collections.map((collection) => [collection.handle, collection]))
   for (const collection of structure.collections) {
-    collections.push(toCollection(collection.name, collection.handle, collection.rule, vendorKey))
+    collections.push(toCollection(collection.name, collection.handle, collection.rule, builtins))
   }
 
-  const fieldUrl = (handle: string, filter: Record<string, string[]>) => {
+  /** Search & Discovery's filter param for a campo, or for an option (`option: Talla`). */
+  const paramOf = (key: string) => {
+    if (key === builtins.vendorKey) return 'filter.p.vendor'
+    if (key === builtins.typeKey) return 'filter.p.product_type'
+    return `filter.p.m.custom.${key}`
+  }
+  const fieldUrl = (handle: string, filter: Record<string, string[]>, option?: string) => {
     const params = Object.entries(filter).flatMap(([key, values]) =>
       values.map((value) => {
-        const name = key === vendorKey ? 'filter.p.vendor' : `filter.p.m.custom.${key}`
+        const name = option ? `filter.v.option.${option.toLowerCase()}` : paramOf(key)
         return `${name}=${encodeURIComponent(value)}`
       }),
     )
     return `/collections/${handle}?${params.join('&')}`
   }
 
+  const leaf = (title: string, collectionHandle: string, url: string | null = null): ShopifyMenuItem => ({
+    title,
+    collectionHandle,
+    url,
+    children: [],
+  })
+  const linkItem = (entry: StoreNavigationEntryDTO, link: StoreNavigationLinkDTO): ShopifyMenuItem => {
+    if (link.type === 'filter') return leaf(link.name, entry.handle, fieldUrl(entry.handle, link.filter))
+    // The parser guarantees the handle names a grouping the file declares.
+    const name =
+      link.type === 'category' ? categories.get(link.handle)?.name : collectionsByHandle.get(link.handle)?.name
+    return leaf(link.name ?? name ?? link.handle, link.handle)
+  }
+  /** The CSV products in `entry`'s grouping. A manual one's members are picked in the admin, so the CSV cannot say. */
+  const productsOf = (entry: StoreNavigationEntryDTO, section: StoreNavigationSectionDTO): ManifestProduct[] => {
+    if (!products) {
+      throw new Error(
+        `The menu entry "${entry.handle}" lists values in "${section.name}": pass the product CSV to read them from.`,
+      )
+    }
+    const rule =
+      entry.type === 'category' ? categories.get(entry.handle)?.rule : collectionsByHandle.get(entry.handle)?.rule
+    if (!rule) return []
+    const caseInsensitiveKeys = caseInsensitive(builtins)
+    return products.filter((product) => matchesGroupingRule(rule, fieldsOf(product, builtins), caseInsensitiveKeys))
+  }
+
+  /** The children a section adds under its entry: one titled item holding its links, or one per group. */
   const sectionItems = (entry: StoreNavigationEntryDTO, section: StoreNavigationSectionDTO): ShopifyMenuItem[] => {
-    const leaf = (title: string, collectionHandle: string, url: string | null = null) => ({
-      title,
-      collectionHandle,
-      url,
-      children: [],
-    })
+    const titled = (children: ShopifyMenuItem[]) => [
+      { title: section.name, collectionHandle: entry.handle, url: null, children },
+    ]
     if (section.type === 'subcategories') {
       // Their own children would be a fourth level.
-      return (categories.get(entry.handle)?.children ?? []).map((child) => leaf(child.name, child.handle))
+      return titled((categories.get(entry.handle)?.children ?? []).map((child) => leaf(child.name, child.handle)))
     }
     if (section.type === 'values') {
-      if (!products) {
-        throw new Error(
-          `The menu entry "${entry.handle}" lists the values of "${section.key}": pass the product CSV to read them from.`,
-        )
-      }
-      const rule =
-        entry.type === 'category' ? categories.get(entry.handle)?.rule : collectionsByHandle.get(entry.handle)?.rule
-      const values = distinctValues(products, section.key, rule ?? null, vendorKey)
+      const values = countValues(productsOf(entry, section), section.key, builtins).sort(alphabetically)
       const shown = section.limit === null ? values : values.slice(0, section.limit)
-      return shown.map((value) => leaf(value, entry.handle, fieldUrl(entry.handle, { [section.key]: [value] })))
+      return titled(
+        shown.map(({ value }) => leaf(value, entry.handle, fieldUrl(entry.handle, { [section.key]: [value] }))),
+      )
     }
-    return section.links.map((link) => {
-      if (link.type === 'filter') return leaf(link.name, entry.handle, fieldUrl(entry.handle, link.filter))
-      // The parser guarantees the handle names a grouping the file declares.
-      const name =
-        link.type === 'category' ? categories.get(link.handle)?.name : collectionsByHandle.get(link.handle)?.name
-      return leaf(link.name ?? name ?? link.handle, link.handle)
-    })
+    if (section.type === 'option') {
+      const values = offeredOptionValues(productsOf(entry, section), section.option)
+      return titled(
+        values.map((value) =>
+          leaf(value, entry.handle, fieldUrl(entry.handle, { [section.option]: [value] }, section.option)),
+        ),
+      )
+    }
+    if (section.type === 'groups') {
+      const members = productsOf(entry, section)
+      const groups = countValues(members, section.groupKey, builtins).sort(mostFirst)
+      const shownGroups = section.groups === null ? groups : groups.slice(0, section.groups)
+      return shownGroups.map(({ value: group }) => {
+        const identity = builtinIdentity(section.groupKey, group, builtins)
+        const inGroup = members.filter((product) =>
+          [...(fieldsOf(product, builtins).get(section.groupKey) ?? [])].some(
+            (held) => builtinIdentity(section.groupKey, held, builtins) === identity,
+          ),
+        )
+        const values = countValues(inGroup, section.key, builtins).sort(mostFirst)
+        const shown = section.limit === null ? values : values.slice(0, section.limit)
+        return {
+          title: group,
+          collectionHandle: entry.handle,
+          url: fieldUrl(entry.handle, { [section.groupKey]: [group] }),
+          children: shown.map(({ value }) =>
+            leaf(value, entry.handle, fieldUrl(entry.handle, { [section.groupKey]: [group], [section.key]: [value] })),
+          ),
+        }
+      })
+    }
+    return titled(section.links.map((link) => linkItem(entry, link)))
   }
 
   // The parser guarantees every menu entry names a handle the file declares.
@@ -161,76 +232,95 @@ export function buildStructureManifest(
     const title =
       entry.type === 'category' ? categories.get(entry.handle)?.name : collectionsByHandle.get(entry.handle)?.name
     if (title === undefined) return []
-    if (entry.sections.length === 0) {
+    if (entry.sections.length === 0 && !entry.footer) {
       const item = categoryItems.get(entry.handle)
       if (entry.type === 'category') return item ? [item] : []
       return [{ title, collectionHandle: entry.handle, url: null, children: [] }]
     }
-    const children = entry.sections
-      .map((section) => ({
-        title: section.name,
-        collectionHandle: entry.handle,
-        url: null,
-        children: sectionItems(entry, section),
-      }))
-      .filter((section) => section.children.length > 0)
+    const children = [
+      ...entry.sections.flatMap((section) => sectionItems(entry, section)).filter((item) => item.children.length > 0),
+      ...(entry.footer ?? []).map((link) => linkItem(entry, link)),
+    ]
     return [{ title, collectionHandle: entry.handle, url: null, children }]
   })
 
-  // The vendor campo is the product's built-in Vendor, which has no metafield definition.
+  // The vendor and type campos are the product's built-in Vendor and Product type, which have no metafield definition.
   const metafields = structure.metafields.flatMap(({ name, key, source }): ShopifyMetafieldDefinition[] =>
-    source === 'vendor' ? [] : [{ name, namespace: 'custom', key, type: 'list.single_line_text_field' }],
+    source === 'metafield' ? [{ name, namespace: 'custom', key, type: 'list.single_line_text_field' }] : [],
   )
   const filters = structure.metafields
     .filter((metafield) => metafield.filterable)
     .map(
       ({ name, key, source }): ShopifyFilter =>
-        source === 'vendor' ? { name, source: 'vendor' } : { name, source: 'metafield', metafield: `custom.${key}` },
+        source === 'metafield' ? { name, source: 'metafield', metafield: `custom.${key}` } : { name, source },
     )
 
   return { metafields, filters, collections, menu }
 }
 
-/**
- * The distinct values of `key` among the products `rule` matches, sorted. Brands that differ only
- * in case are one value under the first spelling met, as the store counts them.
- */
-function distinctValues(
-  products: ManifestProduct[],
-  key: string,
-  rule: ProductGroupingRuleDTO | null,
-  vendorKey: string | undefined,
-): string[] {
-  const values = new Map<string, string>()
+/** A product's field values by key: its metafields, its Vendor and its Product type under their campos' keys. */
+function fieldsOf(product: ManifestProduct, { vendorKey, typeKey }: BuiltinKeys): Map<string, Set<string>> {
+  const fields = new Map(Object.entries(product.metafields).map(([field, held]) => [field, new Set(held)]))
+  if (vendorKey && product.brand) fields.set(vendorKey, new Set([product.brand]))
+  if (typeKey && product.type) fields.set(typeKey, new Set([product.type]))
+  return fields
+}
+
+const caseInsensitive = ({ vendorKey, typeKey }: BuiltinKeys) =>
+  new Set([vendorKey, typeKey].filter((key) => key !== undefined))
+
+/** What two spellings of a value share: brands and Product types are one value whatever their case, as the store counts them. */
+const builtinIdentity = (key: string, value: string, builtins: BuiltinKeys) =>
+  caseInsensitive(builtins).has(key) ? value.toLowerCase() : value
+
+/** Each value of `key` among `products`, under the first spelling met, with how many products hold it. */
+function countValues(products: ManifestProduct[], key: string, builtins: BuiltinKeys): ValueCount[] {
+  const counts = new Map<string, ValueCount>()
   for (const product of products) {
-    const fields = new Map(Object.entries(product.metafields).map(([field, held]) => [field, new Set(held)]))
-    if (vendorKey && product.brand) fields.set(vendorKey, new Set([product.brand]))
-    // A manual grouping's members are picked in the admin, so the CSV cannot say which they are.
-    if (!rule || !matchesGroupingRule(rule, fields, vendorKey)) continue
-    for (const value of fields.get(key) ?? []) {
-      const identity = key === vendorKey ? value.toLowerCase() : value
-      if (!values.has(identity)) values.set(identity, value)
+    for (const value of fieldsOf(product, builtins).get(key) ?? []) {
+      const identity = builtinIdentity(key, value, builtins)
+      const found = counts.get(identity) ?? { value, count: 0 }
+      found.count += 1
+      counts.set(identity, found)
     }
   }
-  return [...values.values()].sort((left, right) => left.localeCompare(right))
+  return [...counts.values()]
+}
+
+const alphabetically = (left: ValueCount, right: ValueCount) => left.value.localeCompare(right.value)
+
+/** Most products first, then alphabetically, as the store orders a grouped section. */
+const mostFirst = (left: ValueCount, right: ValueCount) => right.count - left.count || alphabetically(left, right)
+
+/** The values of the option titled `title` the products offer, in a natural order: sizes 9, 10, 11. */
+function offeredOptionValues(products: ManifestProduct[], title: string): string[] {
+  const values = new Set(
+    products.flatMap((product) => product.options.find((option) => option.title === title)?.values ?? []),
+  )
+  return [...values].sort((left, right) => left.localeCompare(right, undefined, { numeric: true }))
 }
 
 /**
  * A Shopify collection matches all of its conditions or any of them. A rule whose keys each hold one
  * value is the first; a rule of one key with several values is the second. Anything else mixes the two.
- * The vendor campo is the product's Vendor, the "Proveedor" condition, rather than a metafield.
+ * The vendor campo is the product's Vendor, the "Proveedor" condition, and the type campo its Product
+ * type, the "Tipo de producto" condition, rather than metafields.
  */
 function toCollection(
   title: string,
   handle: string,
   groupingRule: ProductGroupingRuleDTO | null,
-  vendorKey: string | undefined,
+  { vendorKey, typeKey }: BuiltinKeys,
 ): ShopifyCollection {
   if (groupingRule === null) return { title, handle, rule: null }
   const rule = Object.entries(groupingRule).map(([key, values]) =>
     values.map(
       (value): ShopifyCollectionCondition =>
-        key === vendorKey ? { field: 'vendor', value } : { metafield: `custom.${key}`, value },
+        key === vendorKey
+          ? { field: 'vendor', value }
+          : key === typeKey
+            ? { field: 'type', value }
+            : { metafield: `custom.${key}`, value },
     ),
   )
 
@@ -263,7 +353,7 @@ if (import.meta.main) {
       `${file} is not a valid structure file:\n${errors.map((error) => `  ${error.path}: ${error.message}`).join('\n')}`,
     )
   }
-  // Only the products' Vendor and metafields are read, so prices and the import's own checks do not matter here.
+  // Only the products' Vendor, Type, options and metafields are read, so prices and the import's own checks do not matter here.
   const metafieldKeys = new Set(structure.metafields.map((metafield) => metafield.key))
   const products = csvFile
     ? (

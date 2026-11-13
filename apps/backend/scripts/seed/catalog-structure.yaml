@@ -1,19 +1,25 @@
 # Store structure for the development catalogue in product-import.csv. `campos` are the product
 # metafields the rules read; `filtro: true` also offers one as a storefront filter, in this order.
-# `origen: vendor` makes a campo the product's brand, the CSV's Vendor column, instead of a metafield.
-# A rule maps each clave to the values that satisfy it: every clave must match, each by any one of
-# its values. mock.shop gives every product the same Vendor, so Marca is here as a smoke test only.
+# `origen: vendor` makes a campo the product's brand, the CSV's Vendor column, and `origen: type` its
+# Product Type, the Type column, instead of a metafield. A rule maps each clave to the values that
+# satisfy it: every clave must match, each by any one of its values.
 #
 # A menu entry may open a panel of `secciones` instead of its children, each one of:
 #   - nombre: Estilos
-#     mostrar: subcategorias                  # the entry's child categories
+#     mostrar: subcategorias                  # the entry's child categories, then "View all"
 #   - nombre: Marcas
 #     mostrar: { valores: marca, limite: 8 }  # each value of a campo among the entry's products
+#   - nombre: Marcas
+#     mostrar: { valores: modelo, agrupar: marca, grupos: 6, limite: 6 }
+#                                             # one column per brand with its models, most products first
+#   - nombre: Size
+#     mostrar: { opcion: Size }               # the sizes the entry's products offer, as chips
 #   - nombre: Destacados
 #     enlaces:                                # fixed links
 #       - { nombre: Tops, filtro: { tipo: [tops] } }      # the entry's list, filtered
 #       - { coleccion: featured }                         # or a category or collection
-# This catalogue's menu keeps the plain children.
+# Any section may add a `nota`, a line of text under it, and an entry may add `pie`, links in the
+# same shape as `enlaces` set apart below its sections.
 campos:
   - nombre: Género
     clave: genero
@@ -23,7 +29,9 @@ campos:
     filtro: true
   - nombre: Colecciones
     clave: colecciones
-  - { nombre: Marca, clave: marca, origen: vendor }
+  - { nombre: Marca, clave: marca, origen: vendor, filtro: true }
+  - nombre: Modelo
+    clave: modelo
 categorias:
   - nombre: Men
     handle: men
@@ -64,6 +72,9 @@ categorias:
       - nombre: Accessories
         handle: unisex-accessories
         regla: { genero: [unisex], tipo: [accessories] }
+  - nombre: Shoes
+    handle: shoes
+    regla: { tipo: [shoes] }
 colecciones:
   - nombre: Featured
     handle: featured
@@ -76,5 +87,27 @@ colecciones:
     regla: { colecciones: [active] }
 menu:
   - categoria: men
+    secciones:
+      - { nombre: Category, mostrar: subcategorias }
+      - nombre: Size
+        mostrar: { opcion: Size }
+        nota: Only what comes in your size.
   - categoria: women
+    secciones:
+      - { nombre: Category, mostrar: subcategorias }
+      - nombre: Size
+        mostrar: { opcion: Size }
+        nota: Only what comes in your size.
+  - categoria: shoes
+    secciones:
+      - nombre: All shoes
+        enlaces:
+          - { nombre: Men's shoes, categoria: men-shoes }
+          - { nombre: Unisex shoes, categoria: unisex-shoes }
+          - { coleccion: active }
+      - nombre: Brands
+        mostrar: { valores: modelo, agrupar: marca, grupos: 6, limite: 6 }
+    pie:
+      - { nombre: All brands, categoria: shoes }
   - categoria: unisex
+  - coleccion: featured

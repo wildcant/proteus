@@ -3,6 +3,7 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 import type { Context } from '../../../core/types/context.js'
 import type {
   FilterableProductProps,
+  ProductFieldGroupDTO,
   ProductFilterValueDTO,
   ProductMetafieldDefinitionDTO,
 } from '../../../core/types/product/common.js'
@@ -19,6 +20,7 @@ import { productProductOptionTable } from '../models/product-product-option.js'
 import { productProductOptionValueTable } from '../models/product-product-option-value.js'
 import { productProductTagTable } from '../models/product-product-tag.js'
 import { productTagTable } from '../models/product-tag.js'
+import { productTypeTable } from '../models/product-type.js'
 import { visibleCategoriesQuery } from './product-category.js'
 
 const asArray = (value: string | string[]) => (Array.isArray(value) ? value : [value])
@@ -66,8 +68,9 @@ export class ProductRepository extends BaseRepository(productTable) {
    * before any selection, so a value nothing in view would keep still comes back, at 0; the count
    * applies every selection but this definition's own, because choosing a value widens its own key
    * (values OR) and narrows only through the others (keys AND). The Tag selection counts as one of
-   * the others. One `GROUP BY` over the definition's values; for the vendor field, over the brands,
-   * spellings that differ only in case being one value under the most used one.
+   * the others. One `GROUP BY` over the definition's values; for the vendor field over the brands,
+   * and for the type field over the Product Types, spellings that differ only in case being one
+   * value under the most used one.
    */
   async findMetafieldValueCounts(
     definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'key' | 'source'>,
@@ -89,6 +92,19 @@ export class ProductRepository extends BaseRepository(productTable) {
         .groupBy(sql`lower(${this.table.brand})`)
         .orderBy(asc(brand))
     }
+    if (definition.source === 'type') {
+      const type = sql<string>`mode() WITHIN GROUP (ORDER BY ${productTypeTable.value})`
+      return client
+        .select({ value: type, count })
+        .from(this.table)
+        .innerJoin(
+          productTypeTable,
+          and(eq(productTypeTable.id, this.table.typeId), isNull(productTypeTable.deletedAt)),
+        )
+        .where(this.buildWhere(scope))
+        .groupBy(sql`lower(${productTypeTable.value})`)
+        .orderBy(asc(type))
+    }
     return client
       .select({
         value: productMetafieldTable.value,
@@ -105,6 +121,78 @@ export class ProductRepository extends BaseRepository(productTable) {
       )
       .groupBy(productMetafieldTable.value)
       .orderBy(asc(productMetafieldTable.value))
+  }
+
+  /**
+   * The values of `definition` on the products `filters` match, grouped by `groupDefinition`'s, each
+   * group and each value with how many products hold it, both most products first and then
+   * alphabetically. Brands and Product Types group ignoring case, under their most used spelling.
+   */
+  async findFieldGroupCounts(
+    definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'source'>,
+    groupDefinition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'source'>,
+    filters: FilterableProductProps,
+    context?: Context,
+  ): Promise<ProductFieldGroupDTO[]> {
+    const values = this.fieldValuesOf(definition)
+    const groups = this.fieldValuesOf(groupDefinition)
+    const where = this.buildWhere(filters) ?? sql`TRUE`
+    const count = sql<number>`COUNT(DISTINCT ${this.table.id})`.mapWith(Number)
+    const client = this.getClient(context)
+    const [groupRows, valueRows] = await Promise.all([
+      client
+        .select({
+          identity: sql<string>`g.identity`,
+          value: sql<string>`mode() WITHIN GROUP (ORDER BY g.value)`,
+          count,
+        })
+        .from(this.table)
+        .innerJoin(sql`(${groups}) g`, sql`g.product_id = ${this.table.id}`)
+        .where(where)
+        .groupBy(sql`g.identity`),
+      client
+        .select({
+          groupIdentity: sql<string>`g.identity`,
+          value: sql<string>`mode() WITHIN GROUP (ORDER BY v.value)`,
+          count,
+        })
+        .from(this.table)
+        .innerJoin(sql`(${groups}) g`, sql`g.product_id = ${this.table.id}`)
+        .innerJoin(sql`(${values}) v`, sql`v.product_id = ${this.table.id}`)
+        .where(where)
+        .groupBy(sql`g.identity`, sql`v.identity`),
+    ])
+    const mostFirst = (a: ProductFilterValueDTO, b: ProductFilterValueDTO) =>
+      b.count - a.count || a.value.localeCompare(b.value)
+    return groupRows
+      .map(({ identity, value, count: groupCount }) => ({
+        value,
+        count: groupCount,
+        values: valueRows
+          .filter((row) => row.groupIdentity === identity)
+          .map((row) => ({ value: row.value, count: row.count }))
+          .sort(mostFirst),
+      }))
+      .sort(mostFirst)
+  }
+
+  /**
+   * A field's values as rows of `product_id`, `value` and `identity`, the value two spellings share:
+   * a metafield's live values as written, the brand or the Product Type lowercased.
+   */
+  private fieldValuesOf(definition: Pick<ProductMetafieldDefinitionDTO, 'id' | 'source'>): SQL {
+    if (definition.source === 'vendor') {
+      return sql`SELECT ${productTable.id} AS product_id, ${productTable.brand} AS value, lower(${productTable.brand}) AS identity
+        FROM ${productTable} WHERE ${productTable.brand} IS NOT NULL`
+    }
+    if (definition.source === 'type') {
+      return sql`SELECT ${productTable.id} AS product_id, ${productTypeTable.value} AS value, lower(${productTypeTable.value}) AS identity
+        FROM ${productTable} JOIN ${productTypeTable} ON ${productTypeTable.id} = ${productTable.typeId}
+        WHERE ${productTypeTable.deletedAt} IS NULL`
+    }
+    return sql`SELECT ${productMetafieldTable.productId} AS product_id, ${productMetafieldTable.value} AS value, ${productMetafieldTable.value} AS identity
+      FROM ${productMetafieldTable}
+      WHERE ${productMetafieldTable.definitionId} = ${definition.id} AND ${productMetafieldTable.deletedAt} IS NULL`
   }
 
   /** The options the products `filters` match offer, by title. Only `filters`' scope applies: its selections narrow counts, not this. */
@@ -131,8 +219,8 @@ export class ProductRepository extends BaseRepository(productTable) {
   }
 
   /**
-   * Every value of `option` the products `filters` match offer, in the option's own order (sizes
-   * small to large), each with how many would remain once it is chosen — counted as
+   * Every value of `option` the products `filters` match offer, in the option's own order, numbers by
+   * value where that order ties (sizes small to large), each with how many would remain once it is chosen — counted as
    * `findMetafieldValueCounts` counts, every selection applying but this option's own.
    */
   async findOptionValueCounts(
@@ -144,29 +232,40 @@ export class ProductRepository extends BaseRepository(productTable) {
     const narrowed =
       this.extraWhere({ tagValue, metafields, pricedProductIds, optionValues: otherOptions }) ?? sql`TRUE`
     const client = this.getClient(context)
-    return client
-      .select({
-        value: productOptionValueTable.value,
-        count: sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number),
-      })
-      .from(productProductOptionValueTable)
-      .innerJoin(
-        productProductOptionTable,
-        eq(productProductOptionTable.id, productProductOptionValueTable.productProductOptionId),
-      )
-      .innerJoin(productOptionValueTable, eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId))
-      .innerJoin(this.table, eq(this.table.id, productProductOptionTable.productId))
-      .where(
-        and(
-          eq(productProductOptionTable.optionId, option.id),
-          isNull(productProductOptionValueTable.deletedAt),
-          isNull(productProductOptionTable.deletedAt),
-          isNull(productOptionValueTable.deletedAt),
-          this.buildWhere(scope),
-        ),
-      )
-      .groupBy(productOptionValueTable.value)
-      .orderBy(sql`MIN(${productOptionValueTable.rank})`, asc(productOptionValueTable.value))
+    return (
+      client
+        .select({
+          value: productOptionValueTable.value,
+          count: sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number),
+        })
+        .from(productProductOptionValueTable)
+        .innerJoin(
+          productProductOptionTable,
+          eq(productProductOptionTable.id, productProductOptionValueTable.productProductOptionId),
+        )
+        .innerJoin(
+          productOptionValueTable,
+          eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId),
+        )
+        .innerJoin(this.table, eq(this.table.id, productProductOptionTable.productId))
+        .where(
+          and(
+            eq(productProductOptionTable.optionId, option.id),
+            isNull(productProductOptionValueTable.deletedAt),
+            isNull(productProductOptionTable.deletedAt),
+            isNull(productOptionValueTable.deletedAt),
+            this.buildWhere(scope),
+          ),
+        )
+        .groupBy(productOptionValueTable.value)
+        // The option's own order first; values it leaves tied go by number when they are numbers, so a
+        // size 9 comes before 10, and by text otherwise.
+        .orderBy(
+          sql`MIN(${productOptionValueTable.rank})`,
+          sql`CASE WHEN ${productOptionValueTable.value} ~ '^[0-9]+([.,][0-9]+)?$' THEN replace(${productOptionValueTable.value}, ',', '.')::numeric END NULLS LAST`,
+          asc(productOptionValueTable.value),
+        )
+    )
   }
 
   /** The grouping filters: each one an `EXISTS`, ANDed with the column filters and each other. */
@@ -301,7 +400,7 @@ export class ProductRepository extends BaseRepository(productTable) {
 
   /**
    * Products whose field `key` holds any of `values`, under a live definition: a metafield's live
-   * values exactly, or the vendor field's brand ignoring case.
+   * values exactly, or the vendor field's brand or the type field's Product Type ignoring case.
    */
   private holdsMetafield(key: string, values: string[]): SQL {
     const client = this.getClient()
@@ -318,9 +417,19 @@ export class ProductRepository extends BaseRepository(productTable) {
           ),
         ),
     )
-    const heldBrand = inArray(
-      sql`lower(${this.table.brand})`,
-      values.map((value) => value.toLowerCase()),
+    const lowered = values.map((value) => value.toLowerCase())
+    const heldBrand = inArray(sql`lower(${this.table.brand})`, lowered)
+    const heldType = exists(
+      client
+        .select({ id: productTypeTable.id })
+        .from(productTypeTable)
+        .where(
+          and(
+            eq(productTypeTable.id, this.table.typeId),
+            inArray(sql`lower(${productTypeTable.value})`, lowered),
+            isNull(productTypeTable.deletedAt),
+          ),
+        ),
     )
     return exists(
       client
@@ -333,6 +442,7 @@ export class ProductRepository extends BaseRepository(productTable) {
             or(
               and(eq(productMetafieldDefinitionTable.source, 'metafield'), heldMetafield),
               and(eq(productMetafieldDefinitionTable.source, 'vendor'), heldBrand),
+              and(eq(productMetafieldDefinitionTable.source, 'type'), heldType),
             ),
           ),
         ),

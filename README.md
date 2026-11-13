@@ -299,7 +299,10 @@ build if anything reachable from `src/index.workerd.ts` so much as imports it.
 
 It shares 3001 and 3002 with `dev`, so run one session or the other, not both. `wrangler dev` reads
 `apps/backend/.env.workerd`, which is gitignored and generated from `.env.local`; the task creates it
-if it is missing, but after editing `.env.local` you need `pnpm run gen:workerd-env` yourself.
+if it is missing, but after editing `.env.local` you need `pnpm run gen:workerd-env` yourself. It
+also names the database the Hyperdrive binding connects to locally
+(`CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`, `.env.local`'s `DIRECT_DATABASE_URL`), so
+a `.env.workerd` written before that line existed needs regenerating.
 
 ### Common tasks
 

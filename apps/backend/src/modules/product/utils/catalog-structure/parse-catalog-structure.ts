@@ -43,8 +43,11 @@ const key = z
 /** `filtro: true` offers the campo as a storefront filter, Shopify's per-definition filter switch. */
 const filter = z.boolean({ error: ifWrongType('Must be true or false.') })
 
-/** `origen: vendor` makes the campo the product's brand, the CSV's Vendor column, rather than a metafield. */
-const source = z.literal('vendor', { error: 'Must be "vendor", or left out for a metafield.' })
+/**
+ * `origen: vendor` makes the campo the product's brand, the CSV's Vendor column, and `origen: type` its
+ * Product Type, the CSV's Type column, rather than a metafield.
+ */
+const source = z.enum(['vendor', 'type'], { error: 'Must be "vendor" or "type", or left out for a metafield.' })
 
 const field = z.strictObject(
   { nombre: name, clave: key, filtro: filter.optional(), origen: source.optional() },
@@ -88,15 +91,29 @@ const collection = z.strictObject(
   { error: ifWrongType('Must be a collection with nombre and handle.') },
 )
 
-/** `limite` on a `valores` section: how many values the column shows at most. */
+/** `limite` on a `valores` section, how many values it shows at most, and `grupos`, how many groups. */
 const limit = z
   .number({ error: ifWrongType('Must be a positive whole number.') })
   .int('Must be a positive whole number.')
   .positive('Must be a positive whole number.')
 
-const show = z.union([z.literal('subcategorias'), z.strictObject({ valores: key, limite: limit.optional() })], {
-  error: ifWrongType('Must be "subcategorias" or "{ valores: <clave>, limite: <n> }".'),
-})
+/**
+ * What a section lists: the entry's subcategories; each value of a campo among the entry's products,
+ * optionally grouped by a second campo (`agrupar`, at most `grupos` groups and `limite` values each);
+ * or each value of a product option (`opcion`, by its title, "Talla") the entry's products offer.
+ */
+const show = z.union(
+  [
+    z.literal('subcategorias'),
+    z.strictObject({ valores: key, limite: limit.optional(), agrupar: key.optional(), grupos: limit.optional() }),
+    z.strictObject({ opcion: name }),
+  ],
+  {
+    error: ifWrongType(
+      'Must be "subcategorias", "{ valores: <clave>, limite: <n> }", "{ valores: <clave>, agrupar: <clave>, grupos: <n>, limite: <n> }" or "{ opcion: <option> }".',
+    ),
+  },
+)
 
 /**
  * One fixed link: `nombre` with a `filtro` (the entry's list filtered), or a `categoria` or `coleccion`
@@ -115,6 +132,7 @@ const section = z.strictObject(
     nombre: name,
     mostrar: show.optional(),
     enlaces: z.array(link, { error: ifWrongType('Must be a list of links.') }).optional(),
+    nota: name.optional(),
   },
   { error: ifWrongType('Must be a section with nombre and one of mostrar or enlaces.') },
 )
@@ -127,6 +145,7 @@ const menuEntry = z.strictObject(
     categoria: handle.optional(),
     coleccion: handle.optional(),
     secciones: z.array(section, { error: ifWrongType('Must be a list of sections.') }).optional(),
+    pie: z.array(link, { error: ifWrongType('Must be a list of links.') }).optional(),
   },
   { error: ifWrongType('Must be one of "categoria: <handle>" or "coleccion: <handle>".') },
 )
@@ -151,10 +170,11 @@ export type ParsedCatalogStructure =
 /**
  * Reads `estructura.yaml` into a structure, or every problem with it, each with the path it is at
  * (`categorias[0].hijos[1].handle`). Beyond the shape: a clave is declared once, at most one campo
- * is the vendor (`origen: vendor`), every rule names
+ * is the vendor (`origen: vendor`) and at most one the type (`origen: type`), every rule names
  * only declared claves, a handle is used once among the Categories and once among the Collections,
- * and every menu entry names one the file declares. A menu entry's `secciones` read only declared
- * claves (`valores`, `filtro`) and link only declared handles; only a Category has `subcategorias`.
+ * and every menu entry names one the file declares. A menu entry's `secciones` and `pie` read only
+ * declared claves (`valores`, `agrupar`, `filtro`) and link only declared handles; only a Category
+ * has `subcategorias`; `grupos` needs `agrupar`, which must differ from `valores`.
  */
 export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const document = parseDocument(text, { prettyErrors: false })
@@ -176,20 +196,20 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const errors: CatalogStructureErrorDTO[] = []
 
   const keys = new Set<string>()
-  let vendorKey: string | null = null
+  const builtinKeys = new Map<'vendor' | 'type', string>()
   const metafields = campos.map((raw, index) => {
     if (keys.has(raw.clave)) {
       errors.push({ path: `campos[${index}].clave`, message: `The clave "${raw.clave}" is used more than once.` })
     }
     keys.add(raw.clave)
-    if (raw.origen === 'vendor') {
-      if (vendorKey !== null) {
+    if (raw.origen) {
+      const taken = builtinKeys.get(raw.origen)
+      if (taken !== undefined) {
         errors.push({
           path: `campos[${index}].origen`,
-          message: `Only one campo can be the vendor; "${vendorKey}" already is.`,
+          message: `Only one campo can be the ${raw.origen}; "${taken}" already is.`,
         })
-      }
-      vendorKey ??= raw.clave
+      } else builtinKeys.set(raw.origen, raw.clave)
     }
     return {
       name: raw.nombre,
@@ -287,21 +307,44 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       errors.push({ path, message: 'Must have exactly one of mostrar or enlaces.' })
       return null
     }
+    const note = raw.nota === undefined ? {} : { note: raw.nota }
     if (raw.enlaces) {
       const links = raw.enlaces.map((rawLink, index) => toLink(rawLink, `${path}.enlaces[${index}]`))
-      return { type: 'links', name: raw.nombre, links: links.filter((found) => found !== null) }
+      return { type: 'links', name: raw.nombre, links: links.filter((found) => found !== null), ...note }
     }
     if (raw.mostrar === 'subcategorias') {
       if (entryType === 'collection') {
         errors.push({ path: `${path}.mostrar`, message: 'A collection has no subcategorias.' })
       }
-      return { type: 'subcategories', name: raw.nombre }
+      return { type: 'subcategories', name: raw.nombre, ...note }
     }
-    const { valores, limite } = raw.mostrar ?? { valores: '' }
-    if (!keys.has(valores)) {
-      errors.push({ path: `${path}.mostrar.valores`, message: `No campo in the file has the clave "${valores}".` })
+    const shown = raw.mostrar ?? { opcion: '' }
+    if ('opcion' in shown) return { type: 'option', name: raw.nombre, option: shown.opcion, ...note }
+    const { valores, limite, agrupar, grupos } = shown
+    const declared = (clave: string, at: string) => {
+      if (keys.has(clave)) return
+      errors.push({ path: `${path}.mostrar.${at}`, message: `No campo in the file has the clave "${clave}".` })
     }
-    return { type: 'values', name: raw.nombre, key: valores, limit: limite ?? null }
+    declared(valores, 'valores')
+    if (agrupar === undefined) {
+      if (grupos !== undefined) {
+        errors.push({ path: `${path}.mostrar.grupos`, message: 'grupos needs agrupar, the campo to group by.' })
+      }
+      return { type: 'values', name: raw.nombre, key: valores, limit: limite ?? null, ...note }
+    }
+    declared(agrupar, 'agrupar')
+    if (agrupar === valores) {
+      errors.push({ path: `${path}.mostrar.agrupar`, message: 'Must be a different campo from valores.' })
+    }
+    return {
+      type: 'groups',
+      name: raw.nombre,
+      key: valores,
+      groupKey: agrupar,
+      groups: grupos ?? null,
+      limit: limite ?? null,
+      ...note,
+    }
   }
 
   const navigation = menu.flatMap((entry, index): StoreNavigationEntryDTO[] => {
@@ -314,7 +357,11 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     const sections = (entry.secciones ?? [])
       .map((raw, sectionIndex) => toSection(raw, `${path}.secciones[${sectionIndex}]`, target.type))
       .filter((found) => found !== null)
-    return [{ ...target, sections }]
+    if (!entry.pie) return [{ ...target, sections }]
+    const footer = entry.pie
+      .map((raw, linkIndex) => toLink(raw, `${path}.pie[${linkIndex}]`))
+      .filter((found) => found !== null)
+    return [{ ...target, sections, footer }]
   })
 
   if (errors.length > 0) return fail(errors)

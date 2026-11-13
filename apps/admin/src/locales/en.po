@@ -13,7 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:188
+#: src/features/products/components/import-structure/structure-preview-step.tsx:212
+msgid "(footer: {footerNames})"
+msgstr "(footer: {footerNames})"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:207
 msgid "(sections: {sectionNames})"
 msgstr "(sections: {sectionNames})"
 
@@ -41,7 +45,7 @@ msgstr "{create} new, {update} to update, {skip} skipped."
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} is not a supported file type. Supported file types are: {extensions}."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:184
+#: src/features/products/components/import-structure/structure-preview-step.tsx:203
 msgid "{handle} (collection)"
 msgstr "{handle} (collection)"
 
@@ -60,6 +64,14 @@ msgstr "{name} was dropped."
 #: src/features/regions/components/region-country-row-actions.tsx:38
 msgid "{name} will stop being sold to, and its storefront will no longer resolve."
 msgstr "{name} will stop being sold to, and its storefront will no longer resolve."
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:176
+msgid "{name}: {key} by {groupKey}"
+msgstr "{name}: {key} by {groupKey}"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:180
+msgid "{name}: option {option}"
+msgstr "{name}: option {option}"
 
 #: src/features/regions/utils/country-summary.ts:21
 msgid "{named} + {remaining} more"
@@ -230,7 +242,7 @@ msgstr "Adding a currency is what gives every product a price column in it. Only
 msgid "Admin"
 msgstr "Admin"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:128
+#: src/features/products/components/import-structure/structure-preview-step.tsx:132
 msgid "After"
 msgstr "After"
 
@@ -246,7 +258,7 @@ msgstr "Allow Backorder"
 msgid "Allow backorders"
 msgstr "Allow backorders"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:158
+#: src/features/products/components/import-structure/structure-preview-step.tsx:162
 msgid "Apply structure"
 msgstr "Apply structure"
 
@@ -373,7 +385,7 @@ msgstr "Barcode"
 msgid "Before {date}"
 msgstr "Before {date}"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:21
+#: src/features/products/components/import-structure/structure-preview-step.tsx:23
 msgid "brand"
 msgstr "brand"
 
@@ -406,7 +418,7 @@ msgstr "Bytes"
 #: src/features/products/components/edit-product-organization-form.tsx:36
 #: src/features/products/components/import-products/import-preview-step.tsx:81
 #: src/features/products/components/import-products/import-upload-step.tsx:88
-#: src/features/products/components/import-structure/structure-preview-step.tsx:140
+#: src/features/products/components/import-structure/structure-preview-step.tsx:144
 #: src/features/products/components/import-structure/structure-upload-step.tsx:85
 #: src/features/products/components/media/edit-product-media-form.tsx:40
 #: src/features/products/components/media/manage-image-variants-form.tsx:71
@@ -455,19 +467,19 @@ msgstr "Capture payments"
 msgid "Categories"
 msgstr "Categories"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:40
+#: src/features/products/components/import-structure/structure-preview-step.tsx:44
 msgid "Categories to create"
 msgstr "Categories to create"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:56
+#: src/features/products/components/import-structure/structure-preview-step.tsx:60
 msgid "Categories to delete"
 msgstr "Categories to delete"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:48
+#: src/features/products/components/import-structure/structure-preview-step.tsx:52
 msgid "Categories to move"
 msgstr "Categories to move"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:44
+#: src/features/products/components/import-structure/structure-preview-step.tsx:48
 msgid "Categories to update"
 msgstr "Categories to update"
 
@@ -532,15 +544,15 @@ msgstr "Code"
 msgid "Collections"
 msgstr "Collections"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:61
+#: src/features/products/components/import-structure/structure-preview-step.tsx:65
 msgid "Collections to create"
 msgstr "Collections to create"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:69
+#: src/features/products/components/import-structure/structure-preview-step.tsx:73
 msgid "Collections to delete"
 msgstr "Collections to delete"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:65
+#: src/features/products/components/import-structure/structure-preview-step.tsx:69
 msgid "Collections to update"
 msgstr "Collections to update"
 
@@ -1136,7 +1148,7 @@ msgstr "Editable data grid"
 msgid "Email"
 msgstr "Email"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:169
+#: src/features/products/components/import-structure/structure-preview-step.tsx:187
 msgid "Empty"
 msgstr "Empty"
 
@@ -1417,7 +1429,7 @@ msgstr "False"
 msgid "Fill in your details to accept the invitation."
 msgstr "Fill in your details to accept the invitation."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:21
+#: src/features/products/components/import-structure/structure-preview-step.tsx:24
 msgid "filter"
 msgstr "filter"
 
@@ -1822,23 +1834,23 @@ msgstr "Media"
 msgid "Media updated successfully"
 msgstr "Media updated successfully"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:118
+#: src/features/products/components/import-structure/structure-preview-step.tsx:122
 msgid "Menu"
 msgstr "Menu"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:87
+#: src/features/products/components/import-structure/structure-preview-step.tsx:91
 msgid "Metafields are matched by key, categories and collections by handle. Applying makes every category in the file active and re-matches every rule against the products' metafields. Deleting a metafield deletes its values on every product."
 msgstr "Metafields are matched by key, categories and collections by handle. Applying makes every category in the file active and re-matches every rule against the products' metafields. Deleting a metafield deletes its values on every product."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:27
+#: src/features/products/components/import-structure/structure-preview-step.tsx:31
 msgid "Metafields to create"
 msgstr "Metafields to create"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:35
+#: src/features/products/components/import-structure/structure-preview-step.tsx:39
 msgid "Metafields to delete"
 msgstr "Metafields to delete"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:31
+#: src/features/products/components/import-structure/structure-preview-step.tsx:35
 msgid "Metafields to update"
 msgstr "Metafields to update"
 
@@ -2171,7 +2183,7 @@ msgstr "Notification"
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:122
+#: src/features/products/components/import-structure/structure-preview-step.tsx:126
 msgid "Now"
 msgstr "Now"
 
@@ -2314,7 +2326,7 @@ msgstr "Placing an order holds its stock, and the hold shows up here."
 msgid "Prev"
 msgstr "Prev"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:82
+#: src/features/products/components/import-structure/structure-preview-step.tsx:86
 msgid "Preview the structure"
 msgstr "Preview the structure"
 
@@ -2351,6 +2363,10 @@ msgstr "Product Options"
 #: src/features/products/components/edit-product-form.tsx:27
 msgid "Product title"
 msgstr "Product title"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:23
+msgid "product type"
+msgstr "product type"
 
 #: src/features/products/components/variant/variant-general-section.tsx:31
 msgid "Product Variant"
@@ -2801,7 +2817,7 @@ msgstr "Stocked quantity"
 msgid "Store"
 msgstr "Store"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:151
+#: src/features/products/components/import-structure/structure-preview-step.tsx:155
 msgid "Structure applied"
 msgstr "Structure applied"
 
@@ -2856,7 +2872,7 @@ msgstr "The image exceeds the maximum file size of {maxSize}."
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "The market — and so the currency — a shopper is priced in before they pick one."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:96
+#: src/features/products/components/import-structure/structure-preview-step.tsx:100
 msgid "The store already has this structure. Applying it changes nothing."
 msgstr "The store already has this structure. Applying it changes nothing."
 
