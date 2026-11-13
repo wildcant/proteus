@@ -3,7 +3,7 @@ import { cn } from '@proteus/ui-core'
 import { useEffect, useRef, useState } from 'react'
 import type { StoreProductImage } from '#/api/generated/model'
 import { Icon } from '#/components/ui/icon/icon'
-import { GalleryDots } from '#/features/products/components/gallery-dots'
+import { GalleryDots } from '#/features/products/components/gallery-dots/gallery-dots'
 import {
   productGallery,
   productGalleryImage,
@@ -122,7 +122,7 @@ export function ProductGallery({ images, thumbnail, alt, variantId, className }:
         })}
       </ul>
 
-      <GalleryDots count={slides.length} activeIndex={activeIndex} onSelect={showSlide} />
+      <GalleryDots count={slides.length} activeIndex={activeIndex} onSelect={showSlide} className="lg:hidden" />
     </div>
   )
 }

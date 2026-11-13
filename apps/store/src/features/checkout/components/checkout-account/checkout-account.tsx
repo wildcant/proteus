@@ -1,8 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import { Button } from '#/components/ui/button/button'
-import { Icon } from '#/components/ui/icon/icon'
-import { Popover, PopoverContent, PopoverTrigger } from '#/components/ui/popover/popover'
 import {
   checkoutAccount,
   checkoutAccountAvatar,
@@ -11,6 +7,7 @@ import {
   checkoutAccountInitial,
   checkoutAccountOptions,
 } from '#/features/checkout/components/checkout-account/checkout-account.variants'
+import { CheckoutAccountMenu } from '#/features/checkout/components/checkout-account-menu/checkout-account-menu'
 
 type CheckoutAccountProps = {
   /** The cart's email, which for a signed-in shopper is the customer's: `carts/route.ts` copies it
@@ -30,8 +27,6 @@ type CheckoutAccountProps = {
  * they might be here to change: that it is the wrong account.
  */
 export function CheckoutAccount({ email, onSignOut, className }: CheckoutAccountProps) {
-  const { t } = useLingui()
-
   // Both paths that create a cart for a signed-in shopper set the email, so this is unreachable in
   // practice; if it ever is reached the order cannot be completed anyway — `validate-cart-email`
   // rejects it — and that message belongs in the Place order slot, not in a half-drawn header.
@@ -48,31 +43,8 @@ export function CheckoutAccount({ email, onSignOut, className }: CheckoutAccount
         <span className={cn(checkoutAccountEmail(), 'truncate')}>{email}</span>
       </div>
 
-      <Popover>
-        <PopoverTrigger
-          render={
-            // `-mr-2` pulls the 44px hit area into the gutter, which a drawing can't hold.
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t`Account options`}
-              className={cn(checkoutAccountOptions(), '-mr-2')}
-            />
-          }
-        >
-          <Icon name="more-vertical" className="size-5" />
-        </PopoverTrigger>
-        <PopoverContent>
-          {/* The open menu is not drawn for this row; it is AddressActions' look. */}
-          <Button
-            variant="ghost"
-            onClick={onSignOut}
-            className="h-10 w-full justify-start px-3 hover:bg-transparent dark:hover:bg-transparent"
-          >
-            <Trans>Sign out</Trans>
-          </Button>
-        </PopoverContent>
-      </Popover>
+      {/* `-mr-2` pulls the 44px hit area into the gutter, which a drawing can't hold. */}
+      <CheckoutAccountMenu onSignOut={onSignOut} className={cn(checkoutAccountOptions(), '-mr-2')} />
     </div>
   )
 }

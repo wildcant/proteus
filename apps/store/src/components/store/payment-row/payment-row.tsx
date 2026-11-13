@@ -1,7 +1,7 @@
 import { cn } from '@proteus/ui-core'
 import type { VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
-import { paymentRow, paymentRowContent } from '#/components/store/payment-row/payment-row.variants'
+import { paymentRow } from '#/components/store/payment-row/payment-row.variants'
 
 /**
  * The row every payment surface is drawn as — the saved cards in the account wallet, the provider
@@ -43,22 +43,6 @@ const STATE_BEHAVIOUR: Record<PaymentRowState, string> = {
   muted: '',
 }
 
-/**
- * The label inside a row, the set's `content` slot, exported as classes rather than a component
- * because its consumers wrap `FieldLabel` and need to pass it `htmlFor`.
- *
- * `has-data-checked:bg-transparent` undoes `FieldLabel`'s own checked fill. The primitive paints a
- * second fill over the *label* whenever it contains a checked control, and a label is narrower than
- * the row that holds it, so the selected row's fill stopped short of its own right edge.
- */
-function paymentRowLabelVariants({ interactive = true }: { interactive?: boolean } = {}) {
-  return cn(
-    paymentRowContent(),
-    'min-w-0 has-data-checked:bg-transparent',
-    interactive ? 'cursor-pointer' : 'cursor-not-allowed',
-  )
-}
-
 function PaymentRow({ className, state, ...props }: ComponentProps<'div'> & VariantProps<typeof paymentRow>) {
   return (
     <div
@@ -69,4 +53,4 @@ function PaymentRow({ className, state, ...props }: ComponentProps<'div'> & Vari
   )
 }
 
-export { PaymentRow, paymentRowLabelVariants }
+export { PaymentRow }

@@ -10,9 +10,9 @@ type FloatingLabelProps = ComponentProps<typeof Label>
  * clear of the border rather than notched into it. The text is the label's own children, so the
  * label layer's type sits on the element itself.
  *
- * The design file draws the floated label as 12px text. Here it is the 14px label scaled by
- * 0.857 from its left edge (`text-sm scale-[0.857] origin-left`), because the input's resting
- * state grows it back to full size with a transform, which only a scale can animate.
+ * The type is the set's `state=resting` (the 14px label) in both positions, and the floated one
+ * (12px) is that label scaled by 0.857 from its left edge (`scale-[0.857] origin-left`): the input's
+ * resting state grows it back to full size with a transform, which only a scale can animate.
  * `pointer-events-none` so a click on the resting label lands on the control beneath it.
  */
 export function FloatingLabel({ className, ...props }: FloatingLabelProps) {
@@ -20,8 +20,8 @@ export function FloatingLabel({ className, ...props }: FloatingLabelProps) {
     <Label
       className={cn(
         floatingLabel(),
-        floatingLabelLabel(),
-        'pointer-events-none absolute left-4 origin-left text-sm',
+        floatingLabelLabel({ state: 'resting' }),
+        'pointer-events-none absolute left-4 origin-left',
         'top-2.5 scale-[0.857]',
         className,
       )}

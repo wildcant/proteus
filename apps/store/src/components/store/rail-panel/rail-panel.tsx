@@ -37,10 +37,13 @@ export function RailPanel({ group }: { group: MenuGroup }) {
         <span className={cn(navLabel(), HOVER_FADE)}>{group.label}</span>
         <Icon name="chevron-down" className={cn(navChevron(), navGlyph(), HOVER_FADE)} />
       </PopoverTrigger>
-      {/* The panel is the popup itself, so its minimum width includes the popup's border: the set
-          draws the panel inside the border, 2px wider than the store runs. Sections are not drawn
-          yet: their panel sizes to its columns rather than the rail's minimum. */}
-      <PopoverContent align="start" className={cn(railPanel(), hasSections && 'w-auto min-w-0 max-w-4xl')}>
+      {/* The panel is the popup itself, so the rail's minimum width is the popup's (`size="rail"`).
+          Sections are not drawn yet: their panel sizes to its columns rather than the rail's minimum. */}
+      <PopoverContent
+        align="start"
+        size={hasSections ? 'default' : 'rail'}
+        className={cn(railPanel(), hasSections && 'max-w-4xl')}
+      >
         <ul className="m-0 list-none p-0">
           {[group.shopAll, ...group.links].map((link, index) => (
             <li key={link.key}>

@@ -3,7 +3,7 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { collectionQueryOptions, useSuspenseCollection } from '#/features/products/api/collections'
 import { ensureProductListData } from '#/features/products/api/product-list'
 import type { ProductListScope } from '#/features/products/api/products'
-import { CollectionHero } from '#/features/products/components/collection-hero'
+import { CollectionHero } from '#/features/products/components/collection-hero/collection-hero'
 import { ProductListNotFound } from '#/features/products/components/product-list-not-found/product-list-not-found'
 import { ProductListPage } from '#/features/products/components/product-list-page/product-list-page'
 import type { ProductListLinks } from '#/features/products/types/links'
@@ -54,7 +54,8 @@ function CollectionPage() {
       scope={scopeFor(handle)}
       search={search}
       heading={collection.title}
-      intro={<CollectionHero collection={collection} />}
+      // `mt-2` on top of the header intro slot's `gap-4`: 24px under the title.
+      intro={<CollectionHero collection={collection} className="mt-2" />}
     />
   )
 }

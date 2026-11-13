@@ -15,6 +15,7 @@ import {
 import { ContactSection } from '#/features/checkout/components/contact/contact-section'
 import { DeliverySection } from '#/features/checkout/components/delivery/delivery-section'
 import { PaymentSection } from '#/features/checkout/components/payment/payment-section'
+import { PaymentErrorAlert } from '#/features/checkout/components/payment-error-alert/payment-error-alert'
 import { ShippingMethodSection } from '#/features/checkout/components/shipping/shipping-method-section'
 import { useCheckoutData } from '#/features/checkout/hooks/use-checkout-data'
 import { useCheckoutForm } from '#/features/checkout/hooks/use-checkout-form'
@@ -79,13 +80,7 @@ export function CheckoutForm({ cart, links, className }: CheckoutFormProps) {
               </Trans>
             </p>
 
-            {/* Beneath the button, not under a field: a decline is not something the shopper
-              mistyped, and the press that produced it is what they are looking at. Not drawn. */}
-            {!!paymentError && (
-              <p role="alert" className="m-0 border border-sale bg-surface-subtle p-3 text-ink text-sm">
-                {paymentError}
-              </p>
-            )}
+            {!!paymentError && <PaymentErrorAlert message={paymentError} />}
 
             <form.Subscribe selector={(state) => state.isSubmitting}>
               {(isSubmitting) => (

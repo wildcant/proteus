@@ -10,9 +10,11 @@ import { RadioGroupItem } from '#/components/ui/radio-group-item/radio-group-ite
 import { Skeleton } from '#/components/ui/skeleton/skeleton'
 import { expiryStatus, formatExpiry } from '#/entities/payment-method/lib/expiry'
 import { NetworkMark } from '#/entities/payment-method/ui/network-mark/network-mark'
+import { SavedCardRemoveConfirm } from '#/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm'
 import {
   savedCardRow,
   savedCardRowChoice,
+  savedCardRowDefaultLabel,
   savedCardRowExpiry,
   savedCardRowIcon,
   savedCardRowNetwork,
@@ -75,32 +77,16 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
     }
   }
 
-  // A two-step confirmation, inline: a saved-card list is for paying, and a one-tap destructive
-  // control beside the row you are about to select is a mis-tap waiting to happen.
   if (confirming) {
     return (
-      <PaymentRow state="muted" data-testid="saved-card-confirm-remove" data-method-id={method.id}>
-        <NetworkMark brand={method.brand} />
-        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="font-medium text-ink text-sm">{t`Remove ${name}?`}</span>
-          <span className="text-ink-muted text-xs">
-            <Trans>You'll need to enter it again next time.</Trans>
-          </span>
-        </span>
-        <span className="flex shrink-0 items-center gap-1">
-          <button type="button" className={TEXT_BUTTON_CLASS} onClick={() => setConfirming(false)} disabled={removing}>
-            <Trans>Keep</Trans>
-          </button>
-          <button
-            type="button"
-            className={cn(TEXT_BUTTON_CLASS, 'border-ink text-ink hover:bg-ink hover:text-surface')}
-            onClick={confirmRemove}
-            disabled={removing}
-          >
-            {removing ? t`Removing…` : t`Remove`}
-          </button>
-        </span>
-      </PaymentRow>
+      <SavedCardRemoveConfirm
+        brand={method.brand}
+        methodId={method.id}
+        question={t`Remove ${name}?`}
+        removing={removing}
+        onKeep={() => setConfirming(false)}
+        onRemove={confirmRemove}
+      />
     )
   }
 
@@ -145,7 +131,7 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
                 {`•••• ${method.last4}`}
               </span>
               {!!method.isDefault && (
-                <span className="text-ink-muted text-xs">
+                <span className={savedCardRowDefaultLabel()}>
                   <Trans>Default</Trans>
                 </span>
               )}
@@ -193,10 +179,6 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
     </div>
   )
 }
-
-/** Quiet text actions, square and borderless until they matter. */
-const TEXT_BUTTON_CLASS =
-  'border border-transparent px-2.5 py-1.5 font-medium text-ink-muted text-xs hover:text-ink disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink'
 
 /**
  * What the wallet looks like while it is being read, on both surfaces that read one.

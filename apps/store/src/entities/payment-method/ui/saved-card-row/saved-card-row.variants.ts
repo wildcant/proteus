@@ -23,7 +23,7 @@ export const savedCardRowText = cva('flex flex-1 flex-col items-start gap-0.5')
 
 export const savedCardRowNumber = cva('type-label text-ink')
 
-export const savedCardRowDefaultLabel = cva('type-caption hidden text-ink-muted')
+export const savedCardRowDefaultLabel = cva('type-caption text-ink-muted')
 
 export const savedCardRowExpiry = cva('type-caption text-ink-muted')
 
