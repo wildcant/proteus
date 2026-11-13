@@ -90,7 +90,9 @@
         "marketMenu",
         "marketSwitchFailed",
         "cartTransferFailed",
-        "menuExpanded"
+        "menuExpanded",
+        "navSections",
+        "menuSections"
       ]
     },
     "AuthLayout": {
@@ -528,6 +530,46 @@
           "to": "Root",
           "toState": "default",
           "condition": "the bag moves to the account; no navigation"
+        },
+        {
+          "event": "OPEN_NAV_PANEL",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "navSections",
+          "condition": "lg: a rail item with sections"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "navSections",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "navSections",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "a column link, View all, a size chip or a footer link; with its filter"
+        },
+        {
+          "event": "EXPAND_GROUP",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "menuSections",
+          "condition": "an entry with sections; component state"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "menuSections",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "any column link, View all, size chip or footer link"
         }
       ]
     },

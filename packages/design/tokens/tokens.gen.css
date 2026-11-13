@@ -438,6 +438,17 @@
   }
 }
 
+@utility type-link-subtle-lg {
+  && {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: 400;
+    line-height: var(--text-base--line-height);
+    text-decoration-line: underline;
+    text-underline-offset: 3px;
+  }
+}
+
 @utility type-link-medium {
   && {
     font-family: var(--font-sans);

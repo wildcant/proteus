@@ -86,7 +86,7 @@ msgstr "A–Z"
 
 #: src/components/store/footer/footer.tsx:56
 #: src/components/store/header/header.tsx:79
-#: src/components/store/side-menu/side-menu.tsx:109
+#: src/components/store/side-menu/side-menu.tsx:110
 #: src/features/account/components/account-detail/account-detail.tsx:39
 #: src/features/orders/components/order-content/order-content.tsx:47
 msgid "Account"
@@ -293,7 +293,7 @@ msgstr "Borrar búsqueda"
 msgid "Close cart"
 msgstr "Cerrar carrito"
 
-#: src/components/store/side-menu/side-menu.tsx:76
+#: src/components/store/side-menu/side-menu.tsx:77
 msgid "Close menu"
 msgstr "Cerrar menú"
 
@@ -631,7 +631,7 @@ msgstr "Mercado: {marketName}"
 msgid "Material"
 msgstr "Material"
 
-#: src/components/store/side-menu/side-menu.tsx:65
+#: src/components/store/side-menu/side-menu.tsx:66
 msgid "Menu"
 msgstr "Menú"
 

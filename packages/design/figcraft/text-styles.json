@@ -771,6 +771,46 @@
   {
     "bound": {
       "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:94",
+      "lineHeight": "VariableID:95"
+    },
+    "description": "The side menu's View all links (text-base underline underline-offset-3).",
+    "id": "S:35",
+    "name": "type/link-subtle-lg",
+    "style": {
+      "case": "original",
+      "decoration": "underline",
+      "decoration_look": {
+        "color": null,
+        "offset": {
+          "unit": "pixels",
+          "value": 3
+        },
+        "skip_ink": false,
+        "style": "solid",
+        "thickness": {
+          "unit": "auto"
+        }
+      },
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 16,
+      "font_style": "Regular",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 24
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
       "fontSize": "VariableID:92",
       "lineHeight": "VariableID:93"
     },

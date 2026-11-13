@@ -11,7 +11,7 @@ export type MenuLinkTo = (target?: MenuTarget) => LinkTarget
 type MenuDestination = { key: string; label: string; link: LinkTarget }
 
 /** One titled column of an entry's panel, its links resolved and its "View all" labelled. */
-type MenuGroupSection = Omit<MenuSection, 'links' | 'viewAll'> & {
+export type MenuGroupSection = Omit<MenuSection, 'links' | 'viewAll'> & {
   links: MenuDestination[]
   viewAll: MenuDestination | null
 }

@@ -22,6 +22,7 @@ import {
   sideMenuThemeToggle,
   sideMenuTop,
 } from '#/components/store/side-menu/side-menu.variants'
+import { SideMenuGroup } from '#/components/store/side-menu-group/side-menu-group'
 import { ThemeToggle } from '#/components/store/theme-toggle/theme-toggle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '#/components/ui/accordion/accordion'
 import { Button } from '#/components/ui/button/button'
@@ -95,7 +96,7 @@ export function SideMenu({ menu, links }: { menu: MenuSource; links: HeaderLinks
             {entries.map((entry) => (
               <li key={entry.key}>
                 {isMenuGroup(entry) ? (
-                  <SideMenuGroup group={entry} />
+                  <SideMenuEntry group={entry} />
                 ) : (
                   <MenuLink destination={entry} className={rowClassName}>
                     {entry.label}
@@ -122,74 +123,14 @@ export function SideMenu({ menu, links }: { menu: MenuSource; links: HeaderLinks
   )
 }
 
-/**
- * Following any of its links closes the menu for free — see `SideMenu` — so this holds no state.
- * Sections nest as groups of their own inside the entry's, each expanding in place like the entry:
- * its links as rows, or as chips for sizes, then its "View all" and its note. The entry's footer
- * links follow its sections as rows.
- */
-function SideMenuGroup({ group }: { group: MenuGroup }) {
-  const childClassName = 'block py-3 text-base text-ink-muted no-underline hover:text-ink'
-  const listed = group.shopAll ? [group.shopAll, ...group.links] : group.links
-
+/** An entry that opens rather than navigates expands in place, its panel the `SideMenuGroup`. */
+function SideMenuEntry({ group }: { group: MenuGroup }) {
   return (
     <Accordion className={sideMenuGroup()}>
       <AccordionItem value={group.key}>
         <AccordionTrigger>{group.label}</AccordionTrigger>
         <AccordionContent>
-          <ul className="m-0 flex list-none flex-col p-0 pl-4">
-            {listed.map((link) => (
-              <li key={link.key}>
-                <MenuLink destination={link} className={childClassName} />
-              </li>
-            ))}
-            {group.sections.map((section) => (
-              <li key={section.key}>
-                <Accordion variant="section">
-                  <AccordionItem value={section.key}>
-                    <AccordionTrigger>{section.title}</AccordionTrigger>
-                    <AccordionContent>
-                      {section.display === 'chips' ? (
-                        <ul className="m-0 flex list-none flex-wrap gap-2 p-0 py-2 pl-4">
-                          {section.links.map((link) => (
-                            <li key={link.key}>
-                              <MenuLink
-                                destination={link}
-                                className="flex h-10 min-w-12 items-center justify-center rounded-full bg-surface-subtle px-4 text-ink text-sm no-underline"
-                              />
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <ul className="m-0 flex list-none flex-col p-0 pl-4">
-                          {section.links.map((link) => (
-                            <li key={link.key}>
-                              <MenuLink destination={link} className={childClassName} />
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {!!section.viewAll && (
-                        <MenuLink
-                          destination={section.viewAll}
-                          className="underline! block py-3 pl-4 text-base text-ink underline-offset-4"
-                        />
-                      )}
-                      {!!section.note && <p className="m-0 py-2 pl-4 text-ink-muted text-sm">{section.note}</p>}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </li>
-            ))}
-            {group.footer.map((link) => (
-              <li key={link.key}>
-                <MenuLink
-                  destination={link}
-                  className="block py-3 text-base text-ink no-underline hover:text-ink-muted"
-                />
-              </li>
-            ))}
-          </ul>
+          <SideMenuGroup group={group} />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
