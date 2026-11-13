@@ -31,7 +31,7 @@ msgstr "{alt} — view {position} of {count}"
 msgid "{alt} images"
 msgstr "{alt} images"
 
-#: src/features/products/components/product-list-header/product-list-header.tsx:116
+#: src/features/products/components/product-list-header/product-list-header.tsx:110
 msgid "{count, plural, one {# Product} other {# Products}}"
 msgstr "{count, plural, one {# Product} other {# Products}}"
 
@@ -68,11 +68,11 @@ msgstr "{total} was not charged"
 msgid "© {year} Proteus. All rights reserved."
 msgstr "© {year} Proteus. All rights reserved."
 
-#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:154
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:149
 msgid "<0>Couldn't remove that card.</0> Try again."
 msgstr "<0>Couldn't remove that card.</0> Try again."
 
-#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:140
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:135
 msgid "<0>Expired</0> — add this card again to use it"
 msgstr "<0>Expired</0> — add this card again to use it"
 
@@ -132,7 +132,7 @@ msgstr "Address book is empty"
 msgid "Address options"
 msgstr "Address options"
 
-#: src/routes/_main/index.tsx:34
+#: src/routes/_main/index.tsx:35
 msgid "All products"
 msgstr "All products"
 
@@ -276,7 +276,7 @@ msgstr "Choose a new password for your account."
 msgid "City"
 msgstr "City"
 
-#: src/features/products/components/product-filters/product-filters.tsx:90
+#: src/features/products/components/product-filters/product-filters.tsx:95
 msgid "Clear all"
 msgstr "Clear all"
 
@@ -285,7 +285,7 @@ msgid "Clear filters"
 msgstr "Clear filters"
 
 #: src/components/header/search-form.tsx:76
-#: src/features/products/components/product-empty/product-empty.tsx:42
+#: src/features/products/components/product-empty/product-empty.tsx:44
 msgid "Clear search"
 msgstr "Clear search"
 
@@ -359,7 +359,7 @@ msgstr "Dark"
 msgid "Decrease quantity for {label}"
 msgstr "Decrease quantity for {label}"
 
-#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:135
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:130
 #: src/features/checkout/components/shipping-address-picker/shipping-address-picker.tsx:117
 msgid "Default"
 msgstr "Default"
@@ -430,7 +430,7 @@ msgstr "Enter your shipping address to view available shipping methods."
 msgid "Every card here has expired. Pay with a new card at checkout to save a usable one."
 msgstr "Every card here has expired. Pay with a new card at checkout to save a usable one."
 
-#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:148
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:143
 msgid "Expires this month"
 msgstr "Expires this month"
 
@@ -498,11 +498,11 @@ msgstr "Failed to update cart item"
 msgid "Failed to update password"
 msgstr "Failed to update password"
 
-#: src/features/products/components/product-tag-filter/product-tag-filter.tsx:42
+#: src/features/products/components/product-tag-filter/product-tag-filter.tsx:39
 msgid "Filter by tag"
 msgstr "Filter by tag"
 
-#: src/features/products/components/product-filters/product-filters.tsx:63
+#: src/features/products/components/product-filters/product-filters.tsx:66
 msgid "Filters"
 msgstr "Filters"
 
@@ -566,11 +566,11 @@ msgstr "Invalid link"
 msgid "It is still priced in {0}"
 msgstr "It is still priced in {0}"
 
-#: src/routes/_main/collections/$handle.tsx:62
+#: src/routes/_main/collections/$handle.tsx:68
 msgid "It may have ended, or no longer be in the store."
 msgstr "It may have ended, or no longer be in the store."
 
-#: src/routes/_main/categories/$handle.tsx:68
+#: src/routes/_main/categories/$handle.tsx:74
 msgid "It may have moved, or no longer be in the store."
 msgstr "It may have moved, or no longer be in the store."
 
@@ -578,7 +578,7 @@ msgstr "It may have moved, or no longer be in the store."
 msgid "It may not be one we sell here."
 msgstr "It may not be one we sell here."
 
-#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:74
+#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:70
 msgid "Keep"
 msgstr "Keep"
 
@@ -680,11 +680,11 @@ msgstr "No problem. Enter your account email address and we'll send you instruct
 msgid "No products match “{debouncedTerm}”."
 msgstr "No products match “{debouncedTerm}”."
 
-#: src/features/products/components/product-empty/product-empty.tsx:40
+#: src/features/products/components/product-empty/product-empty.tsx:42
 msgid "No products match “{q}”."
 msgstr "No products match “{q}”."
 
-#: src/features/products/components/product-empty/product-empty.tsx:50
+#: src/features/products/components/product-empty/product-empty.tsx:52
 msgid "No products match the chosen filters."
 msgstr "No products match the chosen filters."
 
@@ -845,7 +845,7 @@ msgstr "Ref."
 msgid "Registration failed"
 msgstr "Registration failed"
 
-#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:87
+#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:79
 #: src/features/address/components/delete-address-button/delete-address-button.tsx:32
 #: src/features/checkout/components/address-actions/address-actions.tsx:54
 msgid "Remove"
@@ -855,7 +855,7 @@ msgstr "Remove"
 msgid "Remove {label}"
 msgstr "Remove {label}"
 
-#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:166
+#: src/entities/payment-method/ui/saved-card-row/saved-card-row.tsx:161
 msgid "Remove {name}"
 msgstr "Remove {name}"
 
@@ -863,7 +863,7 @@ msgstr "Remove {name}"
 msgid "Remove {name}?"
 msgstr "Remove {name}?"
 
-#: src/features/products/components/product-tag-filter/product-tag-filter.tsx:51
+#: src/features/products/components/product-tag-filter/product-tag-filter.tsx:48
 msgid "Remove filter {value}"
 msgstr "Remove filter {value}"
 
@@ -872,7 +872,7 @@ msgstr "Remove filter {value}"
 msgid "Remove this address?"
 msgstr "Remove this address?"
 
-#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:87
+#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:79
 msgid "Removing…"
 msgstr "Removing…"
 
@@ -893,7 +893,7 @@ msgid "Save this card for next time"
 msgstr "Save this card for next time"
 
 #: src/components/header/search-triggers.tsx:53
-#: src/features/products/components/product-list-header/product-list-header.tsx:60
+#: src/features/products/components/product-list-header/product-list-header.tsx:62
 #: src/features/products/components/search-drawer/search-drawer.tsx:53
 msgid "Search"
 msgstr "Search"
@@ -959,7 +959,7 @@ msgid "Shipping method"
 msgstr "Shipping method"
 
 #: src/components/store/footer/footer.tsx:49
-#: src/features/products/components/product-list-header/product-list-header.tsx:60
+#: src/features/products/components/product-list-header/product-list-header.tsx:62
 msgid "Shop"
 msgstr "Shop"
 
@@ -1143,8 +1143,8 @@ msgstr "Updating..."
 msgid "Use a different address"
 msgstr "Use a different address"
 
+#: src/features/checkout/components/new-method-row/new-method-row.tsx:42
 #: src/features/checkout/components/new-method-row/new-method-row.tsx:46
-#: src/features/checkout/components/new-method-row/new-method-row.tsx:50
 msgid "Use a different card"
 msgstr "Use a different card"
 
@@ -1198,11 +1198,11 @@ msgstr "We could not process your payment. Please try again or use a different c
 msgid "We couldn’t find that page"
 msgstr "We couldn’t find that page"
 
-#: src/routes/_main/categories/$handle.tsx:67
+#: src/routes/_main/categories/$handle.tsx:73
 msgid "We couldn't find this category"
 msgstr "We couldn't find this category"
 
-#: src/routes/_main/collections/$handle.tsx:61
+#: src/routes/_main/collections/$handle.tsx:67
 msgid "We couldn't find this collection"
 msgstr "We couldn't find this collection"
 
@@ -1254,7 +1254,7 @@ msgstr "You have unsaved changes"
 msgid "You haven't made any orders yet. When you make an order it'll show up here."
 msgstr "You haven't made any orders yet. When you make an order it'll show up here."
 
-#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:64
+#: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:58
 msgid "You'll need to enter it again next time."
 msgstr "You'll need to enter it again next time."
 

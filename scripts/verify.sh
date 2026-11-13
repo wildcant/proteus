@@ -100,7 +100,8 @@ check_route_tree() {
       echo "$label: src/routes/${rel}.tsx has no entry in routeTree.gen.ts — run its generate-routes"
       code=1
     fi
-  done < <(find "$routes_dir" -type f -name '*.tsx')
+  # A `-` prefix is TanStack's routeFileIgnorePrefix: such a file sits beside the routes but is no route.
+  done < <(find "$routes_dir" -type f -name '*.tsx' ! -name '-*')
   return $code
 }
 
