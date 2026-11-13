@@ -1,0 +1,325 @@
+{
+  "name": "Field",
+  "page": "components/ui",
+  "properties": [
+    {
+      "default": "vertical",
+      "name": "orientation",
+      "options": [
+        "vertical",
+        "horizontal"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "orientation=vertical",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "exampleInput",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DC0428",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "height": "VariableID:53",
+            "paddingBottom": "VariableID:33",
+            "paddingHorizontal": "VariableID:41",
+            "paddingTop": "VariableID:42",
+            "stroke": "VariableID:137"
+          },
+          "mainComponentName": "invalid=true, interaction=rest, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "center",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              20,
+              16,
+              4,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "height": 56,
+          "mainSet": "Input",
+          "children": [
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#DC0428",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:26"
+              },
+              "textAlign": "left",
+              "textStyle": "S:13"
+            }
+          ]
+        },
+        {
+          "name": "exampleError",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "mainComponentName": "FieldError",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "message",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#DC0428",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:26"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "orientation=horizontal",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "exampleCheckbox",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18",
+            "height": "VariableID:41",
+            "stroke": "VariableID:18",
+            "width": "VariableID:41"
+          },
+          "mainComponentName": "checked=true, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": false
+          },
+          "width": 16,
+          "height": 16,
+          "mainSet": "Checkbox",
+          "children": [
+            {
+              "name": "indicator",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:39",
+                "width": "VariableID:39"
+              },
+              "slot": "indicator",
+              "width": 14,
+              "height": 14,
+              "children": [
+                {
+                  "name": "check",
+                  "type": "VECTOR",
+                  "strokes": [
+                    {
+                      "color": "#FFFFFF",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1.17,
+                  "strokeAlign": "center",
+                  "boundVariables": {
+                    "stroke": "VariableID:22"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "exampleLabel",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "position=default",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "FieldLabel",
+          "children": [
+            {
+              "name": "text",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:17"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

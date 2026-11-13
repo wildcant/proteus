@@ -1,0 +1,91 @@
+{
+  "name": "BackLink",
+  "page": "components/store",
+  "properties": [
+    {
+      "default": "Back to account",
+      "name": "label",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "BackLink",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:33"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 4,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "chevron",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:41",
+            "width": "VariableID:41"
+          },
+          "width": 16,
+          "height": 16,
+          "children": [
+            {
+              "name": "glyph",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.333,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:19"
+              }
+            }
+          ]
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:18"
+        }
+      ]
+    }
+  ]
+}

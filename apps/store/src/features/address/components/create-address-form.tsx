@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
-import { useRouteModal } from '@proteus/ui'
-import { AddressForm } from '#/features/address/components/address-form'
+import { useRouteModal } from '@proteus/ui-core'
+import { AddressForm } from '#/features/address/components/address-form/address-form'
 import { useCreateAddressForm } from '#/features/address/hooks/use-create-address-form'
 
 export function CreateAddressForm() {

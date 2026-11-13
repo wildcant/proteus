@@ -1,0 +1,310 @@
+{
+  "name": "NetworkMark",
+  "page": "entities/payment-method",
+  "properties": [
+    {
+      "default": "visa",
+      "name": "brand",
+      "options": [
+        "visa",
+        "mastercard",
+        "amex"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "brand=visa",
+      "type": "COMPONENT",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:44",
+        "width": "VariableID:48"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 40,
+      "height": 24,
+      "children": [
+        {
+          "name": "artwork",
+          "type": "GROUP",
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "width": 40,
+          "height": 24,
+          "children": [
+            {
+              "name": "Rectangle",
+              "type": "RECTANGLE",
+              "fills": [
+                {
+                  "color": "#26337A",
+                  "type": "solid"
+                }
+              ],
+              "cornerRadius": 0.96
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#EC982D",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "viewport",
+              "type": "RECTANGLE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "brand=mastercard",
+      "type": "COMPONENT",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:44",
+        "width": "VariableID:48"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 40,
+      "height": 24,
+      "children": [
+        {
+          "name": "artwork",
+          "type": "GROUP",
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "width": 40,
+          "height": 24,
+          "children": [
+            {
+              "name": "Rectangle",
+              "type": "RECTANGLE",
+              "fills": [
+                {
+                  "color": "#000066",
+                  "type": "solid"
+                }
+              ],
+              "cornerRadius": 0.96
+            },
+            {
+              "name": "Rectangle",
+              "type": "RECTANGLE",
+              "opacity": 0.009999999776482582,
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Rectangle",
+              "type": "RECTANGLE",
+              "fills": [
+                {
+                  "color": "#FF5F00",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#EB001B",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#F79E1B",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#F79E1B",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "viewport",
+              "type": "RECTANGLE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "brand=amex",
+      "type": "COMPONENT",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "height": "VariableID:44",
+        "width": "VariableID:48"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 40,
+      "height": 24,
+      "children": [
+        {
+          "name": "artwork",
+          "type": "GROUP",
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "width": 40,
+          "height": 24,
+          "children": [
+            {
+              "name": "Rectangle",
+              "type": "RECTANGLE",
+              "fills": [
+                {
+                  "color": "#0072CE",
+                  "type": "solid"
+                }
+              ],
+              "cornerRadius": 0.96
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "Vector",
+              "type": "VECTOR",
+              "fills": [
+                {
+                  "color": "#FFFFFF",
+                  "type": "solid"
+                }
+              ]
+            },
+            {
+              "name": "viewport",
+              "type": "RECTANGLE"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

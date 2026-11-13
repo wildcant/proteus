@@ -1,11 +1,12 @@
 import { Trans } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { Suspense } from 'react'
-import { ButtonLink } from '#/components/button'
-import { orderQueryOptions } from '#/features/orders/api/orders'
-import { OrderConfirmedContent } from '#/features/orders/components/order-confirmed-content'
-import { OrderConfirmedSkeleton } from '#/features/orders/components/order-confirmed-skeleton'
-import { OrderError } from '#/features/orders/components/order-error'
+import { ButtonLink } from '#/components/ui/button/button'
+import { orderQueryOptions } from '#/entities/order/api/orders'
+import { OrderConfirmedContent } from '#/features/orders/components/order-confirmed-content/order-confirmed-content'
+import { OrderConfirmedSkeleton } from '#/features/orders/components/order-confirmed-skeleton/order-confirmed-skeleton'
+import { OrderError } from '#/features/orders/components/order-error/order-error'
+import { flowLinks } from '#/navigation/links'
 
 export const Route = createFileRoute('/_main/order/$orderId/confirmed')({
   component: OrderConfirmedPage,
@@ -16,9 +17,10 @@ export const Route = createFileRoute('/_main/order/$orderId/confirmed')({
 })
 
 function OrderConfirmedPage() {
+  const { orderId } = Route.useParams()
   return (
     <Suspense fallback={<OrderConfirmedSkeleton />}>
-      <OrderConfirmedContent />
+      <OrderConfirmedContent orderId={orderId} />
     </Suspense>
   )
 }
@@ -31,7 +33,7 @@ function OrderConfirmedError() {
   return (
     // Continue shopping, not "back to account": a guest who just checked out has no account.
     <OrderError orderId={orderId}>
-      <ButtonLink variant="outline" to="/">
+      <ButtonLink {...flowLinks('OrderConfirmedContent').CONTINUE_SHOPPING()} variant="outline">
         <Trans>Continue shopping</Trans>
       </ButtonLink>
     </OrderError>

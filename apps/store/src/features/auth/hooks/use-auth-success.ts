@@ -1,12 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import type { AuthenticateResponse } from '#/api/generated/model'
-import { useTransferCart } from '#/features/cart/api/cart'
+import { useTransferCart } from '#/entities/cart/api/cart'
+import type { LinkTarget } from '#/lib/link-target'
 
 export type AuthSuccessParams = {
-  /** Where to land instead of /account — checkout passes its own path so a mid-checkout sign-in
-   *  returns to the order being placed. */
-  redirectTo?: string
+  /** SIGNED_IN / SIGNED_UP, from the route: the account, or where the sign-in was asked for (a mid-checkout sign-in
+   *  returns to the order being placed). */
+  signedIn: LinkTarget
 }
 
 /**
@@ -15,7 +16,7 @@ export type AuthSuccessParams = {
  * account page with its guest cart carried over — so the branch lives here rather than
  * being written out on each page.
  */
-export function useAuthSuccess(params?: AuthSuccessParams) {
+export function useAuthSuccess({ signedIn }: AuthSuccessParams) {
   const [isVerifyPending, setIsVerifyPending] = useState(false)
   const navigate = useNavigate()
   const transferCart = useTransferCart()
@@ -27,7 +28,7 @@ export function useAuthSuccess(params?: AuthSuccessParams) {
     }
     // Transfer guest cart to the newly authenticated customer. Failure must not block sign-in.
     transferCart.mutate(undefined, {
-      onSettled: () => navigate({ to: params?.redirectTo ?? '/account' }),
+      onSettled: () => navigate(signedIn),
     })
   }
 

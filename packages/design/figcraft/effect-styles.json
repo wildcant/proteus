@@ -1,0 +1,119 @@
+[
+  {
+    "bound": {
+      "effects/0/color": "VariableID:119"
+    },
+    "description": "Lifts a pinned panel footer off the content scrolling up to it (bag drawer). Cast upward; ink at 20 %, so it inverts with the scheme.",
+    "effects": [
+      {
+        "blend": "normal",
+        "color": {
+          "a": 0.20000000298023224,
+          "b": 0.07058823853731155,
+          "g": 0.062745101749897,
+          "r": 0.05098039284348488
+        },
+        "offset": [
+          0,
+          -8
+        ],
+        "radius": 24,
+        "show_behind": false,
+        "spread": -8,
+        "type": "dropShadow",
+        "visible": true
+      }
+    ],
+    "id": "S:4",
+    "name": "shadow/panel",
+    "type": "effect"
+  },
+  {
+    "description": "Toasts.",
+    "effects": [
+      {
+        "blend": "normal",
+        "color": {
+          "a": 0.10000000149011612,
+          "b": 0,
+          "g": 0,
+          "r": 0
+        },
+        "offset": [
+          0,
+          10
+        ],
+        "radius": 15,
+        "show_behind": false,
+        "spread": -3,
+        "type": "dropShadow",
+        "visible": true
+      },
+      {
+        "blend": "normal",
+        "color": {
+          "a": 0.10000000149011612,
+          "b": 0,
+          "g": 0,
+          "r": 0
+        },
+        "offset": [
+          0,
+          4
+        ],
+        "radius": 6,
+        "show_behind": false,
+        "spread": -4,
+        "type": "dropShadow",
+        "visible": true
+      }
+    ],
+    "id": "S:5",
+    "name": "shadow/lg",
+    "type": "effect"
+  },
+  {
+    "description": "Popovers and the market menu.",
+    "effects": [
+      {
+        "blend": "normal",
+        "color": {
+          "a": 0.10000000149011612,
+          "b": 0,
+          "g": 0,
+          "r": 0
+        },
+        "offset": [
+          0,
+          20
+        ],
+        "radius": 25,
+        "show_behind": false,
+        "spread": -5,
+        "type": "dropShadow",
+        "visible": true
+      },
+      {
+        "blend": "normal",
+        "color": {
+          "a": 0.10000000149011612,
+          "b": 0,
+          "g": 0,
+          "r": 0
+        },
+        "offset": [
+          0,
+          8
+        ],
+        "radius": 10,
+        "show_behind": false,
+        "spread": -6,
+        "type": "dropShadow",
+        "visible": true
+      }
+    ],
+    "id": "S:6",
+    "name": "shadow/xl",
+    "type": "effect"
+  }
+]

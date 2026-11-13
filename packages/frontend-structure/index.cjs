@@ -122,6 +122,95 @@ function layerDirectionRules(options = {}) {
   ]
 }
 
+/**
+ * The segments an entity may contain — a closed vocabulary, like a feature's folders, and a
+ * different one: an entity is a domain noun (`customer`, `cart`) rather than a user journey, so it
+ * holds the noun's queries (`api`), fixtures or constants (`data`), types and state (`model`),
+ * helpers (`lib`) and its display pieces (`ui`), and never a journey's hooks or screens.
+ */
+const ENTITY_SEGMENTS = ['api', 'data', 'model', 'lib', 'ui']
+
+const ENTITIES_PATH = '^src/entities/'
+
+/**
+ * The entities layer, opt-in: shared -> entities -> features -> routes.
+ *
+ * An entity is the home for code two or more features need, so that neither feature has to import
+ * the other. That only works if an entity stands alone — one that imports another entity, a feature
+ * or a route has rebuilt the tangle it exists to remove — so entities may import shared code and
+ * nothing else of the app's. Shared code, below them, may not know they exist.
+ *
+ * Opt-in because only the store has the layer. Returns both halves dependency-cruiser keeps apart:
+ * the per-edge `forbidden` rules and the per-module `required` rules that police where a file may
+ * sit (see `featureStructureRules` for that mechanism).
+ */
+function entityStructureRules(options = {}) {
+  const segments = options.segments ?? ENTITY_SEGMENTS
+  const vocabulary = segments.join('|')
+  const shared = sharedPathOf(options.sharedFolders ?? SHARED_FOLDERS)
+
+  return {
+    forbidden: [
+      {
+        name: 'entities-may-not-import-entities',
+        comment:
+          'An entity stands alone and may not import another entity. If both need the thing, it was ' +
+          "never either entity's — move it down to a shared layer. If one entity is really part of " +
+          'the other, merge them.',
+        severity: 'error',
+        from: { path: `${ENTITIES_PATH}([^/]+)/` },
+        to: { path: ENTITIES_PATH, pathNot: `${ENTITIES_PATH}$1/` },
+      },
+      {
+        name: 'entities-may-not-import-features',
+        comment:
+          'An entity sits below every feature and may not reach up into one. Take what it needs as an ' +
+          'argument or prop, or the code belonged to that feature all along.',
+        severity: 'error',
+        from: { path: ENTITIES_PATH },
+        to: { path: FEATURES_PATH },
+      },
+      {
+        name: 'entities-may-not-import-routes',
+        comment: 'src/routes/ is the application layer. Nothing below it may import from it.',
+        severity: 'error',
+        from: { path: ENTITIES_PATH },
+        to: { path: APP_PATH },
+      },
+      {
+        name: 'shared-may-not-import-entities',
+        comment:
+          'Shared code sits below every entity and may not reach up into one. Either the code belongs ' +
+          'to that entity and should move into it, or it needs a slot the caller fills.',
+        severity: 'error',
+        from: { path: shared },
+        to: { path: ENTITIES_PATH },
+      },
+    ],
+    required: [
+      {
+        name: 'entity-segment-vocabulary',
+        comment:
+          `An entity's second level is a closed vocabulary: ${segments.join(', ')}. Put the file in ` +
+          'one of those. Widening the vocabulary is a decision for packages/frontend-structure.',
+        severity: 'error',
+        module: { path: `${ENTITIES_PATH}[^/]+/(?!(?:${vocabulary})/)[^/]+/` },
+        to: { path: '(?!)' },
+      },
+      {
+        name: 'no-loose-entity-files',
+        comment:
+          'src/entities/ holds entity folders and an entity holds segments, not files. A file at ' +
+          'either level has no stated kind — move it into a segment. Not even an index.ts: ADR-0028 ' +
+          'allows a barrel only at a published boundary.',
+        severity: 'error',
+        module: { path: `${ENTITIES_PATH}(?:[^/]+/)?[^/]+$` },
+        to: { path: '(?!)' },
+      },
+    ],
+  }
+}
+
 /** Where Orval writes the generated client in both apps. Its own layout, not ours to choose. */
 const GENERATED_PATH = '^src/api/generated/'
 
@@ -134,13 +223,16 @@ const GENERATED_PATH = '^src/api/generated/'
 const FETCHER_PATH = '^src/api/fetcher\\.ts$'
 
 /**
- * The directories that may call the API: the shared `api/` layer and each feature's own `api/`.
+ * The directories that may call the API: the shared `api/` layer, each feature's own `api/`, and
+ * each entity's `api/` segment — an entity's queries are the same kind of code as a feature's, and
+ * must be able to move between the two unchanged. An app without `src/entities/` matches nothing
+ * extra.
  *
  * Deliberately a prefix and not a leaf, so a feature's api folder may grow files that call each
  * other. `src/api/generated/` matches too, which is what lets the generated modules import their
  * siblings and the fetcher.
  */
-const API_LAYER_PATH = '^src/(?:api/|features/[^/]+/api/)'
+const API_LAYER_PATH = '^src/(?:api/|features/[^/]+/api/|entities/[^/]+/api/)'
 
 /**
  * Two rules that keep HTTP behind the api layer.
@@ -164,7 +256,8 @@ function apiLayerRules() {
     {
       name: 'generated-client-calls-stay-in-the-api-layer',
       comment:
-        "Only src/api/ and a feature's own api/ may call the generated client. Move the work there — " +
+        "Only src/api/, a feature's own api/ and an entity's api/ segment may call the generated " +
+        'client. Move the work there — ' +
         'a query-options factory, a mutation hook, or a plain function that owns the whole outcome, ' +
         'error handling included. A one-line pass-through that only forwards arguments satisfies this ' +
         'rule while defeating it: the request moved but the request-handling did not. Importing the ' +
@@ -191,4 +284,11 @@ function apiLayerRules() {
   ]
 }
 
-module.exports = { FEATURE_FOLDERS, SHARED_FOLDERS, featureStructureRules, layerDirectionRules, apiLayerRules }
+module.exports = {
+  FEATURE_FOLDERS,
+  SHARED_FOLDERS,
+  featureStructureRules,
+  layerDirectionRules,
+  entityStructureRules,
+  apiLayerRules,
+}

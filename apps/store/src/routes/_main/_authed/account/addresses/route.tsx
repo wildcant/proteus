@@ -1,6 +1,14 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { addressesQueryOptions } from '#/features/address/api/addresses'
-import { AddressBook } from '#/features/address/components/address-book'
+import { addressesQueryOptions } from '#/entities/address/api/addresses'
+import { AddressBook } from '#/features/address/components/address-book/address-book'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('AddressBook')
+const addressBookLinks = {
+  account: links.BACK_TO_ACCOUNT(),
+  addAddress: links.ADD_ADDRESS(),
+  editAddress: (addressId: string) => links.EDIT_ADDRESS({ params: { addressId } }),
+}
 
 export const Route = createFileRoute('/_main/_authed/account/addresses')({
   // Fire-and-forget, so the page header paints while the list is still in flight.
@@ -17,7 +25,7 @@ export const Route = createFileRoute('/_main/_authed/account/addresses')({
 function AddressBookRoute() {
   return (
     <>
-      <AddressBook />
+      <AddressBook links={addressBookLinks} />
       <Outlet />
     </>
   )

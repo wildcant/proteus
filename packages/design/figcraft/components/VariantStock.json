@@ -1,0 +1,111 @@
+{
+  "name": "VariantStock",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "low",
+      "name": "state",
+      "options": [
+        "low",
+        "soldOut"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "Only 3 left",
+      "name": "label",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "state=low",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#DC0428",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:26"
+          },
+          "textAlign": "left",
+          "textStyle": "S:7"
+        }
+      ]
+    },
+    {
+      "name": "state=soldOut",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "overrides": [
+            "characters"
+          ],
+          "textStyle": "S:7"
+        }
+      ]
+    }
+  ]
+}

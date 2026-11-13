@@ -5,6 +5,7 @@ message: This hook never spreads the caller's options, so everything but the cal
 note: 'Destructure `const { onSuccess, onError, ...rest } = options ?? {}` and spread `...rest` first. standards/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   # The config object itself, so `has` looks at its properties rather than descending into handlers
   # — `onSuccess?.(...args)` contains a spread of its own.

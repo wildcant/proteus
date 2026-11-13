@@ -5,6 +5,7 @@ message: This `onError` raises no toast, so a failure is invisible unless the ca
 note: 'Add `toast.add({ type: "error", title: "…", description: error.message })`, or suppress this rule on the handler with the reason. standards/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   pattern:
     context: "{ onError: ($$$ARGS) => { $$$BODY } }"

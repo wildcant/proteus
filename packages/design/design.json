@@ -1,0 +1,163 @@
+{
+  "snapshot": "figcraft",
+  "tokens": {
+    "output": {
+      "css": "tokens/tokens.gen.css"
+    },
+    "theme": {
+      "collection": "Theme",
+      "modes": [
+        {
+          "mode": "Light",
+          "selector": ":root"
+        },
+        {
+          "mode": "Dark",
+          "selector": ":root[data-theme=\"dark\"]",
+          "media": {
+            "query": "(prefers-color-scheme: dark)",
+            "selector": ":root:not([data-theme=\"light\"])"
+          }
+        }
+      ]
+    },
+    "viewport": {
+      "collection": "Viewport",
+      "modes": [
+        {
+          "mode": "Mobile",
+          "width": 375
+        },
+        {
+          "mode": "Sm",
+          "width": 640
+        },
+        {
+          "mode": "Md",
+          "width": 768
+        },
+        {
+          "mode": "Desktop",
+          "width": 1440
+        }
+      ],
+      "scale": "fluid"
+    },
+    "textStyles": {
+      "form": "doubled"
+    }
+  },
+  "components": {
+    "root": "../../apps/store/src",
+    "notExported": {
+      "Icon": "exported by the icons exporter"
+    },
+    "notStyledLayers": {
+      "Field › exampleInput": "example content: the children are the caller's",
+      "Field › exampleError": "example content: the children are the caller's",
+      "Field › exampleCheckbox": "example content: the children are the caller's",
+      "Field › exampleLabel": "example content: the children are the caller's",
+      "RadioGroup › exampleItem": "example content: the children are the caller's",
+      "Button › icon": "the caller's icon: the Button sizes any <svg> in it ([&_svg]:size-4) and colours it through currentColor",
+      "Popover › tip": "the arrow's ::before square: size calc(16px*sqrt(2)), rotate-45, rounded-tl-arrow, border-popup-ring, bg-surface, centred on the box's bottom edge; hand-written",
+      "CartDrawer › noticeText": "rich text: a <strong> lead (font-bold) inside the sentence; a text layer holds one text style, so its classes are hand-written (text-ink text-sm, the lead font-bold)",
+      "ProductListHeader › exampleIntro": "example content: the intro is the route's (CategoryIntro, CollectionHero)",
+      "PaymentMethodsBookView › exampleContent": "example content: the wallet's state (WalletSkeleton, WalletUnavailable, WalletEmpty or the card list)",
+      "NetworkMark › artwork": "the network's badge artwork from the icon set (payment/*): fixed fills, the svg itself in code",
+      "CheckoutSection › exampleAction": "example content: the action is the caller's (Contact's Sign in link)",
+      "CheckoutSection › exampleBody": "example content: the step's body is the caller's",
+      "SearchDrawer › exampleResults": "example content: the results region holds SearchResults or SearchBestSellers",
+      "OrderError › exampleAction": "example content: the way out is the caller's (slot actions)",
+      "NewMethodPanel › exampleForm": "example content: the gateway's own form (Stripe Payment Element iframe) is the caller's",
+      "NewMethodPanel › exampleNote": "example content: the gateway's own form is the caller's",
+      "NewMethodPanel › exampleConsent": "example content: the consent is the caller's (SaveMethodConsent)"
+    },
+    "inline": ["Button"],
+    "fullWidth": ["Input", "NativeSelect", "Field", "RadioGroup"],
+    "runtimePositions": ["Tooltip › arrow", "SearchDrawer › close"],
+    "positionerAnchored": ["Popover › arrow"],
+    "inheritedText": {
+      "Drawer": "type/body-compact",
+      "Popover": "type/body-compact"
+    },
+    "interactionParts": {
+      "QuantityStepper": ["decrement", "increment"],
+      "Accordion": ["item", "trigger"],
+      "Pagination": ["previous", "next"],
+      "Nav": ["link", "trigger"],
+      "RailPanel": ["shopAll", "link"],
+      "RailPanelColumn": ["link", "chip", "viewAll"],
+      "RailPanelSections": ["footerLink"],
+      "SideMenuGroup": ["row", "footerLink"],
+      "SideMenuSection": ["link", "viewAll"],
+      "SideMenu": ["row"],
+      "ProductFilters": ["clear"],
+      "AlertDialog": ["action", "cancel"],
+      "RouteDrawer": ["close"],
+      "Toast": ["close"],
+      "FloatingLabelInput": ["floatingLabel"],
+      "SavedCardRemoveConfirm": ["keep", "remove"]
+    },
+    "interactionPrefixes": {
+      "QuantityStepper": {
+        "hover": "enabled:hover"
+      },
+      "DropdownMenuItem": {
+        "afterCurrent": "[[data-current]+&]"
+      },
+      "FloatingLabelInput": {
+        "resting": "peer-placeholder-shown"
+      },
+      "FieldLabel": {
+        "checked": "has-data-checked"
+      }
+    },
+    "runtimeSizes": {
+      "CheckoutSummaryBody › thumbnail": "vertical",
+      "OrderItems › thumbnail": "vertical",
+      "CartItem › thumbnail": "vertical",
+      "CartDrawerSkeleton › thumbnail": "vertical",
+      "CartDrawerSkeleton › titleLine": "horizontal",
+      "CartDrawerSkeleton › optionsLine": "horizontal",
+      "ProductCard › media": "vertical",
+      "ProductListSkeleton › media": "vertical",
+      "ProductListSkeleton › titleLine": "horizontal",
+      "ProductListSkeleton › subtitleLine": "horizontal",
+      "ProductListSkeleton › priceLine": "horizontal",
+      "SwatchValue › image": "vertical",
+      "ProductGallery › slide": "vertical",
+      "ProductDetailSkeleton › mediaFirst": "vertical",
+      "ProductDetailSkeleton › mediaSecond": "vertical",
+      "ProductDetailSkeleton › mediaWide": "vertical",
+      "ProductDetailSkeleton › swatch": "vertical",
+      "ProductDetailSkeleton › titleLine": "horizontal",
+      "OrderDetailsSkeleton › thumbnail": "vertical"
+    },
+    "runtimeFills": [
+      "CheckoutSummaryBody › image",
+      "OrderRow › image",
+      "OrderItems › image",
+      "CartItem › image",
+      "ProductCard › image",
+      "SwatchValue › image",
+      "ProductGallery › image"
+    ]
+  },
+  "designMd": {
+    "output": "../../DESIGN.md",
+    "name": "Proteus",
+    "description": "The storefront's design system, drawn in the FigCraft design file and generated into code."
+  },
+  "flow": {
+    "output": "../../apps/store/src/navigation/flow.gen.ts",
+    "screens": "../../apps/store/src/navigation/screens.ts",
+    "routeTree": "../../apps/store/src/routeTree.gen.ts"
+  },
+  "icons": {
+    "set": "Icon",
+    "output": "../../apps/store/src/components/ui/icon/icon.glyphs.tsx"
+  },
+  "brand": {
+    "output": "../../apps/store/public"
+  }
+}

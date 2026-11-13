@@ -1,6 +1,6 @@
 # 20. The Store's Feature Graph Is Acyclic and Enforced
 
-**Status:** Accepted
+**Status:** Accepted — superseded by [ADR-0034](0034-store-entities-layer-replaces-the-feature-graph.md). Code two features share lives in an entity, and features may not import features.
 
 ## Context
 

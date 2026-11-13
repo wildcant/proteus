@@ -1,0 +1,1166 @@
+{
+  "name": "PaymentMethodsBookView",
+  "page": "features/account",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "sm",
+        "lg"
+      ],
+      "type": "variant"
+    },
+    {
+      "layers": [
+        3945,
+        3961,
+        3976
+      ],
+      "name": "content",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "default": "Payment methods",
+      "name": "title",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:48",
+        "paddingBottom": "VariableID:55",
+        "paddingHorizontal": "VariableID:41",
+        "paddingTop": "VariableID:46"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 40,
+        "padding": [
+          32,
+          16,
+          64,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 390,
+      "children": [
+        {
+          "name": "heading",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "back",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:33"
+              },
+              "mainComponentName": "BackLink",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "center",
+                "gap": 4,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "chevron",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "height": "VariableID:41",
+                    "width": "VariableID:41"
+                  },
+                  "width": 16,
+                  "height": 16,
+                  "children": [
+                    {
+                      "name": "glyph",
+                      "type": "VECTOR",
+                      "strokes": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1.333,
+                      "strokeAlign": "center",
+                      "boundVariables": {
+                        "stroke": "VariableID:19"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "label",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:18"
+                }
+              ]
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:display"
+            }
+          ]
+        },
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "maxWidth": "VariableID:77"
+          },
+          "maxWidth": 640,
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "exampleContent",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "mainComponentName": "WalletEmpty",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "title",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:heading"
+                },
+                {
+                  "name": "message",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "maxWidth": "VariableID:73",
+                    "paddingTop": "VariableID:38"
+                  },
+                  "maxWidth": 360,
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      12,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "messageText",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    }
+                  ]
+                },
+                {
+                  "name": "action",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "paddingTop": "VariableID:44"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      24,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "startShopping",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokes": [
+                        {
+                          "color": "#0D1012",
+                          "opacity": 0,
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1,
+                      "strokeAlign": "inside",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:18",
+                        "gap": "VariableID:34",
+                        "height": "VariableID:52",
+                        "paddingHorizontal": "VariableID:44"
+                      },
+                      "mainComponentName": "variant=default, size=default, interaction=rest",
+                      "layout": {
+                        "mode": "horizontal",
+                        "mainAlign": "center",
+                        "crossAlign": "center",
+                        "gap": 6,
+                        "padding": [
+                          0,
+                          24,
+                          0,
+                          24
+                        ],
+                        "strokesIncluded": true
+                      },
+                      "height": 52,
+                      "mainSet": "Button",
+                      "children": [
+                        {
+                          "name": "label",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#FFFFFF",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:22"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:9"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=sm",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:48",
+        "paddingBottom": "VariableID:55",
+        "paddingHorizontal": "VariableID:44",
+        "paddingTop": "VariableID:46"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 40,
+        "padding": [
+          32,
+          24,
+          64,
+          24
+        ],
+        "strokesIncluded": true
+      },
+      "width": 640,
+      "children": [
+        {
+          "name": "heading",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "back",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:33"
+              },
+              "mainComponentName": "BackLink",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "center",
+                "gap": 4,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "chevron",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "height": "VariableID:41",
+                    "width": "VariableID:41"
+                  },
+                  "width": 16,
+                  "height": 16,
+                  "children": [
+                    {
+                      "name": "glyph",
+                      "type": "VECTOR",
+                      "strokes": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1.333,
+                      "strokeAlign": "center",
+                      "boundVariables": {
+                        "stroke": "VariableID:19"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "label",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:18"
+                }
+              ]
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:display"
+            }
+          ]
+        },
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "maxWidth": "VariableID:77"
+          },
+          "maxWidth": 640,
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "exampleContent",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "mainComponentName": "WalletEmpty",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "title",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:heading"
+                },
+                {
+                  "name": "message",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "maxWidth": "VariableID:73",
+                    "paddingTop": "VariableID:38"
+                  },
+                  "maxWidth": 360,
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      12,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "messageText",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    }
+                  ]
+                },
+                {
+                  "name": "action",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "paddingTop": "VariableID:44"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      24,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "startShopping",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokes": [
+                        {
+                          "color": "#0D1012",
+                          "opacity": 0,
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1,
+                      "strokeAlign": "inside",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:18",
+                        "gap": "VariableID:34",
+                        "height": "VariableID:52",
+                        "paddingHorizontal": "VariableID:44"
+                      },
+                      "mainComponentName": "variant=default, size=default, interaction=rest",
+                      "layout": {
+                        "mode": "horizontal",
+                        "mainAlign": "center",
+                        "crossAlign": "center",
+                        "gap": 6,
+                        "padding": [
+                          0,
+                          24,
+                          0,
+                          24
+                        ],
+                        "strokesIncluded": true
+                      },
+                      "height": 52,
+                      "mainSet": "Button",
+                      "children": [
+                        {
+                          "name": "label",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#FFFFFF",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:22"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:9"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=lg",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:48",
+        "maxWidth": "VariableID:79",
+        "paddingBottom": "VariableID:55",
+        "paddingHorizontal": "VariableID:46",
+        "paddingTop": "VariableID:46"
+      },
+      "maxWidth": 1400,
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 40,
+        "padding": [
+          32,
+          32,
+          64,
+          32
+        ],
+        "strokesIncluded": true
+      },
+      "width": 1400,
+      "children": [
+        {
+          "name": "heading",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "back",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:33"
+              },
+              "mainComponentName": "BackLink",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "center",
+                "gap": 4,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "chevron",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "height": "VariableID:41",
+                    "width": "VariableID:41"
+                  },
+                  "width": 16,
+                  "height": 16,
+                  "children": [
+                    {
+                      "name": "glyph",
+                      "type": "VECTOR",
+                      "strokes": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1.333,
+                      "strokeAlign": "center",
+                      "boundVariables": {
+                        "stroke": "VariableID:19"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "name": "label",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:18"
+                }
+              ]
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:display"
+            }
+          ]
+        },
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "maxWidth": "VariableID:77"
+          },
+          "maxWidth": 640,
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "exampleContent",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "mainComponentName": "WalletEmpty",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "title",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:heading"
+                },
+                {
+                  "name": "message",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "maxWidth": "VariableID:73",
+                    "paddingTop": "VariableID:38"
+                  },
+                  "maxWidth": 360,
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      12,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "messageText",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    }
+                  ]
+                },
+                {
+                  "name": "action",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "paddingTop": "VariableID:44"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      24,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "startShopping",
+                      "type": "INSTANCE",
+                      "fills": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokes": [
+                        {
+                          "color": "#0D1012",
+                          "opacity": 0,
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1,
+                      "strokeAlign": "inside",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:18",
+                        "gap": "VariableID:34",
+                        "height": "VariableID:52",
+                        "paddingHorizontal": "VariableID:44"
+                      },
+                      "mainComponentName": "variant=default, size=default, interaction=rest",
+                      "layout": {
+                        "mode": "horizontal",
+                        "mainAlign": "center",
+                        "crossAlign": "center",
+                        "gap": 6,
+                        "padding": [
+                          0,
+                          24,
+                          0,
+                          24
+                        ],
+                        "strokesIncluded": true
+                      },
+                      "height": 52,
+                      "mainSet": "Button",
+                      "children": [
+                        {
+                          "name": "label",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#FFFFFF",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:22"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:9"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

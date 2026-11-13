@@ -14,8 +14,8 @@
  *   `keydown` registration that Medusa gets for free from unmounting.
  */
 
+import { cn } from '@proteus/ui-core'
 import * as React from 'react'
-import { cn } from '#/lib/utils.ts'
 
 /** Commands only listen for their shortcut while the bar is open. */
 const CommandBarOpenContext = React.createContext(false)

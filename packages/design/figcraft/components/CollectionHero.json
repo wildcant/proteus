@@ -1,0 +1,105 @@
+{
+  "name": "CollectionHero",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "sm"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "height": 268.5,
+      "children": [
+        {
+          "name": "image",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          }
+        }
+      ]
+    },
+    {
+      "name": "viewport=sm",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 592,
+      "height": 253.7,
+      "children": [
+        {
+          "name": "image",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          }
+        }
+      ]
+    }
+  ]
+}

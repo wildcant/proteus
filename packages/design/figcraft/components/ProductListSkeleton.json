@@ -1,0 +1,2053 @@
+{
+  "name": "ProductListSkeleton",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "sm",
+        "lg"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "crossGap": "VariableID:44",
+        "gap": "VariableID:33"
+      },
+      "layout": {
+        "mode": "grid",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 4,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true,
+        "crossGap": 24,
+        "gridColumns": 2,
+        "columnTracks": [],
+        "rowTracks": []
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=sm",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "crossGap": "VariableID:44",
+        "gap": "VariableID:33"
+      },
+      "layout": {
+        "mode": "grid",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 4,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true,
+        "crossGap": 24,
+        "gridColumns": 3,
+        "columnTracks": [],
+        "rowTracks": []
+      },
+      "width": 592,
+      "children": [
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 221
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingVertical": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  8,
+                  0,
+                  8,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=lg",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "crossGap": "VariableID:44",
+        "gap": "VariableID:33"
+      },
+      "layout": {
+        "mode": "grid",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 4,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true,
+        "crossGap": 24,
+        "gridColumns": 4,
+        "columnTracks": [],
+        "rowTracks": []
+      },
+      "width": 1336,
+      "children": [
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 414
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingHorizontal": "VariableID:41",
+                "paddingVertical": "VariableID:41"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  16,
+                  16,
+                  16,
+                  16
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 414
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingHorizontal": "VariableID:41",
+                "paddingVertical": "VariableID:41"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  16,
+                  16,
+                  16,
+                  16
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 414
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingHorizontal": "VariableID:41",
+                "paddingVertical": "VariableID:41"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  16,
+                  16,
+                  16,
+                  16
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "card",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "media",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#F4F5F6",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:23"
+              },
+              "height": 414
+            },
+            {
+              "name": "info",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41",
+                "paddingHorizontal": "VariableID:41",
+                "paddingVertical": "VariableID:41"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 16,
+                "padding": [
+                  16,
+                  16,
+                  16,
+                  16
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:33"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 4,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "titleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 133,
+                      "height": 16
+                    },
+                    {
+                      "name": "subtitleLine",
+                      "type": "FRAME",
+                      "fills": [
+                        {
+                          "color": "#F4F5F6",
+                          "type": "solid"
+                        }
+                      ],
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:23",
+                        "height": "VariableID:41"
+                      },
+                      "width": 88,
+                      "height": 16
+                    }
+                  ]
+                },
+                {
+                  "name": "priceLine",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#F4F5F6",
+                      "type": "solid"
+                    }
+                  ],
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:23",
+                    "height": "VariableID:41"
+                  },
+                  "width": 59,
+                  "height": 16
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

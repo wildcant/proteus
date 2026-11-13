@@ -1,0 +1,539 @@
+{
+  "name": "DeliveryDetails",
+  "page": "features/orders",
+  "properties": [
+    {
+      "default": "delivered@resend.dev",
+      "name": "email",
+      "type": "text"
+    },
+    {
+      "default": "$500.00",
+      "name": "methodAmount",
+      "type": "text"
+    },
+    {
+      "default": "Standard Shipping",
+      "name": "methodName",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "DeliveryDetails",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "panel",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#F4F5F6",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:23",
+            "paddingHorizontal": "VariableID:44",
+            "paddingVertical": "VariableID:44"
+          },
+          "mainComponentName": "viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Panel",
+          "children": [
+            {
+              "name": "header",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41"
+              },
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "spaceBetween",
+                "crossAlign": "center",
+                "gap": 16,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "title",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:heading"
+                },
+                {
+                  "name": "chevron",
+                  "type": "FRAME",
+                  "visible": false,
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "height": "VariableID:42",
+                    "width": "VariableID:42"
+                  },
+                  "slot": "chevron",
+                  "width": 20,
+                  "height": 20,
+                  "children": [
+                    {
+                      "name": "glyph",
+                      "type": "VECTOR",
+                      "strokes": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1.667,
+                      "strokeAlign": "center",
+                      "boundVariables": {
+                        "stroke": "VariableID:18"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "description",
+              "type": "FRAME",
+              "visible": false,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "paddingTop": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  8,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "descriptionText",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:8"
+                }
+              ]
+            },
+            {
+              "name": "body",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fill"
+              },
+              "overrides": [
+                "slot"
+              ],
+              "slot": "body",
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "address",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:32",
+                    "paddingVertical": "VariableID:44"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 2,
+                    "padding": [
+                      24,
+                      0,
+                      24,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "line",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    },
+                    {
+                      "name": "line",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    },
+                    {
+                      "name": "line",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    },
+                    {
+                      "name": "line",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    },
+                    {
+                      "name": "line",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:8"
+                    }
+                  ]
+                },
+                {
+                  "name": "shipping",
+                  "type": "FRAME",
+                  "strokes": [
+                    {
+                      "color": "#DEE0E3",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1,
+                  "strokeAlign": "inside",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:41",
+                    "paddingTop": "VariableID:44",
+                    "stroke": "VariableID:24"
+                  },
+                  "strokeSides": [
+                    1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 16,
+                    "padding": [
+                      24,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "method",
+                      "type": "FRAME",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "gap": "VariableID:41"
+                      },
+                      "layout": {
+                        "mode": "horizontal",
+                        "mainAlign": "spaceBetween",
+                        "crossAlign": "baseline",
+                        "gap": 16,
+                        "padding": [
+                          0,
+                          0,
+                          0,
+                          0
+                        ],
+                        "strokesIncluded": true
+                      },
+                      "children": [
+                        {
+                          "name": "methodName",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#0D1012",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:18"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:8"
+                        },
+                        {
+                          "name": "methodAmount",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#0D1012",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:18"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:9"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "confirmation",
+                      "type": "FRAME",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "gap": "VariableID:33"
+                      },
+                      "layout": {
+                        "mode": "vertical",
+                        "mainAlign": "min",
+                        "crossAlign": "min",
+                        "gap": 4,
+                        "padding": [
+                          0,
+                          0,
+                          0,
+                          0
+                        ],
+                        "strokesIncluded": true
+                      },
+                      "children": [
+                        {
+                          "name": "confirmationLabel",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#9FA3A8",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:20"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:32"
+                        },
+                        {
+                          "name": "email",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#767A7F",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "hug",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:19"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:8"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

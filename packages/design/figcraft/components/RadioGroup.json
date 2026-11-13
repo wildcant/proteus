@@ -1,0 +1,197 @@
+{
+  "name": "RadioGroup",
+  "page": "components/ui",
+  "properties": [],
+  "variants": [
+    {
+      "name": "RadioGroup",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "crossGap": "VariableID:35",
+        "gap": "VariableID:35"
+      },
+      "layout": {
+        "mode": "grid",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true,
+        "crossGap": 8,
+        "gridColumns": 1,
+        "columnTracks": [],
+        "rowTracks": []
+      },
+      "children": [
+        {
+          "name": "exampleItem",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "cornerRadius": 9999,
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "cornerRadius": "VariableID:83",
+            "fill": "VariableID:18",
+            "height": "VariableID:41",
+            "stroke": "VariableID:18",
+            "width": "VariableID:41"
+          },
+          "mainComponentName": "checked=true, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": false
+          },
+          "width": 16,
+          "height": 16,
+          "mainSet": "RadioGroupItem",
+          "children": [
+            {
+              "name": "indicator",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fixed",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "height": "VariableID:41",
+                "width": "VariableID:41"
+              },
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "center",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "width": 16,
+              "height": 16,
+              "children": [
+                {
+                  "name": "dot",
+                  "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#FFFFFF",
+                      "type": "solid"
+                    }
+                  ],
+                  "cornerRadius": 9999,
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "cornerRadius": "VariableID:83",
+                    "fill": "VariableID:22",
+                    "height": "VariableID:35",
+                    "width": "VariableID:35"
+                  },
+                  "width": 8,
+                  "height": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "exampleItem",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#DEE0E3",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "cornerRadius": 9999,
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "cornerRadius": "VariableID:83",
+            "fill": "VariableID:120",
+            "height": "VariableID:41",
+            "stroke": "VariableID:24",
+            "width": "VariableID:41"
+          },
+          "mainComponentName": "checked=false, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": false
+          },
+          "width": 16,
+          "height": 16,
+          "mainSet": "RadioGroupItem"
+        }
+      ]
+    }
+  ]
+}

@@ -1,46 +1,15 @@
-const { apiLayerRules, featureStructureRules, layerDirectionRules } = require('@proteus/frontend-structure')
+const {
+  apiLayerRules,
+  entityStructureRules,
+  featureStructureRules,
+  layerDirectionRules,
+} = require('@proteus/frontend-structure')
 
-/**
- * Which store feature may import which, as a directed acyclic graph.
- *
- * The key is a feature; the value is every other feature it may import from. Anything under
- * `src/features/` that is not itself and not in its list is an error. The shared layers
- * (`#/components`, `#/lib`, `#/api`, `#/env`) are always available and are not modelled here.
- *
- * The direction follows the domain, which is what makes it stable: a cart is meaningful with no
- * checkout, so `checkout -> cart` and never the reverse. When two features need the same thing,
- * the thing was never feature-specific — move it down to a shared layer instead of adding an edge.
- *
- * See docs/adr/0020-store-feature-graph-is-acyclic.md for the graph and the reasoning.
- */
-const FEATURE_GRAPH = {
-  cart: [],
-  orders: [],
-  address: [],
-  auth: ['cart'],
-  account: ['auth', 'orders'],
-  checkout: ['cart', 'auth', 'address', 'account'],
-  products: ['cart'],
-}
-
-const DECLARED_FEATURES = Object.keys(FEATURE_GRAPH).join('|')
+/** shared -> entities -> features -> routes. The admin has no entities layer and does not opt in. */
+const entityRules = entityStructureRules()
 
 /** The one directory allowed to know a payment gateway's name. See ADR 0010's client mirror. */
 const STRIPE_ADAPTER_PATH = '^src/features/checkout/utils/payment/adapters/stripe/'
-
-/** One rule per feature: it may reach itself and its declared dependencies, and nothing else. */
-const featureGraphRules = Object.entries(FEATURE_GRAPH).map(([feature, allowed]) => ({
-  name: `feature-graph-${feature}`,
-  comment: `features/${feature} may import ${
-    allowed.length ? allowed.map((dependency) => `features/${dependency}`).join(', ') : 'no other feature'
-  }. Add the edge to FEATURE_GRAPH and ADR 0020, or move the shared code down to a shared layer.`,
-  severity: 'error',
-  from: { path: `^src/features/${feature}/` },
-  to: {
-    path: '^src/features/',
-    pathNot: `^src/features/(${[feature, ...allowed].join('|')})/`,
-  },
-}))
 
 module.exports = {
   forbidden: [
@@ -50,6 +19,16 @@ module.exports = {
       severity: 'error',
       from: { path: '^src/' },
       to: { path: 'packages/http-schemas/src/admin/' },
+    },
+    {
+      name: 'no-shared-kit-in-store',
+      comment:
+        "@proteus/ui is the admin's kit. The store's primitives are its own, in src/components/ui, built " +
+        'on @base-ui/react with variants generated from the design file; shared non-visual pieces come ' +
+        'from @proteus/ui-core.',
+      severity: 'error',
+      from: { path: '^src/' },
+      to: { path: '(^|/)packages/ui/|^@proteus/ui($|/)' },
     },
     {
       name: 'no-circular',
@@ -72,20 +51,31 @@ module.exports = {
     },
     // HTTP stays behind the api layer, shared with the admin. See packages/frontend-structure.
     ...apiLayerRules(),
-    ...featureGraphRules,
     {
-      name: 'feature-graph-undeclared',
+      name: 'features-may-not-import-features',
       comment:
-        'A new feature must be declared in FEATURE_GRAPH before it may import another feature, so ' +
-        'the graph is updated deliberately rather than grown by accident.',
+        'A feature may not import another feature. Code two or more features use is an entity: move it ' +
+        'to src/entities/<entity>/. Work that spans two features is composed by the route. See ' +
+        'docs/adr/0034-store-entities-layer-replaces-the-feature-graph.md.',
       severity: 'error',
-      from: { path: `^src/features/(?!(?:${DECLARED_FEATURES})/)` },
-      to: { path: `^src/features/(?:${DECLARED_FEATURES})/` },
+      from: { path: '^src/features/([^/]+)/' },
+      to: { path: '^src/features/', pathNot: '^src/features/$1/' },
     },
     // shared -> features -> app, shared with the admin. See packages/frontend-structure.
     ...layerDirectionRules(),
+    ...entityRules.forbidden,
+    {
+      name: 'navigation-only-from-routes',
+      comment:
+        'src/navigation/ is the flow map from the design file and the screen table that maps it onto the ' +
+        'route tree. Only a route may ask it for link options; it passes them to its feature as props, so ' +
+        'features, entities and shared components never know the route tree. See src/navigation/links.ts.',
+      severity: 'error',
+      from: { pathNot: ['^src/routes/', '^src/navigation/'] },
+      to: { path: '^src/navigation/' },
+    },
   ],
-  required: featureStructureRules(),
+  required: [...featureStructureRules(), ...entityRules.required],
   options: {
     doNotFollow: { path: 'node_modules' },
     exclude: { path: '\\.gen\\.ts$' },

@@ -1,0 +1,367 @@
+{
+  "name": "MainAddressPanel",
+  "page": "features/address",
+  "properties": [],
+  "variants": [
+    {
+      "name": "MainAddressPanel",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 352,
+      "children": [
+        {
+          "name": "panel",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#F4F5F6",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:23",
+            "paddingHorizontal": "VariableID:44",
+            "paddingVertical": "VariableID:44"
+          },
+          "mainComponentName": "viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Panel",
+          "children": [
+            {
+              "name": "header",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "gap": "VariableID:41"
+              },
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "spaceBetween",
+                "crossAlign": "center",
+                "gap": 16,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "title",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:heading"
+                },
+                {
+                  "name": "chevron",
+                  "type": "FRAME",
+                  "visible": false,
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fixed",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "height": "VariableID:42",
+                    "width": "VariableID:42"
+                  },
+                  "slot": "chevron",
+                  "width": 20,
+                  "height": 20,
+                  "children": [
+                    {
+                      "name": "glyph",
+                      "type": "VECTOR",
+                      "strokes": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "strokeWeight": 1.667,
+                      "strokeAlign": "center",
+                      "boundVariables": {
+                        "stroke": "VariableID:18"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "description",
+              "type": "FRAME",
+              "visible": false,
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "paddingTop": "VariableID:35"
+              },
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  8,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "descriptionText",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:8"
+                }
+              ]
+            },
+            {
+              "name": "body",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fill"
+              },
+              "overrides": [
+                "slot"
+              ],
+              "slot": "body",
+              "layout": {
+                "mode": "vertical",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "lines",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "paddingTop": "VariableID:41"
+                  },
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      16,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "children": [
+                    {
+                      "name": "address",
+                      "type": "INSTANCE",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "mainComponentName": "weight=regular",
+                      "overrides": [
+                        "name"
+                      ],
+                      "layout": {
+                        "mode": "vertical",
+                        "mainAlign": "min",
+                        "crossAlign": "min",
+                        "gap": 0,
+                        "padding": [
+                          0,
+                          0,
+                          0,
+                          0
+                        ],
+                        "strokesIncluded": true
+                      },
+                      "mainSet": "AddressLines",
+                      "children": [
+                        {
+                          "name": "recipient",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#767A7F",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "fill",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:19"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:8"
+                        },
+                        {
+                          "name": "postal",
+                          "type": "TEXT",
+                          "fills": [
+                            {
+                              "color": "#767A7F",
+                              "type": "solid"
+                            }
+                          ],
+                          "sizing": {
+                            "horizontal": "fill",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "fill": "VariableID:19"
+                          },
+                          "textAlign": "left",
+                          "textStyle": "S:8"
+                        },
+                        {
+                          "name": "phone",
+                          "type": "FRAME",
+                          "clip": false,
+                          "sizing": {
+                            "horizontal": "fill",
+                            "vertical": "hug"
+                          },
+                          "boundVariables": {
+                            "paddingTop": "VariableID:35"
+                          },
+                          "layout": {
+                            "mode": "vertical",
+                            "mainAlign": "min",
+                            "crossAlign": "min",
+                            "gap": 0,
+                            "padding": [
+                              8,
+                              0,
+                              0,
+                              0
+                            ],
+                            "strokesIncluded": true
+                          },
+                          "children": [
+                            {
+                              "name": "phoneText",
+                              "type": "TEXT",
+                              "fills": [
+                                {
+                                  "color": "#767A7F",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "fill",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:19"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:8"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

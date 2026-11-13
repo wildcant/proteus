@@ -1,0 +1,141 @@
+{
+  "name": "ProductSpecs",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "Ref.",
+      "name": "label",
+      "type": "text"
+    },
+    {
+      "default": "HOODIE-RED-SMALL",
+      "name": "value",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "ProductSpecs",
+      "type": "COMPONENT",
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "stroke": "VariableID:24"
+      },
+      "strokeSides": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 410,
+      "children": [
+        {
+          "name": "spec",
+          "type": "FRAME",
+          "strokes": [
+            {
+              "color": "#DEE0E3",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41",
+            "paddingVertical": "VariableID:37",
+            "stroke": "VariableID:24"
+          },
+          "strokeSides": [
+            0,
+            0,
+            1,
+            0
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "spaceBetween",
+            "crossAlign": "min",
+            "gap": 16,
+            "padding": [
+              10,
+              0,
+              10,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "left",
+              "textStyle": "S:7"
+            },
+            {
+              "name": "value",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:7"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

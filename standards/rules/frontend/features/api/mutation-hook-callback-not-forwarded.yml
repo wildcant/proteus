@@ -5,6 +5,7 @@ message: This handler overrides the caller's callback without calling it, so the
 note: 'End the handler with `onSuccess?.(...args)` / `onError?.(...args)`. standards/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   pattern:
     context: "{ $NAME: ($$$ARGS) => { $$$BODY } }"

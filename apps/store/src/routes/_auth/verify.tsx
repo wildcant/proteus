@@ -1,10 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { ButtonLink } from '#/components/button'
+import { ButtonLink } from '#/components/ui/button/button'
 import { confirmVerification } from '#/features/auth/api/auth'
-import { AuthHeading } from '#/features/auth/components/auth-heading'
+import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
 import { getToken } from '#/lib/auth-token'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('VerifyPage')
 
 const verifySearchSchema = z.object({
   code: z.string().min(1),
@@ -43,7 +46,7 @@ function VerifyError() {
       <AuthHeading title={t`Invalid link`}>
         <Trans>This verification link is invalid or has expired. Request a new one from your account.</Trans>
       </AuthHeading>
-      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink {...links.BACK_TO_SIGN_IN()} variant="outline" size="lg" className="mt-10 w-full">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>
@@ -60,7 +63,7 @@ function VerifyPage() {
         <AuthHeading title={t`Email verified`}>
           <Trans>Your email is confirmed. Sign in to pick up where you left off.</Trans>
         </AuthHeading>
-        <ButtonLink to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+        <ButtonLink {...links.SIGN_IN()} size="lg" className="mt-10 w-full">
           <Trans>Sign in</Trans>
         </ButtonLink>
       </main>
@@ -75,7 +78,7 @@ function VerifyPage() {
           <Trans>Open this link in the same browser you signed up with.</Trans>
         </p>
       )}
-      <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+      <ButtonLink {...links.BACK_TO_SIGN_IN()} variant="outline" size="lg" className="mt-10 w-full">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>

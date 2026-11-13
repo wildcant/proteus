@@ -1,0 +1,226 @@
+{
+  "name": "SwatchValue",
+  "page": "features/products",
+  "properties": [
+    {
+      "default": "default",
+      "name": "state",
+      "options": [
+        "default",
+        "selected",
+        "unavailable"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "state=default",
+      "type": "COMPONENT",
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "opacity": 0,
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 2,
+      "strokeAlign": "inside",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "width": "VariableID:50"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 48,
+      "children": [
+        {
+          "name": "image",
+          "type": "FRAME",
+          "fills": [
+            {
+              "blend": "normal",
+              "crop": null,
+              "filters": {
+                "contrast": 0,
+                "exposure": 0,
+                "highlights": 0,
+                "saturation": 0,
+                "shadows": 0,
+                "temperature": 0,
+                "tint": 0
+              },
+              "image": "f92e9b2fcf9437193a8c92bfca0d9e0c3541442b717ce11e55593afb0b328029",
+              "opacity": 1,
+              "rotation": 0,
+              "scale": 1,
+              "scale_mode": "fill",
+              "type": "image",
+              "visible": true
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "height": 55
+        }
+      ]
+    },
+    {
+      "name": "state=selected",
+      "type": "COMPONENT",
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 2,
+      "strokeAlign": "inside",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "stroke": "VariableID:18",
+        "width": "VariableID:50"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 48,
+      "children": [
+        {
+          "name": "image",
+          "type": "FRAME",
+          "fills": [
+            {
+              "blend": "normal",
+              "crop": null,
+              "filters": {
+                "contrast": 0,
+                "exposure": 0,
+                "highlights": 0,
+                "saturation": 0,
+                "shadows": 0,
+                "temperature": 0,
+                "tint": 0
+              },
+              "image": "51c261c46d67d3ae4f82b330d8ce7a6ce80ef935fbc925ef67e33ccd46ed86b4",
+              "opacity": 1,
+              "rotation": 0,
+              "scale": 1,
+              "scale_mode": "fill",
+              "type": "image",
+              "visible": true
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "height": 55
+        }
+      ]
+    },
+    {
+      "name": "state=unavailable",
+      "type": "COMPONENT",
+      "opacity": 0.4000000059604645,
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "opacity": 0,
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 2,
+      "strokeAlign": "inside",
+      "clip": true,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "width": "VariableID:50"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 48,
+      "children": [
+        {
+          "name": "image",
+          "type": "FRAME",
+          "fills": [
+            {
+              "blend": "normal",
+              "crop": null,
+              "filters": {
+                "contrast": 0,
+                "exposure": 0,
+                "highlights": 0,
+                "saturation": 0,
+                "shadows": 0,
+                "temperature": 0,
+                "tint": 0
+              },
+              "image": "aefe7e13befe0da7863221bfe2e4ee31aa72ff5579cba4d3438f89292089292b",
+              "opacity": 1,
+              "rotation": 0,
+              "scale": 1,
+              "scale_mode": "fill",
+              "type": "image",
+              "visible": true
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "height": 55
+        }
+      ]
+    }
+  ]
+}

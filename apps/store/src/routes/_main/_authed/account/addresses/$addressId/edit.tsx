@@ -1,7 +1,10 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router'
-import { StoreDrawer } from '#/components/store-drawer'
-import { addressesQueryOptions, useSuspenseAddresses } from '#/features/address/api/addresses'
+import { RouteDrawer } from '#/components/ui/route-drawer/route-drawer'
+import { addressesQueryOptions, useSuspenseAddresses } from '#/entities/address/api/addresses'
 import { UpdateAddressForm } from '#/features/address/components/update-address-form'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('AddressBook')
 
 export const Route = createFileRoute('/_main/_authed/account/addresses/$addressId/edit')({
   // Awaited, unlike the list page's prefetch: a deep link straight into the drawer has no
@@ -18,11 +21,11 @@ function EditAddressRoute() {
   // The list is the only source of an address, so a stale link — a bookmark to one deleted
   // since — has nothing to edit. Send them back to the book rather than show an empty create
   // form wearing an edit title.
-  if (!address) return <Navigate to="/account/addresses" replace />
+  if (!address) return <Navigate {...links.ADDRESS_NOT_FOUND()} replace />
 
   return (
-    <StoreDrawer prev="/account/addresses">
+    <RouteDrawer prev={links.CLOSE().to}>
       <UpdateAddressForm address={address} />
-    </StoreDrawer>
+    </RouteDrawer>
   )
 }

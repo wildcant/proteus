@@ -2,8 +2,9 @@ import {
   usePaymentMethods,
   useRemovePaymentMethod,
   useSetDefaultPaymentMethod,
-} from '#/features/account/api/payment-methods'
-import { PaymentMethodsBookView } from './payment-methods-book-view'
+} from '#/entities/payment-method/api/payment-methods'
+import { PaymentMethodsBookView } from '#/features/account/components/payment-methods-book-view/payment-methods-book-view'
+import type { PaymentMethodsLinks } from '#/features/account/types/links'
 
 /**
  * The account wallet.
@@ -21,7 +22,7 @@ import { PaymentMethodsBookView } from './payment-methods-book-view'
  * does not pull the query layer — and its `env` — in with it. That is what lets the states worth
  * asserting be a component test rather than a stubbed endpoint.
  */
-export function PaymentMethodsBook() {
+export function PaymentMethodsBook({ links }: { links: PaymentMethodsLinks }) {
   const { methods, isLoading, failed, refetch } = usePaymentMethods()
   const removeMethod = useRemovePaymentMethod()
   const setDefault = useSetDefaultPaymentMethod()
@@ -34,6 +35,7 @@ export function PaymentMethodsBook() {
       onRetry={refetch}
       onSetDefault={(methodId) => setDefault.mutate(methodId)}
       onRemove={(methodId) => removeMethod.mutateAsync(methodId).then(() => undefined)}
+      links={links}
     />
   )
 }

@@ -1,7 +1,7 @@
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox'
+import { cn } from '@proteus/ui-core'
 import { CheckIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
-import { cn } from '#/lib/utils.ts'
 
 function Combobox<Value, Multiple extends boolean | undefined = false>(
   props: ComboboxPrimitive.Root.Props<Value, Multiple>,

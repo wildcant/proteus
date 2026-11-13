@@ -1,28 +1,51 @@
 import { useLingui } from '@lingui/react/macro'
-import { Skeleton } from '@proteus/ui'
-import { ShppingAddressPicker } from '#/features/checkout/components/delivery/shipping-address-picker'
+import { Skeleton } from '#/components/ui/skeleton/skeleton'
+import { CheckoutSection } from '#/features/checkout/components/checkout-section/checkout-section'
+import { ShippingAddressForm } from '#/features/checkout/components/shipping-address-form/shipping-address-form'
+import { ShippingAddressPicker } from '#/features/checkout/components/shipping-address-picker/shipping-address-picker'
 import type { CheckoutData } from '#/features/checkout/hooks/use-checkout-data'
-import type { CheckoutForm } from '../../hooks/use-checkout-form'
-import { CheckoutSection } from '../checkout-section'
-import { ShippingAddressForm } from './shipping-address-form'
+import type { CheckoutForm } from '#/features/checkout/hooks/use-checkout-form'
+import type { CheckoutLinks } from '#/features/checkout/types/links'
 
-type DeliverySectionProps = Pick<CheckoutData, 'cart' | 'addresses' | 'isAddressesLoading' | 'cartAddresses'> & {
+type DeliveryProps = Pick<CheckoutData, 'cart' | 'addresses' | 'isAddressesLoading' | 'cartAddresses'> & {
   form: CheckoutForm
+  links: Pick<CheckoutLinks, 'addAddress' | 'editAddress'>
+  /** The section body's content, the caller's layer. */
+  contentClassName?: string
 }
+
+type DeliverySectionProps = DeliveryProps & { className?: string }
 
 /** Confirm a saved address, or type one. A shopper is only ever offered one of the two. */
-function Delivery({ cart, addresses, isAddressesLoading, form, cartAddresses }: DeliverySectionProps) {
+function Delivery({
+  cart,
+  addresses,
+  isAddressesLoading,
+  form,
+  links,
+  cartAddresses,
+  contentClassName,
+}: DeliveryProps) {
   if (isAddressesLoading) return <Skeleton className="h-40 w-full" />
   if (addresses.length > 0 && cartAddresses) {
-    return <ShppingAddressPicker form={form} cart={cart} addresses={addresses} cartAddresses={cartAddresses} />
+    return (
+      <ShippingAddressPicker
+        form={form}
+        cart={cart}
+        addresses={addresses}
+        cartAddresses={cartAddresses}
+        links={links}
+        className={contentClassName}
+      />
+    )
   }
-  return <ShippingAddressForm form={form} />
+  return <ShippingAddressForm form={form} className={contentClassName} />
 }
 
-export function DeliverySection(props: DeliverySectionProps) {
+export function DeliverySection({ className, ...props }: DeliverySectionProps) {
   const { t } = useLingui()
   return (
-    <CheckoutSection title={t`Delivery`}>
+    <CheckoutSection title={t`Delivery`} className={className}>
       <Delivery {...props} />
     </CheckoutSection>
   )

@@ -1,7 +1,8 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@proteus/ui'
-import { CircleHelpIcon } from 'lucide-react'
+import { cn } from '@proteus/ui-core'
 import { useState } from 'react'
 import { TRAILING_CONTROL } from '#/components/form/trailing-control.ts'
+import { Icon } from '#/components/ui/icon/icon'
+import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip/tooltip'
 
 /**
  * The `?` at the end of a field, and the note it reveals.
@@ -11,7 +12,7 @@ import { TRAILING_CONTROL } from '#/components/form/trailing-control.ts'
  * same tap doesn't close it. The note is the button's accessible name, so screen readers
  * hear the note instead of "help" plus an unhoverable tooltip.
  */
-export function FieldHelp({ children }: { children: string }) {
+export function FieldHelp({ children, className }: { children: string; className?: string }) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -20,14 +21,12 @@ export function FieldHelp({ children }: { children: string }) {
         closeOnClick={false}
         delay={150}
         onClick={() => setIsOpen((open) => !open)}
-        render={<button type="button" className={TRAILING_CONTROL} />}
+        render={<button type="button" className={cn(TRAILING_CONTROL, className)} />}
       >
-        <CircleHelpIcon aria-hidden="true" className="size-5" />
+        <Icon name="circle-help" aria-hidden="true" className="size-5" />
         <span className="sr-only">{children}</span>
       </TooltipTrigger>
-      <TooltipContent className="max-w-56 px-4 py-3 text-center font-extrabold text-surface text-xs uppercase leading-tight">
-        {children}
-      </TooltipContent>
+      <TooltipContent>{children}</TooltipContent>
     </Tooltip>
   )
 }

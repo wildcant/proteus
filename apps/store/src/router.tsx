@@ -2,12 +2,12 @@ import { QueryClient } from '@tanstack/react-query'
 import { createRouter as createTanStackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { loadSellableMarkets } from '#/api/sellable-markets'
-import { NotFound } from '#/components/not-found'
 import { createI18n } from '#/lib/i18n/catalogs'
 import { I18nRouterProvider } from '#/lib/i18n/i18n-provider'
 import { catalogLanguageFor, currentUrl, resolveMarket } from '#/lib/i18n/resolve-market'
 import { joinMarketSegment, type MarketContext, splitMarketSegment } from '#/lib/market'
 import { stringifySearch } from '#/lib/search-params'
+import { RootNotFound } from '#/routes/-not-found'
 import { routeTree } from './routeTree.gen'
 
 export async function getRouter() {
@@ -32,7 +32,7 @@ export async function getRouter() {
     scrollRestoration: true,
     // Every unmatched URL, in one place: not-founds are raised at `__root__` here — an unroutable
     // first segment is left alone by the rewrite below — so no route owns one to answer.
-    defaultNotFoundComponent: NotFound,
+    defaultNotFoundComponent: RootNotFound,
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
     // Repeated keys for arrays, so a Tag filter reads `?tag=cotton&tag=wool`. See the function.

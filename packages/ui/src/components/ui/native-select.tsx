@@ -1,6 +1,6 @@
+import { cn } from '@proteus/ui-core'
 import { ChevronDownIcon } from 'lucide-react'
 import type * as React from 'react'
-import { cn } from '#/lib/utils.ts'
 
 type NativeSelectProps = Omit<React.ComponentProps<'select'>, 'size'> & {
   size?: 'sm' | 'default'

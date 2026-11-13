@@ -1,0 +1,38 @@
+{
+  "name": "AlertDialogOverlay",
+  "page": "components/ui",
+  "properties": [],
+  "variants": [
+    {
+      "name": "AlertDialogOverlay",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#0000001A",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "boundVariables": {
+        "fill": "VariableID:129"
+      },
+      "effects": [
+        {
+          "blurType": "uniform",
+          "end": [
+            0.5,
+            1
+          ],
+          "radius": 4,
+          "start": [
+            0.5,
+            0
+          ],
+          "startRadius": 0,
+          "type": "backgroundBlur",
+          "visible": true
+        }
+      ]
+    }
+  ]
+}

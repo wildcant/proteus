@@ -5,6 +5,7 @@ message: This hook has no `onError`, so a failure reaches the caller only as a r
 note: 'Add `onError: (...args) => { … onError?.(...args) }`. standards/rules/frontend/features/api/__docs__/mutation-hooks.md'
 files:
   - "**/features/*/api/*.ts"
+  - "**/entities/*/api/*.ts"
 rule:
   kind: object
   inside:

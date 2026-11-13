@@ -1,0 +1,120 @@
+{
+  "name": "SearchControl",
+  "page": "components/store",
+  "properties": [
+    {
+      "layers": [
+        905
+      ],
+      "name": "icon",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "default": "What are you looking for today?",
+      "name": "placeholder",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "SearchControl",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F4F5F6",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:23",
+        "height": "VariableID:49",
+        "paddingLeft": "VariableID:47",
+        "paddingRight": "VariableID:38"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          0,
+          12,
+          0,
+          36
+        ],
+        "strokesIncluded": true
+      },
+      "width": 280,
+      "height": 44,
+      "children": [
+        {
+          "name": "icon",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:41",
+            "width": "VariableID:41"
+          },
+          "slot": "icon",
+          "width": 16,
+          "height": 16,
+          "absolute": {
+            "horizontal": "left",
+            "vertical": "center",
+            "left": 12,
+            "top": 14,
+            "right": 252,
+            "bottom": 14,
+            "parentLayout": "horizontal"
+          },
+          "children": [
+            {
+              "name": "glyph",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.333,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:19"
+              }
+            }
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#767A7F",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:19"
+          },
+          "textAlign": "left",
+          "textStyle": "S:7"
+        }
+      ]
+    }
+  ]
+}

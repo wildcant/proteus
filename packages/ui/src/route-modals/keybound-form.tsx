@@ -1,5 +1,5 @@
+import { cn } from '@proteus/ui-core'
 import React from 'react'
-import { cn } from '#/lib/utils.ts'
 
 /**
  * Form wrapper that prevents accidental submission on bare Enter.

@@ -3,12 +3,28 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { categoryTreeQueryOptions, useSuspenseCategoryTree } from '#/features/products/api/product-categories'
 import { ensureProductListData } from '#/features/products/api/product-list'
 import type { ProductListScope } from '#/features/products/api/products'
-import { CategoryBreadcrumb } from '#/features/products/components/category-breadcrumb'
-import { CategoryIntro } from '#/features/products/components/category-intro'
-import { ProductListNotFound } from '#/features/products/components/product-list-not-found'
-import { ProductListPage } from '#/features/products/components/product-list-page'
+import { CategoryBreadcrumb } from '#/features/products/components/category-breadcrumb/category-breadcrumb'
+import { CategoryIntro } from '#/features/products/components/category-intro/category-intro'
+import { ProductListNotFound } from '#/features/products/components/product-list-not-found/product-list-not-found'
+import { ProductListPage } from '#/features/products/components/product-list-page/product-list-page'
+import type { ProductListLinks } from '#/features/products/types/links'
 import { findCategoryTrail } from '#/features/products/utils/category-trail'
 import { productListRouteOptions } from '#/features/products/utils/product-list-route'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('ProductListPage')
+const listLinks: ProductListLinks = {
+  product: (productId) => links.PRODUCT({ params: { productId } }),
+  shopAll: links.SHOP_ALL(),
+  // These stay on whichever list route is showing: the home page, a category or a collection.
+  filter: links.FILTER,
+  tag: links.TAG,
+  sort: links.SORT,
+  page: links.PAGE,
+  clearFilters: links.CLEAR_FILTERS,
+  clearSearch: links.CLEAR_SEARCH,
+}
+const categoryLink = (handle: string) => links.CATEGORY({ params: { handle } })
 
 /** The list is scoped by handle; the backend widens it to the Category's Visible descendants. */
 const scopeFor = (handle: string): ProductListScope => ({ category: handle })
@@ -38,12 +54,14 @@ function CategoryPage() {
   const { category, ancestors } = trail
   return (
     <ProductListPage
-      from={Route.fullPath}
+      links={listLinks}
       scope={scopeFor(handle)}
       search={search}
       heading={category.name}
-      eyebrow={<CategoryBreadcrumb ancestors={ancestors} />}
-      intro={<CategoryIntro category={category} />}
+      eyebrow={
+        <CategoryBreadcrumb ancestors={ancestors} allProductsLink={links.ALL_PRODUCTS()} categoryLink={categoryLink} />
+      }
+      intro={<CategoryIntro category={category} categoryLink={categoryLink} />}
     />
   )
 }
@@ -51,6 +69,7 @@ function CategoryPage() {
 function CategoryNotFound() {
   return (
     <ProductListNotFound
+      shopAllLink={links.SHOP_ALL()}
       heading={<Trans>We couldn't find this category</Trans>}
       body={<Trans>It may have moved, or no longer be in the store.</Trans>}
     />

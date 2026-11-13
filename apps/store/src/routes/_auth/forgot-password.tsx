@@ -1,10 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { toast } from '@proteus/ui'
+import { toast } from '@proteus/ui-core'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { ButtonLink } from '#/components/button'
-import { AuthHeading } from '#/features/auth/components/auth-heading'
-import { ForgotPasswordForm } from '#/features/auth/components/forgot-password-form'
+import { ButtonLink } from '#/components/ui/button/button'
+import { AuthHeading } from '#/features/auth/components/auth-heading/auth-heading'
+import { ForgotPasswordForm } from '#/features/auth/components/forgot-password-form/forgot-password-form'
+import { flowLinks } from '#/navigation/links'
+
+const links = flowLinks('ForgotPasswordForm')
 
 export const Route = createFileRoute('/_auth/forgot-password')({
   component: ForgotPasswordPage,
@@ -20,7 +23,7 @@ function ForgotPasswordPage() {
         <AuthHeading title={t`Check your email`}>
           <Trans>If an account exists with that email, we've sent a link to reset your password.</Trans>
         </AuthHeading>
-        <ButtonLink variant="outline" to="/login" className="mt-10 h-14 w-full font-semibold text-base">
+        <ButtonLink {...links.BACK_TO_SIGN_IN()} variant="outline" size="lg" className="mt-10 w-full">
           <Trans>Back to sign in</Trans>
         </ButtonLink>
       </main>
@@ -40,7 +43,7 @@ function ForgotPasswordPage() {
           onError={(error) => toast.add({ type: 'error', title: error })}
         />
       </div>
-      <ButtonLink variant="link" to="/login" className="mt-6 text-sm">
+      <ButtonLink {...links.BACK_TO_SIGN_IN()} variant="link" className="mt-6">
         <Trans>Back to sign in</Trans>
       </ButtonLink>
     </main>

@@ -1,0 +1,648 @@
+{
+  "name": "OrderProgressTrack",
+  "page": "features/orders",
+  "properties": [
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "sm"
+      ],
+      "type": "variant"
+    }
+  ],
+  "variants": [
+    {
+      "name": "viewport=mobile",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35",
+        "maxWidth": "VariableID:78"
+      },
+      "maxWidth": 800,
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=current, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:12"
+            }
+          ]
+        },
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=upcoming, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:24",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "visible": false,
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        },
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=upcoming, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:24",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "visible": false,
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        },
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=upcoming, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:24",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "visible": false,
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "viewport=sm",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:35",
+        "maxWidth": "VariableID:78"
+      },
+      "maxWidth": 800,
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 592,
+      "children": [
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=current, viewport=mobile",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:12"
+            }
+          ]
+        },
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=upcoming, viewport=sm",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:24",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        },
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=upcoming, viewport=sm",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:24",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        },
+        {
+          "name": "step",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:35"
+          },
+          "mainComponentName": "state=upcoming, viewport=sm",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 8,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "mainSet": "Step",
+          "children": [
+            {
+              "name": "bar",
+              "type": "FRAME",
+              "fills": [
+                {
+                  "color": "#DEE0E3",
+                  "type": "solid"
+                }
+              ],
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "fixed"
+              },
+              "boundVariables": {
+                "fill": "VariableID:24",
+                "height": "VariableID:32"
+              },
+              "height": 2
+            },
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#9FA3A8",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:20"
+              },
+              "textAlign": "left",
+              "textStyle": "S:11"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

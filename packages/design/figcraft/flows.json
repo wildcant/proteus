@@ -1,0 +1,1559 @@
+{
+  "screens": {
+    "AccountDetail": {
+      "page": "app/_main/_authed",
+      "states": [
+        "ordersEmpty",
+        "orders",
+        "loading"
+      ]
+    },
+    "PaymentMethodsBook": {
+      "page": "app/_main/_authed",
+      "states": [
+        "empty",
+        "loading",
+        "unavailable",
+        "list",
+        "removeConfirm"
+      ]
+    },
+    "OrderContent": {
+      "page": "app/_main/_authed",
+      "states": [
+        "default",
+        "loading",
+        "error"
+      ]
+    },
+    "AddressBook": {
+      "page": "app/_main/_authed",
+      "states": [
+        "list",
+        "listNoMain",
+        "empty",
+        "loading",
+        "deleteConfirm",
+        "addressCreate",
+        "addressCreateInvalid",
+        "addressEdit",
+        "unsavedChanges"
+      ]
+    },
+    "OrderConfirmedContent": {
+      "page": "app/_main",
+      "states": [
+        "default",
+        "loading",
+        "error"
+      ]
+    },
+    "ProductListPage": {
+      "page": "app/_main",
+      "states": [
+        "default",
+        "loading",
+        "navigating",
+        "filterOpen",
+        "filtered",
+        "search",
+        "searchNoMatch",
+        "category",
+        "collection",
+        "notFound",
+        "filteredEmpty",
+        "empty"
+      ]
+    },
+    "ProductDetail": {
+      "page": "app/_main",
+      "states": [
+        "default",
+        "soldOut",
+        "notFound",
+        "bagOpen",
+        "loading"
+      ]
+    },
+    "Root": {
+      "page": "app/_main",
+      "states": [
+        "default",
+        "menu",
+        "navOpen",
+        "search",
+        "searchResults",
+        "searchNoMatch",
+        "bag",
+        "bagEmpty",
+        "bagLoading",
+        "marketMenu",
+        "marketSwitchFailed",
+        "cartTransferFailed",
+        "menuExpanded",
+        "navSections",
+        "menuSections"
+      ]
+    },
+    "AuthLayout": {
+      "page": "app/_auth",
+      "states": [
+        "default"
+      ]
+    },
+    "LoginForm": {
+      "page": "app/_auth",
+      "states": [
+        "default",
+        "validation",
+        "failure",
+        "verificationPending"
+      ]
+    },
+    "RegisterForm": {
+      "page": "app/_auth",
+      "states": [
+        "default",
+        "validation",
+        "verificationPending"
+      ]
+    },
+    "ForgotPasswordForm": {
+      "page": "app/_auth",
+      "states": [
+        "default",
+        "validation",
+        "submitted"
+      ]
+    },
+    "ResetPasswordForm": {
+      "page": "app/_auth",
+      "states": [
+        "default",
+        "validation",
+        "failure",
+        "success",
+        "missingToken"
+      ]
+    },
+    "VerifyPage": {
+      "page": "app/_auth",
+      "states": [
+        "failed",
+        "verifying",
+        "verified",
+        "invalid"
+      ]
+    },
+    "CheckoutContent": {
+      "page": "app/_checkout",
+      "states": [
+        "signedIn",
+        "guest",
+        "guestValidation",
+        "summaryOpen",
+        "addressOptions",
+        "addressCreate",
+        "deleteAddressConfirm",
+        "addressEdit",
+        "loading",
+        "paymentError",
+        "newCard",
+        "accountOptions",
+        "unsavedChanges"
+      ]
+    },
+    "CheckoutLayout": {
+      "page": "app/_checkout",
+      "states": [
+        "default"
+      ]
+    },
+    "NotFound": {
+      "page": "app/__root",
+      "states": [
+        "default"
+      ]
+    },
+    "CheckoutReturn": {
+      "page": "app/_checkout",
+      "states": [
+        "completing",
+        "failed"
+      ]
+    }
+  },
+  "flows": [
+    {
+      "name": "Root",
+      "transitions": [
+        {
+          "event": "TOGGLE_THEME",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "menu",
+          "condition": "no navigation; only in the side menu"
+        },
+        {
+          "event": "OPEN_MENU",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "menu",
+          "condition": "below lg"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "TYPE_QUERY",
+          "from": "Root",
+          "fromState": "search",
+          "to": "Root",
+          "toState": "searchResults",
+          "condition": "products match the term"
+        },
+        {
+          "event": "BROWSE",
+          "from": "Root",
+          "fromState": "bagEmpty",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "OPEN_NAV_PANEL",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "navOpen",
+          "condition": "lg: a rail item with children"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "navOpen",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "TYPE_QUERY",
+          "from": "Root",
+          "fromState": "search",
+          "to": "Root",
+          "toState": "searchNoMatch",
+          "condition": "no product matches the term"
+        },
+        {
+          "event": "OPEN_SEARCH",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "search",
+          "condition": "the menu closes and search opens in one navigation"
+        },
+        {
+          "event": "OPEN_MARKET_MENU",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "marketMenu",
+          "condition": "the footer or the side menu"
+        },
+        {
+          "event": "CHANGE_MARKET",
+          "from": "Root",
+          "fromState": "marketMenu",
+          "to": "Root",
+          "toState": "default",
+          "condition": "the same page in the other market; a full page load"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "marketMenu",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "VIEW_BEST_SELLERS",
+          "from": "Root",
+          "fromState": "search",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "no term typed yet"
+        },
+        {
+          "event": "OPEN_SEARCH",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "search",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "search",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "VIEW_ALL_RESULTS",
+          "from": "Root",
+          "fromState": "searchResults",
+          "to": "ProductListPage",
+          "toState": "search",
+          "condition": ""
+        },
+        {
+          "event": "SEARCH_SUBMIT",
+          "from": "Root",
+          "fromState": "searchResults",
+          "to": "ProductListPage",
+          "toState": "search",
+          "condition": "Enter; an empty term lists all products"
+        },
+        {
+          "event": "SEARCH_SUBMIT",
+          "from": "Root",
+          "fromState": "searchNoMatch",
+          "to": "ProductListPage",
+          "toState": "searchNoMatch",
+          "condition": "Enter"
+        },
+        {
+          "event": "PRODUCT",
+          "from": "Root",
+          "fromState": "bag",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": "a line with a product"
+        },
+        {
+          "event": "CHECKOUT",
+          "from": "Root",
+          "fromState": "bag",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": "when signed in"
+        },
+        {
+          "event": "OPEN_BAG",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "bag",
+          "condition": "when the bag has items"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "bag",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "PRODUCT",
+          "from": "Root",
+          "fromState": "searchResults",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "CHECKOUT",
+          "from": "Root",
+          "fromState": "bag",
+          "to": "CheckoutContent",
+          "toState": "guest",
+          "condition": "when a guest"
+        },
+        {
+          "event": "OPEN_BAG",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "bagEmpty",
+          "condition": "when the bag is empty"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "navOpen",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "any panel destination: a category or a collection"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "bagEmpty",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "PRODUCT",
+          "from": "Root",
+          "fromState": "search",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": "a best seller"
+        },
+        {
+          "event": "HOME",
+          "from": "Root",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "the wordmark"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "Shop all, from the rail or the footer"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "any menu destination: all, a category or a collection"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "a category, with an optional filter"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "collection",
+          "condition": "a collection"
+        },
+        {
+          "event": "ACCOUNT",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "a guest is sent to sign in"
+        },
+        {
+          "event": "ACCOUNT",
+          "from": "Root",
+          "fromState": "default",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "a guest is sent to sign in"
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "Root",
+          "fromState": "default",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": "the footer"
+        },
+        {
+          "event": "CREATE_ACCOUNT",
+          "from": "Root",
+          "fromState": "default",
+          "to": "RegisterForm",
+          "toState": "default",
+          "condition": "the footer"
+        },
+        {
+          "event": "CHANGE_MARKET",
+          "from": "Root",
+          "fromState": "marketMenu",
+          "to": "Root",
+          "toState": "marketSwitchFailed",
+          "condition": "the bag can't be moved to that market"
+        },
+        {
+          "event": "BACK_TO_PREVIOUS_MARKET",
+          "from": "Root",
+          "fromState": "marketSwitchFailed",
+          "to": "Root",
+          "toState": "default",
+          "condition": "a full page load"
+        },
+        {
+          "event": "EXPAND_GROUP",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "menuExpanded",
+          "condition": "component state"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "menuExpanded",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": ""
+        },
+        {
+          "event": "SIGNED_IN",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "cartTransferFailed",
+          "condition": "the bag didn't move to the account"
+        },
+        {
+          "event": "RETRY_TRANSFER",
+          "from": "Root",
+          "fromState": "cartTransferFailed",
+          "to": "Root",
+          "toState": "default",
+          "condition": "the bag moves to the account; no navigation"
+        },
+        {
+          "event": "OPEN_NAV_PANEL",
+          "from": "Root",
+          "fromState": "default",
+          "to": "Root",
+          "toState": "navSections",
+          "condition": "lg: a rail item with sections"
+        },
+        {
+          "event": "CLOSE",
+          "from": "Root",
+          "fromState": "navSections",
+          "to": "Root",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "navSections",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "a column link, View all, a size chip or a footer link; with its filter"
+        },
+        {
+          "event": "EXPAND_GROUP",
+          "from": "Root",
+          "fromState": "menu",
+          "to": "Root",
+          "toState": "menuSections",
+          "condition": "an entry with sections; component state"
+        },
+        {
+          "event": "MENU_LINK",
+          "from": "Root",
+          "fromState": "menuSections",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "any column link, View all, size chip or footer link"
+        }
+      ]
+    },
+    {
+      "name": "Browse → Confirmation",
+      "transitions": [
+        {
+          "event": "SORT",
+          "from": "ProductListPage",
+          "fromState": "default",
+          "to": ".",
+          "toState": "default",
+          "condition": "?sort"
+        },
+        {
+          "event": "PAGE",
+          "from": "ProductListPage",
+          "fromState": "default",
+          "to": ".",
+          "toState": "default",
+          "condition": "previous or next (?offset)"
+        },
+        {
+          "event": "CATEGORY",
+          "from": "ProductListPage",
+          "fromState": "category",
+          "to": "ProductListPage",
+          "toState": "category",
+          "condition": "a breadcrumb ancestor or a child chip"
+        },
+        {
+          "event": "CHOOSE_VARIANT",
+          "from": "ProductDetail",
+          "fromState": "default",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": "?variant, replace"
+        },
+        {
+          "event": "OPEN_FILTERS",
+          "from": "ProductListPage",
+          "fromState": "default",
+          "to": ".",
+          "toState": "filterOpen",
+          "condition": ""
+        },
+        {
+          "event": "FILTER",
+          "from": "ProductListPage",
+          "fromState": "filterOpen",
+          "to": ".",
+          "toState": "filtered",
+          "condition": "a filter value (?filter)"
+        },
+        {
+          "event": "CLOSE",
+          "from": "ProductListPage",
+          "fromState": "filterOpen",
+          "to": ".",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "CHOOSE_VARIANT",
+          "from": "ProductDetail",
+          "fromState": "default",
+          "to": "ProductDetail",
+          "toState": "soldOut",
+          "condition": "the variant is sold out"
+        },
+        {
+          "event": "CHOOSE_VARIANT",
+          "from": "ProductDetail",
+          "fromState": "soldOut",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": "a variant in stock"
+        },
+        {
+          "event": "OPEN_SUMMARY",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "summaryOpen",
+          "condition": "below lg"
+        },
+        {
+          "event": "CLOSE",
+          "from": "CheckoutContent",
+          "fromState": "summaryOpen",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "guest",
+          "to": "CheckoutContent",
+          "toState": "guestValidation",
+          "condition": "a field is missing or invalid"
+        },
+        {
+          "event": "TAG",
+          "from": "ProductListPage",
+          "fromState": "default",
+          "to": ".",
+          "toState": "filtered",
+          "condition": "a tag chip (?tag)"
+        },
+        {
+          "event": "CLEAR_FILTERS",
+          "from": "ProductListPage",
+          "fromState": "filtered",
+          "to": ".",
+          "toState": "default",
+          "condition": "also when no product matches the filters"
+        },
+        {
+          "event": "CHECKOUT",
+          "from": "ProductDetail",
+          "fromState": "bagOpen",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": "when signed in; a guest lands on the guest form"
+        },
+        {
+          "event": "OPEN_ADDRESS_OPTIONS",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "addressOptions",
+          "condition": "a saved address's menu"
+        },
+        {
+          "event": "EDIT_ADDRESS",
+          "from": "CheckoutContent",
+          "fromState": "addressOptions",
+          "to": "CheckoutContent",
+          "toState": "addressEdit",
+          "condition": ""
+        },
+        {
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "guest",
+          "to": "OrderConfirmedContent",
+          "toState": "default",
+          "condition": "payment succeeded or processing"
+        },
+        {
+          "event": "ALL_PRODUCTS",
+          "from": "ProductListPage",
+          "fromState": "category",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "the breadcrumb root"
+        },
+        {
+          "event": "ADD_TO_BAG",
+          "from": "ProductDetail",
+          "fromState": "default",
+          "to": "ProductDetail",
+          "toState": "bagOpen",
+          "condition": "after the line is added"
+        },
+        {
+          "event": "CLOSE",
+          "from": "ProductDetail",
+          "fromState": "bagOpen",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "ADD_ADDRESS",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "addressCreate",
+          "condition": "has saved addresses"
+        },
+        {
+          "event": "DELETE_ADDRESS",
+          "from": "CheckoutContent",
+          "fromState": "addressOptions",
+          "to": "CheckoutContent",
+          "toState": "deleteAddressConfirm",
+          "condition": ""
+        },
+        {
+          "event": "SAVE",
+          "from": "CheckoutContent",
+          "fromState": "addressCreate",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "CheckoutContent",
+          "fromState": "addressCreate",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": "Cancel, Esc or the scrim"
+        },
+        {
+          "event": "GUEST_REDIRECT",
+          "from": "CheckoutContent",
+          "fromState": "addressCreate",
+          "to": "CheckoutContent",
+          "toState": "guest",
+          "condition": "a guest opens an address link"
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "CheckoutContent",
+          "fromState": "guest",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": "returns to checkout (?redirect=/checkout)"
+        },
+        {
+          "event": "SAVE",
+          "from": "CheckoutContent",
+          "fromState": "addressEdit",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "CheckoutContent",
+          "fromState": "addressEdit",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": "Cancel, Esc or the scrim"
+        },
+        {
+          "event": "ADDRESS_NOT_FOUND",
+          "from": "CheckoutContent",
+          "fromState": "addressEdit",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": "redirect: unknown address id"
+        },
+        {
+          "event": "CLEAR_SEARCH",
+          "from": "ProductListPage",
+          "fromState": "searchNoMatch",
+          "to": ".",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "CONFIRM_DELETE",
+          "from": "CheckoutContent",
+          "fromState": "deleteAddressConfirm",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "CANCEL",
+          "from": "CheckoutContent",
+          "fromState": "deleteAddressConfirm",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "SHOP_ALL",
+          "from": "ProductListPage",
+          "fromState": "notFound",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "an unknown category or collection"
+        },
+        {
+          "event": "PRODUCT",
+          "from": "ProductListPage",
+          "fromState": "default",
+          "to": "ProductDetail",
+          "toState": "default",
+          "condition": "a product card, on any list"
+        },
+        {
+          "event": "BACK_TO_PRODUCTS",
+          "from": "ProductDetail",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "OrderConfirmedContent",
+          "toState": "default",
+          "condition": "payment succeeded or processing"
+        },
+        {
+          "event": "BROWSE",
+          "from": "ProductDetail",
+          "fromState": "notFound",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_BAG",
+          "from": "CheckoutLayout",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "opens the bag over the home page (?modal=cart)"
+        },
+        {
+          "event": "HOME",
+          "from": "CheckoutLayout",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "the wordmark"
+        },
+        {
+          "event": "BAG_EMPTY",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "redirect when the bag is empty"
+        },
+        {
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "paymentError",
+          "condition": "declined or stale card: the payment error shows"
+        },
+        {
+          "event": "OPEN_ACCOUNT_OPTIONS",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutContent",
+          "toState": "accountOptions",
+          "condition": "component state"
+        },
+        {
+          "event": "SIGN_OUT",
+          "from": "CheckoutContent",
+          "fromState": "accountOptions",
+          "to": "CheckoutContent",
+          "toState": "guest",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "CheckoutContent",
+          "fromState": "addressCreate",
+          "to": "CheckoutContent",
+          "toState": "unsavedChanges",
+          "condition": "with unsaved changes: asks first"
+        },
+        {
+          "event": "DISCARD",
+          "from": "CheckoutContent",
+          "fromState": "unsavedChanges",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "KEEP_EDITING",
+          "from": "CheckoutContent",
+          "fromState": "unsavedChanges",
+          "to": "CheckoutContent",
+          "toState": "addressCreate",
+          "condition": ""
+        },
+        {
+          "event": "PLACE_ORDER",
+          "from": "CheckoutContent",
+          "fromState": "signedIn",
+          "to": "CheckoutReturn",
+          "toState": "completing",
+          "condition": "a redirect method: the bank's page, then back here"
+        },
+        {
+          "event": "ORDER_PLACED",
+          "from": "CheckoutReturn",
+          "fromState": "completing",
+          "to": "OrderConfirmedContent",
+          "toState": "default",
+          "condition": "payment succeeded or processing"
+        },
+        {
+          "event": "BACK_TO_CHECKOUT",
+          "from": "CheckoutReturn",
+          "fromState": "failed",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": ""
+        },
+        {
+          "event": "LOAD_FAILED",
+          "from": "OrderConfirmedContent",
+          "fromState": "default",
+          "to": "OrderConfirmedContent",
+          "toState": "error",
+          "condition": "component state: the order read fails"
+        },
+        {
+          "event": "CONTINUE_SHOPPING",
+          "from": "OrderConfirmedContent",
+          "fromState": "error",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "PAYMENT_FAILED",
+          "from": "CheckoutReturn",
+          "fromState": "completing",
+          "to": "CheckoutReturn",
+          "toState": "failed",
+          "condition": "declined, a stale card, or the method can't resume"
+        }
+      ]
+    },
+    {
+      "name": "Sign up · Log in · Reset password",
+      "transitions": [
+        {
+          "event": "SIGNED_IN",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "LoginForm",
+          "toState": "verificationPending",
+          "condition": "the email is not verified yet"
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "LoginForm",
+          "fromState": "verificationPending",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "SIGNED_UP",
+          "from": "RegisterForm",
+          "fromState": "default",
+          "to": "RegisterForm",
+          "toState": "verificationPending",
+          "condition": "verification required"
+        },
+        {
+          "event": "RESET_REQUESTED",
+          "from": "ForgotPasswordForm",
+          "fromState": "default",
+          "to": "ForgotPasswordForm",
+          "toState": "submitted",
+          "condition": ""
+        },
+        {
+          "event": "SIGN_UP",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "RegisterForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "RegisterForm",
+          "fromState": "default",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "RegisterForm",
+          "fromState": "verificationPending",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "FORGOT_PASSWORD",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "ForgotPasswordForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "ForgotPasswordForm",
+          "fromState": "default",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "ForgotPasswordForm",
+          "fromState": "submitted",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "SIGNED_UP",
+          "from": "RegisterForm",
+          "fromState": "default",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "no verification needed"
+        },
+        {
+          "event": "ALREADY_SIGNED_IN",
+          "from": "RegisterForm",
+          "fromState": "default",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "redirect"
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "ResetPasswordForm",
+          "fromState": "default",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "VerifyPage",
+          "fromState": "failed",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": "the link failed or is invalid"
+        },
+        {
+          "event": "SIGNED_IN",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "verified; after the bag transfers"
+        },
+        {
+          "event": "ALREADY_SIGNED_IN",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "redirect; to ?redirect when given"
+        },
+        {
+          "event": "SIGNED_IN",
+          "from": "LoginForm",
+          "fromState": "default",
+          "to": "CheckoutContent",
+          "toState": "signedIn",
+          "condition": "came from checkout (?redirect=/checkout)"
+        },
+        {
+          "event": "CONTINUE_SHOPPING",
+          "from": "AuthLayout",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "HOME",
+          "from": "AuthLayout",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "the wordmark"
+        },
+        {
+          "event": "PASSWORD_UPDATED",
+          "from": "ResetPasswordForm",
+          "fromState": "default",
+          "to": "ResetPasswordForm",
+          "toState": "success",
+          "condition": "the new password is saved"
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "ResetPasswordForm",
+          "fromState": "success",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "VERIFY_FAILED",
+          "from": "VerifyPage",
+          "fromState": "verifying",
+          "to": "VerifyPage",
+          "toState": "failed",
+          "condition": "the server refused the link"
+        },
+        {
+          "event": "SIGN_IN",
+          "from": "VerifyPage",
+          "fromState": "verified",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_SIGN_IN",
+          "from": "VerifyPage",
+          "fromState": "invalid",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "VERIFIED",
+          "from": "VerifyPage",
+          "fromState": "verifying",
+          "to": "VerifyPage",
+          "toState": "verified",
+          "condition": "component state: the link checks out"
+        },
+        {
+          "event": "INVALID_LINK",
+          "from": "VerifyPage",
+          "fromState": "verifying",
+          "to": "VerifyPage",
+          "toState": "invalid",
+          "condition": "component state: no token, or it has expired"
+        }
+      ]
+    },
+    {
+      "name": "Account → Addresses",
+      "transitions": [
+        {
+          "event": "REQUEST_RESET",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "emails a reset link; a toast"
+        },
+        {
+          "event": "MAKE_MAIN",
+          "from": "AddressBook",
+          "fromState": "list",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": "no navigation"
+        },
+        {
+          "event": "ADDRESS_BOOK",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": "an empty book lands on AddressBook/empty"
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "AddressBook",
+          "fromState": "list",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        },
+        {
+          "event": "ADD_ADDRESS",
+          "from": "AddressBook",
+          "fromState": "empty",
+          "to": "AddressBook",
+          "toState": "addressCreate",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "AddressBook",
+          "fromState": "addressEdit",
+          "to": "AddressBook",
+          "toState": "unsavedChanges",
+          "condition": "the form changed"
+        },
+        {
+          "event": "KEEP_EDITING",
+          "from": "AddressBook",
+          "fromState": "unsavedChanges",
+          "to": "AddressBook",
+          "toState": "addressEdit",
+          "condition": "back to the drawer it came from"
+        },
+        {
+          "event": "ADD_ADDRESS",
+          "from": "AddressBook",
+          "fromState": "list",
+          "to": "AddressBook",
+          "toState": "addressCreate",
+          "condition": ""
+        },
+        {
+          "event": "SAVE",
+          "from": "AddressBook",
+          "fromState": "addressCreate",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "AddressBook",
+          "fromState": "addressCreate",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": "Cancel, Esc or the scrim; form unchanged"
+        },
+        {
+          "event": "CLOSE",
+          "from": "AddressBook",
+          "fromState": "addressCreate",
+          "to": "AddressBook",
+          "toState": "unsavedChanges",
+          "condition": "the form changed"
+        },
+        {
+          "event": "EDIT_ADDRESS",
+          "from": "AddressBook",
+          "fromState": "list",
+          "to": "AddressBook",
+          "toState": "addressEdit",
+          "condition": ""
+        },
+        {
+          "event": "SAVE",
+          "from": "AddressBook",
+          "fromState": "addressEdit",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": ""
+        },
+        {
+          "event": "CLOSE",
+          "from": "AddressBook",
+          "fromState": "addressEdit",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": "Cancel, Esc or the scrim; form unchanged"
+        },
+        {
+          "event": "ADDRESS_NOT_FOUND",
+          "from": "AddressBook",
+          "fromState": "addressEdit",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": "redirect: unknown address id"
+        },
+        {
+          "event": "DISCARD",
+          "from": "AddressBook",
+          "fromState": "unsavedChanges",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": ""
+        },
+        {
+          "event": "DELETE_ADDRESS",
+          "from": "AddressBook",
+          "fromState": "list",
+          "to": "AddressBook",
+          "toState": "deleteConfirm",
+          "condition": ""
+        },
+        {
+          "event": "CONFIRM_DELETE",
+          "from": "AddressBook",
+          "fromState": "deleteConfirm",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": ""
+        },
+        {
+          "event": "CANCEL",
+          "from": "AddressBook",
+          "fromState": "deleteConfirm",
+          "to": "AddressBook",
+          "toState": "list",
+          "condition": ""
+        },
+        {
+          "event": "SIGN_OUT",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "SIGN_IN_REQUIRED",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "LoginForm",
+          "toState": "default",
+          "condition": "redirect: a guest on any account page"
+        }
+      ]
+    },
+    {
+      "name": "Account → Payment methods",
+      "transitions": [
+        {
+          "event": "PAYMENT_METHODS",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "PaymentMethodsBook",
+          "toState": "empty",
+          "condition": "no saved card (the list isn't drawn)"
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "PaymentMethodsBook",
+          "fromState": "empty",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        },
+        {
+          "event": "RETRY",
+          "from": "PaymentMethodsBook",
+          "fromState": "unavailable",
+          "to": "PaymentMethodsBook",
+          "toState": "empty",
+          "condition": "loads again"
+        },
+        {
+          "event": "PAYMENT_METHODS",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "PaymentMethodsBook",
+          "toState": "unavailable",
+          "condition": "the cards can't be loaded"
+        },
+        {
+          "event": "START_SHOPPING",
+          "from": "PaymentMethodsBook",
+          "fromState": "empty",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "PaymentMethodsBook",
+          "fromState": "unavailable",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        },
+        {
+          "event": "PAYMENT_METHODS",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "with saved cards"
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "PaymentMethodsBook",
+          "fromState": "list",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        },
+        {
+          "event": "REMOVE_CARD",
+          "from": "PaymentMethodsBook",
+          "fromState": "list",
+          "to": "PaymentMethodsBook",
+          "toState": "removeConfirm",
+          "condition": "component state"
+        },
+        {
+          "event": "KEEP",
+          "from": "PaymentMethodsBook",
+          "fromState": "removeConfirm",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "component state"
+        },
+        {
+          "event": "CONFIRM_REMOVE",
+          "from": "PaymentMethodsBook",
+          "fromState": "removeConfirm",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "the card is detached"
+        },
+        {
+          "event": "SET_DEFAULT",
+          "from": "PaymentMethodsBook",
+          "fromState": "list",
+          "to": "PaymentMethodsBook",
+          "toState": "list",
+          "condition": "saves at once; no navigation"
+        }
+      ]
+    },
+    {
+      "name": "Orders → Detail",
+      "transitions": [
+        {
+          "event": "PAGE_ORDERS",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": "component state, not in the URL"
+        },
+        {
+          "event": "ORDER",
+          "from": "AccountDetail",
+          "fromState": "orders",
+          "to": "OrderContent",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "SHOP_ALL",
+          "from": "AccountDetail",
+          "fromState": "ordersEmpty",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": ""
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "OrderContent",
+          "fromState": "default",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        },
+        {
+          "event": "LOAD_FAILED",
+          "from": "OrderContent",
+          "fromState": "default",
+          "to": "OrderContent",
+          "toState": "error",
+          "condition": "component state: the order read fails"
+        },
+        {
+          "event": "BACK_TO_ACCOUNT",
+          "from": "OrderContent",
+          "fromState": "error",
+          "to": "AccountDetail",
+          "toState": "orders",
+          "condition": ""
+        }
+      ]
+    },
+    {
+      "name": "Not found",
+      "transitions": [
+        {
+          "event": "HOME",
+          "from": "NotFound",
+          "fromState": "default",
+          "to": "ProductListPage",
+          "toState": "default",
+          "condition": "the button or the wordmark"
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
+import { cn } from '@proteus/ui-core'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 import * as React from 'react'
@@ -10,7 +11,6 @@ import { Separator } from '#/components/ui/separator.tsx'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '#/components/ui/sheet.tsx'
 import { Tooltip, TooltipContent, TooltipTrigger } from '#/components/ui/tooltip.tsx'
 import { useIsMobile } from '#/hooks/use-mobile.ts'
-import { cn } from '#/lib/utils.ts'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7

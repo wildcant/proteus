@@ -1,0 +1,405 @@
+{
+  "name": "Drawer",
+  "page": "components/ui",
+  "properties": [
+    {
+      "default": "right",
+      "name": "side",
+      "options": [
+        "right",
+        "left",
+        "up"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "mobile",
+      "name": "viewport",
+      "options": [
+        "mobile",
+        "lg"
+      ],
+      "type": "variant"
+    },
+    {
+      "layers": [
+        619,
+        622,
+        624,
+        626,
+        628
+      ],
+      "name": "content",
+      "preferred": [],
+      "type": "slot"
+    }
+  ],
+  "variants": [
+    {
+      "name": "side=right, viewport=mobile",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "stroke": "VariableID:24"
+      },
+      "strokeSides": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 390,
+      "height": 844,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": true,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "side=right, viewport=lg",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "stroke": "VariableID:24",
+        "width": "VariableID:75"
+      },
+      "strokeSides": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "height": 900,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": true,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "side=left, viewport=mobile",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "stroke": "VariableID:24"
+      },
+      "strokeSides": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 390,
+      "height": 844,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": true,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "side=up, viewport=mobile",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "stroke": "VariableID:24"
+      },
+      "strokeSides": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 390,
+      "height": 844,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": true,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "side=up, viewport=lg",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#FFFFFF",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#DEE0E3",
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:22",
+        "stroke": "VariableID:24"
+      },
+      "strokeSides": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 1440,
+      "height": 680,
+      "children": [
+        {
+          "name": "content",
+          "type": "FRAME",
+          "clip": true,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fill"
+          },
+          "slot": "content",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          }
+        }
+      ]
+    }
+  ]
+}

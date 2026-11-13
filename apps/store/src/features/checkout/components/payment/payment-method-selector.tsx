@@ -1,15 +1,16 @@
 import { msg } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
-import { cn, FieldLabel, RadioGroup, RadioGroupItem } from '@proteus/ui'
-import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import { AcceptedNetworks } from '#/components/payment-network'
-import { PaymentRow, paymentRowLabelVariants } from '#/components/payment-row'
-import { SavedCardRow, WalletSkeleton } from '#/features/account/components/saved-card-row'
-import { isUsable } from '#/features/account/utils/expiry'
+import { useLingui } from '@lingui/react/macro'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { RadioGroup } from '#/components/ui/radio-group/radio-group'
+import { isUsable } from '#/entities/payment-method/lib/expiry'
+import { SavedCardRow, WalletSkeleton } from '#/entities/payment-method/ui/saved-card-row/saved-card-row'
+import { NewMethodPanel } from '#/features/checkout/components/new-method-panel/new-method-panel'
+import { NewMethodRow } from '#/features/checkout/components/new-method-row/new-method-row'
+import { SaveMethodConsent } from '#/features/checkout/components/save-method-consent/save-method-consent'
+import { SelectorNotice } from '#/features/checkout/components/selector-notice/selector-notice'
 import { savedMethodName } from '#/lib/card-networks'
 import { usePaymentControllerContext } from '../../hooks/use-payment-controller'
 import type { PaymentAdapterContext, StorePaymentAdapter } from '../../types/payment'
-import { SaveMethodConsent } from './save-method-consent'
 
 /**
  * The provider-neutral payment method selector.
@@ -49,7 +50,7 @@ export function PaymentMethodSelector({ adapter, context }: PaymentMethodSelecto
         // A gateway with no wallet gets the empty render, which is the correct one for it: there
         // is nothing to list, and nothing to consent to keeping. `savedMethods` is optional on the
         // port in exactly the way `IPaymentProvider`'s method operations are.
-        <NewMethodPanel adapter={adapter} canSaveMethod={false} continuesSelection={false} />
+        <NewMethodPanel continuesSelection={false} form={<adapter.NewMethodForm canSaveMethod={false} />} />
       )}
     </adapter.Root>
   )
@@ -154,6 +155,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
   }
 
   const consent = canSaveMethod ? <SaveMethodConsent checked={saveMethod} onCheckedChange={setSaveMethod} /> : null
+  const form = <adapter.NewMethodForm canSaveMethod={canSaveMethod} />
 
   if (isLoading) return <WalletSkeleton />
 
@@ -164,12 +166,10 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
     return (
       <>
         {!!failed && (
-          <SelectorNotice>{t`We couldn't load your saved cards. Enter a card below to pay.`}</SelectorNotice>
+          <SelectorNotice message={t`We couldn't load your saved cards. Enter a card below to pay.`} className="mb-3" />
         )}
-        {!!staleNotice && <SelectorNotice>{t(STALE_METHOD_NOTICE)}</SelectorNotice>}
-        <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod} continuesSelection={false}>
-          {consent}
-        </NewMethodPanel>
+        {!!staleNotice && <SelectorNotice message={t(STALE_METHOD_NOTICE)} className="mb-3" />}
+        <NewMethodPanel continuesSelection={false} form={form} consent={consent} />
       </>
     )
   }
@@ -178,7 +178,7 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
 
   return (
     <>
-      {!!staleNotice && <SelectorNotice>{t(STALE_METHOD_NOTICE)}</SelectorNotice>}
+      {!!staleNotice && <SelectorNotice message={t(STALE_METHOD_NOTICE)} className="mb-3" />}
       <RadioGroup
         aria-label={t`Payment method`}
         className="gap-0"
@@ -198,14 +198,10 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
           />
         ))}
 
-        <NewMethodRow selected={usingNewMethod} />
+        <NewMethodRow selected={usingNewMethod} value={NEW_METHOD_VALUE} />
       </RadioGroup>
 
-      {!!usingNewMethod && (
-        <NewMethodPanel adapter={adapter} canSaveMethod={canSaveMethod} continuesSelection>
-          {consent}
-        </NewMethodPanel>
-      )}
+      {!!usingNewMethod && <NewMethodPanel continuesSelection form={form} consent={consent} />}
     </>
   )
 }
@@ -214,77 +210,6 @@ function Wallet({ adapter, savedMethods, canSaveMethod }: WalletProps) {
 const NEW_METHOD_VALUE = 'new-method'
 
 const STALE_METHOD_NOTICE = msg`That saved card is no longer available. Pick another, or enter a new card below.`
-
-/**
- * Row 2: the same row as a saved card, standing for the ones that are not saved yet.
- *
- * The accepted-network strip sits where a saved card's own mark does, which is what makes this
- * read as a member of the list rather than as a control appended to it.
- */
-function NewMethodRow({ selected }: { selected: boolean }) {
-  const radioId = useId()
-  const { t } = useLingui()
-
-  return (
-    // The same envelope-plus-label structure a saved card row uses, rather than the row classes on
-    // the label itself: `FieldLabel` ships `w-fit`, so a row built that way stops at its own text
-    // and the network strip lands short of where every other row's right edge is.
-    <PaymentRow state={selected ? 'selected' : 'default'} data-testid="new-method-row">
-      <FieldLabel htmlFor={radioId} className={paymentRowLabelVariants()}>
-        <RadioGroupItem id={radioId} value={NEW_METHOD_VALUE} aria-label={t`Use a different card`} />
-        <span className="min-w-0 flex-1 font-medium text-ink text-sm">
-          <Trans>Use a different card</Trans>
-        </span>
-        <AcceptedNetworks />
-      </FieldLabel>
-    </PaymentRow>
-  )
-}
-
-/**
- * The opened panel: the gateway's own form, then the consent to keep the card.
- *
- * Always the row above it extended downwards — a fill, an inset, and no top edge, so the row and
- * the panel draw one envelope rather than two stacked boxes. That is also why the Payment
- * Element's `--selected` accordion state is deliberately left unbordered inside here.
- *
- * `continuesSelection` is which row it is continuing. The "use a different card" row is the
- * shopper's selection and carries the ink border, so the panel finishes it in ink. In the empty
- * render there is no such row — the panel hangs off the provider row, which is filled rather than
- * bordered — so a hairline is the honest edge for it.
- */
-function NewMethodPanel({
-  adapter,
-  canSaveMethod,
-  continuesSelection,
-  children,
-}: {
-  adapter: StorePaymentAdapter
-  canSaveMethod: boolean
-  continuesSelection: boolean
-  children?: ReactNode
-}) {
-  return (
-    <div
-      data-testid="new-method-panel"
-      className={cn(
-        'relative z-1 -mt-px flex flex-col gap-4 border border-t-0 bg-surface-subtle p-4',
-        continuesSelection ? 'border-ink' : 'border-line',
-      )}
-    >
-      <adapter.NewMethodForm canSaveMethod={canSaveMethod} />
-      {children}
-    </div>
-  )
-}
-
-function SelectorNotice({ children }: { children: string }) {
-  return (
-    <p role="status" className="m-0 mb-3 border border-line border-l-2 border-l-ink bg-surface p-3 text-ink text-sm">
-      {children}
-    </p>
-  )
-}
 
 /**
  * Hands the mounted adapter's confirm up to the place-order button.

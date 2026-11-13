@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { StoreCartLineItem } from '#/api/generated/model'
-import { useRemoveLineItem, useUpdateLineItem } from '#/features/cart/api/cart'
+import { useRemoveLineItem, useUpdateLineItem } from '#/entities/cart/api/cart'
 import { useDebounce } from '#/hooks/use-debounce'
 
 /** Long enough to swallow a burst of taps, short enough that the total does not feel stuck. */

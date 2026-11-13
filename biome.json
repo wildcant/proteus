@@ -14,7 +14,7 @@
       "!**/*.gen.css",
       "!**/src/api/generated",
       "!apps/backend/openapi/openapi-*.json",
-      "!packages/design-tokens/figcraft",
+      "!packages/design/figcraft",
       "!apps/backend/structure/dependency-graph.svg",
       "!apps/backend/worker-configuration.d.ts",
       "!apps/store/worker-configuration.d.ts"
@@ -150,16 +150,6 @@
       }
     },
     {
-      "includes": ["packages/icons/src/build-icons/**"],
-      "linter": {
-        "rules": {
-          "suspicious": {
-            "noConsole": "off"
-          }
-        }
-      }
-    },
-    {
       "includes": ["apps/backend/src/core/logger/noop-logger.ts"],
       "linter": {
         "rules": {
@@ -202,8 +192,8 @@
     {
       "includes": [
         "packages/ui/src/index.ts",
+        "packages/ui-core/src/index.ts",
         "packages/utils/src/index.ts",
-        "packages/icons/src/index.ts",
         "packages/testing/index.ts",
         "packages/http-schemas/src/admin/index.ts",
         "packages/http-schemas/src/auth/index.ts",
@@ -231,7 +221,7 @@
       }
     },
     {
-      "includes": ["apps/admin/**", "apps/store/**", "packages/ui/**"],
+      "includes": ["apps/admin/**", "apps/store/**", "packages/ui/**", "packages/ui-core/**"],
       "linter": {
         "domains": {
           "react": "recommended",

@@ -11,6 +11,13 @@ module.exports = {
       to: { path: 'packages/http-schemas/src/store/' },
     },
     {
+      name: 'no-design-in-admin',
+      comment: '@proteus/design is the store design; the admin keeps its own look through @proteus/ui.',
+      severity: 'error',
+      from: { path: '^src/' },
+      to: { path: '(^|/)packages/design/|^@proteus/design($|/)' },
+    },
+    {
       name: 'no-tanstack-table-outside-data-table',
       comment: '@tanstack/react-table must only be imported from within the data-table component.',
       severity: 'error',

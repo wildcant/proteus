@@ -1,5 +1,5 @@
+import { Button, type ButtonProps } from '#/components/ui/button/button'
 import { useFormContext } from '#/lib/form-context'
-import { Button, type ButtonProps } from '../button'
 
 type SubmitButtonProps = Pick<ButtonProps, 'children' | 'className' | 'size'>
 

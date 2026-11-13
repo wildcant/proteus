@@ -1,0 +1,464 @@
+{
+  "name": "CheckoutSection",
+  "page": "features/checkout",
+  "properties": [
+    {
+      "layers": [
+        5401
+      ],
+      "name": "action",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "layers": [
+        5404
+      ],
+      "name": "body",
+      "preferred": [],
+      "type": "slot"
+    },
+    {
+      "default": "Contact",
+      "name": "title",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "CheckoutSection",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:41"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 16,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 500,
+      "children": [
+        {
+          "name": "header",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "spaceBetween",
+            "crossAlign": "baseline",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:heading"
+            },
+            {
+              "name": "action",
+              "type": "FRAME",
+              "clip": false,
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "slot": "action",
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "min",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "children": [
+                {
+                  "name": "exampleAction",
+                  "type": "INSTANCE",
+                  "strokes": [
+                    {
+                      "color": "#0D1012",
+                      "opacity": 0,
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1,
+                  "strokeAlign": "inside",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:34"
+                  },
+                  "mainComponentName": "variant=link, size=default, interaction=rest",
+                  "overrides": [
+                    "name"
+                  ],
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "center",
+                    "crossAlign": "center",
+                    "gap": 6,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "mainSet": "Button",
+                  "children": [
+                    {
+                      "name": "label",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:18"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:18"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "body",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "slot": "body",
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "exampleBody",
+              "type": "INSTANCE",
+              "clip": false,
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "mainComponentName": "invalid=false, position=default",
+              "overrides": [
+                "name"
+              ],
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "center",
+                "gap": 0,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true
+              },
+              "mainSet": "FloatingLabelInput",
+              "children": [
+                {
+                  "name": "input",
+                  "type": "INSTANCE",
+                  "fills": [
+                    {
+                      "color": "#DEE0E300",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokes": [
+                    {
+                      "color": "#DEE0E3",
+                      "type": "solid"
+                    }
+                  ],
+                  "strokeWeight": 1,
+                  "strokeAlign": "inside",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "fill",
+                    "vertical": "fixed"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:120",
+                    "height": "VariableID:53",
+                    "paddingBottom": "VariableID:33",
+                    "paddingHorizontal": "VariableID:41",
+                    "paddingTop": "VariableID:42",
+                    "stroke": "VariableID:24"
+                  },
+                  "mainComponentName": "invalid=false, interaction=rest, viewport=mobile",
+                  "layout": {
+                    "mode": "vertical",
+                    "mainAlign": "center",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      20,
+                      16,
+                      4,
+                      16
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "height": 56,
+                  "mainSet": "Input",
+                  "children": [
+                    {
+                      "name": "value",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#0D1012",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "fill",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:18"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:13"
+                    }
+                  ]
+                },
+                {
+                  "name": "floatingLabel",
+                  "type": "INSTANCE",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "mainComponentName": "state=floated",
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "min",
+                    "crossAlign": "min",
+                    "gap": 0,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "mainSet": "FloatingLabel",
+                  "absolute": {
+                    "horizontal": "left",
+                    "vertical": "top",
+                    "left": 16,
+                    "top": 10,
+                    "right": 448,
+                    "bottom": 30,
+                    "parentLayout": "horizontal"
+                  },
+                  "children": [
+                    {
+                      "name": "label",
+                      "type": "TEXT",
+                      "fills": [
+                        {
+                          "color": "#767A7F",
+                          "type": "solid"
+                        }
+                      ],
+                      "sizing": {
+                        "horizontal": "hug",
+                        "vertical": "hug"
+                      },
+                      "boundVariables": {
+                        "fill": "VariableID:19"
+                      },
+                      "textAlign": "left",
+                      "textStyle": "S:12"
+                    }
+                  ]
+                },
+                {
+                  "name": "trailing",
+                  "type": "FRAME",
+                  "clip": false,
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "gap": "VariableID:38"
+                  },
+                  "layout": {
+                    "mode": "horizontal",
+                    "mainAlign": "min",
+                    "crossAlign": "center",
+                    "gap": 12,
+                    "padding": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "strokesIncluded": true
+                  },
+                  "absolute": {
+                    "horizontal": "right",
+                    "vertical": "center",
+                    "left": 432,
+                    "top": 18,
+                    "right": 16,
+                    "bottom": 18,
+                    "parentLayout": "horizontal"
+                  },
+                  "children": [
+                    {
+                      "name": "reveal",
+                      "type": "FRAME",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "height": "VariableID:42",
+                        "width": "VariableID:42"
+                      },
+                      "width": 20,
+                      "height": 20,
+                      "children": [
+                        {
+                          "name": "glyph",
+                          "type": "VECTOR",
+                          "strokes": [
+                            {
+                              "color": "#767A7F",
+                              "type": "solid"
+                            }
+                          ],
+                          "strokeWeight": 1.667,
+                          "strokeAlign": "center",
+                          "boundVariables": {
+                            "stroke": "VariableID:19"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "name": "help",
+                      "type": "FRAME",
+                      "clip": false,
+                      "sizing": {
+                        "horizontal": "fixed",
+                        "vertical": "fixed"
+                      },
+                      "boundVariables": {
+                        "height": "VariableID:42",
+                        "width": "VariableID:42"
+                      },
+                      "width": 20,
+                      "height": 20,
+                      "children": [
+                        {
+                          "name": "glyph",
+                          "type": "VECTOR",
+                          "strokes": [
+                            {
+                              "color": "#767A7F",
+                              "type": "solid"
+                            }
+                          ],
+                          "strokeWeight": 1.667,
+                          "strokeAlign": "center",
+                          "boundVariables": {
+                            "stroke": "VariableID:19"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

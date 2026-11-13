@@ -1,0 +1,56 @@
+{
+  "name": "DrawerTitle",
+  "page": "components/ui",
+  "properties": [
+    {
+      "default": "Your Bag",
+      "name": "label",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "DrawerTitle",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:heading"
+        }
+      ]
+    }
+  ]
+}

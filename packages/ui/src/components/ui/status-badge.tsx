@@ -1,7 +1,6 @@
+import { cn } from '@proteus/ui-core'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { forwardRef } from 'react'
-
-import { cn } from '#/lib/utils.ts'
 
 const dotVariants = cva('size-2 rounded-full', {
   variants: {

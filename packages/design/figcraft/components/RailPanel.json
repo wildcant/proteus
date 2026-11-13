@@ -1,0 +1,482 @@
+{
+  "name": "RailPanel",
+  "page": "components/store",
+  "properties": [
+    {
+      "default": "rest",
+      "name": "interaction",
+      "options": [
+        "rest",
+        "hover"
+      ],
+      "type": "variant"
+    },
+    {
+      "default": "Shop all Men",
+      "name": "shopAll",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "interaction=rest",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "paddingVertical": "VariableID:35"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          8,
+          0,
+          8,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 224,
+      "children": [
+        {
+          "name": "shopAll",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "shopAllLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "linkLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "linkLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "linkLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "interaction=hover",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "paddingVertical": "VariableID:35"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 0,
+        "padding": [
+          8,
+          0,
+          8,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 224,
+      "children": [
+        {
+          "name": "shopAll",
+          "type": "FRAME",
+          "fills": [
+            {
+              "color": "#F4F5F6",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:23",
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "shopAllLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:9"
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "FRAME",
+          "fills": [
+            {
+              "color": "#F4F5F6",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:23",
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "linkLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "FRAME",
+          "fills": [
+            {
+              "color": "#F4F5F6",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:23",
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "linkLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "link",
+          "type": "FRAME",
+          "fills": [
+            {
+              "color": "#F4F5F6",
+              "type": "solid"
+            }
+          ],
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:23",
+            "paddingHorizontal": "VariableID:41",
+            "paddingVertical": "VariableID:35"
+          },
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "linkLabel",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import { NativeSelectOption } from '@proteus/ui'
 import { useCountries } from '#/api/countries'
+import { NativeSelectOption } from '#/components/ui/native-select/native-select'
 
 /**
  * Every country there is, for the one address field a shopper still chooses: the billing one.

@@ -1,0 +1,174 @@
+{
+  "name": "VerifyPending",
+  "page": "features/auth",
+  "properties": [],
+  "variants": [
+    {
+      "name": "VerifyPending",
+      "type": "COMPONENT",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "gap": "VariableID:48"
+      },
+      "layout": {
+        "mode": "vertical",
+        "mainAlign": "min",
+        "crossAlign": "min",
+        "gap": 40,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 358,
+      "children": [
+        {
+          "name": "heading",
+          "type": "INSTANCE",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "gap": "VariableID:41"
+          },
+          "mainComponentName": "AuthHeading",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "center",
+            "gap": 16,
+            "padding": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "title",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "center",
+              "textStyle": "S:heading"
+            },
+            {
+              "name": "description",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#767A7F",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:19"
+              },
+              "textAlign": "center",
+              "textStyle": "S:8"
+            }
+          ]
+        },
+        {
+          "name": "backToSignIn",
+          "type": "INSTANCE",
+          "fills": [
+            {
+              "color": "#DEE0E300",
+              "type": "solid"
+            }
+          ],
+          "strokes": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "fill": "VariableID:120",
+            "gap": "VariableID:34",
+            "height": "VariableID:53",
+            "paddingHorizontal": "VariableID:44",
+            "stroke": "VariableID:121"
+          },
+          "mainComponentName": "variant=outline, size=lg, interaction=rest",
+          "overrides": [
+            "name"
+          ],
+          "layout": {
+            "mode": "horizontal",
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "gap": 6,
+            "padding": [
+              0,
+              24,
+              0,
+              24
+            ],
+            "strokesIncluded": true
+          },
+          "height": 56,
+          "mainSet": "Button",
+          "children": [
+            {
+              "name": "label",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "hug",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:14"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

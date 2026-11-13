@@ -3,7 +3,7 @@
  *
  * Here rather than beside the artwork because two features read it — the checkout's payment rows
  * and the account wallet — and neither owns it. The artwork itself is a component and lives in
- * `#/components/payment-network`.
+ * `#/entities/payment-method/ui/network-mark`.
  */
 
 /**

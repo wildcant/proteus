@@ -100,13 +100,14 @@ check_route_tree() {
       echo "$label: src/routes/${rel}.tsx has no entry in routeTree.gen.ts — run its generate-routes"
       code=1
     fi
-  done < <(find "$routes_dir" -type f -name '*.tsx')
+  # A `-` prefix is TanStack's routeFileIgnorePrefix: such a file sits beside the routes but is no route.
+  done < <(find "$routes_dir" -type f -name '*.tsx' ! -name '-*')
   return $code
 }
 
 # Whether a committed generated file is still what its generator would produce. A failure here is
 # not a code problem — it says to re-run a generator — which is why these do not sit in
-# job_standards. The four --check generators below never write, so they behave the same here and
+# job_standards. The --check generators below never write, so they behave the same here and
 # under --ci; the Orval clients and both route trees have no --check of their own and are
 # established by the serial step before the parallel batch instead. See regenerate_check.
 job_generated() {
@@ -121,9 +122,18 @@ job_generated() {
   # The Worker's workflow list is generated from src/workflows/ rather than typed by hand, so this
   # is the step that notices when the two have drifted. See scripts/generate-workflow-registry.ts.
   pnpm --silent --filter backend run check:workflow-registry || code=1
-  # The theme the store imports is generated from the committed FigCraft snapshot. Read-only: it
-  # regenerates in memory and compares. See packages/design-tokens/README.md.
-  pnpm --silent --filter @proteus/design-tokens run tokens:check || code=1
+  # The theme the store imports, the store's component variants and DESIGN.md's frontmatter are
+  # generated from the committed FigCraft snapshot. Read-only: each regenerates in memory and
+  # compares. See packages/design/README.md.
+  pnpm --silent --filter @proteus/design run tokens:check || code=1
+  pnpm --silent --filter @proteus/design run components:check || code=1
+  pnpm --silent --filter @proteus/design run design-md:check || code=1
+  # The store's navigation map, Icon glyphs and brand images, from the same design file. flow:check is also
+  # check:flow: the map, the screen table in src/navigation/ and the route tree must agree. It has nothing to
+  # check while the design file has no flows page, and brand:check none before the first brand:export.
+  pnpm --silent --filter @proteus/design run flow:check || code=1
+  pnpm --silent --filter @proteus/design run icons:check || code=1
+  pnpm --silent --filter @proteus/design run brand:check || code=1
   # The event bus dispatches subscribers from a generated import list for the same reasons, so it
   # drifts the same way. See scripts/generate-subscriber-registry.ts.
   pnpm --silent --filter backend run check:subscriber-registry || code=1
@@ -271,8 +281,9 @@ job_workerd() { ./scripts/checks/workerd-smoke.sh; }
 job_packages() {
   local code=0
   pnpm --filter @proteus/utils run test || code=1
-  # The token generator's naming contract and output shape, on a hand-built snapshot.
-  pnpm --filter @proteus/design-tokens run test || code=1
+  # The design exporters (tokens, components, DESIGN.md frontmatter, flow, icons, brand), each on a hand-built
+  # snapshot.
+  pnpm --filter @proteus/design run test || code=1
   return $code
 }
 
@@ -366,7 +377,7 @@ fi
 # a difference means the committed output is stale, not that the generator is noisy.
 #
 # Whatever was there is put back either way: this reports drift, it does not fix it, which is the
-# same contract as the four `--check` generators in job_generated.
+# same contract as the `--check` generators in job_generated.
 #
 # The store needed one thing before it could be gated at all, and `apps/store/tsr.config.json` is
 # where it lives because JSON cannot hold the comment. The store is a TanStack Start app, so its

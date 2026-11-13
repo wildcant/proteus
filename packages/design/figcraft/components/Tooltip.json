@@ -1,0 +1,105 @@
+{
+  "name": "Tooltip",
+  "page": "components/ui",
+  "properties": [
+    {
+      "default": "Used for your order confirmation and cart reminders",
+      "name": "label",
+      "type": "text"
+    }
+  ],
+  "variants": [
+    {
+      "name": "Tooltip",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#0D1012",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:18",
+        "gap": "VariableID:34",
+        "maxWidth": "VariableID:67",
+        "paddingHorizontal": "VariableID:41",
+        "paddingVertical": "VariableID:38"
+      },
+      "maxWidth": 224,
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 6,
+        "padding": [
+          12,
+          16,
+          12,
+          16
+        ],
+        "strokesIncluded": true
+      },
+      "width": 224,
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#FFFFFF",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "fill",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:22"
+          },
+          "textAlign": "center",
+          "textStyle": "S:21"
+        },
+        {
+          "name": "arrow",
+          "type": "FRAME",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "cornerRadius": 2,
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "cornerRadius": "VariableID:81",
+            "fill": "VariableID:18",
+            "height": "VariableID:37",
+            "width": "VariableID:37"
+          },
+          "rotation": 45,
+          "width": 10,
+          "height": 10,
+          "absolute": {
+            "horizontal": "left",
+            "vertical": "bottom",
+            "left": 112,
+            "top": 61,
+            "right": 102,
+            "bottom": -2,
+            "parentLayout": "horizontal"
+          }
+        }
+      ]
+    }
+  ]
+}

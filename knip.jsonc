@@ -96,7 +96,15 @@
       // Same two cases as the admin: the fetcher is reached only from the ignored Orval output, the
       // dependency-cruiser config only from the structure gate.
       // `lingui.config.ts` is read by the `lingui` CLI and the Vite plugin, not imported.
-      "entry": ["orval.config.ts", "src/api/fetcher.ts!", "structure/.dependency-cruiser.cjs", "lingui.config.ts"],
+      // `src/navigation/links.ts` is the routes' way to the flow map; no route asks it yet, because the map has
+      // no flows until the design file's `flows` page is drawn. Drop the entry when the first route imports it.
+      "entry": [
+        "orval.config.ts",
+        "src/api/fetcher.ts!",
+        "structure/.dependency-cruiser.cjs",
+        "lingui.config.ts",
+        "src/navigation/links.ts!"
+      ],
       // Same plugin problem as the admin.
       "orval": false,
       // Same as the admin, plus the browser-mode setup file and Start stub at the workspace root.
@@ -109,12 +117,10 @@
         "!src/lib/i18n/test-i18n.tsx!"
       ]
     },
-    "packages/icons": {
-      // build:icons passes it as `--templateSrc=` and build-icons/cli.ts loads it with
-      // `await import(path.resolve(…))` — a runtime path, so there is no import to follow.
-      "entry": ["scripts/export-template.ts"],
-      // `src/build-icons/` generates the icon components at build time and ships nothing.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!src/build-icons/**!"]
+    "packages/design": {
+      // `src/__tests__/fixtures.ts` is the exporters' shared test snapshot. Test code, so only the
+      // default run should ask whether anything reaches it.
+      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts}!", "!src/__tests__/**!"]
     },
     "packages/http-schemas": {
       // Read by the `lingui` CLI, which knip does not follow from the i18n:* scripts.

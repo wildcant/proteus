@@ -1,0 +1,95 @@
+import { Trans } from '@lingui/react/macro'
+import { cn } from '@proteus/ui-core'
+import { Link } from '@tanstack/react-router'
+import type { StoreProductListItem } from '#/api/generated/model'
+import { Icon } from '#/components/ui/icon/icon'
+import {
+  productCard,
+  productCardImage,
+  productCardInfo,
+  productCardLabel,
+  productCardMedia,
+  productCardPrice,
+  productCardSoldOut,
+  productCardTitle,
+} from '#/features/products/components/product-card/product-card.variants'
+import { useFormatters } from '#/hooks/use-formatters'
+import { responsiveImage } from '#/lib/image-url'
+import type { LinkTarget } from '#/lib/link-target'
+
+type ProductCardProps = { product: StoreProductListItem; link: LinkTarget; priority?: boolean; className?: string }
+
+export function ProductCard({ product, link, priority, className }: ProductCardProps) {
+  const { formatPrice } = useFormatters()
+  const startingPrice = product.startingPrice
+    ? formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)
+    : null
+
+  return (
+    <Link {...link} className={cn(productCard(), 'group', className)}>
+      <div className={cn(productCardMedia(), 'aspect-4/5')}>
+        {product.thumbnail ? (
+          <img
+            // Two columns on a phone, three from `sm`, four from `lg` (see ProductGrid).
+            {...responsiveImage(product.thumbnail, '(min-width: 64rem) 25vw, (min-width: 40rem) 33vw, 50vw')}
+            alt={product.title}
+            className={cn(
+              productCardImage(),
+              'h-full min-h-0 w-full object-cover transition-transform duration-300 group-hover:scale-105',
+            )}
+            fetchPriority={priority ? 'high' : undefined}
+            loading={priority ? undefined : 'lazy'}
+            // Matches the 4:5 box, so the browser reserves the right space before the image lands.
+            width={600}
+            height={750}
+          />
+        ) : (
+          // Not drawn yet (every seeded product has a thumbnail).
+          <div className="flex h-full w-full items-center justify-center text-line">
+            <Icon name="package" className="h-10 w-10" />
+          </div>
+        )}
+        {/* Inside the image box and a sibling of the photograph, so the hover zoom moves the
+            garment and leaves the label where it was. */}
+        {product.soldOut ? <SoldOutBadge /> : null}
+      </div>
+      {/* No side inset on a phone: at a 4px column gutter a 185px card needs its full width for
+          the title, and insetting would cost more than the 4px it buys. */}
+      <div className={productCardInfo()}>
+        {/* The title and its fit line are one group, so the fit line keeps its own 4px. The fit
+            line — the same string the PDP puts under its heading, so the card and the product
+            page say the same thing about the same garment — is not drawn yet. */}
+        <div>
+          <h3 className={productCardTitle()}>{product.title}</h3>
+          {!!product.subtitle && <p className="mt-1 text-ink-muted text-sm">{product.subtitle}</p>}
+        </div>
+        {!!startingPrice && (
+          <p className={productCardPrice()}>
+            {/* `startingPrice` is the cheapest variant's, so a product whose sizes run $46 to $60
+                would otherwise show a price no shopper can buy at without knowing which one. */}
+            <Trans>From {startingPrice}</Trans>
+          </p>
+        )}
+      </div>
+    </Link>
+  )
+}
+
+/**
+ * The one thing said over a photograph.
+ *
+ * Bottom left, where the reference design puts it: the top of a 4:5 crop is where the garment is,
+ * and a label in the corner nearest the title reads as belonging to the card rather than floating
+ * over the model.
+ *
+ * A pill, and the only rounded thing in a squared-off system. That is what tells the eye it is a
+ * label laid on the image and not part of the photograph's own composition; the zero radius squares
+ * everything that sits *in* the grid, and this sits on top of it.
+ */
+function SoldOutBadge() {
+  return (
+    <span className={cn(productCardSoldOut(), productCardLabel())}>
+      <Trans>Sold out</Trans>
+    </span>
+  )
+}

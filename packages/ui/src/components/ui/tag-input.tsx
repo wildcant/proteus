@@ -1,6 +1,6 @@
+import { cn } from '@proteus/ui-core'
 import { XIcon } from 'lucide-react'
 import { forwardRef, type KeyboardEvent, useState } from 'react'
-import { cn } from '#/lib/utils.ts'
 import { Badge } from './badge.tsx'
 
 export type TagInputItem = { id: string; label: string }
