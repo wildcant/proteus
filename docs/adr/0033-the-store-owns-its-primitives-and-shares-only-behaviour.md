@@ -5,7 +5,7 @@
 ## Context
 
 The storefront's primitives came from `@proteus/ui`, a shadcn-based kit the admin also builds on.
-The store's look was layered on top of it: `components/button.tsx` wrapped the shared button with
+The store's look was layered on top of it: a store button wrapped the shared button with
 its own sizes, `styles.css` zeroed `--radius` and repointed shadcn's `--primary`, `--border`,
 `--accent-foreground` and `--popover` at the store's colour roles, and imported the kit's generated
 stylesheet for the drawer's keyframes. Every one of those lines exists because the store's look
@@ -35,9 +35,12 @@ behaviour only, in a new non-visual package, `@proteus/ui-core`.**
 - The store renders its own `Toaster` over the shared manager, its own route drawer over the shared
   `useRouteModal`, and its own alert dialog for the prompt. Each primitive keeps the same base-ui
   part, props and ARIA roles it had, so focus, keyboard and portal behaviour do not change.
-- Once the last primitive moves, the store drops `@proteus/ui`, the kit's stylesheet import, the
-  `@source` line and the shadcn variable repoints, and a structure rule forbids the store from
-  importing `@proteus/ui`. A matching rule forbids the admin from importing `@proteus/design`.
+- The store does not depend on `@proteus/ui`: no kit stylesheet, no `@source` line, no shadcn
+  variable repoints. Its glyphs are its own `Icon` primitive, generated from the design file's `Icon`
+  set, so it carries no icon package either. `no-shared-kit-in-store`
+  (`apps/store/structure/.dependency-cruiser.cjs`) forbids the store from importing `@proteus/ui`;
+  `no-design-in-admin` (`apps/admin/structure/.dependency-cruiser.cjs`) forbids the admin from importing
+  `@proteus/design`.
 
 ## Considered Options
 
@@ -55,7 +58,7 @@ apps.
 
 - The admin is untouched: `@proteus/ui`'s entry still exports everything it did, now partly by
   re-export.
-- The store's primitives move one at a time; until the last one moves, the store depends on both
-  packages, and `lucide-react` stays until the icons slice generates the store's own glyphs.
+- The store's only shared UI dependency is `@proteus/ui-core`; everything it renders is styled by its
+  own generated variants.
 - A primitive fix the admin also wants is made twice, once per app. That is the price of the two
   looks being independent, and it applies only to the visual layer.

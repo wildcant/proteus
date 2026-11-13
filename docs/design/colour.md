@@ -5,7 +5,7 @@ The colour system in `~/designs/proteus/Proteus.figcraft`, the design source of 
 ## Structure
 
 - **Primitives:** collection `Primitives`, mode `Value`. Ramps `palette/neutral/*`, `palette/blue/*`, `palette/red/*`, `palette/green/*`, `palette/orange/*`, plus `font/sans`. No Tailwind default colours.
-- **Roles:** collection `Theme`, modes `Light` and `Dark`, flat kebab-case `color/*` names so each becomes a class (`text-ink-muted`, `bg-surface-subtle`). Every role aliases a primitive in each mode, except the two translucent ones (`selection`, `shadow`), which hold their colour with its alpha.
+- **Roles:** collection `Theme`, modes `Light` and `Dark`, flat kebab-case `color/*` names so each becomes a class (`text-ink-muted`, `bg-surface-subtle`). A role aliases a primitive in each mode where an opaque ramp step fits; a translucent role (`selection`, `shadow`, the rings, scrims and washes) holds its colour with its alpha.
 - Layers bind roles only, never `palette/*`. A new role is proposed to the owner first (name, primitive in each mode, why), then added in FigCraft and followed by `tokens:export`.
 - The generated CSS puts `Light` on `:root` and `Dark` on `:root[data-theme="dark"]` and under `prefers-color-scheme: dark` unless the shopper chose light.
 
@@ -36,8 +36,23 @@ The colour system in `~/designs/proteus/Proteus.figcraft`, the design source of 
 | `warning` | orange/300 #FFB86A | orange/300 #FFB86A | Notice banners (cart transfer, market switch failed), with `ink` text |
 | `selection` | #4FB8B2 at 24 % | #4FB8B2 at 24 % | Text-selection highlight |
 | `shadow` | #0D1012 at 20 % | #F4F5F6 at 20 % | The colour of `shadow-panel`: `ink` at 20 % |
+| `field` | #DEE0E3 at 0 % | #2E3238 at 30 % | Form control fill (input, checkbox, radio, outline button): a well on the dark surface |
+| `field-disabled` | #DEE0E3 at 50 % | #2E3238 at 80 % | Disabled field fill |
+| `field-invalid` | red/600 #DC0428 | #FF8FA5 at 50 % | An invalid field's border |
+| `outline` | neutral/950 #0D1012 | neutral/800 #2E3238 | Outline button border |
+| `outline-hover` | #0D1012 at 5 % | #2E3238 at 50 % | Outline button hover |
+| `ghost-hover` | #F5F5F5 | #262626 at 50 % | Ghost button hover |
+| `surface-muted` | #F5F5F5 | #262626 | Skeletons; the prompt footer at 50 % |
+| `control` | neutral/0 #FFFFFF | #2E3238 at 30 % | The prompt's cancel button fill |
+| `choice-checked` | #0D1012 at 0 % | #F4F5F6 at 10 % | A checked choice's label tint (checkout's saved address) |
+| `focus-ring` | #0D1012 at 50 % | #F4F5F6 at 50 % | The 3 px keyboard focus ring |
+| `popup-ring` | #0D1012 at 10 % | #F4F5F6 at 10 % | The hairline ring around popups (the alert dialog) |
+| `sale-wash` | #DC0428 at 10 % | #FF8FA5 at 20 % | Destructive button fill (the prompt's confirm) |
+| `sale-ring` | #DC0428 at 20 % | #FF8FA5 at 40 % | The destructive button's focus ring |
+| `scrim` | black at 80 % | black at 80 % | The drawer scrim |
+| `scrim-dialog` | black at 10 % | black at 10 % | The prompt scrim, behind a 4 px blur |
 
-`warning` is the sRGB value of Tailwind's `orange-300` (`oklch(83.7% 0.128 66.29)`), which the banners still use as `bg-orange-300`. That oklch colour lies outside sRGB: on an sRGB screen both render #FFB86A, on a wide-gamut screen `bg-orange-300` is slightly more saturated than the role. The design file is sRGB, so the role keeps the sRGB value.
+`warning` is the sRGB value of Tailwind's `orange-300` (`oklch(83.7% 0.128 66.29)`), which lies outside sRGB; the design file is sRGB, so the role holds #FFB86A and the banners use `bg-warning`.
 
 ## Contrast
 

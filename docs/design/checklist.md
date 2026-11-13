@@ -5,7 +5,7 @@ Run before handing a FigCraft frame or component back to the owner. Structure fi
 ## Structure (read from `get_node`)
 
 - [ ] Every fill and stroke has a `boundVariables` entry pointing at a `Theme` role (`color/*`). No raw hex, no `palette/*`.
-- [ ] Every text layer uses a `type/*` text style, or the body and meta values the store uses (Manrope Regular 14 / 1.4, 12) until those get styles. No local case or tracking on body text.
+- [ ] Every text layer uses a `type/*` text style. No local size, case or tracking.
 - [ ] Sizes on the 4 px scale; radius 0 except a pill on an overlaid label. Values the design file has no token for are listed in the report as gaps, not invented.
 - [ ] Containers use auto layout. Absolute layers only sit outside the flow on purpose (a badge over a photograph).
 - [ ] Sizing is right: text that wraps has a fixed or fill width; nothing hugs or fills by accident; nothing is clipped.
@@ -47,6 +47,6 @@ Run before handing a FigCraft frame or component back to the owner. Structure fi
 ## Hand over
 
 - [ ] Backup taken before the first change; file saved after every chunk and once more at the end.
-- [ ] "For the coding session" list in the report: exports to run (`components:export <Name>`, `tokens:export`, and later `icons:export`, `brand:export`, `flow:export`) and the code to change. The designer runs none of them.
+- [ ] "For the coding session" list in the report: exports to run (`components:export <Name>`, `tokens:export`, `icons:export`, `brand:export`, `flow:export`, then `design-md`) and the code to change. The designer runs none of them.
 - [ ] `DESIGN.md` (Components) and `apps/store/docs/components.md` updated; the plan file `~/designs/proteus/plan-ui-source-of-truth.md` updated.
 - [ ] Report: frames and ids, screenshots, decisions with reasons, unmet checks, proposed tokens.

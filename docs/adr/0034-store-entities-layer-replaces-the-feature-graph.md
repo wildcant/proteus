@@ -12,7 +12,7 @@ happened to hold:
 
 - `account → auth` existed for `useLogout` and `useRequestPasswordReset`. Neither is signing in.
 - `checkout → auth` existed for `useLogout` alone.
-- `checkout → account` exists for the shopper's "me" query and their saved payment methods.
+- `checkout → account` existed for the shopper's "me" query and their saved payment methods.
 - `CartMismatchBanner` takes `customerId` as a prop because calling `useMe` from `cart` would have
   closed `account → auth → cart → account`.
 
@@ -33,7 +33,7 @@ src/features/<feature>/               features
 src/routes/                           routes
 ```
 
-Imports go only downward. An entity is a domain noun — `customer`, later `cart`, `address`,
+Imports go only downward. An entity is a domain noun — `customer`, `cart`, `address`,
 `payment-method`, `order` — and holds only the segments `api`, `data`, `model`, `lib` and `ui`, with no
 loose files. An entity imports shared code and nothing else of the app's: no other entity, no feature,
 no route. Shared code imports no entity. An entity's `api` segment may call the generated client, as a
@@ -73,4 +73,4 @@ its structure check is unchanged.
 
 - `packages/frontend-structure/index.cjs` — `entityStructureRules()` and `apiLayerRules()`
 - `apps/store/structure/.dependency-cruiser.cjs` — the store's opt-in and `features-may-not-import-features`
-- `apps/store/src/entities/customer/` — the first entity
+- `apps/store/src/entities/` — `customer`, `cart`, `address`, `payment-method`, `order`

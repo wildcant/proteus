@@ -38,6 +38,10 @@ Run them from this folder, or with `pnpm --filter @proteus/design run <script>`.
 To change a token or a component, change it in the design file, run its `:export` and `design-md`,
 and commit `figcraft/` with what they generated.
 
+The package also exports each set's snapshot (`@proteus/design/components/<Set>.json`) and two readers for
+it (`@proteus/design/figcraft-set`: `setDefault`, `setOptions`), so the store's Storybook stories take their
+default args and control options from what the design file draws.
+
 ## Components
 
 Each component set becomes `<name>.variants.ts` with one `cva()` per styled layer (a port of the sibling
@@ -60,10 +64,11 @@ classes, and each larger one only the classes that differ from the next one down
 (`md:flex-row`). Draw an intermediate value only where the set changes there.
 
 A set may also have a design-only `interaction` variant property with the values `rest`, `hover`,
-`focus-visible`, `active`, `disabled`; draw `rest` and only the states that look different. It never
-becomes a `cva` prop either: `rest` gives the base classes, and each other value only the classes that
-differ from `rest` at the same viewport, under its Tailwind variant (`hover:bg-ink/80`,
-`disabled:opacity-50`). On a layer inside the component the state is the component's, read through a
+`focus-visible`, `active`, `disabled` and `open` (a trigger whose popup shows); draw `rest` and only the
+states that look different. It never becomes a `cva` prop either: `rest` gives the base classes, and each
+other value only the classes that differ from `rest` at the same viewport, under its Tailwind variant
+(`hover:bg-ink/80`, `disabled:opacity-50`, and `aria-expanded:` for `open`, the attribute Base UI and every
+ARIA disclosure set on an open trigger). On a layer inside the component the state is the component's, read through a
 named group: the root gets `group/<set-name>` and the layer `group-hover/<set-name>:`. Breakpoint and
 state compose (`md:hover:`). Where a Base UI part marks its state with a data attribute instead, map the
 value in `components.interactionPrefixes` (`{ "Checkbox": { "disabled": "data-disabled" } }`). A layer on
@@ -93,7 +98,9 @@ children. A maximum width or height bound to `space/*` is `max-w-*` / `max-h-*`.
 `overflow-hidden`; FigCraft's node.get doesn't report overflow, so the export reads it from the saved file's
 `document.json`. An empty slot is `items-stretch`: the caller's content fills it as a block would. A layer on
 `components.runtimePositions` (a tooltip's arrow, which Base UI places) is `absolute` with no inset, so a
-preview position never reaches code. A layer on `components.inheritedText` sets the text style the text inside
+preview position never reaches code; one on `components.positionerAnchored` (a popover's arrow, placed against
+Base UI's positioner outside the set's root) is too, and its parent stays unpositioned so the positioner is its
+containing block. A layer on `components.inheritedText` sets the text style the text inside
 it inherits (a drawer panel's `text-sm`): FigCraft puts text styles on text layers only.
 
 Effects: a layer with a `shadow/*` effect style is `shadow-*`; a drop shadow with no offset and no blur, only
@@ -306,6 +313,7 @@ Committed and shared, one section per exporter. The machine paths are in `design
     "interactionPrefixes": {},                        // set -> { interaction or position value -> Tailwind variant }
     "interactionParts": {},                           // set -> layers that own their interaction states
     "runtimePositions": [],                           // "Set › layer" placed at run time: absolute, no inset
+    "positionerAnchored": [],                         // "Set › layer" placed against Base UI's positioner
     "fullWidth": [],                                  // sets whose root is w-full
     "inheritedText": {}                               // "Set" or "Set › layer" -> type/* its text inherits
   },

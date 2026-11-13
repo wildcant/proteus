@@ -10,7 +10,7 @@ components: { accepted-networks: {}, accordion: { textColor: "{colors.ink}", typ
 
 # Design System: Proteus storefront
 
-The source of truth is `~/designs/proteus/Proteus.figcraft`. Its pages mirror the store's code folders: `Foundation` (token boards), `flows` (the navigation map), `app/<group>` (screen sets: `app/_main`, `app/_main/_authed`, `app/_auth`, `app/_checkout`), `components/ui` (primitives), `components/store` (store-wide blocks), `entities/<entity>`, `features/<feature>` and `brand` (wordmark, favicon, touch icons); the table and its rules are in `.claude/agents/designer.md`, "Structure mirrors the code". Everything generated from the file is exported through `@proteus/design`: `pnpm --filter @proteus/design run tokens:export` (the theme), `components:export` (each set's `*.variants.ts`) and `design-md` (this file's frontmatter), the last two landing with the scaffold and components-exporter slices; `icons:export`, `brand:export` and `flow:export` (with `check:flow`) arrive with the icons, brand and flows slices. Every exporter has a `--check` in the verify gate. Colour roles and their contrast are in `docs/design/colour.md`; drawing rules are in `docs/design/brand-rules.md`; which component comes from which set is in `apps/store/docs/components.md`.
+The source of truth is `~/designs/proteus/Proteus.figcraft`. Its pages mirror the store's code folders: `Foundation` (token boards), `flows` (the navigation map), `app/<group>` (screen sets: `app/_main`, `app/_main/_authed`, `app/_auth`, `app/_checkout`), `components/ui` (primitives), `components/store` (store-wide blocks), `entities/<entity>`, `features/<feature>` and `brand` (wordmark, favicon, touch icons); the table and its rules are in `.claude/agents/designer.md`, "Structure mirrors the code". Everything generated from the file is exported through `@proteus/design` (`pnpm --filter @proteus/design run <script>`): `tokens:export` (the theme), `components:export` (each set's `*.variants.ts`), `design-md` (this file's frontmatter), `flow:export` (the store's navigation map, held to the routes by `flow:check`), `icons:export` (the `Icon` glyphs) and `brand:export` (favicon and touch icons). Every exporter has a `--check` in the verify gate. Colour roles and their contrast are in `docs/design/colour.md`; drawing rules are in `docs/design/brand-rules.md`; which component comes from which set is in `apps/store/docs/components.md`.
 
 This file describes the blueprint as it runs today, before any brand forks it. A brand that forks the blueprint replaces the design file's tokens and marks and rewrites the Overview; the structure and the rules stay.
 
@@ -58,8 +58,8 @@ Neutral ink and surfaces, one hue, one red, one green, plus a notice orange, a s
 - **Ink Subtle** (`ink-subtle`): tertiary text and placeholder glyphs: breadcrumb separators, empty-state icons, option values under a line item.
 - **Ink Disabled** (`ink-disabled`): disabled marks: inactive gallery dots.
 ### Utility
-- **Warning** (`warning`): the notice banners (the bag could not move to your account, the market switch failed). The same orange in both schemes, with `ink` text; the banners still use `bg-orange-300`, which the role reproduces.
-- **Selection** (`selection`): the text-selection highlight, teal at 24 % in both schemes. The body still sets it with `selection:bg-[rgba(79,184,178,0.24)]`.
+- **Warning** (`warning`): the notice banners (the bag could not move to your account, the market switch failed). The same orange in both schemes, with `ink` text.
+- **Selection** (`selection`): the text-selection highlight, teal at 24 % in both schemes. The body sets it with the raw value, `selection:bg-[rgba(79,184,178,0.24)]`, not the role.
 - **Shadow** (`shadow`): the colour of `shadow-panel`: `ink` at 20 %, so it inverts with the scheme.
 
 ### Named Rules
@@ -68,7 +68,7 @@ Neutral ink and surfaces, one hue, one red, one green, plus a notice orange, a s
 
 **The Red Means Money or Loss Rule.** `sale` marks a reduced price, scarcity, or an action that destroys something. Never decoration, never a generic error tint without words.
 
-**The Roles Only Rule.** Every colour is a `color/*` role (`text-ink`, `bg-surface-subtle`). No hex, no palette step, no Tailwind default colour. The shadcn names the shared kit still reads (`--primary`, `--border`) are repointed at the roles in `apps/store/src/styles.css` until the store owns its primitives.
+**The Roles Only Rule.** Every colour is a `color/*` role (`text-ink`, `bg-surface-subtle`). No hex, no palette step, no Tailwind default colour.
 
 ## Typography
 
@@ -98,7 +98,7 @@ Neutral ink and surfaces, one hue, one red, one green, plus a notice orange, a s
 - **Label Caps** (`type-label-caps`, SemiBold 600, 14 / 20 px, uppercase, +2.5 %): the market trigger.
 - **Link** (`type-link`, Bold 700, 14 / 20 px, underline offset 4), **Link Large** (`type-link-lg`, 16 / 24 px), **Link Subtle** (`type-link-subtle`, Regular 400) and **Link Medium** (`type-link-medium`, Medium 500, offset auto): link buttons, the auth pages' Forgot password?, Clear all, the search panel's View all.
 
-The sizes behind them are the `text/*` scale (`text-2xs` 10, `text-xs` 12, `text-sm` 14, `text-base` 16, `text-lg` 18 px, each with Tailwind's leading), and the weights the `weight/*` scale (`font-normal` 400 to `font-extrabold` 800); both are generated, at Tailwind's default values, so the store's `text-sm font-medium` and `type-label` are the same thing. The store's classes still name the scale; the text styles are what a drawing applies.
+The sizes behind them are the `text/*` scale (`text-2xs` 10, `text-xs` 12, `text-sm` 14, `text-base` 16, `text-lg` 18 px, each with Tailwind's leading), and the weights the `weight/*` scale (`font-normal` 400 to `font-extrabold` 800); both are generated, at Tailwind's default values, so the store's `text-sm font-medium` and `type-label` are the same thing. The store's classes name the scale; the text styles are what a drawing applies.
 
 ### Named Rules
 
@@ -134,13 +134,59 @@ Motion is generated too: `duration/*` (100, 150, 200, 250, 300, 450 ms) and `eas
 
 ## Shapes
 
-Square. The radius is 0 everywhere (`radius/none`; `--radius: 0rem` in the store squares every shadcn primitive at once). Two small radii exist only on tooltip and popover arrows (`radius/xs` 2 px, `radius/arrow` 3 px). The pill (`rounded-full`, `radius/full`) is reserved for a label laid on top of something: the sold-out badge on a photograph, the bag and line-item count badges, the signed-in avatar, gallery dots, and the theme toggle. Everything that sits in the grid is square.
+Square. The radius is 0 everywhere (`radius/none`): no primitive is drawn with a corner. Two small radii exist only on tooltip and popover arrows (`radius/xs` 2 px, `radius/arrow` 3 px). The pill (`rounded-full`, `radius/full`) is reserved for a label laid on top of something: the sold-out badge on a photograph, the bag and line-item count badges, the signed-in avatar, gallery dots, and the theme toggle. Everything that sits in the grid is square.
 
-The wordmark is the store name set in `type-heading`, not a drawn mark. Favicon and touch icons are placeholder images today and come from the `brand` page once the brand slice draws them.
+The wordmark is the store name set in `type-heading`, not a drawn mark. Favicon and touch icons are neutral placeholder images, exported from the `brand` page by `brand:export` (`docs/design/brand-marks.md`).
 
 ## Components
 
-Components are drawn in `Proteus.figcraft` and exported to `cva()` variants (`apps/store/docs/components.md`, "From FigCraft to code", lists every set, its variants and what is not drawn yet). The primitives (`components/ui`), the store-wide blocks (`components/store`), the `address` and `payment-method` entities and every feature (`products`, `cart`, `auth`, `account`, `address`, `orders`, `checkout`) are drawn, apart from the states the seed data can't reach. The size cells and the market trigger are uppercase outside the display roles: a disagreement with the Two Voices Rule recorded as it runs today, not a precedent.
+Every set below is drawn in `Proteus.figcraft` on the page named in its heading and exported by `components:export` to a `*.variants.ts` beside its hand-written component (`apps/store/docs/components.md`, "From FigCraft to code", holds the contract and what stays hand-written). Variant properties are listed with their values; `viewport`, `interaction` and `position` are design-only and become breakpoint, state and position prefixes, never props. The size cells and the market trigger are uppercase outside the display roles: a disagreement with the Two Voices Rule recorded as the store runs it, not a precedent.
+
+### Primitives (`components/ui`)
+
+- **Button**: `variant` default (ink fill), outline, ghost, link, muted × `size` default (52 px), sm, icon (44 px), lg; `interaction` hover, focus-visible (the 3 px focus ring), disabled, open (a ghost icon trigger whose popup shows). Square, inline in a sentence.
+- **Input**, **NativeSelect**: full-width fields on `field`; Input has `invalid`, `interaction` and `viewport` md (16 px text on a phone, 14 px from `md`).
+- **Label**, **FieldLabel**, **FieldError**, **Field** (`orientation` vertical/horizontal), **RadioGroup**: form structure; the error is `sale` text.
+- **Checkbox**, **RadioGroupItem**: `checked` × `interaction` focus-visible/disabled, with a hit area wider than the box.
+- **QuantityStepper**: `size` lg/xs × `variant` boxed/bare; each button has its own hover and disabled.
+- **Skeleton**: the `surface-muted` pulse block.
+- **Tooltip**: an ink label with an arrow Base UI places.
+- **Popover**: `size` default/rail, a `line`-bordered surface (`shadow-xl`) with an arrow.
+- **DropdownMenu**, **DropdownMenuItem**: the menu panel (`shadow-xl`) and its rows (`current`, `highlighted`, `position` first/afterCurrent).
+- **AlertDialog**, **AlertDialogOverlay**: the confirm prompt, `variant` destructive/default × `viewport` mobile/sm (the footer stacks on a phone), focus rings on action and cancel; the 10 % blurred scrim.
+- **Drawer**, **DrawerOverlay**, **DrawerTitle**: the sliding panel (`side` right/left/up, `viewport` mobile/lg) over the 80 % scrim.
+- **RouteDrawer**: the drawer whose open state is a route (`viewport` mobile/sm; title, body, footer).
+- **Accordion**: `variant` menu/footer/section, `position` last (the footer's closing rule), focus ring on the trigger.
+- **Toast**: title and optional description (`shadow-lg`), focus ring on itself and its close.
+- **Icon**: one variant per glyph (`name=<kebab-case>`, 24 × 24, `currentColor`), exported by `icons:export` rather than `components:export`.
+
+### Store blocks (`components/store`)
+
+- **Header** (`viewport` mobile/sm/lg; slot actions), **Nav** and **RailPanel** (the desktop category rail and its popover, hover per link), **SideMenu** (the phone menu, `viewport` mobile/sm, hover per row), **Footer** (`viewport` mobile/sm/lg; slot payments).
+- **Wordmark** (hover), **ThemeToggle**, **MarketSelect** (the market trigger, `type/label-caps`), **SearchControl** (the search bar trigger).
+- **Panel**: the account and checkout well (`viewport` mobile/lg; title, optional description and chevron, body).
+- **PaymentRow**: a payment choice (`state` default/selected/open/muted, hover).
+- **Pagination**: previous, page, next, each with hover and disabled.
+- **FloatingLabel** (`state` floated/resting), **FloatingLabelInput** (`invalid`, `position` default/resting; optional reveal and help), **FloatingLabelSelect** (`viewport` mobile/md), **CountryField** (a read-only floating-label field): the auth and address form fields.
+- **BackLink**: the link back to the account page.
+- **NotFound**: the 404 block (`viewport` mobile/sm).
+
+### Entities (`entities/<entity>`)
+
+- `address`: **AddressLines** (recipient, postal lines, optional phone; `weight` regular/medium).
+- `payment-method`: **NetworkMark** (`brand` visa/mastercard/amex, the schemes' own artwork), **NetworkChip** (the `+N` chip), **AcceptedNetworks** (three marks and a chip), **SavedCardRow** (`state` default/selected, optional default tag), **SavedCardRemoveConfirm** (the inline remove question, Keep and Remove with their own states).
+
+### Features (`features/<feature>`)
+
+- `products`: listing (**ProductListPage**, **ProductList** `navigating`, **ProductListHeader**, **ProductGrid**, **ProductCard** with sold-out badge, **ProductListSkeleton**, **ProductEmpty**, **ProductError**, **ProductListNotFound**, **CategoryBreadcrumb**, **CategoryIntro**, **CollectionHero**, **ProductSort**); filters (**ProductFilters** with Clear all, **ProductTagFilter**, **TagChip**, **FilterTrigger** `chosen`, **FilterMenu**, **PriceMenu**, **FilterValue** `disabled`); product page (**ProductDetail**, **ProductDetailSkeleton**, **ProductGallery**, **GalleryDots**, **GalleryDot** `current`, **VariantPicker**, **TextValue** and **SwatchValue** `state` default/selected/unavailable, **VariantStock** `state` low/soldOut, **ProductSpecs**, **AddToCart**); search (**SearchDrawer**, **SearchResults** `state` results/empty, **SearchBestSellers**). Page-level sets carry `viewport` mobile/sm/lg or mobile/lg.
+- `cart`: **CartTrigger** and **CartBadge** (the `accent` count), **CartDrawer** (`viewport` mobile/lg, the pinned footer's `shadow-panel`), **CartItem**, **CartEmpty**, **CartDrawerSkeleton**, **CartMismatchBanner** and **CartMarketSwitch** (the `warning` banners).
+- `auth`: **AuthHeading**, **LoginForm**, **RegisterForm**, **ForgotPasswordForm**, **ResetPasswordForm**, **VerifyPending**.
+- `account`: **AccountDetail** and **AccountSkeleton** (`viewport` mobile/sm/lg), **DetailsPanel**, **PasswordPanel**, **OrdersPanel**, **OrderRow** (`viewport` mobile/lg × `position` default/first), **OrdersEmpty**, **OrdersFallback**, **PaymentMethodsBookView**, **WalletEmpty**, **WalletUnavailable**, **WalletSkeleton**.
+- `address`: **AddressBook** (`viewport` mobile/sm/lg), **AddressCard**, **MainAddressPanel**, **DeleteAddressButton**, **AddressForm** (`viewport` mobile/sm), **AddressBookEmpty**, **AddressListFallback**.
+- `orders`: **OrderContent**, **OrderConfirmedContent** and their skeletons (`viewport` mobile/sm/lg), **OrderDetails** and **OrderDetailsSkeleton** (`viewport` mobile/lg), **OrderProgressTrack** and **Step** (`state` current/upcoming/done), **OrderItems**, **OrderSummary**, **DeliveryDetails**, **PaymentDetails**, **OrderError**.
+- `checkout`: **CheckoutContent**, **CheckoutForm**, **CheckoutSkeleton** and **CheckoutSummary** (`viewport` mobile/lg), **CheckoutSummaryBody**, **CheckoutSection** (title, action, body), **CheckoutAccount** and **CheckoutAccountMenu**, **ContactForm**, **ShippingAddressPicker** and **AddressActions**, **ShippingAddressForm** (`viewport` mobile/sm), **ShippingMethodForm**, **ShippingMethodNotice**, **PaymentForm**, **NewMethodRow** (`selected`), **NewMethodPanel** (`continuesSelection`), **SaveMethodConsent** (`checked`), **SelectorNotice** (the ink left edge), **TestOnlyNotice**, **PaymentErrorAlert**, **ReturnStatus**, **ReturnFailure**.
+
+Screens (`app/*` pages) and the `flows` map are drawn but never exported as variants: routes compose the screens from the sets above, and `flow:export` reads the map.
 
 ## Do's and Don'ts
 

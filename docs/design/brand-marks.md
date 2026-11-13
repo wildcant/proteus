@@ -40,4 +40,4 @@ The `Icon` set on `components/ui`: one variant per glyph, `name=<kebab-case>`, 2
 
 ## For the app config
 
-- `manifest.json` still names the starter app ("Create TanStack App Sample") with `theme_color` #000000. The brand slice repoints its name and icons, and `theme_color` / `background_color` at the `surface` and `ink` values.
+- `apps/store/public/manifest.json` names the starter app ("Create TanStack App Sample", `theme_color` #000000, `background_color` #ffffff) and lists the three exported images. It is hand-written, not exported: a fork sets its name and points `theme_color` / `background_color` at its `surface` and `ink` values.

@@ -92,9 +92,11 @@ Read `apps/store/src/AGENTS.md` or `apps/admin/src/AGENTS.md` for pointer to det
 
 Both app follow Bulletproof React: feature at `src/features/{name}/` with closed set of subfolder (`api/`, `components/`, `hooks/`, `stores/`, `types/`, `utils/`).
 
+Store add `src/entities/{entity}/` (segment `api`, `data`, `model`, `lib`, `ui`) between shared code and feature: code two feature use live there, because feature may not import feature (ADR-0034). Store own its primitive in `src/components/ui/` on `@base-ui/react`, share only non-visual `@proteus/ui-core` with admin, never import `@proteus/ui` (ADR-0033).
+
 Store use TanStack Start on workerd with selective SSR — add route mean choose server vs. client (ADR-0013). Server-rendered route no can detect viewport, so structure change between breakpoint need two DOM tree or stacking layout. JS viewport query only where CSS can't do it or would be too troublesome, and cost small (product gallery `tabIndex` switch is one).
 
-Both app use Orval-generated client in `src/api/generated/` over `src/lib/fetcher.ts`.
+Both app use Orval-generated client in `src/api/generated/` over `src/api/fetcher.ts`.
 
 ## Testing
 
