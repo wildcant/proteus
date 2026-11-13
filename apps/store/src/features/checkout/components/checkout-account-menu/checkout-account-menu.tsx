@@ -15,7 +15,7 @@ import {
  * The menu's row is drawn as a plain frame; here it is a ghost Button for the focus ring, so the
  * Button's centring and hover fill are undone and the row fills the menu.
  */
-const MENU_ROW = 'w-full justify-start hover:bg-transparent dark:hover:bg-transparent'
+const MENU_ROW = 'w-full justify-start hover:bg-transparent'
 
 /**
  * Sign out, behind the account row's options button. The set draws the open menu; `className` is

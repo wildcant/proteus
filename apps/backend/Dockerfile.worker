@@ -33,7 +33,6 @@ COPY apps/store/package.json apps/store/
 COPY packages/design/package.json packages/design/
 COPY packages/frontend-structure/package.json packages/frontend-structure/
 COPY packages/http-schemas/package.json packages/http-schemas/
-COPY packages/icons/package.json packages/icons/
 COPY packages/testing/package.json packages/testing/
 COPY packages/ui/package.json packages/ui/
 COPY packages/ui-core/package.json packages/ui-core/

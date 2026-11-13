@@ -35,7 +35,7 @@ The starter's images carry their own colours (a cyan mark, transparent or on a n
 The `Icon` set on `components/ui`: one variant per glyph, `name=<kebab-case>`, 24 × 24, one colour bound to `color/ink` (exported as `currentColor`). `icons:export` writes `apps/store/src/components/ui/icon/icon.glyphs.tsx`.
 
 - The Lucide glyphs reproduce `lucide-react` 0.545.0 exactly (stroke 2, round caps and joins), each named like the store's import without `Icon` (`loader-2`, `more-vertical`, `trash-2`). Lucide is licensed under ISC: Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2023 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2025. Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
-- `bag` (stroke 1.5) and `user` (filled) are the store's own marks from `packages/icons`.
+- `bag` (stroke 1.5) and `user` (filled) are the store's own marks, not Lucide glyphs.
 - The payment network marks (Visa, Mastercard, Amex) are several colours and are not in the set.
 
 ## For the app config

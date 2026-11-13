@@ -24,7 +24,7 @@ export function NativeSelect({ className, wrapperClassName, ...props }: NativeSe
         className={cn(
           nativeSelect(),
           nativeSelectValue(),
-          'min-w-0 select-none appearance-none outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed',
+          'min-w-0 select-none appearance-none outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ink/50 disabled:pointer-events-none disabled:cursor-not-allowed',
           className,
         )}
         {...props}

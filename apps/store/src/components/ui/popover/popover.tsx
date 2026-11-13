@@ -27,7 +27,7 @@ const ARROW_PLACEMENT = [
   'data-[side=bottom]:-top-3.75 data-[side=top]:-bottom-3.75 data-[side=bottom]:rotate-0 data-[side=top]:rotate-180',
   'data-[side=inline-start]:-right-5.75 data-[side=left]:-right-5.75 data-[side=inline-start]:rotate-90 data-[side=left]:rotate-90',
   'data-[side=inline-end]:-left-5.75 data-[side=right]:-left-5.75 data-[side=inline-end]:-rotate-90 data-[side=right]:-rotate-90',
-  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(16px*sqrt(2))] before:-translate-x-1/2 before:translate-y-1/2 before:rotate-45 before:rounded-tl-[3px] before:border before:border-foreground/10 before:bg-popover before:content-['']",
+  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(16px*sqrt(2))] before:-translate-x-1/2 before:translate-y-1/2 before:rotate-45 before:rounded-tl-[3px] before:border before:border-ink/10 before:bg-surface before:content-['']",
 ].join(' ')
 
 /**

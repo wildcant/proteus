@@ -106,7 +106,7 @@ check_route_tree() {
 
 # Whether a committed generated file is still what its generator would produce. A failure here is
 # not a code problem — it says to re-run a generator — which is why these do not sit in
-# job_standards. The four --check generators below never write, so they behave the same here and
+# job_standards. The --check generators below never write, so they behave the same here and
 # under --ci; the Orval clients and both route trees have no --check of their own and are
 # established by the serial step before the parallel batch instead. See regenerate_check.
 job_generated() {
@@ -376,7 +376,7 @@ fi
 # a difference means the committed output is stale, not that the generator is noisy.
 #
 # Whatever was there is put back either way: this reports drift, it does not fix it, which is the
-# same contract as the four `--check` generators in job_generated.
+# same contract as the `--check` generators in job_generated.
 #
 # The store needed one thing before it could be gated at all, and `apps/store/tsr.config.json` is
 # where it lives because JSON cannot hold the comment. The store is a TanStack Start app, so its

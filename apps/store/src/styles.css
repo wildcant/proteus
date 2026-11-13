@@ -1,13 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@proteus/ui/styles.css";
 /* Colour roles, the font, the type-* roles and the scales (spacing, radii, weights, text sizes,
    shadows, motion, breakpoints), generated from the design file. Change them there, then
    `pnpm --filter @proteus/design run tokens:export` (see packages/design). */
 @import "@proteus/design/tokens.css";
 /* The primitives' keyframes and data-state variants; see the file. */
 @import "./primitives.css";
-@source "../../../packages/ui/src";
 
 @font-face {
   font-family: "Manrope";
@@ -17,44 +15,13 @@
   src: url("./assets/fonts/Manrope-VariableFont_wght.woff2") format("woff2-variations");
 }
 
-@theme {
-  /* Kept so the ~25 existing `text-foreground-muted` usages keep resolving. */
-  --color-foreground-muted: var(--foreground-muted);
-}
-
-:root {
-  /* The colour roles themselves (--ink, --surface, --accent…, light and dark) come from
-     @proteus/design. What follows wires them into shadcn and the store's older names.
-
-     --accent shadows shadcn's own, which is a near-white hover surface paired with a near-black
-     --accent-foreground. Only DropdownMenu and Combobox consume that pair, and the footer's market
-     menu is the first of them in the store, so the foreground is repointed here: left at shadcn's
-     near-black, a focused item reads as near-black on brand blue. */
-  --accent-foreground: var(--surface);
-
-  /* Square is the system, not an override. packages/ui derives --radius-sm through
-     --radius-4xl with calc() off this, so zeroing it squares every shadcn primitive
-     at once. */
-  --radius: 0rem;
-
-  /* shadcn base, repointed at the colour roles so untouched primitives inherit it. */
-  --primary: var(--ink);
-  --primary-foreground: var(--surface);
-  --border: var(--line);
-  --input: var(--line);
-  --ring: var(--ink);
-  --destructive: var(--sale);
-  --muted-foreground: var(--ink-muted);
-  /* Checkout's account menu is the store's first popover. Repointed here rather than overridden
-     on the component so the next one inherits it, and through --surface/--ink rather than the
-     literals, so both schemes are covered by the generated mode blocks. */
-  --popover: var(--surface);
-  --popover-foreground: var(--ink);
-
-  /* Pre-existing store aliases, repointed at the same values. */
-  --foreground: var(--ink);
-  --foreground-muted: var(--ink-muted);
-  --bg-subtle: var(--surface-subtle);
+/* Tailwind's preflight leaves borders and outlines at currentColor; a bare `border` or `outline`
+   draws in the line role and a half-strength ink instead. */
+@layer base {
+  * {
+    border-color: var(--line);
+    outline-color: color-mix(in oklab, var(--ink) 50%, transparent);
+  }
 }
 
 * {
@@ -88,22 +55,6 @@ a:not([data-slot="button"]) {
 
 a:not([data-slot="button"]):hover {
   color: var(--ink-muted);
-}
-
-/* The drawer primitive ships a 10% black scrim behind a 4px backdrop blur. That is too weak to
-   separate a panel from the page it covers — the blur smears the background without darkening it,
-   so the panel and the page read at the same depth and a 1px border ends up doing all the work.
-
-   80% rather than something politer: at half opacity the page behind stays legible enough to keep
-   competing for attention, and a panel that has to argue with the page it covers is the difference
-   between a surface and an overlay. The reference storefront runs its bag scrim at exactly this.
-
-   Set here rather than in packages/ui so the admin app keeps its own scrim: this is a storefront
-   judgement about overlays over product photography, not a fix to the primitive. Only the colour
-   is touched; `opacity` stays on the utility, which is what animates the panel's swipe progress. */
-[data-slot="drawer-overlay"] {
-  background-color: color-mix(in oklab, black 80%, transparent);
-  backdrop-filter: none;
 }
 
 button,

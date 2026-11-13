@@ -21,7 +21,7 @@ import type { LinkTarget } from '#/lib/link-target'
  * The menu's rows are drawn as plain frames; here they are ghost Buttons for the focus ring, so
  * the Button's centring and hover fill are undone and the row fills the menu.
  */
-const MENU_ROW = 'w-full justify-start hover:bg-transparent dark:hover:bg-transparent'
+const MENU_ROW = 'w-full justify-start hover:bg-transparent'
 
 /**
  * Edit and delete, behind the row's own menu. The set draws the open menu; `className` is the

@@ -21,6 +21,16 @@ module.exports = {
       to: { path: 'packages/http-schemas/src/admin/' },
     },
     {
+      name: 'no-shared-kit-in-store',
+      comment:
+        "@proteus/ui is the admin's kit. The store's primitives are its own, in src/components/ui, built " +
+        'on @base-ui/react with variants generated from the design file; shared non-visual pieces come ' +
+        'from @proteus/ui-core.',
+      severity: 'error',
+      from: { path: '^src/' },
+      to: { path: '(^|/)packages/ui/|^@proteus/ui($|/)' },
+    },
+    {
       name: 'no-circular',
       comment: 'No circular dependencies allowed.',
       severity: 'error',

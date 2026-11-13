@@ -117,13 +117,6 @@
         "!src/lib/i18n/test-i18n.tsx!"
       ]
     },
-    "packages/icons": {
-      // build:icons passes it as `--templateSrc=` and build-icons/cli.ts loads it with
-      // `await import(path.resolve(…))` — a runtime path, so there is no import to follow.
-      "entry": ["scripts/export-template.ts"],
-      // `src/build-icons/` generates the icon components at build time and ships nothing.
-      "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!src/build-icons/**!"]
-    },
     "packages/design": {
       // `src/__tests__/fixtures.ts` is the exporters' shared test snapshot. Test code, so only the
       // default run should ask whether anything reaches it.

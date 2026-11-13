@@ -31,7 +31,6 @@
     "@lingui/react": "catalog:",
     "@proteus/design": "workspace:*",
     "@proteus/http-schemas": "workspace:*",
-    "@proteus/ui": "workspace:*",
     "@proteus/ui-core": "workspace:*",
     "@proteus/utils": "workspace:*",
     "@stripe/react-stripe-js": "^6.8.2",

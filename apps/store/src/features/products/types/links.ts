@@ -21,7 +21,7 @@ export type SearchLinks = {
  * An event that stays on the list's own route, whichever that is (`./state` on the flow map): the search params it
  * changes, merged over the current ones.
  */
-export type SearchLink = (update: Partial<ProductListSearch>) => LinkTarget
+type SearchLink = (update: Partial<ProductListSearch>) => LinkTarget
 
 /** A product list page's ways out, the `ProductListPage` screen's. */
 export type ProductListLinks = {

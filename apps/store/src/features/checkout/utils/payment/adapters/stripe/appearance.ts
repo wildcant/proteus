@@ -62,7 +62,7 @@ export function appearanceFor(tokens: ThemeTokens): Appearance {
       colorTextPlaceholder: tokens['--ink-subtle'],
       colorBackground: tokens['--surface'],
       colorDanger: tokens['--sale'],
-      // Square is the system, not an override — `--radius` is 0rem for every store primitive.
+      // Square is the system, not an override — every store primitive has a zero radius.
       borderRadius: '0px',
       fontFamily: '"Manrope Variable", ui-sans-serif, system-ui, sans-serif',
       fontSizeBase: '14px',

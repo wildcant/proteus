@@ -83,7 +83,7 @@ export function ProductCard({ product, link, priority, className }: ProductCardP
  * over the model.
  *
  * A pill, and the only rounded thing in a squared-off system. That is what tells the eye it is a
- * label laid on the image and not part of the photograph's own composition; `--radius: 0` squares
+ * label laid on the image and not part of the photograph's own composition; the zero radius squares
  * everything that sits *in* the grid, and this sits on top of it.
  */
 function SoldOutBadge() {
