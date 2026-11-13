@@ -82,6 +82,8 @@ export type Layer = {
   maxHeight?: number
   /** A grid child's cell, kept when it spans several columns. */
   gridCell?: { columnSpan?: number }
+  /** A text layer's OpenType features (`tnum`: tabular figures), as the saved file holds them. */
+  fontFeatures?: Record<string, boolean>
   /** Scrolling (prototype overflow): the axis the frame's content scrolls along. */
   overflow?: 'horizontal' | 'vertical' | 'both'
   layout?: Layout
@@ -234,7 +236,7 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
     const chosen = chooseExports(candidates, names, components)
     const setOf = setOfComponents(list)
 
-    const overflows = readOverflows(config.figcraft.file)
+    const saved = readSaved(config.figcraft.file)
     if (names.length === 0) rmSync(dir, { recursive: true, force: true })
     if (chosen.length > 0) mkdirSync(dir, { recursive: true })
     for (const component of chosen) {
@@ -257,7 +259,7 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
         page: component.page,
         ...(component.description ? { description: component.description } : {}),
         properties: props.properties,
-        variants: variants.map((variant) => trim(variant, setOf, overflows, undefined)),
+        variants: variants.map((variant) => trim(variant, setOf, saved, undefined)),
       }
       writeFileSync(join(dir, `${component.name}.json`), `${JSON.stringify(doc, null, 2)}\n`)
     }
@@ -266,19 +268,20 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
 }
 
 /**
- * Each scrolling frame's axis, by node id. FigCraft's node.get doesn't report a frame's overflow, so it is read from
- * the saved file itself: a zip whose `document.json` holds every node by id.
+ * What node.get doesn't report, by node id, read from the saved file itself (a zip whose `document.json` holds every
+ * node by id): a scrolling frame's axis, a text layer's OpenType features.
  */
-function readOverflows(file: string | undefined): Overflows {
-  if (!file) return new Map()
+function readSaved(file: string | undefined): Saved {
+  const saved: Saved = { overflows: new Map(), features: new Map() }
+  if (!file) return saved
   const document = JSON.parse(
     execFileSync('unzip', ['-p', file, 'document.json'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }),
-  ) as { nodes?: Record<string, { overflow?: string }> }
-  return new Map(
-    Object.entries(document.nodes ?? {}).flatMap(([id, node]) =>
-      node.overflow && node.overflow !== 'none' ? [[id, node.overflow as Layer['overflow']] as const] : [],
-    ),
-  )
+  ) as { nodes?: Record<string, { overflow?: string; features?: Record<string, boolean> }> }
+  for (const [id, node] of Object.entries(document.nodes ?? {})) {
+    if (node.overflow && node.overflow !== 'none') saved.overflows.set(id, node.overflow as Layer['overflow'])
+    if (node.features && Object.keys(node.features).length) saved.features.set(id, node.features)
+  }
+  return saved
 }
 
 const KEPT = [
@@ -308,14 +311,9 @@ const KEPT = [
   'effects',
 ] as const
 
-type Overflows = Map<string, Layer['overflow']>
+type Saved = { overflows: Map<string, Layer['overflow']>; features: Map<string, Record<string, boolean>> }
 
-function trim(
-  node: FigCraftNode,
-  setOf: Map<string, string>,
-  overflows: Overflows,
-  parent: FigCraftNode | undefined,
-): Layer {
+function trim(node: FigCraftNode, setOf: Map<string, string>, saved: Saved, parent: FigCraftNode | undefined): Layer {
   const out = Object.fromEntries(KEPT.filter((key) => node[key] != null).map((key) => [key, node[key]])) as Layer
   const styles = node.styles as { text?: string; effect?: string } | undefined
   if (styles?.text) out.textStyle = styles.text
@@ -323,8 +321,10 @@ function trim(
   const cell = node.gridCell as { columnSpan?: number } | undefined
   const inGrid = (parent?.layout as { mode?: string } | undefined)?.mode === 'grid'
   if (inGrid && (cell?.columnSpan ?? 1) > 1) out.gridCell = { columnSpan: cell?.columnSpan }
-  const overflow = overflows.get(String(node.id))
+  const overflow = saved.overflows.get(String(node.id))
   if (overflow) out.overflow = overflow
+  const features = saved.features.get(String(node.id))
+  if (features) out.fontFeatures = features
   const layout = node.layout as (Layout & { mode: string }) | undefined
   if (layout && layout.mode !== 'none') {
     const { mode, mainAlign, crossAlign, gap, padding, strokesIncluded } = layout
@@ -356,6 +356,6 @@ function trim(
     }
   }
   const children = node.children ?? []
-  if (children.length) out.children = children.map((child) => trim(child, setOf, overflows, node))
+  if (children.length) out.children = children.map((child) => trim(child, setOf, saved, node))
   return out
 }

@@ -881,6 +881,24 @@ describe('components', () => {
     )
   })
 
+  it("makes a text layer's tabular figures tabular-nums; any other OpenType feature stops the build", () => {
+    const counter = (fontFeatures: Record<string, boolean>) =>
+      single('Counter', 'components/ui', {
+        variants: [
+          {
+            ...frame('Counter', 'horizontal'),
+            type: 'COMPONENT',
+            children: [text('value', 'body', 'c:ink', { fontFeatures })],
+          },
+        ],
+      })
+    const path = '/shop/src/components/ui/counter/counter.variants.ts'
+    expect(buildComponents([counter({ tnum: true })], context).files.get(path)).toContain(
+      "export const counterValue = cva('type-body text-ink tabular-nums')",
+    )
+    expect(() => buildComponents([counter({ smcp: true })], context)).toThrow('OpenType feature smcp')
+  })
+
   it('sizes a nested instance the caller resized to fill, as its own box', () => {
     const bar = single('Bar', 'features/shop', {
       variants: [

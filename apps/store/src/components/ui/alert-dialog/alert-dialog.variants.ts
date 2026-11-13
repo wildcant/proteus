@@ -18,8 +18,7 @@ export const alertDialogAction = cva('flex h-8 items-center justify-center gap-1
     variant: {
       destructive:
         'border-transparent bg-sale-wash focus-visible:border-sale/40 focus-visible:ring-3 focus-visible:ring-sale-ring',
-      default:
-        'border-transparent bg-ink focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+      default: 'border-transparent bg-ink focus-visible:border-ink focus-visible:ring-3 focus-visible:ring-focus-ring',
     },
   },
   defaultVariants: { variant: 'destructive' },
@@ -36,7 +35,7 @@ export const alertDialogActionLabel = cva('type-label', {
 })
 
 export const alertDialogCancel = cva(
-  'flex h-8 items-center justify-center gap-1.5 border border-line bg-control px-2.5 focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+  'flex h-8 items-center justify-center gap-1.5 border border-line bg-control px-2.5 focus-visible:border-ink focus-visible:ring-3 focus-visible:ring-focus-ring',
 )
 
 export const alertDialogCancelLabel = cva('type-label text-ink')

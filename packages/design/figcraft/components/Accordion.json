@@ -1236,7 +1236,7 @@
               "boundVariables": {
                 "effects/0/color": "VariableID:122",
                 "paddingVertical": "VariableID:41",
-                "stroke": "VariableID:121"
+                "stroke": "VariableID:18"
               },
               "effects": [
                 {
@@ -1539,7 +1539,7 @@
               "boundVariables": {
                 "effects/0/color": "VariableID:122",
                 "paddingVertical": "VariableID:42",
-                "stroke": "VariableID:121"
+                "stroke": "VariableID:18"
               },
               "effects": [
                 {

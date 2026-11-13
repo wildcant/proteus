@@ -103,6 +103,9 @@
       },
       "FloatingLabelInput": {
         "resting": "peer-placeholder-shown"
+      },
+      "FieldLabel": {
+        "checked": "has-data-checked"
       }
     },
     "runtimeSizes": {

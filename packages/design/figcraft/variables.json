@@ -82,7 +82,8 @@
           "VariableID:134",
           "VariableID:137",
           "VariableID:138",
-          "VariableID:141"
+          "VariableID:141",
+          "VariableID:142"
         ]
       },
       "VariableCollectionId:3": {
@@ -1307,6 +1308,32 @@
           },
           "VariableCollectionId:2/mode2": {
             "a": 0.10000000149011612,
+            "b": 0.9647058844566345,
+            "g": 0.9607843160629272,
+            "r": 0.95686274766922
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
+      },
+      "VariableID:142": {
+        "codeSyntax": {},
+        "description": "A checked choice's edge: ink in light, ink at 20 % in dark (the kit's dark checked FieldLabel, border-primary/20, which the store's light-only border-ink did not reach). The checkout's shipping option, under its inset ink ring.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:142",
+        "key": "VariableID:142",
+        "name": "color/choice-checked-edge",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "id": "VariableID:10",
+            "type": "VARIABLE_ALIAS"
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.20000000298023224,
             "b": 0.9647058844566345,
             "g": 0.9607843160629272,
             "r": 0.95686274766922

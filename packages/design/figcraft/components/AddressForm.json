@@ -3440,7 +3440,7 @@
                           "boundVariables": {
                             "gap": "VariableID:35"
                           },
-                          "mainComponentName": "FieldLabel",
+                          "mainComponentName": "position=default",
                           "layout": {
                             "mode": "horizontal",
                             "mainAlign": "min",
@@ -3454,6 +3454,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FieldLabel",
                           "children": [
                             {
                               "name": "text",
@@ -7092,7 +7093,7 @@
                           "boundVariables": {
                             "gap": "VariableID:35"
                           },
-                          "mainComponentName": "FieldLabel",
+                          "mainComponentName": "position=default",
                           "layout": {
                             "mode": "horizontal",
                             "mainAlign": "min",
@@ -7106,6 +7107,7 @@
                             ],
                             "strokesIncluded": true
                           },
+                          "mainSet": "FieldLabel",
                           "children": [
                             {
                               "name": "text",

@@ -16,6 +16,7 @@
 //   auto layout whose children all fill across it -> items-stretch, the children no self-stretch
 //   a set on the inline list        -> its root is inline-flex
 //   layer opacity                   -> opacity-*; a transparent stroke -> border-transparent
+//   a text layer's tnum feature     -> tabular-nums; any other OpenType feature stops the build
 //   a vector (a glyph in a slot, say) -> text-* on its layer or slot: the glyph draws in currentColor
 //   a minimum width or height bound to space/* -> min-w-* / min-h-*
 //   a wrapping auto layout          -> flex-wrap, with gap-x-* / gap-y-* from its gap and crossGap
@@ -961,6 +962,13 @@ function textSlots(node: Layer, ctx: SlotContext): Slots {
     textColor: colorClass(node, 'text', ctx),
     textAlign:
       ({ center: 'text-center', right: 'text-right', justified: 'text-justify' } as Slots)[node.textAlign ?? ''] ?? '',
+    numeric: Object.entries(node.fontFeatures ?? {})
+      .map(([feature, on]) =>
+        feature === 'tnum' && on
+          ? 'tabular-nums'
+          : ctx.fail(`OpenType feature ${feature} ${on ? 'on' : 'off'} has no class`),
+      )
+      .join(' '),
   }
 }
 

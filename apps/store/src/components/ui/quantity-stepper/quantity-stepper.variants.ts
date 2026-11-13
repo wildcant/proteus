@@ -44,7 +44,7 @@ export const quantityStepperCount = cva('flex items-center justify-center self-s
   defaultVariants: { size: 'xs' },
 })
 
-export const quantityStepperValue = cva('type-body-compact text-ink')
+export const quantityStepperValue = cva('type-body-compact text-ink tabular-nums')
 
 export const quantityStepperIncrement = cva(
   'group/quantity-stepper-increment flex items-center justify-center disabled:opacity-30',

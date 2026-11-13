@@ -2792,7 +2792,7 @@
                   "boundVariables": {
                     "gap": "VariableID:35"
                   },
-                  "mainComponentName": "FieldLabel",
+                  "mainComponentName": "position=default",
                   "overrides": [
                     "props"
                   ],
@@ -2809,6 +2809,7 @@
                     ],
                     "strokesIncluded": true
                   },
+                  "mainSet": "FieldLabel",
                   "children": [
                     {
                       "name": "text",
@@ -7969,7 +7970,7 @@
                   "boundVariables": {
                     "gap": "VariableID:35"
                   },
-                  "mainComponentName": "FieldLabel",
+                  "mainComponentName": "position=default",
                   "overrides": [
                     "props"
                   ],
@@ -7986,6 +7987,7 @@
                     ],
                     "strokesIncluded": true
                   },
+                  "mainSet": "FieldLabel",
                   "children": [
                     {
                       "name": "text",

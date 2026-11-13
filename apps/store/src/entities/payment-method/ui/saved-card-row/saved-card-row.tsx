@@ -111,12 +111,7 @@ export function SavedCardRow({ method, checked, chooseLabel, onRemove }: SavedCa
       */}
           <FieldLabel
             htmlFor={radioId}
-            className={cn(
-              savedCardRowChoice(),
-              // FieldLabel paints its own fill over a label holding a checked control; the row has one.
-              'min-w-0 has-data-checked:bg-transparent',
-              expired ? 'cursor-not-allowed' : 'cursor-pointer',
-            )}
+            className={cn(savedCardRowChoice(), 'min-w-0', expired ? 'cursor-not-allowed' : 'cursor-pointer')}
           >
             <RadioGroupItem
               id={radioId}

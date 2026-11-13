@@ -186,7 +186,10 @@
                     "fill": "VariableID:18"
                   },
                   "textAlign": "left",
-                  "textStyle": "S:8"
+                  "textStyle": "S:8",
+                  "fontFeatures": {
+                    "tnum": true
+                  }
                 }
               ]
             },
@@ -499,7 +502,10 @@
                     "fill": "VariableID:18"
                   },
                   "textAlign": "left",
-                  "textStyle": "S:8"
+                  "textStyle": "S:8",
+                  "fontFeatures": {
+                    "tnum": true
+                  }
                 }
               ]
             },
@@ -812,7 +818,10 @@
                     "fill": "VariableID:18"
                   },
                   "textAlign": "left",
-                  "textStyle": "S:8"
+                  "textStyle": "S:8",
+                  "fontFeatures": {
+                    "tnum": true
+                  }
                 }
               ]
             },

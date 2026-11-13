@@ -113,6 +113,10 @@ style. A hidden effect is off.
 A text style's decoration and underline offset are part of the style (`type/link`): setting a
 decoration on a text layer detaches its style in FigCraft.
 
+A text layer's tabular figures (the OpenType feature `tnum`, set on the layer: it keeps its text style) are
+`tabular-nums`; any other feature stops the build. node.get doesn't report features either, so the export
+reads them from the saved file's `document.json` too.
+
 Only token-bound values become classes. A raw colour, an unbound padding or a layer kind the build
 does not map stops the build with the layer named, so the design is fixed rather than guessed.
 

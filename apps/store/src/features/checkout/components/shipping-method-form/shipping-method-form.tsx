@@ -96,7 +96,7 @@ export const ShippingMethodForm = withForm({
                       <FieldLabel
                         className={cn(
                           shippingMethodFormOption(),
-                          'w-full cursor-pointer has-data-checked:border-ink has-data-checked:bg-transparent has-data-checked:ring-1 has-data-checked:ring-ink has-data-checked:ring-inset',
+                          'w-full cursor-pointer has-data-checked:border-choice-checked-edge has-data-checked:ring-1 has-data-checked:ring-ink has-data-checked:ring-inset',
                         )}
                       >
                         <span className={shippingMethodFormChoice()}>

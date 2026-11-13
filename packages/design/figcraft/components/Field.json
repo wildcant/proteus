@@ -279,7 +279,7 @@
           "boundVariables": {
             "gap": "VariableID:35"
           },
-          "mainComponentName": "FieldLabel",
+          "mainComponentName": "position=default",
           "overrides": [
             "name"
           ],
@@ -296,6 +296,7 @@
             ],
             "strokesIncluded": true
           },
+          "mainSet": "FieldLabel",
           "children": [
             {
               "name": "text",

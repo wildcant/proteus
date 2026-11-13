@@ -17,8 +17,8 @@ export const accordionItem = cva('flex flex-col items-stretch', {
 export const accordionTrigger = cva('flex items-center justify-between border', {
   variants: {
     variant: {
-      menu: 'border-transparent py-4 focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
-      footer: 'border-transparent py-5 focus-visible:border-outline focus-visible:ring-3 focus-visible:ring-focus-ring',
+      menu: 'border-transparent py-4 focus-visible:border-ink focus-visible:ring-3 focus-visible:ring-focus-ring',
+      footer: 'border-transparent py-5 focus-visible:border-ink focus-visible:ring-3 focus-visible:ring-focus-ring',
       section: 'border-transparent py-3',
     },
   },

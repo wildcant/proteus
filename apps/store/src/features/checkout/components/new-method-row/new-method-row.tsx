@@ -35,11 +35,7 @@ export function NewMethodRow({ selected, value }: { selected: boolean; value: st
         className={newMethodRowRow({ selected })}
       >
         <div className={cn(paymentRowContent(), 'min-w-0')}>
-          <FieldLabel
-            htmlFor={radioId}
-            // FieldLabel paints its own fill over a label holding a checked control; the row has one.
-            className={cn(newMethodRowChoice(), 'min-w-0 cursor-pointer has-data-checked:bg-transparent')}
-          >
+          <FieldLabel htmlFor={radioId} className={cn(newMethodRowChoice(), 'min-w-0 cursor-pointer')}>
             <RadioGroupItem
               id={radioId}
               value={value}

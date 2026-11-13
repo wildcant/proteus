@@ -3,6 +3,15 @@
   "page": "components/ui",
   "properties": [
     {
+      "default": "default",
+      "name": "position",
+      "options": [
+        "default",
+        "checked"
+      ],
+      "type": "variant"
+    },
+    {
       "default": "Make this my main address",
       "name": "label",
       "type": "text"
@@ -10,7 +19,7 @@
   ],
   "variants": [
     {
-      "name": "FieldLabel",
+      "name": "position=default",
       "type": "COMPONENT",
       "clip": false,
       "sizing": {
@@ -18,6 +27,59 @@
         "vertical": "hug"
       },
       "boundVariables": {
+        "gap": "VariableID:35"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "min",
+        "crossAlign": "center",
+        "gap": 8,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "children": [
+        {
+          "name": "text",
+          "type": "TEXT",
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:17"
+        }
+      ]
+    },
+    {
+      "name": "position=checked",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#0D101200",
+          "type": "solid"
+        }
+      ],
+      "clip": false,
+      "sizing": {
+        "horizontal": "hug",
+        "vertical": "hug"
+      },
+      "boundVariables": {
+        "fill": "VariableID:141",
         "gap": "VariableID:35"
       },
       "layout": {

@@ -1289,7 +1289,7 @@
                   "boundVariables": {
                     "effects/0/color": "VariableID:122",
                     "height": "VariableID:45",
-                    "stroke": "VariableID:121",
+                    "stroke": "VariableID:18",
                     "width": "VariableID:45"
                   },
                   "effects": [

@@ -29,6 +29,7 @@
   --color-field-invalid: var(--field-invalid);
   --color-sale-ring: var(--sale-ring);
   --color-choice-checked: var(--choice-checked);
+  --color-choice-checked-edge: var(--choice-checked-edge);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --spacing: 0.25rem;
@@ -103,6 +104,7 @@
   --field-invalid: #dc0428;
   --sale-ring: rgb(220 4 40 / 0.2);
   --choice-checked: rgb(13 16 18 / 0);
+  --choice-checked-edge: #0d1012;
   --type-display-size: clamp(2rem, 1.6479rem + 1.5023vw, 3rem);
   --type-title-size: clamp(1.5rem, 1.3239rem + 0.7512vw, 2rem);
   --type-heading-size: 1.25rem;
@@ -137,6 +139,7 @@
   --field-invalid: rgb(255 143 165 / 0.502);
   --sale-ring: rgb(255 143 165 / 0.4);
   --choice-checked: rgb(244 245 246 / 0.1);
+  --choice-checked-edge: rgb(244 245 246 / 0.2);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -169,6 +172,7 @@
     --field-invalid: rgb(255 143 165 / 0.502);
     --sale-ring: rgb(255 143 165 / 0.4);
     --choice-checked: rgb(244 245 246 / 0.1);
+    --choice-checked-edge: rgb(244 245 246 / 0.2);
   }
 }
 

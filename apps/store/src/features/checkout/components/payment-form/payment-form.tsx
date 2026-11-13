@@ -105,12 +105,7 @@ export const PaymentForm = withForm({
                           <div className={cn(paymentRowContent(), 'min-w-0')}>
                             <div className={cn(paymentFormDetails(), 'min-w-0')}>
                               {/* `self-stretch`: the label is the hit area, across the row. */}
-                              <FieldLabel
-                                className={cn(
-                                  paymentFormChoice(),
-                                  'cursor-pointer self-stretch has-data-checked:bg-transparent',
-                                )}
-                              >
+                              <FieldLabel className={cn(paymentFormChoice(), 'cursor-pointer self-stretch')}>
                                 <RadioGroupItem value={provider.id} className={paymentFormRadioGroupItem()} />
                                 <span className={paymentFormName()}>{provider.label}</span>
                               </FieldLabel>
