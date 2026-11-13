@@ -190,6 +190,20 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
     const parts: Record<string, Slots> = {}
     // Per part, the names of its children in the auto layout, in the order drawn.
     const orders: Record<string, string[]> = {}
+    const failAt = (node: Layer) => (message: string) => {
+      problems.push(node.name === where ? `${where}: ${message}` : `${where} › ${node.name}: ${message}`)
+      return ''
+    }
+    // Layers repeated under one name share a part when they look the same. Which component an instance
+    // shows is a prop, so it doesn't count here.
+    const looks = ({ component: _, ...rest }: Slots) => JSON.stringify(rest)
+    const record = (part: string, node: Layer, own: Slots) => {
+      const seen = parts[part]
+      if (seen && looks(seen) !== looks(own)) {
+        problems.push(`${where}: layers named "${node.name}" look different; give each its own name`)
+      }
+      parts[part] = own
+    }
     const walk = (
       node: Layer,
       parentLayout: string | undefined,
@@ -203,42 +217,28 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
       const part = isRoot ? '' : partName(node, parentName)
       const ownerHere = !isRoot && owners.includes(node.name) ? part : owner
       partOwner.set(part, ownerHere)
-      const own = layerSlots(node, parentLayout, {
-        ...ctx,
-        isRoot,
-        parentStretches,
-        fail: (message) => {
-          problems.push(node.name === where ? `${where}: ${message}` : `${where} › ${node.name}: ${message}`)
-          return ''
-        },
-      })
-      // Layers repeated under one name share a part when they look the same. Which component an instance
-      // shows is a prop, so it doesn't count here.
-      const looks = ({ component: _, ...rest }: Slots) => JSON.stringify(rest)
-      const seen = parts[part]
-      if (seen && looks(seen) !== looks(own)) {
-        problems.push(`${where}: layers named "${node.name}" look different; give each its own name`)
-      }
-      parts[part] = own
+      record(part, node, layerSlots(node, parentLayout, { ...ctx, isRoot, parentStretches, fail: failAt(node) }))
       if (node.type === 'INSTANCE') {
-        // What the caller puts in the child's slot is the caller's own markup, passed as children (the list a
-        // Panel holds): its layers are styled here. A glyph put there is the icon the child shows, not markup.
-        for (const slot of callerSlots(node)) {
-          const stretchesSlot = stretchesChildren(slot)
-          const content = (slot.children ?? []).filter(
-            (child) => child.type !== 'VECTOR' && !context.config.notStyledLayers[`${set.name} › ${child.name}`],
-          )
-          for (const child of content) walk(child, slot.layout?.mode, false, '', stretchesSlot, ownerHere)
-        }
+        walkCallerSlots(node, ownerHere)
         return
       }
       const stretches = stretchesChildren(node)
       const children = styledChildren(set.name, node, textProps, context.config)
+      const childParent = isRoot ? '' : node.name
       orders[part] = children
         .filter((child) => !child.absolute && child.visible !== false)
-        .map((child) => partName(child, isRoot ? '' : node.name))
-      for (const child of children) {
-        walk(child, node.layout?.mode, false, isRoot ? '' : node.name, stretches, ownerHere)
+        .map((child) => partName(child, childParent))
+      for (const child of children) walk(child, node.layout?.mode, false, childParent, stretches, ownerHere)
+    }
+    // What the caller puts in the child's slot is the caller's own markup, passed as children (the list a
+    // Panel holds): its layers are styled here. A glyph put there is the icon the child shows, not markup.
+    const walkCallerSlots = (node: Layer, owner: string) => {
+      for (const slot of callerSlots(node)) {
+        const stretchesSlot = stretchesChildren(slot)
+        const content = (slot.children ?? []).filter(
+          (child) => child.type !== 'VECTOR' && !context.config.notStyledLayers[`${set.name} › ${child.name}`],
+        )
+        for (const child of content) walk(child, slot.layout?.mode, false, '', stretchesSlot, owner)
       }
     }
     const partName = (node: Layer, parentName: string) =>
@@ -741,18 +741,7 @@ function layerSlots(node: Layer, parentLayout: string | undefined, ctx: SlotCont
   // A grid child spanning several columns.
   const span = parentLayout === 'grid' ? (node.gridCell?.columnSpan ?? 1) : 1
   s.span = span > 1 ? `col-span-${span}` : ''
-  // On the web an absolute layer is placed against its nearest positioned ancestor, so its parent is `relative`.
-  // A layer placed at run time keeps only `absolute`: its insets are the code's.
-  // A layer placed against Base UI's positioner leaves its parent unpositioned.
-  const anchoredToPositioner = (child: Layer) =>
-    ctx.config.positionerAnchored.includes(`${ctx.setName} › ${child.name}`)
-  s.position = node.absolute
-    ? ctx.config.runtimePositions.includes(key) || anchoredToPositioner(node)
-      ? 'absolute'
-      : absoluteClass(node.absolute, ctx)
-    : (node.children ?? []).some((child) => child.absolute && !anchoredToPositioner(child))
-      ? 'relative'
-      : ''
+  s.position = positionClass(node, key, ctx)
   const effects = effectSlots(node, ctx)
   if (node.type === 'TEXT') return { ...s, ...textSlots(node, ctx), ...effects }
   // A nested instance is a child component (an Icon, say): only its box is styled here, through className.
@@ -763,14 +752,31 @@ function layerSlots(node: Layer, parentLayout: string | undefined, ctx: SlotCont
     ctx.fail(`${node.type} layers are not mapped yet; extend packages/design/src/components/build.ts`)
     return s
   }
-  // A text style the layer sets for the text inside it to inherit.
-  const inherited = ctx.config.inheritedText[key]
-  const type = inherited
-    ? inherited.startsWith('type/') && ctx.textStylesByName[inherited]
-      ? `${ctx.textStylePrefix}${inherited.slice('type/'.length).replaceAll('/', '-')}`
-      : ctx.fail(`inheritedText ${inherited} is not a type/* text style`)
-    : ''
+  const type = inheritedType(key, ctx)
   return { ...s, ...frameSlots(node, ctx), type, ...effects }
+}
+
+// On the web an absolute layer is placed against its nearest positioned ancestor, so its parent is `relative`.
+// A layer placed at run time keeps only `absolute`: its insets are the code's.
+// A layer placed against Base UI's positioner leaves its parent unpositioned.
+function positionClass(node: Layer, key: string, ctx: SlotContext) {
+  const anchoredToPositioner = (child: Layer) =>
+    ctx.config.positionerAnchored.includes(`${ctx.setName} › ${child.name}`)
+  if (node.absolute) {
+    return ctx.config.runtimePositions.includes(key) || anchoredToPositioner(node)
+      ? 'absolute'
+      : absoluteClass(node.absolute, ctx)
+  }
+  return (node.children ?? []).some((child) => child.absolute && !anchoredToPositioner(child)) ? 'relative' : ''
+}
+
+// A text style the layer sets for the text inside it to inherit.
+function inheritedType(key: string, ctx: SlotContext) {
+  const inherited = ctx.config.inheritedText[key]
+  if (!inherited) return ''
+  return inherited.startsWith('type/') && ctx.textStylesByName[inherited]
+    ? `${ctx.textStylePrefix}${inherited.slice('type/'.length).replaceAll('/', '-')}`
+    : ctx.fail(`inheritedText ${inherited} is not a type/* text style`)
 }
 
 /** Tailwind's blur scale, in px. */
@@ -783,34 +789,38 @@ function effectSlots(node: Layer, ctx: SlotContext): Slots {
   const all = node.effects ?? []
   const shown = all.map((effect, index) => ({ effect, index })).filter(({ effect }) => effect.visible !== false)
   if (shown.length === 0) return {}
-  if (node.effectStyle) {
-    const name = ctx.effectStyleNames[node.effectStyle]
-    return {
-      shadow: name?.startsWith('shadow/')
-        ? `shadow-${name.slice('shadow/'.length).replaceAll('/', '-')}`
-        : ctx.fail(`effect style ${name ?? node.effectStyle} is not a shadow/* style`),
-    }
-  }
+  if (node.effectStyle) return { shadow: effectStyleShadow(node.effectStyle, ctx) }
   const out: Slots = {}
   for (const { effect, index } of shown) {
     if (effect.type === 'backgroundBlur') {
-      const size = BLURS[effect.radius ?? 0]
-      out.blur = size
-        ? `backdrop-blur-${size}`
-        : ctx.fail(`background blur ${effect.radius} is off Tailwind's blur scale`)
+      out.blur = blurClass(effect, ctx)
     } else if ((effect.type === 'dropShadow' || effect.type === 'innerShadow') && isRing(effect)) {
-      // An inner shadow's ring is drawn inside the box: `ring-inset`.
       if (out.ring) out.ring = ctx.fail('two rings; draw one')
-      const role = ctx.token(node.boundVariables?.[`effects/${index}/color`], 'color/')
-      const inset = effect.type === 'innerShadow' ? ' ring-inset' : ''
-      out.ring = role
-        ? `ring-${effect.spread} ring-${role}${inset}`
-        : ctx.fail('ring colour is not bound to a Theme colour')
+      out.ring = ringClass(node, effect, index, ctx)
     } else {
       out.shadow = ctx.fail(`a shadow is an effect style (shadow/*); apply one`)
     }
   }
   return out
+}
+
+function effectStyleShadow(effectStyle: string, ctx: SlotContext) {
+  const name = ctx.effectStyleNames[effectStyle]
+  return name?.startsWith('shadow/')
+    ? `shadow-${name.slice('shadow/'.length).replaceAll('/', '-')}`
+    : ctx.fail(`effect style ${name ?? effectStyle} is not a shadow/* style`)
+}
+
+function blurClass(effect: Effect, ctx: SlotContext) {
+  const size = BLURS[effect.radius ?? 0]
+  return size ? `backdrop-blur-${size}` : ctx.fail(`background blur ${effect.radius} is off Tailwind's blur scale`)
+}
+
+// An inner shadow's ring is drawn inside the box: `ring-inset`.
+function ringClass(node: Layer, effect: Effect, index: number, ctx: SlotContext) {
+  const role = ctx.token(node.boundVariables?.[`effects/${index}/color`], 'color/')
+  const inset = effect.type === 'innerShadow' ? ' ring-inset' : ''
+  return role ? `ring-${effect.spread} ring-${role}${inset}` : ctx.fail('ring colour is not bound to a Theme colour')
 }
 
 function isRing(effect: Effect) {
@@ -1133,9 +1143,31 @@ function layoutSlots(node: Layer, layout: Layout, inset: number[], ctx: SlotCont
   }
   const space = (fields: string[], value: number, prefix: string, less = 0) =>
     spaceClass(node, fields, value, prefix, less, ctx)
+  const padding = paddingSlots(layout, inset, space)
+  if (isGrid) return gridSlots(layout, padding, space, ctx)
+  return {
+    direction: layout.mode === 'vertical' ? 'flex-col' : '',
+    justify:
+      ({ center: 'justify-center', max: 'justify-end', spaceBetween: 'justify-between' } as Slots)[
+        layout.mainAlign ?? ''
+      ] ?? '',
+    items: stretchesChildren(node)
+      ? 'items-stretch'
+      : (({ min: 'items-start', center: 'items-center', max: 'items-end', baseline: 'items-baseline' } as Slots)[
+          layout.crossAlign ?? ''
+        ] ?? ''),
+    ...padding,
+    ...gapSlots(layout, space),
+  }
+}
+
+type Space = (fields: string[], value: number, prefix: string, less?: number) => string
+
+// Sides that differ get a class each (pt-3 pb-8).
+function paddingSlots(layout: Layout, inset: number[], space: Space): Slots {
   const [top = 0, right = 0, bottom = 0, left = 0] = layout.padding ?? []
   const [insetTop = 0, insetRight = 0, insetBottom = 0, insetLeft = 0] = inset
-  const padding = {
+  return {
     px:
       right === left && insetRight === insetLeft
         ? space(['paddingHorizontal', 'paddingLeft'], right, 'px', insetRight)
@@ -1151,39 +1183,25 @@ function layoutSlots(node: Layer, layout: Layout, inset: number[], ctx: SlotCont
             space(['paddingBottom', 'paddingVertical'], bottom, 'pb', insetBottom),
           ),
   }
-  // A grid of equal columns, its cells stretched (the CSS default): the column count, the gaps between columns
-  // (gap) and rows (crossGap).
-  if (isGrid) {
-    if (layout.rowTracks?.length) return { direction: ctx.fail('grid row tracks are not mapped yet') }
-    const columns = layout.gridColumns ?? 1
-    const [gap, crossGap] = [layout.gap ?? 0, layout.crossGap ?? 0]
-    return {
-      direction: layout.columnTracks?.length
-        ? columnTemplate(layout.columnTracks, ctx)
-        : columns > 1
-          ? `grid-cols-${columns}`
-          : '',
-      ...padding,
-      gap:
-        gap === crossGap
-          ? space(['gap'], gap, 'gap')
-          : joinClasses(space(['gap'], gap, 'gap-x'), space(['crossGap'], crossGap, 'gap-y')),
-    }
-  }
-  // Sides that differ get a class each (pt-3 pb-8).
+}
+
+// A grid of equal columns, its cells stretched (the CSS default): the column count, the gaps between columns
+// (gap) and rows (crossGap).
+function gridSlots(layout: Layout, padding: Slots, space: Space, ctx: SlotContext): Slots {
+  if (layout.rowTracks?.length) return { direction: ctx.fail('grid row tracks are not mapped yet') }
+  const columns = layout.gridColumns ?? 1
+  const [gap, crossGap] = [layout.gap ?? 0, layout.crossGap ?? 0]
   return {
-    direction: layout.mode === 'vertical' ? 'flex-col' : '',
-    justify:
-      ({ center: 'justify-center', max: 'justify-end', spaceBetween: 'justify-between' } as Slots)[
-        layout.mainAlign ?? ''
-      ] ?? '',
-    items: stretchesChildren(node)
-      ? 'items-stretch'
-      : (({ min: 'items-start', center: 'items-center', max: 'items-end', baseline: 'items-baseline' } as Slots)[
-          layout.crossAlign ?? ''
-        ] ?? ''),
+    direction: layout.columnTracks?.length
+      ? columnTemplate(layout.columnTracks, ctx)
+      : columns > 1
+        ? `grid-cols-${columns}`
+        : '',
     ...padding,
-    ...gapSlots(layout, space),
+    gap:
+      gap === crossGap
+        ? space(['gap'], gap, 'gap')
+        : joinClasses(space(['gap'], gap, 'gap-x'), space(['crossGap'], crossGap, 'gap-y')),
   }
 }
 

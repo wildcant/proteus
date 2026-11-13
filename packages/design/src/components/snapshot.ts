@@ -325,37 +325,44 @@ function trim(node: FigCraftNode, setOf: Map<string, string>, saved: Saved, pare
   if (overflow) out.overflow = overflow
   const features = saved.features.get(String(node.id))
   if (features) out.fontFeatures = features
-  const layout = node.layout as (Layout & { mode: string }) | undefined
-  if (layout && layout.mode !== 'none') {
-    const { mode, mainAlign, crossAlign, gap, padding, strokesIncluded } = layout
-    out.layout = { mode, mainAlign, crossAlign, gap, padding, strokesIncluded }
-    if (layout.wrap) Object.assign(out.layout, { wrap: true, crossGap: layout.crossGap })
-    if (mode === 'grid') {
-      const { crossGap, gridColumns, columnTracks, rowTracks } = layout
-      Object.assign(out.layout, { crossGap, gridColumns, columnTracks, rowTracks })
-    }
-  }
+  const layout = trimLayout(node.layout as (Layout & { mode: string }) | undefined)
+  if (layout) out.layout = layout
   const sizing = node.sizing as Layer['sizing']
   if (sizing?.horizontal === 'fixed') out.width = node.width as number
   if (sizing?.vertical === 'fixed') out.height = node.height as number
   const mainSet = node.type === 'INSTANCE' ? setOf.get(node.mainComponent as string) : undefined
   if (mainSet) out.mainSet = mainSet
   // A layer placed outside the auto layout keeps its place: insets from its parent's edges, per constraint.
-  if (node.absolute && parent) {
-    const { horizontal, vertical } = (node.constraints ?? {}) as { horizontal?: string; vertical?: string }
-    const [x, y, width, height] = [node.x, node.y, node.width, node.height] as number[]
-    const parentLayout = parent.layout as { mode?: string } | undefined
-    out.absolute = {
-      horizontal,
-      vertical,
-      left: x ?? 0,
-      top: y ?? 0,
-      right: (parent.width as number) - (x ?? 0) - (width ?? 0),
-      bottom: (parent.height as number) - (y ?? 0) - (height ?? 0),
-      parentLayout: parentLayout?.mode,
-    }
-  }
+  if (node.absolute && parent) out.absolute = absolutePlacement(node, parent)
   const children = node.children ?? []
   if (children.length) out.children = children.map((child) => trim(child, setOf, saved, node))
   return out
+}
+
+// Only the auto layout fields the builder reads; a wrap's and a grid's extra fields only when they apply.
+function trimLayout(layout: (Layout & { mode: string }) | undefined): Layout | undefined {
+  if (!layout || layout.mode === 'none') return undefined
+  const { mode, mainAlign, crossAlign, gap, padding, strokesIncluded } = layout
+  const out: Layout = { mode, mainAlign, crossAlign, gap, padding, strokesIncluded }
+  if (layout.wrap) Object.assign(out, { wrap: true, crossGap: layout.crossGap })
+  if (mode === 'grid') {
+    const { crossGap, gridColumns, columnTracks, rowTracks } = layout
+    Object.assign(out, { crossGap, gridColumns, columnTracks, rowTracks })
+  }
+  return out
+}
+
+function absolutePlacement(node: FigCraftNode, parent: FigCraftNode): Layer['absolute'] {
+  const { horizontal, vertical } = (node.constraints ?? {}) as { horizontal?: string; vertical?: string }
+  const [x, y, width, height] = [node.x, node.y, node.width, node.height] as number[]
+  const parentLayout = parent.layout as { mode?: string } | undefined
+  return {
+    horizontal,
+    vertical,
+    left: x ?? 0,
+    top: y ?? 0,
+    right: (parent.width as number) - (x ?? 0) - (width ?? 0),
+    bottom: (parent.height as number) - (y ?? 0) - (height ?? 0),
+    parentLayout: parentLayout?.mode,
+  }
 }

@@ -199,21 +199,7 @@ export function loadConfig(path: string): ResolvedConfig {
       paletteInTheme: tokens.paletteInTheme ?? false,
       rootFontSize: tokens.rootFontSize ?? 16,
     },
-    components: components && {
-      root: fromRoot(components.root),
-      notExported: components.notExported ?? {},
-      skippedPages: components.skippedPages ?? [],
-      notStyledLayers: components.notStyledLayers ?? {},
-      runtimeSizes: components.runtimeSizes ?? {},
-      runtimeFills: components.runtimeFills ?? [],
-      inline: components.inline ?? [],
-      interactionPrefixes: components.interactionPrefixes ?? {},
-      interactionParts: components.interactionParts ?? {},
-      runtimePositions: components.runtimePositions ?? [],
-      positionerAnchored: components.positionerAnchored ?? [],
-      fullWidth: components.fullWidth ?? [],
-      inheritedText: components.inheritedText ?? {},
-    },
+    components: components && resolveComponents(components, fromRoot),
     designMd: designMd && { ...designMd, output: fromRoot(designMd.output) },
     flow: flow && {
       output: fromRoot(flow.output),
@@ -222,6 +208,25 @@ export function loadConfig(path: string): ResolvedConfig {
     },
     icons: icons && { ...icons, output: fromRoot(icons.output) },
     brand: brand && { output: fromRoot(brand.output) },
+  }
+}
+
+// Every optional list and map defaults to empty, so the builder reads them without checks.
+function resolveComponents(components: ComponentsSection, fromRoot: (p: string) => string): ComponentsConfig {
+  return {
+    root: fromRoot(components.root),
+    notExported: components.notExported ?? {},
+    skippedPages: components.skippedPages ?? [],
+    notStyledLayers: components.notStyledLayers ?? {},
+    runtimeSizes: components.runtimeSizes ?? {},
+    runtimeFills: components.runtimeFills ?? [],
+    inline: components.inline ?? [],
+    interactionPrefixes: components.interactionPrefixes ?? {},
+    interactionParts: components.interactionParts ?? {},
+    runtimePositions: components.runtimePositions ?? [],
+    positionerAnchored: components.positionerAnchored ?? [],
+    fullWidth: components.fullWidth ?? [],
+    inheritedText: components.inheritedText ?? {},
   }
 }
 
