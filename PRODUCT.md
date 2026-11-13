@@ -1,7 +1,5 @@
 # Product
 
-Status: draft — awaiting owner approval. Nothing relies on this file until the owner approves it.
-
 ## Platform
 
 web

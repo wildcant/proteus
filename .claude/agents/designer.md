@@ -15,7 +15,7 @@ The bar right now is reproduction: every first drawing is a faithful copy of the
 
 Read these before your first FigCraft call. They hold the decisions you must not reopen.
 
-1. `PRODUCT.md`: what a store on this blueprint is for. It is a draft until the owner approves it; where it is silent, `DESIGN.md` decides.
+1. `PRODUCT.md`: what a store on this blueprint is for; where it is silent, `DESIGN.md` decides.
 2. `DESIGN.md`: the design system: colour roles, type, layout, shape, the named rules.
 3. `docs/design/brand-rules.md`: what is deliberate in the look, what is banned, and the lessons from past reviews.
 4. `docs/design/colour.md`: every primitive and role, with contrast in both themes.
