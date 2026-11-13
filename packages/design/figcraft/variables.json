@@ -81,7 +81,8 @@
           "VariableID:131",
           "VariableID:134",
           "VariableID:137",
-          "VariableID:138"
+          "VariableID:138",
+          "VariableID:141"
         ]
       },
       "VariableCollectionId:3": {
@@ -1284,6 +1285,34 @@
           "VariableCollectionId:4/mode1": 352.0
         },
         "variableCollectionId": "VariableCollectionId:4"
+      },
+      "VariableID:141": {
+        "codeSyntax": {},
+        "description": "A checked choice's label tint: none in light, ink at 10 % in dark (the kit's dark checked FieldLabel, bg-primary/10, which the store's light-only reset did not reach). The checkout's saved-address choice.",
+        "hiddenFromPublishing": false,
+        "id": "VariableID:141",
+        "key": "VariableID:141",
+        "name": "color/choice-checked",
+        "remote": false,
+        "resolvedType": "COLOR",
+        "scopes": [
+          "ALL_SCOPES"
+        ],
+        "valuesByMode": {
+          "VariableCollectionId:2/mode1": {
+            "a": 0.0,
+            "b": 0.07058823853731155,
+            "g": 0.0627450942993164,
+            "r": 0.05098039284348488
+          },
+          "VariableCollectionId:2/mode2": {
+            "a": 0.10000000149011612,
+            "b": 0.9647058844566345,
+            "g": 0.9607843160629272,
+            "r": 0.95686274766922
+          }
+        },
+        "variableCollectionId": "VariableCollectionId:2"
       },
       "VariableID:15": {
         "codeSyntax": {},

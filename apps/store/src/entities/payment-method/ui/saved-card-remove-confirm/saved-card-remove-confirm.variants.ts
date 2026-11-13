@@ -17,10 +17,18 @@ export const savedCardRemoveConfirmHint = cva('type-caption text-ink-muted')
 
 export const savedCardRemoveConfirmActions = cva('flex items-center gap-1')
 
-export const savedCardRemoveConfirmKeep = cva('flex items-start border border-transparent px-2.5 py-1.5')
+export const savedCardRemoveConfirmKeep = cva(
+  'group/saved-card-remove-confirm-keep flex items-start border border-transparent px-2.5 py-1.5 focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-50',
+)
 
-export const savedCardRemoveConfirmKeepLabel = cva('type-caption-medium text-ink-muted')
+export const savedCardRemoveConfirmKeepLabel = cva(
+  'type-caption-medium text-ink-muted group-hover/saved-card-remove-confirm-keep:text-ink',
+)
 
-export const savedCardRemoveConfirmRemove = cva('flex items-start border border-ink px-2.5 py-1.5')
+export const savedCardRemoveConfirmRemove = cva(
+  'group/saved-card-remove-confirm-remove flex items-start border border-ink px-2.5 py-1.5 hover:bg-ink focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-50',
+)
 
-export const savedCardRemoveConfirmRemoveLabel = cva('type-caption-medium text-ink')
+export const savedCardRemoveConfirmRemoveLabel = cva(
+  'type-caption-medium text-ink group-hover/saved-card-remove-confirm-remove:text-surface',
+)

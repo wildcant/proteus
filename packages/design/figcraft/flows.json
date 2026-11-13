@@ -570,7 +570,7 @@
           "event": "OPEN_FILTERS",
           "from": "ProductListPage",
           "fromState": "default",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "filterOpen",
           "condition": ""
         },
@@ -586,7 +586,7 @@
           "event": "CLOSE",
           "from": "ProductListPage",
           "fromState": "filterOpen",
-          "to": "ProductListPage",
+          "to": ".",
           "toState": "default",
           "condition": ""
         },

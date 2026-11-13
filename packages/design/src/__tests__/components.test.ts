@@ -733,6 +733,28 @@ describe('components', () => {
     )
   })
 
+  it('maps the open interaction state to aria-expanded, the attribute a trigger carries while its popup is open', () => {
+    // Only the quiet tone is drawn open (a menu trigger); the solid one has no open state of its own.
+    const trigger = (tone: 'solid' | 'quiet', state: 'rest' | 'open'): Layer => ({
+      ...frame(`tone=${tone}, interaction=${state}`, 'horizontal'),
+      type: 'COMPONENT',
+      ...(tone === 'solid' ? fill('c:accent') : state === 'open' ? fill('c:line') : {}),
+      children: [text('label', 'body', state === 'open' ? 'c:accent' : 'c:ink')],
+    })
+    const menuTrigger: ComponentSet = {
+      name: 'MenuTrigger',
+      page: 'components/ui',
+      properties: [variantProperty('tone', ['solid', 'quiet']), variantProperty('interaction', ['rest', 'open'])],
+      variants: [trigger('solid', 'rest'), trigger('quiet', 'rest'), trigger('quiet', 'open')],
+    }
+    const { files } = buildComponents([menuTrigger], context)
+    const source = files.get('/shop/src/components/ui/menu-trigger/menu-trigger.variants.ts')
+    expect(source).not.toContain('open:')
+    expect(source).toContain("quiet: 'aria-expanded:bg-line'")
+    // A layer inside follows the trigger through its named group.
+    expect(source).toContain("quiet: 'text-ink group-aria-expanded/menu-trigger:text-accent'")
+  })
+
   it('lays out a grid, fills a listed set, sets an inherited text style and stretches an empty slot', () => {
     const group = single('Choices', 'components/ui', {
       variants: [

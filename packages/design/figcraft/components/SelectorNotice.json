@@ -20,11 +20,11 @@
       ],
       "strokes": [
         {
-          "color": "#DEE0E3",
+          "color": "#0D1012",
           "type": "solid"
         }
       ],
-      "strokeWeight": 1,
+      "strokeWeight": 2,
       "strokeAlign": "inside",
       "clip": false,
       "sizing": {
@@ -33,43 +33,90 @@
       },
       "boundVariables": {
         "fill": "VariableID:22",
-        "paddingHorizontal": "VariableID:38",
-        "paddingVertical": "VariableID:38",
-        "stroke": "VariableID:24"
+        "stroke": "VariableID:18"
       },
+      "strokeSides": [
+        0,
+        0,
+        0,
+        2
+      ],
       "layout": {
         "mode": "vertical",
         "mainAlign": "min",
         "crossAlign": "min",
         "gap": 0,
         "padding": [
-          12,
-          12,
-          12,
-          12
+          0,
+          0,
+          0,
+          0
         ],
         "strokesIncluded": true
       },
       "width": 500,
       "children": [
         {
-          "name": "message",
-          "type": "TEXT",
-          "fills": [
+          "name": "body",
+          "type": "FRAME",
+          "strokes": [
             {
-              "color": "#0D1012",
+              "color": "#DEE0E3",
               "type": "solid"
             }
           ],
+          "strokeWeight": 1,
+          "strokeAlign": "inside",
+          "clip": false,
           "sizing": {
             "horizontal": "fill",
             "vertical": "hug"
           },
           "boundVariables": {
-            "fill": "VariableID:18"
+            "paddingHorizontal": "VariableID:38",
+            "paddingVertical": "VariableID:38",
+            "stroke": "VariableID:24"
           },
-          "textAlign": "left",
-          "textStyle": "S:8"
+          "strokeSides": [
+            1,
+            1,
+            1,
+            0
+          ],
+          "layout": {
+            "mode": "vertical",
+            "mainAlign": "min",
+            "crossAlign": "min",
+            "gap": 0,
+            "padding": [
+              12,
+              12,
+              12,
+              12
+            ],
+            "strokesIncluded": true
+          },
+          "children": [
+            {
+              "name": "message",
+              "type": "TEXT",
+              "fills": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "sizing": {
+                "horizontal": "fill",
+                "vertical": "hug"
+              },
+              "boundVariables": {
+                "fill": "VariableID:18"
+              },
+              "textAlign": "left",
+              "textStyle": "S:8"
+            }
+          ]
         }
       ]
     }

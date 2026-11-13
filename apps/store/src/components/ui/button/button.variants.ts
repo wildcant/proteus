@@ -8,7 +8,7 @@ export const button = cva(
       variant: {
         default: 'border-transparent bg-ink hover:bg-ink/80 focus-visible:border-ink',
         outline: 'border-outline bg-field hover:bg-outline-hover focus-visible:border-ink',
-        ghost: 'border-transparent hover:bg-ghost-hover focus-visible:border-ink',
+        ghost: 'border-transparent focus-visible:border-ink',
         link: 'border-transparent focus-visible:border-ink',
         muted: 'border-transparent focus-visible:border-ink',
       },
@@ -22,6 +22,8 @@ export const button = cva(
     compoundVariants: [
       { variant: ['default', 'outline', 'ghost'], size: 'default', class: 'h-13 px-6' },
       { variant: ['default', 'outline'], size: 'lg', class: 'h-14 px-6' },
+      { variant: 'ghost', size: 'default', class: 'hover:bg-ghost-hover' },
+      { variant: 'ghost', size: 'icon', class: 'hover:bg-ghost-hover aria-expanded:bg-surface-muted' },
     ],
     defaultVariants: { variant: 'default', size: 'default' },
   },

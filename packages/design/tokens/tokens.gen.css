@@ -28,6 +28,7 @@
   --color-popup-ring: var(--popup-ring);
   --color-field-invalid: var(--field-invalid);
   --color-sale-ring: var(--sale-ring);
+  --color-choice-checked: var(--choice-checked);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --spacing: 0.25rem;
@@ -101,6 +102,7 @@
   --popup-ring: rgb(13 16 18 / 0.1);
   --field-invalid: #dc0428;
   --sale-ring: rgb(220 4 40 / 0.2);
+  --choice-checked: rgb(13 16 18 / 0);
   --type-display-size: clamp(2rem, 1.6479rem + 1.5023vw, 3rem);
   --type-title-size: clamp(1.5rem, 1.3239rem + 0.7512vw, 2rem);
   --type-heading-size: 1.25rem;
@@ -134,6 +136,7 @@
   --popup-ring: rgb(244 245 246 / 0.1);
   --field-invalid: rgb(255 143 165 / 0.502);
   --sale-ring: rgb(255 143 165 / 0.4);
+  --choice-checked: rgb(244 245 246 / 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -165,6 +168,7 @@
     --popup-ring: rgb(244 245 246 / 0.1);
     --field-invalid: rgb(255 143 165 / 0.502);
     --sale-ring: rgb(255 143 165 / 0.4);
+    --choice-checked: rgb(244 245 246 / 0.1);
   }
 }
 

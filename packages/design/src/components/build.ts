@@ -9,10 +9,10 @@
 //   the design-only `viewport` property (mobile, sm, md, lg) -> never a cva prop: the mobile variant gives the
 //                                    classes, and each larger one only what differs from the next one down,
 //                                    under its breakpoint prefix (`md:flex-row`)
-//   the design-only `interaction` property (rest, hover, focus-visible, active, disabled) -> never a cva prop: rest
+//   the design-only `interaction` property (rest, hover, focus-visible, active, disabled, open) -> never a cva prop: rest
 //                                    gives the classes, each other value only what differs from rest, under its
 //                                    variant (`hover:bg-ink/80`; on a part, `group-hover/button:`, the root then
-//                                    `group/button`). It composes with viewport: `md:hover:`
+//                                    `group/button`). `open` is `aria-expanded:`. It composes with viewport: `md:hover:`
 //   auto layout whose children all fill across it -> items-stretch, the children no self-stretch
 //   a set on the inline list        -> its root is inline-flex
 //   layer opacity                   -> opacity-*; a transparent stroke -> border-transparent
@@ -56,8 +56,11 @@ export type ComponentsContext = {
 /** Tailwind's default breakpoints, in order. `mobile` is the base: no prefix. */
 const BREAKPOINTS = ['mobile', 'sm', 'md', 'lg'] as const
 const VIEWPORT = 'viewport'
-/** `rest` is the base; each other value is the Tailwind variant of the same name unless the config maps it. */
-const STATES = ['rest', 'hover', 'focus-visible', 'active', 'disabled'] as const
+/** `rest` is the base; each other value is the Tailwind variant of the same name unless the config maps it, or
+ * `STATE_VARIANTS` names another. */
+const STATES = ['rest', 'hover', 'focus-visible', 'active', 'disabled', 'open'] as const
+/** `open` is a trigger whose popup is showing: Base UI (and every ARIA disclosure) marks it with `aria-expanded`. */
+const STATE_VARIANTS: Record<string, string> = { open: 'aria-expanded' }
 const INTERACTION = 'interaction'
 /** `default` is the base; each other value is the Tailwind variant of the same name unless the config maps it. */
 const POSITIONS = ['default', 'first', 'last', 'only', 'odd', 'even'] as const
@@ -115,7 +118,7 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
   const groupOf = (owner: string) => (owner ? `${kebab(set.name)}-${kebab(owner)}` : kebab(set.name))
   // On the layer that owns the state, the state's own variant; below it, the owner's state through its named group.
   const stateVariant = (state: string, part: string, owner: string) => {
-    const variant = statePrefixes[state] ?? state
+    const variant = statePrefixes[state] ?? STATE_VARIANTS[state] ?? state
     if (part === owner) return `${variant}:`
     return `${variant
       .split(':')

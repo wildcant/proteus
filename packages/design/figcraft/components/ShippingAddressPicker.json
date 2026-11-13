@@ -119,12 +119,19 @@
                 {
                   "name": "choice",
                   "type": "FRAME",
+                  "fills": [
+                    {
+                      "color": "#0D101200",
+                      "type": "solid"
+                    }
+                  ],
                   "clip": false,
                   "sizing": {
                     "horizontal": "fill",
                     "vertical": "hug"
                   },
                   "boundVariables": {
+                    "fill": "VariableID:141",
                     "gap": "VariableID:38"
                   },
                   "layout": {

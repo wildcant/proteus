@@ -91,7 +91,8 @@
       "AlertDialog": ["action", "cancel"],
       "RouteDrawer": ["close"],
       "Toast": ["close"],
-      "FloatingLabelInput": ["floatingLabel"]
+      "FloatingLabelInput": ["floatingLabel"],
+      "SavedCardRemoveConfirm": ["keep", "remove"]
     },
     "interactionPrefixes": {
       "QuantityStepper": {

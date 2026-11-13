@@ -9,7 +9,7 @@ export const shippingAddressPickerAddresses = cva('flex flex-col items-stretch g
 
 export const shippingAddressPickerAddress = cva('flex items-start bg-surface-subtle px-3 py-3')
 
-export const shippingAddressPickerChoice = cva('flex flex-1 items-start gap-3')
+export const shippingAddressPickerChoice = cva('flex flex-1 items-start gap-3 bg-choice-checked')
 
 export const shippingAddressPickerRadioWrap = cva('flex items-start pt-0.5')
 

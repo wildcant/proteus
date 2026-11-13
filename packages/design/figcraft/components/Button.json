@@ -32,7 +32,8 @@
         "rest",
         "hover",
         "focus-visible",
-        "disabled"
+        "disabled",
+        "open"
       ],
       "type": "variant"
     },
@@ -2999,6 +3000,105 @@
             "characters"
           ],
           "textStyle": "S:9"
+        }
+      ]
+    },
+    {
+      "name": "variant=ghost, size=icon, interaction=open",
+      "type": "COMPONENT",
+      "fills": [
+        {
+          "color": "#F5F5F5",
+          "type": "solid"
+        }
+      ],
+      "strokes": [
+        {
+          "color": "#0D1012",
+          "opacity": 0,
+          "type": "solid"
+        }
+      ],
+      "strokeWeight": 1,
+      "strokeAlign": "inside",
+      "clip": false,
+      "sizing": {
+        "horizontal": "fixed",
+        "vertical": "fixed"
+      },
+      "boundVariables": {
+        "fill": "VariableID:123",
+        "height": "VariableID:46",
+        "width": "VariableID:46"
+      },
+      "layout": {
+        "mode": "horizontal",
+        "mainAlign": "center",
+        "crossAlign": "center",
+        "gap": 0,
+        "padding": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "strokesIncluded": true
+      },
+      "width": 32,
+      "height": 32,
+      "children": [
+        {
+          "name": "label",
+          "type": "TEXT",
+          "visible": false,
+          "fills": [
+            {
+              "color": "#0D1012",
+              "type": "solid"
+            }
+          ],
+          "sizing": {
+            "horizontal": "hug",
+            "vertical": "hug"
+          },
+          "boundVariables": {
+            "fill": "VariableID:18"
+          },
+          "textAlign": "left",
+          "textStyle": "S:9"
+        },
+        {
+          "name": "icon",
+          "type": "FRAME",
+          "clip": false,
+          "sizing": {
+            "horizontal": "fixed",
+            "vertical": "fixed"
+          },
+          "boundVariables": {
+            "height": "VariableID:41",
+            "width": "VariableID:41"
+          },
+          "slot": "icon",
+          "width": 16,
+          "height": 16,
+          "children": [
+            {
+              "name": "glyph",
+              "type": "VECTOR",
+              "strokes": [
+                {
+                  "color": "#0D1012",
+                  "type": "solid"
+                }
+              ],
+              "strokeWeight": 1.33,
+              "strokeAlign": "center",
+              "boundVariables": {
+                "stroke": "VariableID:18"
+              }
+            }
+          ]
         }
       ]
     }

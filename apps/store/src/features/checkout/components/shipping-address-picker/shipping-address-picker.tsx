@@ -98,7 +98,7 @@ export const ShippingAddressPicker = withForm({
                           <FieldLabel
                             className={cn(
                               shippingAddressPickerChoice(),
-                              'min-w-0 cursor-pointer has-data-checked:bg-transparent',
+                              'min-w-0 cursor-pointer bg-transparent has-data-checked:bg-choice-checked',
                             )}
                           >
                             <span className={shippingAddressPickerRadioWrap()}>

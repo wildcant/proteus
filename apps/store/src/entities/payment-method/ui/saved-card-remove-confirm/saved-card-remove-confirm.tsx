@@ -19,12 +19,6 @@ import {
 } from '#/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.variants'
 
 /**
- * The hover fills and the focus outline of the two text actions: the set draws them at rest only.
- */
-const TEXT_BUTTON_BEHAVIOUR =
-  'hover:text-ink disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink'
-
-/**
  * `SavedCardRow` asking before it removes its card: a saved-card list is for paying, and a
  * one-tap destructive control beside the row you are about to select is a mis-tap waiting to
  * happen.
@@ -65,26 +59,24 @@ export function SavedCardRemoveConfirm({
               </span>
             </span>
             <span className={cn(savedCardRemoveConfirmActions(), 'shrink-0')}>
+              {/* `outline-none`: the drawn focus ring replaces the browser's outline. */}
               <button
                 type="button"
-                className={cn(savedCardRemoveConfirmKeep(), savedCardRemoveConfirmKeepLabel(), TEXT_BUTTON_BEHAVIOUR)}
+                className={cn(savedCardRemoveConfirmKeep(), 'outline-none')}
                 onClick={onKeep}
                 disabled={removing}
               >
-                <Trans>Keep</Trans>
+                <span className={savedCardRemoveConfirmKeepLabel()}>
+                  <Trans>Keep</Trans>
+                </span>
               </button>
               <button
                 type="button"
-                className={cn(
-                  savedCardRemoveConfirmRemove(),
-                  savedCardRemoveConfirmRemoveLabel(),
-                  TEXT_BUTTON_BEHAVIOUR,
-                  'hover:bg-ink hover:text-surface',
-                )}
+                className={cn(savedCardRemoveConfirmRemove(), 'outline-none')}
                 onClick={onRemove}
                 disabled={removing}
               >
-                {removing ? t`Removing…` : t`Remove`}
+                <span className={savedCardRemoveConfirmRemoveLabel()}>{removing ? t`Removing…` : t`Remove`}</span>
               </button>
             </span>
           </div>
