@@ -200,7 +200,7 @@ steps below, `<store>` is the new store's short name.
    | `apps/admin/package.json` | `--project-name` in `deploy` |
    | `package.json` | the Worker names in `sync-secrets:*` |
    | `scripts/pull-keys.sh` | the R2 paths of both key objects (for example `dotenv-keys/<store>/.env.keys`) |
-   | `apps/backend/.env` | add `COMPOSE_PROJECT_NAME=<store>`, so local Docker containers and volumes stay apart from Proteus |
+   | `apps/backend/docker-compose.yml`, `apps/backend/docker-compose.test.yml` | add `name: <store>` and `name: <store>-test` at the top, so local Docker containers and volumes stay apart from Proteus |
 
 3. **Generate new keys.** The fork must not share keys with Proteus. For each of `.env.local`,
    `.env.test` and `.env`: remove the `DOTENV_PUBLIC_KEY` header and the encrypted values, set the
@@ -213,6 +213,44 @@ steps below, `<store>` is the new store's short name.
 5. **Upload the new private keys** to the R2 paths in `scripts/pull-keys.sh`: the local and test
    keys to the first object, the production key to the second. Another machine can then decrypt
    the env files with `pnpm run pull-keys`.
+
+To run a fork and Proteus on one machine at the same time, give the fork its own Docker Compose
+project, database and bucket names, and its own host ports. Set `name:` at the top of both compose
+files. Change the host side of each port mapping in the compose files, and change the ports in the
+app `dev` scripts and the env files.
+
+## Merging Proteus into a fork
+
+A fork gets Proteus's fixes by merging `upstream/main` on a branch, then merging that branch with a
+pull request:
+
+```bash
+git fetch upstream
+git log --oneline main..upstream/main   # what is new
+git switch -c sync/proteus-<date> main
+git merge upstream/main
+```
+
+1. **Resolve conflicts.**
+   - In the files the fork renamed (compose files, `wrangler.jsonc`, the `package.json` scripts,
+     `env.ts`), keep the fork's names and ports and take the rest of the upstream change.
+   - Keep the fork's `.env*` files (`git checkout --ours .env .env.local .env.test`). Upstream's values
+     are encrypted with Proteus's keys, so the fork cannot read them. Add any new variable with
+     `dotenvx set`.
+   - Don't hand-merge generated files. Take either side, then run the generators (`pnpm run
+     openapi:generate`, the backend `*:generate` scripts, the design exporters).
+2. **If upstream added a migration**, run `pnpm --filter backend run db:migrate:dev`.
+3. **Run `pnpm run verify`**, push the branch and open a pull request.
+4. **Merge the pull request with a merge commit** (`gh pr merge <n> --merge`), never a squash or a
+   rebase. A merge commit records `upstream/main` as a parent, so git knows those commits are in the
+   fork. A squash copies the changes but not that record: the next sync applies the same commits
+   again and can conflict with its own earlier result. To make this impossible, turn off squash and
+   rebase merging in the fork's repository settings, or protect its `main` so it accepts merge
+   commits only.
+
+If a sync was squashed, check that git still lists the upstream commits as missing
+(`git log --oneline main..upstream/main`). Then revert the squash commit on a branch, merge
+`upstream/main` into that branch, and merge its pull request with a merge commit.
 
 ## Known failure modes
 
