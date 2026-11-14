@@ -227,6 +227,24 @@ const filterKey = z
   .trim()
   .min(1, 'Must not be empty.')
 
+/**
+ * One way two products are alike: `key`, what they share (`category`, `type`, `brand`, `option.<Title>`
+ * or a field's key), and `weight`, what sharing it adds to their likeness.
+ */
+const relatedMatch = z.strictObject(
+  {
+    key: filterKey,
+    weight: z
+      .number({ error: ifWrongType('Must be a whole number.') })
+      .int('Must be a whole number.')
+      .min(1, 'Must be at least 1.'),
+  },
+  { error: ifWrongType('Must be a match with key and weight.') },
+)
+
+/** The keys a related match reads besides the file's fields and options. */
+const RELATED_BUILTIN_KEYS = ['category', 'type', 'brand']
+
 const structureFile = z.strictObject(
   {
     fields: z.array(field, { error: ifWrongType('Must be a list of fields.') }).default([]),
@@ -237,10 +255,11 @@ const structureFile = z.strictObject(
     search: search.default({ popular: [], trending: [] }),
     filters: z.array(filterKey, { error: ifWrongType('Must be a list of filter keys.') }).optional(),
     card: card.optional(),
+    related: z.array(relatedMatch, { error: ifWrongType('Must be a list of matches.') }).optional(),
   },
   {
     error: ifWrongType(
-      'The file must be a mapping with fields, categories, collections, options, menu, search, filters and card.',
+      'The file must be a mapping with fields, categories, collections, options, menu, search, filters, card and related.',
     ),
   },
 )
@@ -263,7 +282,8 @@ export type ParsedCatalogStructure =
  * term (ignoring case) and a trending model's name are each listed once, and a model's `filter` reads
  * only declared keys. Each `filters` key is listed once and is a declared field with
  * `filterable: true` or `option.<Title>`. A `card.subline` reads only `{type}`, `{brand}` and declared
- * keys, with no modifier but `lower`.
+ * keys, with no modifier but `lower`. Each `related` key is listed once and is `category`, `type`,
+ * `brand`, `option.<Title>` or a declared key, with a whole weight of at least 1.
  */
 export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const document = parseDocument(text, { prettyErrors: false })
@@ -290,6 +310,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     search,
     filters,
     card: rawCard,
+    related,
   } = parsed.data
   const errors: CatalogStructureErrorDTO[] = []
 
@@ -554,6 +575,25 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     }
   }
 
+  related?.forEach(({ key: matchKey }, index) => {
+    const path = `related[${index}].key`
+    if (related.findIndex((match) => match.key === matchKey) < index) {
+      errors.push({ path, message: `The match "${matchKey}" is listed more than once.` })
+      return
+    }
+    if (matchKey.startsWith(OPTION_FILTER_PREFIX)) {
+      if (matchKey.slice(OPTION_FILTER_PREFIX.length).trim() === '') {
+        errors.push({ path, message: 'Must name the option, like "option.Size".' })
+      }
+      return
+    }
+    if (RELATED_BUILTIN_KEYS.includes(matchKey) || keys.has(matchKey)) return
+    errors.push({
+      path,
+      message: `No field in the file has the key "${matchKey}", and it is not category, type, brand or option.<Title>.`,
+    })
+  })
+
   if (errors.length > 0) return fail(errors)
   return {
     structure: {
@@ -565,6 +605,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       search: searchStructure,
       filters: filters ?? null,
       card: { subline: subline ?? null, listSeparator: rawCard?.listSeparator ?? DEFAULT_LIST_SEPARATOR },
+      related: related ?? null,
     },
     errors: [],
   }

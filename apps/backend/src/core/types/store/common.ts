@@ -63,6 +63,12 @@ export type StoreSearchDTO = { popular: string[]; trending: StoreSearchTrendingD
  */
 export type StoreCardDTO = { subline: string | null; listSeparator: string }
 
+/**
+ * One way two products are alike, as the structure file's `related` lists it: worth `weight` when they
+ * share it. `key` is `category`, `type`, `brand`, `option.<Title>` or a field's key.
+ */
+export type StoreRelatedMatchDTO = { key: string; weight: number }
+
 export type StoreDTO = {
   id: string
   name: string
@@ -82,6 +88,8 @@ export type StoreDTO = {
   filters: string[] | null
   /** The structure file's `card`. */
   card: StoreCardDTO
+  /** The structure file's `related`: how products are related, by shared values; `null` uses the default match. */
+  related: StoreRelatedMatchDTO[] | null
   metadata: string | null
   createdAt: Date
   updatedAt: Date

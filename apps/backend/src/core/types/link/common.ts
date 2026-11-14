@@ -2,6 +2,7 @@ import type { SQL } from 'drizzle-orm'
 import type { BigNumber } from '../../bignumber.js'
 import type { Context } from '../context.js'
 import type { FilterableProductProps } from '../product/common.js'
+import type { StoreRelatedMatchDTO } from '../store/common.js'
 
 export type ProductVariantInventoryItemDTO = {
   id: string
@@ -220,6 +221,13 @@ export type ListStoreProductsOptions = StoreCatalogFilters & {
   sort: StoreProductSort
   limit: number
   offset: number
+  /**
+   * Lists the products like the one whose handle is `handle`, most alike first and the sort after: each
+   * match they share adds its weight, the product itself is left out, and so is one sharing nothing.
+   */
+  similarTo?: { handle: string; match: StoreRelatedMatchDTO[] }
+  /** Lists only products a shopper can buy now: some priced variant is in stock, untracked or backordered. */
+  purchasableOnly?: boolean
 }
 
 /** One listed product: what the list's order and its card read from price and stock. */

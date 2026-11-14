@@ -1,7 +1,7 @@
 import type { SQL } from 'drizzle-orm'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 import type { PriceDTO } from '../pricing/common.js'
-import type { StoreCardDTO, StoreNavigationEntryDTO, StoreSearchDTO } from '../store/common.js'
+import type { StoreCardDTO, StoreNavigationEntryDTO, StoreRelatedMatchDTO, StoreSearchDTO } from '../store/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
@@ -569,6 +569,8 @@ export type CatalogStructureDTO = {
   /** The storefront's filters by key, in the order it shows them; `null` offers every filterable one. */
   filters: string[] | null
   card: StoreCardDTO
+  /** How the store relates products, by shared values; `null` relates them by the default match. */
+  related: StoreRelatedMatchDTO[] | null
 }
 
 /** One problem with a structure file. `path` names where it is, `categories[0].children[1].handle`. */

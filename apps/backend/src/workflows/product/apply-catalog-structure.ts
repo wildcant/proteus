@@ -52,13 +52,13 @@ export const applyCatalogStructureWorkflow = createWorkflow<ApplyCatalogStructur
         const storeService = container.resolve(Modules.STORE)
         const store = await storeService.resolveStore()
         if (!store) throw new WorkflowTerminalError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
-        const { menu, search, filters, card } = structure
-        await storeService.updateStores([store.id], { navigation: menu, search, filters, card })
+        const { menu, search, filters, card, related } = structure
+        await storeService.updateStores([store.id], { navigation: menu, search, filters, card, related })
         return {
           storeId: store.id,
           current: store.navigation,
           next: menu,
-          previous: { search: store.search, filters: store.filters, card: store.card },
+          previous: { search: store.search, filters: store.filters, card: store.card, related: store.related },
         }
       },
       async ({ storeId, current, previous }, { container }) => {

@@ -1,6 +1,7 @@
 import type { FilterableProductProps } from '@core/types/product/common.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
+import { DEFAULT_RELATED_MATCH } from '@core/utils/related-match.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
   StorePricingContextParams,
@@ -40,7 +41,8 @@ export const GET = async (
 
   const { pagination, filters, q, order = 'relevance' } = req.validatedQuery
   const { offset, limit } = pagination
-  const { category, collection, tag, filter, minPrice, maxPrice, exact, ...columnFilters } = filters
+  const { category, collection, tag, filter, minPrice, maxPrice, exact, similarTo, available, ...columnFilters } =
+    filters
   const { currencyCode } = req.pricingContext
 
   const products: FilterableProductProps = {
@@ -48,10 +50,22 @@ export const GET = async (
     ...buildStoreGroupingFilters({ category, collection, tag, filter }),
   }
   const priceRange = { minPrice, maxPrice }
+  // What the store relates products by, read up front only when the list ranks by likeness.
+  const related = similarTo ? ((await storeService.resolveStore())?.related ?? DEFAULT_RELATED_MATCH) : null
   // Filtered, sorted, paged and counted in one query: price and stock are no product column, and
   // reading the catalogue to page it in memory is what this replaced.
   const listPage = (search: string | undefined) =>
-    listing.listStoreProducts({ currencyCode, products, search, priceRange, sort: order, limit, offset })
+    listing.listStoreProducts({
+      currencyCode,
+      products,
+      search,
+      priceRange,
+      sort: order,
+      limit,
+      offset,
+      similarTo: similarTo && related ? { handle: similarTo, match: related } : undefined,
+      purchasableOnly: available,
+    })
 
   // A search that matches nothing is run again as its closest spelling, when the titles and brands in
   // view hold one, so a typo lands on results rather than on an empty page — unless the shopper asked

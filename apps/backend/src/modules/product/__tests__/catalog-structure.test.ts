@@ -130,6 +130,7 @@ test.describe('parseCatalogStructure', () => {
       search: { popular: [], trending: [] },
       filters: null,
       card: { subline: null, listSeparator: ', ' },
+      related: null,
     })
   })
 
@@ -551,6 +552,48 @@ test.describe('parseCatalogStructure', () => {
     ])
   })
 
+  test('reads how products are related, and refuses a match that is repeated, names nothing or weighs nothing', async ({
+    expect,
+  }) => {
+    const related = (matches: string[]) =>
+      parseCatalogStructure(yaml(['fields:', '  - { name: Modelo, key: modelo }', 'related:', ...matches]))
+    const read = related([
+      '  - { key: modelo, weight: 4 }',
+      '  - { key: category, weight: 2 }',
+      '  - { key: option.Color, weight: 1 }',
+      '  - { key: brand, weight: 1 }',
+      '  - { key: type, weight: 1 }',
+    ])
+    expect(read.errors).toEqual([])
+    expect(read.structure?.related).toEqual([
+      { key: 'modelo', weight: 4 },
+      { key: 'category', weight: 2 },
+      { key: 'option.Color', weight: 1 },
+      { key: 'brand', weight: 1 },
+      { key: 'type', weight: 1 },
+    ])
+
+    expect(
+      related([
+        '  - { key: modelo, weight: 4 }',
+        '  - { key: modelo, weight: 1 }',
+        '  - { key: suela, weight: 1 }',
+        '  - { key: option., weight: 1 }',
+      ]).errors,
+    ).toEqual([
+      { path: 'related[1].key', message: 'The match "modelo" is listed more than once.' },
+      {
+        path: 'related[2].key',
+        message: 'No field in the file has the key "suela", and it is not category, type, brand or option.<Title>.',
+      },
+      { path: 'related[3].key', message: 'Must name the option, like "option.Size".' },
+    ])
+    expect(related(['  - { key: modelo, weight: 0 }', '  - { key: brand, weight: 1.5 }']).errors).toEqual([
+      { path: 'related[0].weight', message: 'Must be at least 1.' },
+      { path: 'related[1].weight', message: 'Must be a whole number.' },
+    ])
+  })
+
   test('refuses a file that is not YAML, or not a structure', async ({ expect }) => {
     const broken = parseCatalogStructure('categories: [\n')
     expect(broken.structure).toBeNull()
@@ -561,7 +604,7 @@ test.describe('parseCatalogStructure', () => {
       {
         path: '',
         message:
-          'The file must be a mapping with fields, categories, collections, options, menu, search, filters and card.',
+          'The file must be a mapping with fields, categories, collections, options, menu, search, filters, card and related.',
       },
     ])
   })

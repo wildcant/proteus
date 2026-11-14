@@ -39,6 +39,14 @@ export const StoreProductListParams = createFindParams().extend({
   minPrice: z.coerce.number().min(0).optional(),
   /** The highest price, in the market's currency: lists products with a variant priced at most this. */
   maxPrice: z.coerce.number().min(0).optional(),
+  /**
+   * A product's handle. Lists the products like it, most alike first and `order` after: each value they
+   * share that the store relates products by (the structure file's `related`) adds its weight. The
+   * product itself, and any sharing nothing, are left out; an unknown handle matches nothing.
+   */
+  similarTo: z.string().min(1).optional(),
+  /** Lists only products a shopper can buy now, in some size or colour. */
+  available: z.union([z.boolean(), z.string().transform((value) => value === 'true')]).optional(),
 })
 
 export type StoreProductListQuery = FindParams<typeof StoreProductListParams>

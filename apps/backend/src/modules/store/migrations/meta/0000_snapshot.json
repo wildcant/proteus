@@ -1,5 +1,5 @@
 {
-  "id": "ec8e68d1-2611-4bfe-a19b-bcdbed510dd9",
+  "id": "262ac268-3736-4e8e-84bc-48dc0fd59ce3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -167,6 +167,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'{\"subline\":null,\"listSeparator\":\", \"}'::jsonb"
+        },
+        "related": {
+          "name": "related",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "metadata": {
           "name": "metadata",
