@@ -25,6 +25,16 @@
 # `search` is what search offers before a term finds anything: `popular` terms and `trending` models,
 # each a list filtered as a link is. `filters` names the storefront's filters in the order it shows
 # them: a field's key or `option.<Title>`.
+#
+# A collection may add a `badge`, which its members' list cards wear (`badge: new`). `options` names
+# product options by title: `role` is the part one plays on the list card — `grouping`, its values
+# each have their own look and photo; `availability`, the card lists its in-stock values — and
+# `buckets` are what its filter offers in place of its raw values, each value joining the first bucket
+# holding one of its words:
+#   - name: Color
+#     role: grouping
+#     buckets:
+#       - { name: Black, swatch: black, words: [black, onyx] }
 fields:
   - name: Género
     key: genero
@@ -91,6 +101,11 @@ collections:
   - name: Active
     handle: active
     rule: { colecciones: [active] }
+options:
+  - name: Color
+    role: grouping
+  - name: Size
+    role: availability
 menu:
   - category: men
     sections:

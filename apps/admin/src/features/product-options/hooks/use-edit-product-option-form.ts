@@ -12,6 +12,7 @@ export function useEditProductOptionForm(option: AdminProductOption, params?: Ed
   const form = useAppForm({
     defaultValues: {
       title: option.title,
+      listingRole: option.listingRole,
       values: option.values.map((v) => ({ value: v.value, rank: v.rank ?? undefined })),
     } satisfies AdminUpdateProductOptionBody as AdminUpdateProductOptionBody,
     validators: { onSubmit: AdminUpdateProductOption },

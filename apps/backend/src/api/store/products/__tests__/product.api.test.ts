@@ -3,6 +3,10 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
+import adminCollectionDefinitions from '../../../admin/collections/definitions.js'
+import type * as adminCollectionRoutes from '../../../admin/collections/route.js'
+import type * as adminOptionRoutes from '../../../admin/product-options/[id]/route.js'
+import adminOptionDefinitions from '../../../admin/product-options/definitions.js'
 import productFilterDefinitions from '../../product-filters/definitions.js'
 import type * as productByHandleRoutes from '../[handle]/route.js'
 import productDefinitions from '../definitions.js'
@@ -35,7 +39,14 @@ const setLowStockThreshold = async (threshold: number | null) => {
  * currency was hardcoded.
  */
 test.beforeEach(async ({ createApi, factories }) => {
-  api = await createApi({ definitions: [...productDefinitions, ...productFilterDefinitions] })
+  api = await createApi({
+    definitions: [
+      ...productDefinitions,
+      ...productFilterDefinitions,
+      ...adminCollectionDefinitions,
+      ...adminOptionDefinitions,
+    ],
+  })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
   usRegionId = region.id
   await factories.create.store({ defaultRegionId: region.id })
@@ -461,6 +472,188 @@ test.describe('GET /store/products stock', () => {
   })
 })
 
+/** A global option with these values in this order, and a lookup from value to id. */
+const createOption = async (
+  service: Services,
+  title: string,
+  values: string[],
+  listingRole: 'grouping' | 'availability' | null = null,
+) => {
+  const option = await service.create.productOption(api.container, {
+    title,
+    listingRole,
+    values: values.map((value, rank) => ({ value, rank })),
+  })
+  const idOf = (value: string) => {
+    const found = option.values.find((candidate) => candidate.value === value)
+    if (!found) throw new Error(`No ${title} ${value}`)
+    return found.id
+  }
+  return { id: option.id, idOf, values: option.values }
+}
+
+test.describe('GET /store/products card details', () => {
+  test('a card wears its Collections’ badges, and lists the in-stock values of its availability option in order', async ({
+    expect,
+    http,
+    service,
+  }) => {
+    const collection = async (badge: string | null) => {
+      const response = await api.post<typeof adminCollectionRoutes.PostOutput>(
+        '/admin/collections',
+        http.admin.createProductCollection({ badge }),
+      )
+      expect(response.status).toBe(201)
+      return response.body.collection.id
+    }
+    const [newArrivals, alsoNew, featured] = await Promise.all([collection('new'), collection('new'), collection(null)])
+    // Ranked out of text order, so values in option order are not values sorted as strings. Its role is
+    // set the way the admin sets it.
+    const size = await createOption(service, 'Size', ['9', '10', '11', '12'])
+    const role = await api.patch<typeof adminOptionRoutes.PatchOutput>(`/admin/product-options/${size.id}`, {
+      listingRole: 'availability',
+    })
+    expect(role.status).toBe(200)
+    expect(role.body.productOption.listingRole).toBe('availability')
+    // A second availability option, after Size in the product's order, is not the one the card reads.
+    const width = await createOption(service, 'Width', ['Regular', 'Wide'], 'availability')
+
+    const { product: sneaker } = await service.create.product(api.container, {
+      status: 'published',
+      collectionIds: [newArrivals, alsoNew, featured],
+    })
+    await service.update.productOptions(api.container, sneaker.id, {
+      options: [
+        { optionId: size.id, valueIds: ['12', '9', '10', '11'].map(size.idOf) },
+        { optionId: width.id, valueIds: [width.idOf('Regular')] },
+      ],
+    })
+    // Created out of size order, and 10 has none left: the card offers 9, 11 and 12.
+    const sizes = ['12', '10', '9', '11']
+    const sneakerVariants = await service.create.productVariants(
+      api.container,
+      sneaker.id,
+      sizes.map((value) => ({ optionValues: { [size.id]: size.idOf(value), [width.id]: width.idOf('Regular') } })),
+    )
+    await service.create.variantPrices(
+      api.container,
+      sneakerVariants.map((variant) => variant.id),
+    )
+    await Promise.all(
+      sneakerVariants.map((variant, index) =>
+        service.create.variantStock(api.container, {
+          variantId: variant.id,
+          level: { stockedQuantity: sizes[index] === '10' ? 0 : 3 },
+        }),
+      ),
+    )
+
+    // In a Collection with no badge, and with no availability option.
+    const { product: bag } = await service.create.product(api.container, {
+      status: 'published',
+      collectionIds: [featured],
+    })
+    const [bagVariant] = await service.create.productVariants(api.container, bag.id, [{ manageInventory: false }])
+    if (!bagVariant) throw new Error('Expected a variant')
+    await service.create.variantPrices(api.container, [bagVariant.id])
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products')
+    expect(response.status).toBe(200)
+    const cardOf = (id: string) => {
+      const item = response.body.products.find((product) => product.id === id)
+      return item && { badges: item.badges, available: item.available }
+    }
+    // Two Collections badged `new` give it once.
+    expect(cardOf(sneaker.id)).toEqual({ badges: ['new'], available: { option: 'Size', values: ['9', '11', '12'] } })
+    expect(cardOf(bag.id)).toEqual({ badges: [], available: null })
+  })
+})
+
+test.describe('GET /store/products groups', () => {
+  test('a card lists its grouping option’s values in order, each with its image, its stock and the variant it opens on', async ({
+    expect,
+    service,
+  }) => {
+    const colour = await createOption(service, 'Color', ['Black / Red', 'All White', 'Navy'], 'grouping')
+    const size = await createOption(service, 'Size', ['40', '41', '42'])
+    // A second grouping option, after Color in the product's order, is not the one the card reads.
+    const material = await createOption(service, 'Material', ['Suede'], 'grouping')
+    const combination = (value: string, sizeValue: string) => ({
+      [colour.id]: colour.idOf(value),
+      [size.id]: size.idOf(sizeValue),
+      [material.id]: material.idOf('Suede'),
+    })
+    const { product: suede, images } = await service.create.product(api.container, {
+      status: 'published',
+      images: [
+        { url: 'https://cdn.test/cover.png' },
+        { url: 'https://cdn.test/red.png' },
+        { url: 'https://cdn.test/white.png' },
+        { url: 'https://cdn.test/red-back.png' },
+      ],
+    })
+    await service.update.productOptions(api.container, suede.id, {
+      options: [
+        { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+        { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+        { optionId: material.id, valueIds: [material.idOf('Suede')] },
+      ],
+    })
+    // Created out of the option's order and out of variant order. Of the black-and-red pair's variants
+    // the first has no image, so its thumbnail is the second's, not the last's.
+    const variants = await service.create.productVariants(api.container, suede.id, [
+      { variantRank: 0, optionValues: combination('Navy', '40') },
+      { variantRank: 5, optionValues: combination('Black / Red', '42') },
+      { variantRank: 2, optionValues: combination('Black / Red', '41') },
+      { variantRank: 1, optionValues: combination('Black / Red', '40') },
+      { variantRank: 3, optionValues: combination('All White', '40') },
+    ])
+    const [navy, lastRed, secondRed, firstRed, white] = variants
+    const [, redImage, whiteImage, redBackImage] = images
+    if (!navy || !lastRed || !secondRed || !firstRed || !white || !redImage || !whiteImage || !redBackImage) {
+      throw new Error('Expected five variants and four images')
+    }
+    await service.create.variantImages(api.container, [
+      { variantId: lastRed.id, imageId: redBackImage.id },
+      { variantId: secondRed.id, imageId: redImage.id },
+      { variantId: white.id, imageId: whiteImage.id },
+    ])
+    await service.create.variantPrices(
+      api.container,
+      variants.map((variant) => variant.id),
+    )
+    // The navy pair and the first black-and-red one are sold out.
+    await Promise.all(
+      variants.map((variant) =>
+        service.create.variantStock(api.container, {
+          variantId: variant.id,
+          level: { stockedQuantity: variant.id === navy.id || variant.id === firstRed.id ? 0 : 2 },
+        }),
+      ),
+    )
+    const { product: plain } = await service.create.product(api.container, { status: 'published' })
+    const [plainVariant] = await service.create.productVariants(api.container, plain.id)
+    if (!plainVariant) throw new Error('Expected a variant')
+    await service.create.variantPrices(api.container, [plainVariant.id])
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products')
+    expect(response.status).toBe(200)
+    const groupsOf = (id: string) => response.body.products.find((product) => product.id === id)?.groups
+
+    expect(groupsOf(suede.id)).toEqual({
+      option: 'Color',
+      values: [
+        // Each opens the product page on its first variant that can be bought, in variant order; a sold-out
+        // value on its first.
+        { value: 'Black / Red', thumbnail: 'https://cdn.test/red.png', inStock: true, variantId: secondRed.id },
+        { value: 'All White', thumbnail: 'https://cdn.test/white.png', inStock: true, variantId: white.id },
+        { value: 'Navy', thumbnail: null, inStock: false, variantId: navy.id },
+      ],
+    })
+    expect(groupsOf(plain.id)).toBeNull()
+  })
+})
+
 test.describe('GET /store/products sort', () => {
   test('a shopper sorts by price, cheapest or dearest first, page by page, and by relevance to a search', async ({
     expect,
@@ -541,7 +734,8 @@ test.describe('GET /store/products sort', () => {
 
     expect(list.body.products.map((item) => item.id)).toEqual([product.id])
     expect(filters.status).toBe(200)
-    expect(listVariants).not.toHaveBeenCalled()
+    // The card's sizes and colourways read the page's own variants, and nothing wider.
+    expect(listVariants.mock.calls.map(([filter]) => filter)).toEqual([{ productId: [product.id] }])
   })
 })
 

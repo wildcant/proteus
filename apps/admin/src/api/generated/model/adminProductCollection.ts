@@ -14,6 +14,8 @@ export interface AdminProductCollection {
   /** @nullable */
   thumbnail: string | null;
   rule: AdminProductGroupingRule | null;
+  /** @nullable */
+  badge: string | null;
   createdAt: string;
   updatedAt: string;
 }

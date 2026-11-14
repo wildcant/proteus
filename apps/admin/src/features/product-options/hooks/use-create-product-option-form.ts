@@ -10,7 +10,11 @@ export function useCreateProductOptionForm(params?: CreateProductOptionFormParam
   const createMutation = useCreateProductOption()
 
   const form = useAppForm({
-    defaultValues: { title: '', values: [] } satisfies AdminCreateProductOptionBody as AdminCreateProductOptionBody,
+    defaultValues: {
+      title: '',
+      listingRole: null,
+      values: [],
+    } satisfies AdminCreateProductOptionBody as AdminCreateProductOptionBody,
     validators: { onSubmit: AdminCreateProductOption },
     onSubmit: async ({ value }) => {
       try {

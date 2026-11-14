@@ -11,8 +11,6 @@ type StoreProductFilterShape = {
   namedFieldKeys: Set<string>
   /** Where a field value's label is found. */
   categories: ProductCategoryDTO[]
-  /** The filter whose values carry a swatch key, the store's colour filter. */
-  colorFilterKey: string
 }
 
 /**
@@ -24,7 +22,7 @@ type StoreProductFilterShape = {
 export function buildStoreProductFilters(
   filters: ProductFilterDTO[],
   inStockLabels: Array<{ optionTitle: string; value: string }>,
-  { namedFieldKeys, categories, colorFilterKey }: StoreProductFilterShape,
+  { namedFieldKeys, categories }: StoreProductFilterShape,
 ): StoreProductFilter[] {
   const inStock = new Set(inStockLabels.map((label) => `${OPTION_FILTER_PREFIX}${label.optionTitle}:${label.value}`))
   return filters.map((filter) => {
@@ -36,7 +34,8 @@ export function buildStoreProductFilters(
         ...value,
         label: isNamed ? buildFieldValueLabel(filter.key, value.value, categories) : value.value,
         soldOut: filter.key.startsWith(OPTION_FILTER_PREFIX) && !inStock.has(`${filter.key}:${value.value}`),
-        swatch: filter.key === colorFilterKey ? swatchKey(value.value) : null,
+        // An option value's swatch is its bucket's; a field value has none.
+        swatch: value.swatch ?? null,
       })),
     }
   })
@@ -49,19 +48,6 @@ export function buildStoreProductFilters(
 function inMenuOrder<T extends { value: string }>(key: string, values: T[], categories: ProductCategoryDTO[]): T[] {
   const rankOf = (value: string) => findNamingCategory(key, value, categories)?.rank ?? Number.POSITIVE_INFINITY
   return [...values].sort((a, b) => rankOf(a.value) - rankOf(b.value))
-}
-
-/**
- * "Café" → `cafe`, "Navy Blue" → `navy-blue`: lower-cased, accents dropped, words joined by hyphens. A
- * pure function of the value, so the key stays put however the counts or the catalogue move.
- */
-function swatchKey(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
 }
 
 /**

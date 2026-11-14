@@ -4,6 +4,7 @@ import type {
   ProductImportErrorDTO,
   ProductImportOptionsDTO,
   ProductImportSummaryDTO,
+  ProductOptionListingRole,
   ProductOptionRenderAs,
   ProductStatusType,
 } from './common.js'
@@ -148,9 +149,15 @@ export type UpdateProductVariantDTO = {
 
 export type UpsertProductVariantDTO = CreateProductVariantDTO | ({ id: string } & UpdateProductVariantDTO)
 
+/** A filter bucket as written: its place in the array is its rank. */
+export type ProductOptionBucketInput = { name: string; swatch?: string | null; words?: string[] }
+
 export type CreateProductOptionDTO = {
   title: string
   renderAs?: ProductOptionRenderAs
+  listingRole?: ProductOptionListingRole | null
+  /** The filter buckets, in rank order; each value joins the first holding one of its words. */
+  buckets?: ProductOptionBucketInput[]
   metadata?: Record<string, unknown> | null
   values?: Array<Omit<CreateProductOptionValueDTO, 'optionId'>>
 }
@@ -158,6 +165,9 @@ export type CreateProductOptionDTO = {
 export type UpdateProductOptionDTO = {
   title?: string
   renderAs?: ProductOptionRenderAs
+  listingRole?: ProductOptionListingRole | null
+  /** Replaces the buckets, in rank order, and regroups every value; `[]` groups none. */
+  buckets?: ProductOptionBucketInput[]
   metadata?: Record<string, unknown> | null
   values?: UpsertProductOptionValueInput[]
 }
@@ -244,6 +254,8 @@ export type CreateProductCollectionDTO = {
   thumbnail?: string | null
   /** Absent or null makes a manual Collection. A rule fills it with the products that match. */
   rule?: ProductGroupingRuleDTO | null
+  /** The badge a member's list card wears, `new`; null gives none. */
+  badge?: string | null
 }
 
 /** Never regenerates the handle. */
@@ -253,6 +265,7 @@ export type UpdateProductCollectionDTO = {
   thumbnail?: string | null
   /** A new rule re-matches every product. Null makes it manual and keeps the members it has. */
   rule?: ProductGroupingRuleDTO | null
+  badge?: string | null
 }
 
 /**

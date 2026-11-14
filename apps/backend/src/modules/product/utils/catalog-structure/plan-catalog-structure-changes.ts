@@ -136,7 +136,11 @@ export function planCatalogStructureChanges(
     const row = { handle: collection.handle, name: collection.name }
     const live = collectionByHandle.get(collection.handle)
     if (!live) changes.collections.create.push(row)
-    else if (live.title !== collection.name || !sameRule(live.rule, collection.rule)) {
+    else if (
+      live.title !== collection.name ||
+      live.badge !== collection.badge ||
+      !sameRule(live.rule, collection.rule)
+    ) {
       changes.collections.update.push(row)
     }
   }

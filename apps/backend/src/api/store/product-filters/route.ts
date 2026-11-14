@@ -8,7 +8,6 @@ import {
   StoreProductFilterListParams,
   StoreProductFilterListResponse,
 } from '@proteus/http-schemas/store'
-import { COLOR_FILTER_KEY } from '@proteus/store-config'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
 import { buildStoreProductFilters, orderStoreFilters } from '@workflows/product/utils/build-store-product-filters.js'
 import { setPricingContext } from '../middlewares.js'
@@ -61,7 +60,7 @@ export const GET = async (
   const search = correctedQuery ?? q
   const scope = { ...unsearched, ...(search ? buildSearchFilter(search, PRODUCT_SEARCH_COLUMNS) : {}) }
 
-  // Price, stock and colour are read by the listing in SQL, over the scope; the metafield and option
+  // Price and stock are read by the listing in SQL, over the scope; the metafield and option
   // counts stay with the product module, which takes the market's catalogue as a subquery.
   const [filters, facets, definitions, categories, store] = await Promise.all([
     productService.listProductFilters({ ...scope, ...selections }),
@@ -69,8 +68,6 @@ export const GET = async (
       currencyCode,
       products: { ...columnFilters, ...buildStoreGroupingFilters({ category, collection }) },
       search,
-      selections: groupingSelections,
-      priceRange,
     }),
     productService.listMetafieldDefinitions(),
     productService.listCategories(),
@@ -89,7 +86,6 @@ export const GET = async (
             definitions.filter((definition) => definition.source !== 'vendor').map((definition) => definition.key),
           ),
           categories,
-          colorFilterKey: COLOR_FILTER_KEY,
         },
       ),
       priceBounds: facets.priceBounds,

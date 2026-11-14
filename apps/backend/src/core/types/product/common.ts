@@ -8,6 +8,19 @@ export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 /** How the storefront draws an option's values. */
 export type ProductOptionRenderAs = 'text' | 'swatch'
 
+/** The option a product's list card reads for each role, `null` when the product offers none in it. */
+export type ProductListingOptionsDTO = {
+  grouping: { id: string; title: string } | null
+  availability: { id: string; title: string } | null
+}
+
+/**
+ * The part an option plays on a store's list card (ADR 0037). `grouping`: its values each have their
+ * own look and photo, and the card shows one per value. `availability`: the card lists its in-stock
+ * values. A product reads at most one option per role, the first in its option order.
+ */
+export type ProductOptionListingRole = 'grouping' | 'availability'
+
 export type ProductDTO = {
   id: string
   title: string
@@ -122,6 +135,7 @@ export type ProductVariantExtendedDTO = ProductVariantDTO & { prices?: PriceDTO[
 /** One option value a variant carries, as a list reads it: by the option's title, in the option's order. */
 export type VariantOptionLabelDTO = {
   variantId: string
+  optionId: string
   optionTitle: string
   value: string
   /** The value's place in its option: sizes small to large. `null` when unranked. */
@@ -251,7 +265,28 @@ export type ProductOptionDTO = {
   id: string
   title: string
   renderAs: ProductOptionRenderAs
+  /** `null` plays no part on the list card. */
+  listingRole: ProductOptionListingRole | null
   metadata: Record<string, unknown> | null
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+}
+
+/**
+ * A group the store filter offers in place of an option's raw values ("Black" for "Black / Red"). A
+ * value joins the first bucket by rank holding one of its words, when the value or the buckets are
+ * written.
+ */
+export type ProductOptionBucketDTO = {
+  id: string
+  optionId: string
+  name: string
+  /** The key the storefront draws the bucket's swatch by; `null` draws none. */
+  swatch: string | null
+  /** Lower-cased, matched against a value's words as whole words. */
+  words: string[]
+  rank: number
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -259,6 +294,8 @@ export type ProductOptionDTO = {
 
 export type ProductOptionWithValuesDTO = ProductOptionDTO & {
   values: ProductOptionValueDTO[]
+  /** In rank order; empty when the filter offers the raw values. */
+  buckets: ProductOptionBucketDTO[]
 }
 
 /** A Product Option Value as one product offers it, with that product's usage attached. */
@@ -285,6 +322,8 @@ export type ProductOptionValueDTO = {
   optionId: string
   value: string
   rank: number | null
+  /** The filter bucket the value is grouped under; `null` when none of the option's buckets holds it. */
+  bucketId: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
@@ -398,6 +437,8 @@ export type ProductMetafieldDefinitionDTO = {
 export type ProductFilterValueDTO = {
   value: string
   count: number
+  /** An option value's bucket swatch; absent for a field value, `null` for an option value with none. */
+  swatch?: string | null
 }
 
 /** One group of a field's values, `Adidas` with its models, with how many products hold the group's value and each one. */
@@ -459,6 +500,8 @@ export type ProductCollectionDTO = {
   thumbnail: string | null
   /** `null` is manual: the members are picked. A ruled Collection's members follow its rule. */
   rule: ProductGroupingRuleDTO | null
+  /** The badge a member's list card wears, `new`; `null` gives none. */
+  badge: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -485,6 +528,19 @@ type CatalogStructureCollectionDTO = {
   name: string
   handle: string
   rule: ProductGroupingRuleDTO | null
+  /** `badge`: what a member's list card wears; `null` for none. */
+  badge: string | null
+}
+
+/**
+ * A product option as the file's `options` declare it, by title: its list card role and its filter
+ * buckets in rank order. Applying the file sets exactly these on the named option, creating it when
+ * no option has the title; an option the file does not name is left as it is.
+ */
+type CatalogStructureOptionDTO = {
+  name: string
+  listingRole: ProductOptionListingRole | null
+  buckets: Array<{ name: string; swatch: string | null; words: string[] }>
 }
 
 /** A metafield definition as a structure file's `fields` declare it. */
@@ -506,6 +562,7 @@ export type CatalogStructureDTO = {
   metafields: CatalogStructureMetafieldDTO[]
   categories: CatalogStructureCategoryDTO[]
   collections: CatalogStructureCollectionDTO[]
+  options: CatalogStructureOptionDTO[]
   menu: StoreNavigationEntryDTO[]
   search: StoreSearchDTO
   /** The storefront's filters by key, in the order it shows them; `null` offers every filterable one. */

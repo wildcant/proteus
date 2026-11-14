@@ -15,6 +15,8 @@ export const productCollectionTable = pgTable(
     thumbnail: text(),
     /** The rule over metafields that decides the members; `null` is a manual Collection whose members are picked. */
     rule: jsonb().$type<ProductGroupingRuleDTO | null>(),
+    /** The badge a list card of a member wears, `new`; `null` gives none. */
+    badge: text(),
     ...timestamps,
   },
   (table) => [liveUniqueIndex('idx_product_collection_handle').on(table.handle)],

@@ -11,6 +11,8 @@ export const AdminProductCollection = z
     thumbnail: z.string().nullable(),
     /** `null` is manual: the members are picked. A ruled Collection's members follow its rule. */
     rule: AdminProductGroupingRule.nullable(),
+    /** The badge a member's list card wears, `new`; `null` gives none. */
+    badge: z.string().nullable(),
     createdAt: dateToIso,
     updatedAt: dateToIso,
   })

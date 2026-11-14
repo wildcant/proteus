@@ -24,4 +24,10 @@ export interface AdminUpdateProductCollection {
      */
   thumbnail?: string | null;
   rule?: AdminProductGroupingRule | null;
+  /**
+     * @minLength 1
+     * @maxLength 255
+     * @nullable
+     */
+  badge?: string | null;
 }

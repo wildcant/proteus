@@ -97,8 +97,10 @@ test.describe('parseCatalogStructure', () => {
           name: 'Staff picks',
           handle: 'staff-picks',
           rule: { colecciones: ['staff-picks'] },
+          badge: null,
         },
       ],
+      options: [],
       menu: [
         // No sections: the entry brings its children, as it always has.
         { type: 'category', handle: 'mujer', sections: [] },
@@ -523,7 +525,7 @@ test.describe('parseCatalogStructure', () => {
     expect(parseCatalogStructure('- hombre\n').errors).toEqual([
       {
         path: '',
-        message: 'The file must be a mapping with fields, categories, collections, menu, search and filters.',
+        message: 'The file must be a mapping with fields, categories, collections, options, menu, search and filters.',
       },
     ])
   })

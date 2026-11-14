@@ -7,8 +7,13 @@
  */
 import type { StoreCalculatedPrice } from './storeCalculatedPrice.ts';
 import type { StoreProduct } from './storeProduct.ts';
+import type { StoreProductListingAvailability } from './storeProductListingAvailability.ts';
+import type { StoreProductListingGroups } from './storeProductListingGroups.ts';
 
-export type StoreProductListItem = StoreProduct & {
+export type StoreProductListItem = StoreProduct & ({
   startingPrice?: StoreCalculatedPrice;
   soldOut: boolean;
-};
+  badges: string[];
+  groups: StoreProductListingGroups | null;
+  available: StoreProductListingAvailability | null;
+});

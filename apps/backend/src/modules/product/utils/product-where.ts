@@ -7,6 +7,7 @@ import { productCollectionTable } from '../models/product-collection.js'
 import { productMetafieldTable } from '../models/product-metafield.js'
 import { productMetafieldDefinitionTable } from '../models/product-metafield-definition.js'
 import { productOptionTable } from '../models/product-option.js'
+import { productOptionBucketTable } from '../models/product-option-bucket.js'
 import { productOptionValueTable } from '../models/product-option-value.js'
 import { productProductCategoryTable } from '../models/product-product-category.js'
 import { productProductCollectionTable } from '../models/product-product-collection.js'
@@ -162,7 +163,19 @@ function inGroupings(
   )
 }
 
-/** Products offering any of `values` of the live option titled `title`. */
+/**
+ * What the store filter calls an option value: its bucket's name when the value is in a live bucket,
+ * else the value itself. For a `FROM` that left-joins {@link productOptionBucketTable} on the value.
+ */
+export const optionFilterValue = sql<string>`COALESCE(${productOptionBucketTable.name}, ${productOptionValueTable.value})`
+
+/** The live bucket of the joined option value, for a left join. */
+export const optionValueBucket = and(
+  eq(productOptionBucketTable.id, productOptionValueTable.bucketId),
+  isNull(productOptionBucketTable.deletedAt),
+)
+
+/** Products offering any of `values` of the live option titled `title`, by bucket name where it has buckets. */
 function offersOptionValue(title: string, values: string[]): SQL {
   return exists(
     queryBuilder
@@ -174,11 +187,12 @@ function offersOptionValue(title: string, values: string[]): SQL {
       )
       .innerJoin(productOptionTable, eq(productOptionTable.id, productProductOptionTable.optionId))
       .innerJoin(productOptionValueTable, eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId))
+      .leftJoin(productOptionBucketTable, optionValueBucket)
       .where(
         and(
           eq(productProductOptionTable.productId, productTable.id),
           eq(productOptionTable.title, title),
-          inArray(productOptionValueTable.value, values),
+          inArray(optionFilterValue, values),
           isNull(productProductOptionValueTable.deletedAt),
           isNull(productProductOptionTable.deletedAt),
           isNull(productOptionTable.deletedAt),

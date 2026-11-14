@@ -3359,6 +3359,12 @@
           "rule": {
             "$ref": "#/components/schemas/AdminProductGroupingRule"
           },
+          "badge": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -3374,6 +3380,7 @@
           "handle",
           "thumbnail",
           "rule",
+          "badge",
           "createdAt",
           "updatedAt"
         ]
@@ -3427,6 +3434,14 @@
           },
           "rule": {
             "$ref": "#/components/schemas/AdminProductGroupingRule"
+          },
+          "badge": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 255
           }
         },
         "required": [
@@ -3455,6 +3470,14 @@
           },
           "rule": {
             "$ref": "#/components/schemas/AdminProductGroupingRule"
+          },
+          "badge": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 255
           }
         }
       },
@@ -3727,6 +3750,20 @@
               "swatch"
             ]
           },
+          "listingRole": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grouping",
+                  "availability"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "metadata": {
             "type": [
               "object",
@@ -3738,6 +3775,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AdminProductOptionValue"
+            }
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductOptionBucket"
             }
           },
           "createdAt": {
@@ -3753,8 +3796,10 @@
           "id",
           "title",
           "renderAs",
+          "listingRole",
           "metadata",
           "values",
+          "buckets",
           "createdAt",
           "updatedAt"
         ]
@@ -3774,6 +3819,12 @@
           "rank": {
             "type": [
               "number",
+              "null"
+            ]
+          },
+          "bucketId": {
+            "type": [
+              "string",
               "null"
             ]
           },
@@ -3798,9 +3849,43 @@
           "optionId",
           "value",
           "rank",
+          "bucketId",
           "metadata",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "AdminProductOptionBucket": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "swatch": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rank": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "swatch",
+          "words",
+          "rank"
         ]
       },
       "AdminProductOptionResponse": {
@@ -3828,6 +3913,54 @@
               "text",
               "swatch"
             ]
+          },
+          "listingRole": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grouping",
+                  "availability"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                "swatch": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                "words": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "maxItems": 100
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "maxItems": 100
           },
           "metadata": {
             "type": [
@@ -3883,6 +4016,54 @@
               "text",
               "swatch"
             ]
+          },
+          "listingRole": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grouping",
+                  "availability"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                "swatch": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1,
+                  "maxLength": 255
+                },
+                "words": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "maxItems": 100
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "maxItems": 100
           },
           "metadata": {
             "type": [
@@ -4754,6 +4935,20 @@
               "swatch"
             ]
           },
+          "listingRole": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "grouping",
+                  "availability"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "metadata": {
             "type": [
               "object",
@@ -4780,6 +4975,7 @@
           "id",
           "title",
           "renderAs",
+          "listingRole",
           "metadata",
           "values",
           "createdAt",
