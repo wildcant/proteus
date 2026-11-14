@@ -60,7 +60,7 @@ test.describe('Saved cards', () => {
     // 2 · The one thing that saves a card. The consent control is gated on the session rather than
     // on the wallet count, and this shopper — with nothing saved — is precisely the one saving
     // their first card.
-    await reachPaymentStep(page, navigate, product.id, shipping.name)
+    await reachPaymentStep(page, navigate, product.handle, shipping.name)
     await page.getByRole('checkbox', { name: 'Save this card for next time' }).check()
     await fillCard(page, FAKE_CARDS.succeeds)
     await page.getByRole('button', { name: /place order/i }).click()
@@ -74,7 +74,7 @@ test.describe('Saved cards', () => {
     await expect(page.getByRole('heading', { name: 'No saved cards' })).toHaveCount(0)
 
     // 4 · Waiting at the next checkout, already chosen, with no card form to fill.
-    await reachPaymentStep(page, navigate, product.id, shipping.name)
+    await reachPaymentStep(page, navigate, product.handle, shipping.name)
     const saved = page.getByRole('radio', { name: 'Pay with Visa ending in 4242' })
     await expect(saved).toBeVisible({ timeout: 15_000 })
     await expect(saved).toBeChecked()
@@ -115,7 +115,7 @@ test.describe('Saved cards', () => {
     await signIn(page, customer)
 
     // Arrange by shopping: this is the only thing that puts a card in a wallet.
-    await reachPaymentStep(page, navigate, product.id, shipping.name)
+    await reachPaymentStep(page, navigate, product.handle, shipping.name)
     await page.getByRole('checkbox', { name: 'Save this card for next time' }).check()
     await fillCard(page, FAKE_CARDS.succeeds)
     await page.getByRole('button', { name: /place order/i }).click()
@@ -126,7 +126,7 @@ test.describe('Saved cards', () => {
     // SPA leaves the wallet query serving the empty list it cached at the first checkout; that is
     // its own question, and not the one this journey is asking.
     await page.goto('/')
-    await reachPaymentStep(page, navigate, product.id, shipping.name)
+    await reachPaymentStep(page, navigate, product.handle, shipping.name)
     await expect(page.getByRole('radio', { name: 'Pay with Visa ending in 4242' })).toBeChecked({ timeout: 15_000 })
 
     // The other tab. A real second page in the same context, so it carries the same session and
@@ -161,13 +161,13 @@ test.describe('Saved cards', () => {
 // ---------------------------------------------------------------------------------------------
 
 type Navigate = (options: {
-  to: Extract<FileRouteTypes['to'], '/products/$productId'>
+  to: Extract<FileRouteTypes['to'], '/products/$handle'>
   params?: Record<string, string>
 }) => Promise<void>
 
 /** From an empty cart to a rendered payment step, which is where both journeys do their work. */
-async function reachPaymentStep(page: Page, navigate: Navigate, productId: string, shippingName: string) {
-  await navigate({ to: '/products/$productId', params: { productId } })
+async function reachPaymentStep(page: Page, navigate: Navigate, handle: string, shippingName: string) {
+  await navigate({ to: '/products/$handle', params: { handle } })
 
   const addToCart = page.getByRole('button', { name: /add to cart/i })
   await expect(addToCart).toBeEnabled({ timeout: 30_000 })

@@ -37,7 +37,7 @@ test.describe('Shop by category', () => {
     ).toBeVisible()
 
     await main.getByRole('heading', { level: 3, name: product.title }).click()
-    await expect(page).toHaveURL(new RegExp(`/en-US/products/${product.id}`))
+    await expect(page).toHaveURL(new RegExp(`/en-US/products/${product.handle}`))
     await expect(page.getByRole('heading', { name: product.title })).toBeVisible()
   })
 

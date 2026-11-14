@@ -132,9 +132,9 @@ const routes: RouteNode[] = [
   // Skipped by its shape: a layout whose component renders only <Outlet />, so it is no screen's.
   route('/_main/products', '/_main', '_main/products/route.tsx', 'ssr: true,\n  component: () => <Outlet />,'),
   route(
-    '/_main/products/$productId',
+    '/_main/products/$handle',
     '/_main/products',
-    '_main/products/$productId.tsx',
+    '_main/products/$handle.tsx',
     // Rendered by reference rather than as JSX.
     'component: ProductDetail,',
   ),
@@ -172,7 +172,7 @@ const table: ScreenTable = {
   'Root/bag': { route: '/_main' },
   ProductListPage: { route: '/_main/' },
   'ProductListPage/category': { route: '/_main/categories/$handle' },
-  ProductDetail: { route: '/_main/products/$productId' },
+  ProductDetail: { route: '/_main/products/$handle' },
   AddressBook: { route: '/_main/_authed/addresses/' },
   'AddressBook/addressEdit': { route: '/_main/_authed/addresses/$addressId/edit' },
 }
@@ -202,15 +202,15 @@ describe('check:flow', () => {
       // Points at a route the tree doesn't have.
       'Root/bag': { route: '/_main/bag' },
       // Names a state the screen set doesn't have.
-      'ProductDetail/zoomed': { route: '/_main/products/$productId' },
+      'ProductDetail/zoomed': { route: '/_main/products/$handle' },
     }
     const brokenRoutes = [
-      ...routes.filter((node) => node.id !== '/_main/products/$productId'),
+      ...routes.filter((node) => node.id !== '/_main/products/$handle'),
       // Renders another screen than the one its table entry names.
       route(
-        '/_main/products/$productId',
+        '/_main/products/$handle',
         '/_main/products',
-        '_main/products/$productId.tsx',
+        '_main/products/$handle.tsx',
         'component: () => <ProductError />',
       ),
       // A layout that renders more than an Outlet is checked like any route.
@@ -229,7 +229,7 @@ describe('check:flow', () => {
       'Root/bag: /_main/bag is not a route in the route tree',
       'ProductDetail/zoomed: ProductDetail has no state zoomed',
       'src/routes/_main/index.tsx is a route but no screen in the screen table',
-      'src/routes/_main/products/$productId.tsx does not render ProductDetail, its screen in the screen table',
+      'src/routes/_main/products/$handle.tsx does not render ProductDetail, its screen in the screen table',
       'src/routes/_auth/route.tsx is a route but no screen in the screen table',
     ])
   })

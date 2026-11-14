@@ -2,7 +2,7 @@ import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
-import { IdParams, StorePricingContextParams, StoreProductResponse } from '@proteus/http-schemas/store'
+import { StorePricingContextParams, StoreProductHandleParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import { i18n } from '@proteus/utils'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
@@ -13,7 +13,7 @@ import {
 } from '@workflows/product/utils/build-variant-stock.js'
 import { setPricingContext } from '../../middlewares.js'
 
-export const GetInput = { params: IdParams, contextQuery: StorePricingContextParams }
+export const GetInput = { params: StoreProductHandleParams, contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
 export const GetOutput = StoreProductResponse
 /**
@@ -31,11 +31,20 @@ export const GET = async (
   const storeService = req.scope.resolve(Modules.STORE)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
-  const [product, variants, images, options] = await Promise.all([
-    productService.retrieveProduct(req.params.id),
-    productService.listProductVariants({ productId: req.params.id }),
-    productService.listProductImages({ productId: req.params.id }, { order: { rank: 'ASC' } }),
-    productService.listProductOptionsForProduct(req.params.id),
+  // Published only, as the list is: a handle is readable from the title, so a draft would be one guess away.
+  const [product] = await productService.listProducts({ handle: req.params.handle, status: 'published' })
+  if (!product) {
+    throw new AppError({
+      type: ErrorTypes.NOT_FOUND,
+      message: i18n.t('Product with handle "{handle}" not found'),
+      values: { handle: req.params.handle },
+    })
+  }
+
+  const [variants, images, options] = await Promise.all([
+    productService.listProductVariants({ productId: product.id }),
+    productService.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } }),
+    productService.listProductOptionsForProduct(product.id),
   ])
 
   const variantIds = variants.map((variant) => variant.id)
@@ -90,8 +99,7 @@ export const GET = async (
    * A product whose every variant was dropped for having no price in this market has nothing to
    * show and nothing to buy: no amount, no option picker, no add-to-cart. The store cannot sell
    * it here, so it answers the way it answers for a product it does not have — the refusal
-   * `retrieveProduct` already raises for an unknown id, so this route has one not-found and not
-   * two.
+   * above raises for an unknown handle, so this route has one not-found and not two.
    *
    * Guarded on the product having had variants at all, so a product with none keeps answering
    * exactly as it did: that is a different shape (nothing to price) and not this finding.
@@ -99,8 +107,8 @@ export const GET = async (
   if (variants.length > 0 && variantsForResponse.length === 0) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: i18n.t('Product with id "{id}" has no price in {currencyCode}'),
-      values: { id: req.params.id, currencyCode: req.pricingContext.currencyCode },
+      message: i18n.t('Product with handle "{handle}" has no price in {currencyCode}'),
+      values: { handle: req.params.handle, currencyCode: req.pricingContext.currencyCode },
     })
   }
 
@@ -109,7 +117,7 @@ export const GET = async (
   // question — but one derived from the same projection the response carries rather than from a
   // field on the wire, so what the picker crosses out and what the button refuses cannot disagree.
   const pickerTargets = await productService.buildProductPickerTargets(
-    req.params.id,
+    product.id,
     variantsForResponse.map((variant) => ({
       id: variant.id,
       optionValues: variant.optionValues,

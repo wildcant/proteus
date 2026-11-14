@@ -28,7 +28,7 @@ test.describe('Cart', () => {
     })
 
     // 1. Navigate to first product, add to cart
-    await navigate({ to: '/products/$productId', params: { productId: productA.id } })
+    await navigate({ to: '/products/$handle', params: { handle: productA.handle } })
     await expect(page.getByRole('heading', { name: productA.title })).toBeVisible()
 
     const addToCartButton = page.getByRole('button', { name: /add to cart/i })
@@ -57,7 +57,7 @@ test.describe('Cart', () => {
     await expect(panel.getByText('Total', { exact: true })).toBeVisible()
 
     // 3. Add a second product. The panel reopens carrying both.
-    await navigate({ to: '/products/$productId', params: { productId: productB.id } })
+    await navigate({ to: '/products/$handle', params: { handle: productB.handle } })
     await expect(page.getByRole('heading', { name: productB.title })).toBeVisible()
     await page.getByRole('button', { name: /add to cart/i }).click()
     await expect(panel.getByText(productB.title)).toBeVisible()
@@ -103,26 +103,26 @@ test.describe('Cart', () => {
       if (cartId) await factories.destroy.cart(cartId)
     })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     // Opening is caused by the mutation, and it lands in the address bar
     const panel = page.locator(PANEL)
     await expect(panel).toBeVisible()
     await expect(panel.getByText(product.title)).toBeVisible()
-    await expect(page).toHaveURL(new RegExp(`/products/${product.id}\\?modal=cart$`))
+    await expect(page).toHaveURL(new RegExp(`/products/${product.handle}\\?modal=cart$`))
 
     // Opening pushed, so hardware back closes it
     await page.goBack()
     await expect(panel).not.toBeVisible()
-    await expect(page).toHaveURL(`/en-US/products/${product.id}`)
+    await expect(page).toHaveURL(`/en-US/products/${product.handle}`)
 
     // Closing with the ✕ replaces rather than pushes, so there is no entry to go forward into
     await page.getByLabel('Cart', { exact: true }).click()
     await expect(panel).toBeVisible()
     await panel.getByLabel('Close cart').click()
     await expect(panel).not.toBeVisible()
-    await expect(page).toHaveURL(`/en-US/products/${product.id}`)
+    await expect(page).toHaveURL(`/en-US/products/${product.handle}`)
 
     await page.goForward()
     await expect(panel).not.toBeVisible()
@@ -141,7 +141,7 @@ test.describe('Cart', () => {
       if (cartId) await factories.destroy.cart(cartId)
     })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const panel = page.locator(PANEL)
@@ -177,7 +177,7 @@ test.describe('Cart', () => {
       if (cartId) await factories.destroy.cart(cartId)
     })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     // The options line only renders once `AddLineItem` carries `variantOptionValues`, so this is

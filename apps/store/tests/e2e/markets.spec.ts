@@ -251,7 +251,7 @@ test.describe('Market control', () => {
 
     // The detail page prices the same way, off its own request rather than the list's — the two
     // are separate queries and only one of them has been proven to carry the market so far.
-    await goto(`/${SECOND_MARKET}/products/${product.id}`)
+    await goto(`/${SECOND_MARKET}/products/${product.handle}`)
     const price = page.locator('main').getByText(/100\.000/)
     await expect(price).toBeVisible()
     await expect(price).toContainText('$')
@@ -274,7 +274,7 @@ test.describe('Market control', () => {
     await authenticate({ as: 'customer' })
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
@@ -321,7 +321,7 @@ test.describe('Market dates', () => {
 
     // Placed in the default market, because the address and the shipping zone are American. The
     // order is the fixture here; the market it is *read* in is what this test is about.
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
     await page
       .locator('[data-slot="drawer-popup"]')
@@ -376,7 +376,7 @@ test.describe('Cart across markets', () => {
     await authenticate({ as: 'customer' })
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
@@ -413,7 +413,7 @@ test.describe('Cart across markets', () => {
     await authenticate({ as: 'customer' })
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
     await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('$25.00')
 
@@ -442,7 +442,7 @@ test.describe('Cart across markets', () => {
     await authenticate({ as: 'customer' })
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
     await expect(page.locator('[data-slot="drawer-popup"]')).toContainText('$25.00')
     await page.keyboard.press('Escape')
@@ -488,7 +488,7 @@ test.describe('Cart across markets', () => {
     disposeCartAfterTest(page, factories, cleanup)
 
     for (const product of [sellable, blocked]) {
-      await navigate({ to: '/products/$productId', params: { productId: product.id } })
+      await navigate({ to: '/products/$handle', params: { handle: product.handle } })
       await page.getByRole('button', { name: /add to cart/i }).click()
       await expect(page.locator('[data-slot="drawer-popup"]').getByText(product.title)).toBeVisible()
       await page.keyboard.press('Escape')
@@ -548,7 +548,7 @@ test.describe('Spanish market', () => {
     await expect(page.locator('footer').getByRole('button', { name: `Mercado: ${SECOND_MARKET_NAME}` })).toBeVisible()
 
     // Products: the page's own action, not the merchant's title, which is out of scope.
-    await goto(`/${SECOND_MARKET}/products/${product.id}`)
+    await goto(`/${SECOND_MARKET}/products/${product.handle}`)
     const addToCart = page.getByRole('button', { name: 'Agregar al carrito' })
     await expect(addToCart).toBeVisible()
     await addToCart.click()

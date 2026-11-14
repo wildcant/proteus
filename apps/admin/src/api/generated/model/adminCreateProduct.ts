@@ -24,7 +24,10 @@ export interface AdminCreateProduct {
   /** @maxLength 4000 */
   description?: string;
   discountable?: boolean;
-  /** @maxLength 64 */
+  /**
+     * @maxLength 64
+     * @pattern ^[\p{Ll}\p{Lo}\p{N}]+(?:-[\p{Ll}\p{Lo}\p{N}]+)*$/u
+     */
   handle?: string;
   /** @nullable */
   height?: number | null;

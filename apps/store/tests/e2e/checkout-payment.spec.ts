@@ -39,7 +39,7 @@ test.describe('Checkout — card payment', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('card-guest@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -85,7 +85,7 @@ test.describe('Checkout — card payment', () => {
     const sessions = watchPaymentSessions(page)
 
     await signIn(page, customer)
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await fillShippingAddress(page)
     await selectShipping(page, shipping.name)
     await choosePayment(page, 'Stripe')
@@ -122,7 +122,7 @@ test.describe('Checkout — card payment', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('incomplete-card@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -161,7 +161,7 @@ test.describe('Checkout — card payment', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('late-change@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -194,7 +194,7 @@ test.describe('Checkout — card payment', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('three-d-secure@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -230,7 +230,7 @@ test.describe('Checkout — card payment', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('redirect-method@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -274,7 +274,7 @@ test.describe('Checkout — card payment', () => {
     // global list, which would excuse it for every other spec too.
     const declines = consoleGuard.allow(/Stripe confirmation failed/)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('declined@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -331,7 +331,7 @@ test.describe('Checkout — card payment', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('retry-after-decline@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -383,7 +383,7 @@ test.describe('Checkout — card payment', () => {
 
     const declines = consoleGuard.allow(/returned from a redirect unpaid/)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('redirect-declined@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -420,7 +420,7 @@ test.describe('Checkout — card payment', () => {
     disposeCartAfterTest(page, factories, cleanup)
     await useFakeStripe(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await fillShippingAddress(page)
     await selectShipping(page, shipping.name)
     await choosePayment(page, 'Stripe')
@@ -440,12 +440,12 @@ test.describe('Checkout — card payment', () => {
 
 /** The routes these steps navigate to. Narrower than the fixture's, which is why it accepts it. */
 type Navigate = (options: {
-  to: Extract<FileRouteTypes['to'], '/products/$productId' | '/login'>
+  to: Extract<FileRouteTypes['to'], '/products/$handle' | '/login'>
   params?: Record<string, string>
 }) => Promise<void>
 
-async function addToCartAndCheckout(page: Page, navigate: Navigate, productId: string) {
-  await navigate({ to: '/products/$productId', params: { productId } })
+async function addToCartAndCheckout(page: Page, navigate: Navigate, handle: string) {
+  await navigate({ to: '/products/$handle', params: { handle } })
   await page.getByRole('button', { name: /add to cart/i }).click()
 
   const cartPanel = page.locator('[data-slot="drawer-popup"]')

@@ -7,6 +7,7 @@ import {
   countryCode,
   decimalAmount,
   entityId,
+  handle,
   httpUrl,
   longText,
   MAX_ITEMS,
@@ -57,6 +58,17 @@ describe('decimalAmount', () => {
 
   it.each(['1234567890123', '1.123456789', '1e5', '0x10', '', ' 1', '1.', '.1', 'abc'])('rejects %s', (value) => {
     expect(decimalAmount.safeParse(value).success).toBe(false)
+  })
+})
+
+describe('handle', () => {
+  // The storefront puts it in a path segment as is, so anything a URL reads as structure is out.
+  it.each(['white-sneakers', 'tenis-niño', '42', 'air-max-90', '日本'])('accepts %s', (value) => {
+    expect(handle.safeParse(value).success).toBe(true)
+  })
+
+  it.each(['', 'White-Sneakers', 'a/b', 'a?b', 'a#b', 'a%20b', 'a b', '-a', 'a-', 'a--b'])('rejects "%s"', (value) => {
+    expect(handle.safeParse(value).success).toBe(false)
   })
 })
 

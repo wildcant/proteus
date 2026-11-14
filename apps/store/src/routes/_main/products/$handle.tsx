@@ -16,7 +16,7 @@ const productSearchSchema = z.object({
   variant: z.string().optional(),
 })
 
-export const Route = createFileRoute('/_main/products/$productId')({
+export const Route = createFileRoute('/_main/products/$handle')({
   ssr: true,
   head: (context) => ({ links: marketHeadLinksFor(context) }),
   validateSearch: productSearchSchema,
@@ -29,7 +29,7 @@ export const Route = createFileRoute('/_main/products/$productId')({
   loader: async ({ context, params }) => {
     // See the list route: the market's country is what the price on this page is quoted in.
     await context.queryClient.ensureQueryData(
-      productQueryOptions(params.productId, { countryCode: context.market.current.iso2 }),
+      productQueryOptions(params.handle, { countryCode: context.market.current.iso2 }),
     )
   },
   headers: () => ({
@@ -40,17 +40,17 @@ export const Route = createFileRoute('/_main/products/$productId')({
 })
 
 function ProductDetailPage() {
-  const { productId } = Route.useParams()
+  const { handle } = Route.useParams()
   const { variant } = Route.useSearch()
   const productLinks: ProductDetailLinks = {
     products: links.BACK_TO_PRODUCTS(),
     browse: links.BROWSE(),
-    variant: (variantId) => links.CHOOSE_VARIANT({ params: { productId }, search: { variant: variantId } }),
-    bagOpen: links.ADD_TO_BAG({ params: { productId } }),
+    variant: (variantId) => links.CHOOSE_VARIANT({ params: { handle }, search: { variant: variantId } }),
+    bagOpen: links.ADD_TO_BAG({ params: { handle } }),
   }
   return (
     <Suspense fallback={<ProductDetailSkeleton />}>
-      <ProductDetail productId={productId} variantId={variant} links={productLinks} />
+      <ProductDetail handle={handle} variantId={variant} links={productLinks} />
     </Suspense>
   )
 }

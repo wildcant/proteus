@@ -1,7 +1,7 @@
 import type { RouteDefinition } from '@framework/http/types.js'
 import { searchable, Tags } from '@framework/http/types.js'
 import type { ProductDTO } from '../../../core/types/product/common.js'
-import * as productByIdRoutes from './[id]/route.js'
+import * as productByHandleRoutes from './[handle]/route.js'
 import * as productRoutes from './route.js'
 
 export default [
@@ -20,15 +20,15 @@ export default [
   },
   {
     method: 'GET',
-    matcher: '/store/products/:id',
-    handler: productByIdRoutes.GET,
-    throws: productByIdRoutes.GetThrows,
+    matcher: '/store/products/:handle',
+    handler: productByHandleRoutes.GET,
+    throws: productByHandleRoutes.GetThrows,
     auth: 'public',
-    middlewares: productByIdRoutes.GetMiddlewares,
-    input: productByIdRoutes.GetInput,
+    middlewares: productByHandleRoutes.GetMiddlewares,
+    input: productByHandleRoutes.GetInput,
     operationId: 'getStoreProduct',
     summary: 'Retrieve a product with variants',
     tags: [Tags.PRODUCTS],
-    output: productByIdRoutes.GetOutput,
+    output: productByHandleRoutes.GetOutput,
   },
 ] satisfies RouteDefinition[]

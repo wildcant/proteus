@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { entityId, httpUrl, longText, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
+import { entityId, handle, httpUrl, longText, MAX_ITEMS, machineCode, shortText } from '../../bounded.js'
 import { AdminSetProductOptionEntry } from '../product-option/payloads.js'
 import { AdminCreateProductVariant } from '../product-variant/payloads.js'
 import { ProductStatus } from './entities.js'
@@ -16,7 +16,8 @@ export const AdminCreateProduct = z
     collectionIds: z.array(entityId).max(MAX_ITEMS.batch).optional(),
     description: longText.optional(),
     discountable: z.boolean().optional(),
-    handle: machineCode.optional(),
+    /** The product's storefront URL, `/products/<handle>`. Omitted, it is derived from the title. */
+    handle: handle.optional(),
     height: z.number().nullable().optional(),
     hsCode: machineCode.optional(),
     images: z.array(AdminCreateProductImage).max(MAX_ITEMS.batch).optional(),

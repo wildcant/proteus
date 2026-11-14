@@ -27,6 +27,6 @@ test.describe('Collection pages', () => {
     await expect(main.getByRole('heading', { level: 3, name: outsider.title })).toBeHidden()
 
     await main.getByRole('heading', { level: 3, name: member.title }).click()
-    await expect(page).toHaveURL(new RegExp(`/en-US/products/${member.id}`))
+    await expect(page).toHaveURL(new RegExp(`/en-US/products/${member.handle}`))
   })
 })

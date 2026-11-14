@@ -46,11 +46,11 @@ export const listStoreProducts = (
  * @summary Retrieve a product with variants
  */
 export const getStoreProduct = (
-    id: string,
+    handle: string,
     params?: GetStoreProductParams,
  ) => {
       return fetcher<StoreProductResponse>(
-      {url: `/store/products/${id}`, method: 'GET',
+      {url: `/store/products/${handle}`, method: 'GET',
         params
     },
       );

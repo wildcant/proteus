@@ -28,7 +28,7 @@ export function ProductGrid({ products, productLink, className, priorityCount = 
         <ProductCard
           key={product.id}
           product={product}
-          link={productLink(product.id)}
+          link={productLink(product.handle)}
           priority={index < priorityCount}
           className={productGridCard()}
         />

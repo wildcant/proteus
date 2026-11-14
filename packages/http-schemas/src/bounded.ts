@@ -68,6 +68,16 @@ export const entityId = z.string().max(MAX_LENGTH.id)
 /** A machine-readable code: sku, barcode, handle, hsCode, country of origin, provider key. */
 export const machineCode = z.string().max(MAX_LENGTH.code)
 
+/**
+ * A storefront URL segment: lowercase letters and digits in hyphen-separated runs, as `toHandle`
+ * writes them. A `/`, `?`, `#` or `%` would cut the path short, and an uppercase twin would be a
+ * second URL for one product.
+ */
+export const handle = machineCode.regex(
+  /^[\p{Ll}\p{Lo}\p{N}]+(?:-[\p{Ll}\p{Lo}\p{N}]+)*$/u,
+  i18n.t('Use lowercase letters and digits joined by hyphens, like "white-sneakers"'),
+)
+
 /** One line of human text: a title, a name, an address line. */
 export const shortText = z.string().max(MAX_LENGTH.shortText, tooLong)
 

@@ -7,6 +7,7 @@ import type {
   ProductImportErrorDTO,
   ProductImportSettingsDTO,
 } from '../../../../core/types/product/common.js'
+import { HANDLE_PATTERN } from '../../../../core/utils/to-handle.js'
 import {
   CUSTOM_METAFIELD_NAMESPACE,
   IMPORT_COLUMNS,
@@ -255,6 +256,10 @@ function readRow(
   const handle = get('handle')
   if (!handle) {
     fail(line, null, 'The row has no URL handle.')
+    return
+  }
+  if (!HANDLE_PATTERN.test(handle)) {
+    fail(line, handle, `The URL handle "${handle}" must be lowercase letters and digits joined by hyphens.`)
     return
   }
   const report = (message: string) => fail(line, handle, message)

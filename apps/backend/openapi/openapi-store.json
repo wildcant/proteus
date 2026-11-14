@@ -4980,7 +4980,7 @@
         }
       }
     },
-    "/store/products/{id}": {
+    "/store/products/{handle}": {
       "get": {
         "operationId": "getStoreProduct",
         "summary": "Retrieve a product with variants",
@@ -4995,7 +4995,7 @@
               "minLength": 1
             },
             "required": true,
-            "name": "id",
+            "name": "handle",
             "in": "path"
           },
           {

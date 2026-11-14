@@ -26,7 +26,7 @@ test.describe('Orders', () => {
       if (cartId) await factories.destroy.cart(cartId)
     })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     // Adding opens the cart panel — that is the confirmation now, in place of a toast, and it
