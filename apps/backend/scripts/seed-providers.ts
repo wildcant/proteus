@@ -10,6 +10,7 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { appConfig } from '../src/config.js'
 import { DB_OPTIONS } from '../src/core/db/config.js'
 import { env } from '../src/env.js'
 import { syncFulfillmentProviders } from '../src/modules/fulfillment/sync-providers.js'
@@ -20,13 +21,13 @@ const client = postgres(env.POOLER_DATABASE_URL, { prepare: false })
 const db = drizzle(client, DB_OPTIONS)
 const getDb = () => db
 
-await syncPaymentProviders(getDb)
+await syncPaymentProviders(getDb, appConfig.projectConfig.providers)
 console.info('Seeded payment providers')
 
 await syncFulfillmentProviders(getDb)
 console.info('Seeded fulfillment providers')
 
-await syncNotificationProviders(getDb)
+await syncNotificationProviders(getDb, appConfig.projectConfig.providers)
 console.info('Seeded notification providers')
 
 await client.end()

@@ -11,8 +11,10 @@ empty Cloudflare account, and starting a new store from this codebase.
 | Storefront | Worker (TanStack Start, SSR) | `proteus` | `apps/store/wrangler.jsonc` |
 | Admin | Pages (static build) | `proteus-admin` | `deploy` script in `apps/admin/package.json` |
 | Event bus | Queue + dead-letter queue | `proteus-events`, `proteus-events-dlq` | `apps/backend/wrangler.jsonc` |
-| Uploaded and seed images | R2 bucket with a public URL | `proteus-assets` | `S3_*` in `.env` |
-| Dotenv private keys | R2 buckets | `dotenv-keys`, `dotenv-admin` | `pull-keys` in root `package.json` |
+| Uploaded and seed images, hero media | R2 bucket with a public URL | `proteus-assets` | `S3_*` in `.env` |
+| Image resizing | Images binding | `IMAGES` | `apps/store/wrangler.jsonc` |
+| Database connection pool | Hyperdrive | `proteus-db` | `apps/backend/wrangler.jsonc` |
+| Dotenv private keys | R2 buckets | `dotenv-keys`, `dotenv-admin` | `pull-keys`, `push-keys` in root `package.json` |
 | Database | Supabase Postgres | — | `POOLER_DATABASE_URL`, `DIRECT_DATABASE_URL` |
 
 Production needs no Temporal. On workerd the backend runs workflows in-process with the simple
@@ -22,9 +24,10 @@ adapter (see `apps/backend/README.md`).
 
 Production values live in the root `.env`, encrypted with dotenvx. Every app reads that one file.
 
-- **Backend and storefront Workers** read the values at runtime, as Worker secrets.
-- **Storefront and admin builds** read `VITE_BACKEND_URL` at build time and bake it into the bundle.
-  If the backend URL changes, redeploy both. Pushing secrets alone does not update them.
+- **The backend Worker** reads the values at runtime, as Worker secrets.
+- **Storefront and admin builds** read the `VITE_*` values at build time and bake them into the
+  bundle. If one changes, redeploy both. The storefront Worker has no secrets: at runtime it reads
+  only its bindings.
 
 Three private keys decrypt the env files. R2 stores them in two buckets, so access to the
 production key can be granted separately:
@@ -54,13 +57,37 @@ dotenvx get -f .env 2>&1 | grep -c MISSING_PRIVATE_KEY   # must print 0
 | `STORE_URL` | `https://proteus.<subdomain>.workers.dev` |
 | `ADMIN_URL` | `https://proteus-admin.pages.dev` |
 | `CORS_ORIGIN` | Comma-separated: the admin URL and the store URL |
-| `JWT_SECRET` | A long random string, for example `openssl rand -base64 48` |
-| `STRIPE_*` | Stripe secret, webhook secret and publishable keys |
-| `RESEND_API_KEY`, `RESEND_FROM` | Resend key and a sender on a verified domain |
+| `JWT_SECRET` | At least 32 random characters. `cloudflare:create` generates one. |
+| `STRIPE_*` | Stripe secret, webhook secret and publishable keys. Only with `stripe` turned on (below). |
+| `RESEND_API_KEY`, `RESEND_FROM` | Resend key and a sender on a verified domain. Only with `resend` turned on. |
 | `S3_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
 | `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | An R2 API token with read and write access to the assets bucket |
 | `S3_BUCKET`, `S3_REGION`, `S3_PREFIX` | `proteus-assets`, `auto`, `images` |
-| `S3_FILE_URL` | The bucket's public `https://pub-….r2.dev` URL |
+| `S3_FILE_URL`, `VITE_IMAGE_ORIGIN`, `VITE_MEDIA_ORIGIN` | The bucket's public `https://pub-….r2.dev` URL |
+
+### Optional integrations
+
+Stripe and Resend are optional. `projectConfig.providers` in `apps/backend/src/config.ts` lists the
+ones the store uses:
+
+```ts
+providers: {
+  payment: ['stripe'],
+  notification: ['resend'],
+},
+```
+
+A store that takes no card payments removes `stripe` and leaves the `STRIPE_*` variables unset. With
+one turned on and its variables missing, the backend refuses to start and names each missing
+variable. The tests turn every integration on whatever the store chose, so removing one never
+breaks the suite.
+
+Removing an integration from a database that already has it seeded leaves its provider row enabled.
+Disable it before seeding markets, which link every enabled payment provider to every region:
+
+```sql
+update payment_provider set is_enabled = false where id = 'pp_stripe_default';
+```
 
 `<subdomain>` is the account's workers.dev subdomain. Read it from the API, not from memory, because
 it can be renamed:
@@ -77,10 +104,13 @@ Run every command from the repository root unless a step says otherwise. Wrangle
 
 ### 1. Create the database
 
-1. Create a Supabase project.
-2. Copy both connection strings from **Connect**: the direct connection (port 5432) and the
+1. Create a Supabase project, in the region closest to the store's shoppers.
+2. Turn off its Data API (**Project Settings → Data API**). The backend connects to Postgres
+   directly. Left on, the Data API serves the `public` schema over REST with the anon key, and the
+   migrated tables have no row-level security.
+3. Copy both connection strings from **Connect**: the direct connection (port 5432) and the
    transaction pooler (port 6543).
-3. Store them in `.env`. Run these in your own terminal, so the password stays out of logs and
+4. Store them in `.env`. Run these in your own terminal, so the password stays out of logs and
    chats:
 
    ```bash
@@ -88,19 +118,54 @@ Run every command from the repository root unless a step says otherwise. Wrangle
    dotenvx set POOLER_DATABASE_URL 'postgresql://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:6543/postgres' -f .env
    ```
 
+The direct host is IPv6-only on the free plan. If migrations cannot reach it from your network, use
+the session pooler (port 5432 on the pooler host) as `DIRECT_DATABASE_URL` instead. The transaction
+pooler does not support migrations.
+
 ### 2. Create the Cloudflare resources
 
 ```bash
-cd apps/backend
-pnpm exec wrangler queues create proteus-events
-pnpm exec wrangler queues create proteus-events-dlq
-pnpm exec wrangler r2 bucket create proteus-assets
-pnpm exec wrangler r2 bucket dev-url enable proteus-assets   # prints the public URL for S3_FILE_URL
-pnpm exec wrangler pages project create proteus-admin --production-branch=main
+pnpm exec wrangler login
+pnpm run cloudflare:create proteus
 ```
 
-Create an R2 API token for the assets bucket in the dashboard (**R2 → Manage API tokens**). Then
-fill in the remaining variables from the table above with `dotenvx set <KEY> <value> -f .env`.
+The script creates the queues, the assets bucket with its public URL and the admin's upload rule,
+the admin Pages project, the Hyperdrive config, and the two key buckets. It writes the Hyperdrive ID
+into `apps/backend/wrangler.jsonc`, and fills `JWT_SECRET`, `FILE_PROVIDER`, `S3_BUCKET`, `S3_REGION`,
+`S3_ENDPOINT`, `S3_FILE_URL`, `VITE_IMAGE_ORIGIN` and `VITE_MEDIA_ORIGIN` in `.env`. A rerun skips what
+exists.
+
+Then, in the dashboard:
+
+1. **Turn on Images** (**Images → Enable**). The storefront resizes product photos with it.
+2. **Create an R2 API token** (**R2 → Manage API tokens → Create Account API token**): **Object Read &
+   Write**, limited to the assets bucket, no TTL, no IP filter. The backend Worker signs with it, and
+   so do the admin's uploads from the browser, so neither a TTL nor an IP filter fits. Store the
+   **Access Key ID** and **Secret Access Key**, not the Token value:
+
+   ```bash
+   dotenvx set S3_ACCESS_KEY_ID <access key id> -f .env
+   dotenvx set S3_SECRET_ACCESS_KEY <secret access key> -f .env
+   ```
+
+3. **Fill the URLs** in `.env`: `VITE_BACKEND_URL`, `STORE_URL`, `ADMIN_URL` and `CORS_ORIGIN`, from the
+   table above.
+
+Upload the keys, so another machine can decrypt the env files:
+
+```bash
+pnpm run push-keys
+```
+
+Upload the storefront's large media (the home hero's video and posters), which is not committed:
+
+```bash
+cd apps/store/public
+for file in media/hero/*; do
+  pnpm exec wrangler r2 object put "proteus-assets/$file" --file "$file" --remote \
+    --cache-control 'public, max-age=31536000, immutable'
+done
+```
 
 ### 3. Migrate and seed
 
@@ -115,13 +180,18 @@ dotenvx run -f ../../.env -- pnpm run db:migrate
 Then pick one seed:
 
 ```bash
-# Markets only: regions, countries, the store and payment providers. No catalogue, no accounts.
-dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-markets.ts
+# A real store: providers, permissions, markets, and its first admin. No catalogue.
+pnpm run db:seed:providers
 pnpm run db:seed:permissions
+dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-markets.ts
+pnpm run admin:create
 
 # Full demo: catalogue, images, users, a cart, shipping options.
 FILE_PROVIDER=s3 dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-dev.ts
 ```
+
+`admin:create` asks for a name, an email and a password, and makes a super admin. Run it in your own
+terminal: the password is typed, not passed as an argument, so it stays out of shell history.
 
 The full seed needs `FILE_PROVIDER=s3`. Without it, the seed copies photos to local disk and
 stores `localhost` URLs.
@@ -134,7 +204,6 @@ stores `localhost` URLs.
 
 ```bash
 pnpm run sync-secrets:backend
-pnpm run sync-secrets:store
 pnpm --filter backend run deploy
 pnpm --filter store run deploy
 pnpm --filter admin run deploy
@@ -175,8 +244,8 @@ pnpm exec wrangler tail proteus-backend --format pretty
 |---|---|
 | Code | Deploy each app that changed. A backend change that the admin or store depends on goes out first. |
 | Schema | Run `db:migrate` against production before you deploy the backend. |
-| A secret | `dotenvx set` it in `.env`, run `sync-secrets:backend` and `sync-secrets:store`, and commit `.env`. |
-| `VITE_BACKEND_URL` | Same as a secret, then redeploy the store and the admin. |
+| A secret | `dotenvx set` it in `.env`, run `sync-secrets:backend`, and commit `.env`. |
+| A `VITE_*` value | `dotenvx set` it in `.env`, commit it, then redeploy the store and the admin. |
 
 ## Starting a new store from this codebase
 
@@ -198,8 +267,9 @@ steps below, `<store>` is the new store's short name.
    | `apps/backend/wrangler.jsonc` | `name`, the queue producer, the queue consumer and `dead_letter_queue` |
    | `apps/store/wrangler.jsonc` | `name` |
    | `apps/admin/package.json` | `--project-name` in `deploy` |
-   | `package.json` | the Worker names in `sync-secrets:*` |
-   | `scripts/pull-keys.sh` | the R2 paths of both key objects (for example `dotenv-keys/<store>/.env.keys`) |
+   | `package.json` | the Worker name in `sync-secrets:backend` |
+   | `scripts/pull-keys.sh`, `scripts/push-keys.sh` | the R2 paths of both key objects (for example `dotenv-keys/<store>/.env.keys`) |
+   | `apps/backend/src/config.ts` | `projectConfig.providers`: the integrations the store uses |
    | `apps/backend/docker-compose.yml`, `apps/backend/docker-compose.test.yml` | add `name: <store>` and `name: <store>-test` at the top, so local Docker containers and volumes stay apart from Proteus |
 
 3. **Generate new keys.** The fork must not share keys with Proteus. For each of `.env.local`,
@@ -207,12 +277,9 @@ steps below, `<store>` is the new store's short name.
    values again with `dotenvx set`, and dotenvx creates a new key pair. Blank the production values
    in `.env` until step 4 fills them in.
 
-4. **Run [First deployment](#first-deployment)** with the `<store>` names. Use a new Supabase
-   project, new queues, a new assets bucket and a new Pages project.
-
-5. **Upload the new private keys** to the R2 paths in `scripts/pull-keys.sh`: the local and test
-   keys to the first object, the production key to the second. Another machine can then decrypt
-   the env files with `pnpm run pull-keys`.
+4. **Run [First deployment](#first-deployment)** with the `<store>` names:
+   `pnpm run cloudflare:create <store>` creates the new resources, and `pnpm run push-keys` uploads the
+   new keys. Use a new Supabase project.
 
 To run a fork and Proteus on one machine at the same time, give the fork its own Docker Compose
 project, database and bucket names, and its own host ports. Set `name:` at the top of both compose
@@ -262,3 +329,6 @@ If a sync was squashed, check that git still lists the upstream commits as missi
 | `[MISSING_PRIVATE_KEY] could not decrypt …` | The key for that env file is not in `.env.keys` | Run `pnpm run pull-keys` |
 | A Worker URL returns `error code: 1042` | The workers.dev route is disabled for that Worker | Enable it, or use the URL the app is actually served from |
 | Images point at `localhost` | The seed ran without `FILE_PROVIDER=s3` | Seed again with `FILE_PROVIDER=s3` |
+| A wrangler command in one app fails with `Authentication error [code: 10000]` for an account you are not logged in to | Each app caches the account it last used in `node_modules/.cache/wrangler/wrangler-account.json`, and that app's cache predates a login to another account | Set `CLOUDFLARE_ACCOUNT_ID`, or copy the root's `node_modules/.cache/wrangler/wrangler-account.json` over the app's |
+| The backend refuses to start: `STRIPE_…: Required while "stripe" is turned on` | An integration is on in `src/config.ts` without its keys | Set the keys, or remove the integration from `projectConfig.providers` |
+| The backend refuses to start: `JWT_SECRET: Too small` | `JWT_SECRET` is empty or shorter than 32 characters | `dotenvx set JWT_SECRET "$(openssl rand -base64 48)" -f .env`, then push the secrets |

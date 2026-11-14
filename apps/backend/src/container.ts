@@ -102,9 +102,13 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, inventoryModule)
   await bootstrapModule(container, pricingModule)
   await bootstrapModule(container, productModule)
-  await bootstrapModule(container, notificationModule, notificationProviderDeclarations)
+  await bootstrapModule(
+    container,
+    notificationModule,
+    notificationProviderDeclarations(configModule.projectConfig.providers),
+  )
   await bootstrapModule(container, orderModule)
-  await bootstrapModule(container, paymentModule, paymentProviderDeclarations)
+  await bootstrapModule(container, paymentModule, paymentProviderDeclarations(configModule.projectConfig.providers))
   await bootstrapModule(container, regionModule)
   await bootstrapModule(container, stockLocationModule)
   await bootstrapModule(container, storeModule)
