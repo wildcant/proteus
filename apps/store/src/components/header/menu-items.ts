@@ -30,7 +30,7 @@ export type MenuSection = {
 }
 
 /**
- * One top-level menu destination. An entry the structure file gave `secciones` opens those, with its
+ * One top-level menu destination. An entry the structure file gave `sections` opens those, with its
  * `footer` links set apart below them; any other Category expands into its child Categories.
  */
 export type MenuItem = MenuChild & { children: MenuChild[]; sections: MenuSection[]; footer: MenuChild[] }
@@ -93,7 +93,7 @@ const categoryChild = ({ id, name, handle }: StoreProductCategoryTreeNode): Menu
   target: { type: 'category', handle },
 })
 
-/** Sections replace the children: the file's columns are the whole panel, `subcategorias` among them. */
+/** Sections replace the children: the file's columns are the whole panel, `subcategories` among them. */
 const categoryItem = (node: StoreProductCategoryTreeNode, sections: MenuSection[], footer: MenuChild[]): MenuItem => ({
   ...categoryChild(node),
   children: sections.length > 0 ? [] : node.children.map(categoryChild),

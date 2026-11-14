@@ -1410,7 +1410,7 @@ export class ProductModuleService implements IProductModuleService {
     if (unknown.length > 0) {
       throw new AppError({
         type: ErrorTypes.INVALID_DATA,
-        message: i18n.t('No metafield is defined with the key {keys}. Declare it under campos in the structure file.'),
+        message: i18n.t('No metafield is defined with the key {keys}. Declare it under fields in the structure file.'),
         values: { keys: unknown.join(', ') },
       })
     }

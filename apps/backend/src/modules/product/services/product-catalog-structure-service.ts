@@ -40,7 +40,7 @@ const NO_CHANGES: CatalogStructureChangesDTO = {
 }
 
 /**
- * Applies a structure file (`estructura.yaml`) to the metafield definitions, the Categories and the
+ * Applies a structure file (`catalog-structure.yaml`) to the metafield definitions, the Categories and the
  * Collections. The file is the source: definitions are matched by key and groupings by handle, the
  * ones it names are made to read as it says, and the ones it leaves out are deleted.
  *
@@ -109,6 +109,7 @@ export class ProductCatalogStructureService {
       for (const category of flattenStructureCategories(structure.categories)) {
         const fields = {
           name: category.name,
+          heading: category.heading,
           rule: category.rule,
           isActive: true,
           parentId: category.parentHandle ? (categoryIdOf.get(category.parentHandle) ?? null) : null,

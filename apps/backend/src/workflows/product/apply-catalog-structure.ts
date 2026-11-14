@@ -18,12 +18,12 @@ type ApplyCatalogStructureOutput = {
 }
 
 /**
- * Applies a structure file: the store's menu, then the Categories and Collections. The file is the
- * source, so groupings it leaves out are deleted.
+ * Applies a structure file: the store's menu, search and filters, then the Categories and
+ * Collections. The file is the source, so groupings it leaves out are deleted.
  *
- * The menu goes first because it is the step that can be undone: the groupings are the product
- * module's single transaction and the last step, so when they fail nothing of theirs is left, and
- * the menu is put back. A menu briefly naming a Category not yet created is harmless — the store
+ * The store's part goes first because it is the step that can be undone: the groupings are the
+ * product module's single transaction and the last step, so when they fail nothing of theirs is
+ * left, and the store's part is put back. A menu briefly naming a Category not yet created is harmless — the store
  * skips a handle that names nothing live.
  */
 export const applyCatalogStructureWorkflow = createWorkflow<ApplyCatalogStructureInput, ApplyCatalogStructureOutput>(
@@ -52,11 +52,17 @@ export const applyCatalogStructureWorkflow = createWorkflow<ApplyCatalogStructur
         const storeService = container.resolve(Modules.STORE)
         const store = await storeService.resolveStore()
         if (!store) throw new WorkflowTerminalError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
-        await storeService.updateStores([store.id], { navigation: structure.menu })
-        return { storeId: store.id, current: store.navigation, next: structure.menu }
+        const { menu, search, filters } = structure
+        await storeService.updateStores([store.id], { navigation: menu, search, filters })
+        return {
+          storeId: store.id,
+          current: store.navigation,
+          next: menu,
+          previous: { search: store.search, filters: store.filters },
+        }
       },
-      async ({ storeId, current }, { container }) => {
-        await container.resolve(Modules.STORE).updateStores([storeId], { navigation: current })
+      async ({ storeId, current, previous }, { container }) => {
+        await container.resolve(Modules.STORE).updateStores([storeId], { navigation: current, ...previous })
       },
     )
 
@@ -64,6 +70,6 @@ export const applyCatalogStructureWorkflow = createWorkflow<ApplyCatalogStructur
       container.resolve(Modules.PRODUCT).applyCatalogStructure(structure),
     )
 
-    return { changes, menu: navigation }
+    return { changes, menu: { current: navigation.current, next: navigation.next } }
   },
 )

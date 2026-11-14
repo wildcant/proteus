@@ -52,11 +52,11 @@ export type ReadNavigationEntryDTO = Omit<StoreNavigationEntryDTO, 'sections'> &
  * The store's menu as the storefront renders it: each entry's sections resolved into columns of
  * links, each link a Category's or Collection's list by handle plus the field values it filters by.
  *
- * `subcategorias` are the entry's Visible children, closed by a "View all" of the entry's list.
- * `valores` are the values read for it cut at `limit`. A grouped `valores` becomes one column per
+ * `subcategories` are the entry's Visible children, closed by a "View all" of the entry's list.
+ * `values` are the values read for it cut at `limit`. A grouped `values` becomes one column per
  * group, the first `groups` of them, each with its first `limit` values filtered by both fields and
- * closed by a "View all" of the group. An `opcion` section draws its values as chips, each filtering
- * the entry's list by that option. `enlaces` and the entry's `pie` are as written, a Category or
+ * closed by a "View all" of the group. An `option` section draws its values as chips, each filtering
+ * the entry's list by that option. `links` and the entry's `footer` are as written, a Category or
  * Collection link labelled by its own name unless the file names it.
  *
  * A link to a grouping that is not Visible is dropped, and so is a section left with no links, so

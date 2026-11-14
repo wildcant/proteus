@@ -13,7 +13,7 @@ export default [
     operationId: 'previewCatalogStructure',
     summary: 'Preview a structure file',
     description:
-      'Reads an uploaded structure file (`estructura.yaml`: categorias, colecciones, menu) and answers with the Categories and Collections it would create, update, move and delete, and the menu before and after. Every error carries its path in the file. Writes nothing.',
+      'Reads an uploaded structure file (fields, categories, collections, menu, search and filters) and answers with the Categories and Collections it would create, update, move and delete, and the menu before and after. Every error carries its path in the file. Writes nothing.',
     tags: [Tags.PRODUCTS],
     output: previewRoutes.PostOutput,
     throws: previewRoutes.PostThrows,

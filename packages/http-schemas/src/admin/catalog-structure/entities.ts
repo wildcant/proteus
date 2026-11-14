@@ -1,14 +1,14 @@
 import { z } from 'zod'
 
-/** One problem with a structure file. `path` is where it is in the file, `categorias[0].hijos[1].handle`. */
+/** One problem with a structure file. `path` is where it is in the file, `categories[0].children[1].handle`. */
 export const AdminCatalogStructureError = z
   .object({ path: z.string(), message: z.string() })
   .openapi('AdminCatalogStructureError')
 export type AdminCatalogStructureError = z.input<typeof AdminCatalogStructureError>
 
 /**
- * A metafield definition the file creates, updates or deletes. `filterable` is its `filtro`; `source`
- * is its `origen`, `vendor` being the product's brand and `type` its Product Type rather than a metafield.
+ * A metafield definition the file creates, updates or deletes. `filterable` is its `filterable`; `source`
+ * is its `source`, `vendor` being the product's brand and `type` its Product Type rather than a metafield.
  */
 export const AdminCatalogStructureMetafieldChange = z
   .object({
@@ -36,7 +36,7 @@ const AdminNavigationTargetType = z.enum(['category', 'collection'])
 
 /**
  * A link a menu section names by hand: the entry's own list filtered by field values (`filter`, by
- * clave), or a Category or Collection by handle, labelled by `name` or, when null, by its own.
+ * key), or a Category or Collection by handle, labelled by `name` or, when null, by its own.
  */
 const AdminNavigationLink = z
   .discriminatedUnion('type', [
@@ -45,7 +45,7 @@ const AdminNavigationLink = z
   ])
   .openapi('AdminNavigationLink')
 
-/** A section's `nota`, the short text shown under its links. */
+/** A section's `note`, the short text shown under its links. */
 const note = z.string().optional()
 
 /**

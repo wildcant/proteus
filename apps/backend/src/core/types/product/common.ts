@@ -1,7 +1,7 @@
 import type { SQL } from 'drizzle-orm'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 import type { PriceDTO } from '../pricing/common.js'
-import type { StoreNavigationEntryDTO } from '../store/common.js'
+import type { StoreNavigationEntryDTO, StoreSearchDTO } from '../store/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
@@ -40,6 +40,7 @@ export type ProductDTO = {
 export interface FilterableProductProps extends BaseFilterable<FilterableProductProps> {
   id?: string | string[]
   title?: string | OperatorMap<string>
+  thumbnail?: string | OperatorMap<string>
   handle?: string | string[]
   status?: ProductStatusType | ProductStatusType[]
   isGiftcard?: boolean
@@ -376,7 +377,7 @@ export type ProductMetafieldType = 'list.single_line_text_field'
  */
 export type ProductFieldSource = 'metafield' | 'vendor' | 'type'
 
-/** A named product field ("Género", key `genero`), as the structure file's `campos` declare it. */
+/** A named product field ("Género", key `genero`), as the structure file's `fields` declare it. */
 export type ProductMetafieldDefinitionDTO = {
   id: string
   namespace: string
@@ -426,6 +427,8 @@ export type ProductMetafieldDTO = {
 export type ProductCategoryDTO = {
   id: string
   name: string
+  /** The category page's heading; `null` shows the name. */
+  heading: string | null
   description: string
   handle: string
   parentId: string | null
@@ -470,6 +473,8 @@ export interface FilterableProductCollectionProps extends BaseFilterable<Filtera
 /** A Category as a structure file declares it, its children in file order. `rule` null is a manual Category. */
 export type CatalogStructureCategoryDTO = {
   name: string
+  /** `heading`: the category page's heading, `null` for the name. */
+  heading: string | null
   handle: string
   rule: ProductGroupingRuleDTO | null
   children: CatalogStructureCategoryDTO[]
@@ -482,19 +487,19 @@ type CatalogStructureCollectionDTO = {
   rule: ProductGroupingRuleDTO | null
 }
 
-/** A metafield definition as a structure file's `campos` declare it. */
+/** A metafield definition as a structure file's `fields` declare it. */
 type CatalogStructureMetafieldDTO = {
   name: string
   key: string
-  /** `filtro: true`: offered as a storefront filter. */
+  /** `filterable: true`: offered as a storefront filter. */
   filterable: boolean
-  /** `origen: vendor`: the product's brand rather than a metafield. */
+  /** `source: vendor`: the product's brand rather than a metafield. */
   source: ProductFieldSource
 }
 
 /**
- * The store's structure as `estructura.yaml` declares it: the metafield definitions its rules read,
- * the Category tree, the Collections and the menu. The file is the source: applying it makes the
+ * The store's structure as its structure file declares it: the metafield definitions its rules read,
+ * the Category tree, the Collections, the menu, what search offers and the filters. The file is the source: applying it makes the
  * catalogue's definitions and groupings exactly these.
  */
 export type CatalogStructureDTO = {
@@ -502,9 +507,12 @@ export type CatalogStructureDTO = {
   categories: CatalogStructureCategoryDTO[]
   collections: CatalogStructureCollectionDTO[]
   menu: StoreNavigationEntryDTO[]
+  search: StoreSearchDTO
+  /** The storefront's filters by key, in the order it shows them; `null` offers every filterable one. */
+  filters: string[] | null
 }
 
-/** One problem with a structure file. `path` names where it is, `categorias[0].hijos[1].handle`. */
+/** One problem with a structure file. `path` names where it is, `categories[0].children[1].handle`. */
 export type CatalogStructureErrorDTO = {
   path: string
   message: string
@@ -670,7 +678,7 @@ export type ProductImportSummaryDTO = {
   ignoredColumns: string[]
   /** The metafields the file has a column for, by key, with the name the store gives each. */
   metafields: Array<{ key: string; name: string }>
-  /** What the store calls the brand: the vendor campo's name, `null` when no campo reads it. */
+  /** What the store calls the brand: the vendor field's name, `null` when no field reads it. */
   brandName: string | null
   firstProduct: ImportedProductDTO | null
 }

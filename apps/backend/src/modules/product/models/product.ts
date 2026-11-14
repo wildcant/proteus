@@ -40,7 +40,7 @@ export const productTable = pgTable(
      * soft-deleting a Type leaves the id in place; reads join live Types only.
      */
     typeId: text().references(() => productTypeTable.id, { onDelete: 'set null' }),
-    /** The product's brand (Nike, Adidas), the column a Shopify CSV calls Vendor. The structure file's vendor campo reads it. */
+    /** The product's brand (Nike, Adidas), the column a Shopify CSV calls Vendor. The structure file's vendor field reads it. */
     brand: text(),
     ...timestamps,
   },

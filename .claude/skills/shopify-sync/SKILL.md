@@ -27,18 +27,18 @@ expose their name as `textContent` rather than `aria-label`.
 ## 1. Build the manifest
 
 ```bash
-pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/estructura.yaml] [path/to/catalogo.csv]
+pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [path/to/catalog-structure.yaml] [path/to/catalog.csv]
 ```
 
 Pass the product CSV too (absolute paths, or relative to `apps/backend`): a menu section that lists a
-campo's values (`mostrar: { valores: <clave> }`, grouped or not) or an option's values
-(`mostrar: { opcion: Talla }`) reads them off the CSV's products, and the script stops without it.
+field's values (`show: { values: <key> }`, grouped or not) or an option's values
+(`show: { option: Talla }`) reads them off the CSV's products, and the script stops without it.
 
 It prints `{ metafields, filters, collections, menu }`:
 
 - `metafields[]`: `{ name, namespace, key, type }`, the product metafield definitions the rules read.
-  `type` is always `list.single_line_text_field`. The vendor campo (`origen: vendor`, the brand) is
-  the product's built-in Vendor, and the type campo (`origen: type`) its built-in Product type; neither
+  `type` is always `list.single_line_text_field`. The vendor field (`source: vendor`, the brand) is
+  the product's built-in Vendor, and the type field (`source: type`) its built-in Product type; neither
   has a definition.
 - `filters[]`: the storefront filters, in order. `{ name, source: 'metafield', metafield }` is a
   metafield (`custom.<key>`); `{ name, source: 'vendor' }` is the Vendor, which Search & Discovery
@@ -54,7 +54,7 @@ It prints `{ metafields, filters, collections, menu }`:
   `filter.p.product_type=`, `filter.p.m.custom.<key>=`, `filter.v.option.talla=42`). A menu entry
   with sections has one child per section (Marcas), each holding its links (Nike); a grouped section
   has one child per group instead (Tenis › Adidas › Samba), the group linking the entry filtered by
-  it. The entry's footer links (`pie`) follow its sections as plain children. A section's `nota` has
+  it. The entry's footer links (`footer`) follow its sections as plain children. A section's `note` has
   no place in a Shopify menu and is left out.
 
 A non-zero exit prints the structure file's errors; stop and show them to the user.
@@ -72,7 +72,7 @@ Productos). For each manifest `metafields[]` entry whose name is not listed yet,
 `/settings/custom_data/product/metafields/create` and:
 
 1. Click "Nombre" and type the entry's `name`. Shopify suggests standards ("Estándares sugeridos");
-   ignore them. Check the button "Espacio de nombres y clave: custom.<key>" reads the manifest key.
+   ignore them. Check the button "Espacio de nombres y key: custom.<key>" reads the manifest key.
 2. Click the "Uno" button next to "Tipo" and choose "Lista de valores".
 3. Open the "Tipo" combobox and pick "Texto de una sola línea". The type then reads "Lista ·
    Texto de una sola línea".
@@ -192,7 +192,7 @@ The Search & Discovery app (`/apps/search-and-discovery/filters`) holds the stor
 filters. Its pages render inside an iframe; snapshots reach into it.
 
 Add one filter per manifest `filters[]` entry, in manifest order, skipping any already listed. A
-campo that is not in `filters[]` (Colecciones) is not a filter; it only builds collections.
+field that is not in `filters[]` (Colecciones) is not a filter; it only builds collections.
 
 1. Open `/apps/search-and-discovery/filters/new`.
 2. Click "Seleccionar fuente". A dialog lists the sources, each as a button "<name>, n de m, botón"
@@ -208,8 +208,8 @@ campo that is not in `filters[]` (Colecciones) is not a filter; it only builds c
    the order the storefront shows them; reorder by drag if an existing one is out of place.
 
 The menu's filtered links (`filter.p.vendor=…`, `filter.p.m.custom.<key>=…`) only narrow the page
-when that field is a filter here, so a section that lists a campo's values needs it in `filters[]`
-(for a campo with `filtro: false`, add the filter anyway, or tell the user the links will not narrow).
+when that field is a filter here, so a section that lists a field's values needs it in `filters[]`
+(for a field with `filterable: false`, add the filter anyway, or tell the user the links will not narrow).
 
 Done when a collection page on the live storefront shows each `filters[]` entry ("Marca", "Género",
 "Tipo") as a separate filter.

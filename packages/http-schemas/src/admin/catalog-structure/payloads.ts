@@ -3,7 +3,7 @@ import { shortText } from '../../bounded.js'
 
 export const AdminApplyCatalogStructure = z
   .object({
-    /** The uploaded structure file (`estructura.yaml`) — upload it private. */
+    /** The uploaded structure file (`catalog-structure.yaml`) — upload it private. */
     fileId: shortText.min(1),
   })
   .openapi('AdminApplyCatalogStructure')

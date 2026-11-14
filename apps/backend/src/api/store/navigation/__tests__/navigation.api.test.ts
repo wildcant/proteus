@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import catalogStructureDefinitions from '../../../admin/catalog-structure/definitions.js'
@@ -9,7 +10,7 @@ import type * as navigationRoutes from '../route.js'
 
 let api: TestApi
 
-/** The store's default market: a `valores` section reads only what it can sell, and the price factory writes USD. */
+/** The store's default market: a `values` section reads only what it can sell, and the price factory writes USD. */
 test.beforeEach(async ({ createApi, factories }) => {
   api = await createApi({
     definitions: [...catalogStructureDefinitions, ...uploadDefinitions, ...navigationDefinitions],
@@ -19,41 +20,41 @@ test.beforeEach(async ({ createApi, factories }) => {
 })
 
 const STRUCTURE = `
-campos:
-  - { nombre: Marca, clave: marca, origen: vendor }
-  - { nombre: Género, clave: genero }
-  - { nombre: Modelo, clave: modelo }
-categorias:
-  - nombre: Hombre
+fields:
+  - { name: Marca, key: marca, source: vendor }
+  - { name: Género, key: genero }
+  - { name: Modelo, key: modelo }
+categories:
+  - name: Hombre
     handle: hombre
-    regla: { genero: [hombre] }
-    hijos:
-      - { nombre: Clásicos, handle: hombre-clasicos, regla: { genero: [hombre], modelo: [Superstar] } }
-      - { nombre: Running, handle: hombre-running }
-  - nombre: Mujer
+    rule: { genero: [hombre] }
+    children:
+      - { name: Clásicos, handle: hombre-clasicos, rule: { genero: [hombre], modelo: [Superstar] } }
+      - { name: Running, handle: hombre-running }
+  - name: Mujer
     handle: mujer
-    regla: { genero: [mujer] }
-colecciones:
-  - { nombre: Rebajas, handle: rebajas, regla: { modelo: [Gazelle, Old Skool] } }
+    rule: { genero: [mujer] }
+collections:
+  - { name: Rebajas, handle: rebajas, rule: { modelo: [Gazelle, Old Skool] } }
 menu:
-  - categoria: hombre
-    secciones:
-      - { nombre: Estilos, mostrar: subcategorias }
-      - { nombre: Marcas, mostrar: { valores: marca } }
-      - { nombre: Modelos, mostrar: { valores: modelo, limite: 2 } }
-      - nombre: Destacados
-        enlaces:
-          - { nombre: Superstar Adidas, filtro: { marca: [Adidas], modelo: [Superstar] } }
-          - { coleccion: rebajas }
-          - { nombre: Para ella, categoria: mujer }
-  - categoria: mujer
-    secciones:
-      - { nombre: Estilos, mostrar: subcategorias }
-      - { nombre: Marcas, mostrar: { valores: marca } }
-  - coleccion: rebajas
-    secciones:
-      - { nombre: Modelos, mostrar: { valores: modelo } }
-  - categoria: hombre-clasicos
+  - category: hombre
+    sections:
+      - { name: Estilos, show: subcategories }
+      - { name: Marcas, show: { values: marca } }
+      - { name: Modelos, show: { values: modelo, limit: 2 } }
+      - name: Destacados
+        links:
+          - { name: Superstar Adidas, filter: { marca: [Adidas], modelo: [Superstar] } }
+          - { collection: rebajas }
+          - { name: Para ella, category: mujer }
+  - category: mujer
+    sections:
+      - { name: Estilos, show: subcategories }
+      - { name: Marcas, show: { values: marca } }
+  - collection: rebajas
+    sections:
+      - { name: Modelos, show: { values: modelo } }
+  - category: hombre-clasicos
 `
 
 test.describe('Store navigation', () => {
@@ -61,7 +62,7 @@ test.describe('Store navigation', () => {
     const upload = await api.request
       .post('/admin/uploads')
       .field('access', 'private')
-      .attach('files', Buffer.from(STRUCTURE), { filename: 'estructura.yaml', contentType: 'application/yaml' })
+      .attach('files', Buffer.from(STRUCTURE), { filename: 'catalog-structure.yaml', contentType: 'application/yaml' })
     const [file] = (upload.body as typeof uploadRoutes.PostOutput._zod.output).files
     const applied = await api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId: file?.id })
     expect(applied.status).toBe(200)
@@ -127,7 +128,7 @@ test.describe('Store navigation', () => {
             list('category', 'hombre', 'Adidas', [['marca', 'Adidas']]),
             list('category', 'hombre', 'Nike', [['marca', 'Nike']]),
           ]),
-          // Cut at `limite`: Superstar is the third.
+          // Cut at `limit`: Superstar is the third.
           column('Modelos', [
             list('category', 'hombre', 'Cortez', [['modelo', 'Cortez']]),
             list('category', 'hombre', 'Gazelle', [['modelo', 'Gazelle']]),
@@ -163,7 +164,7 @@ test.describe('Store navigation', () => {
         ],
         footer: [],
       },
-      // No secciones: the store shows the Category with its children, as before.
+      // No sections: the store shows the Category with its children, as before.
       { type: 'category', handle: 'hombre-clasicos', sections: [], footer: [] },
     ])
   })
@@ -173,28 +174,28 @@ test.describe('Store navigation', () => {
     service,
   }) => {
     await applyStructure(`
-campos:
-  - { nombre: Marca, clave: marca, origen: vendor }
-  - { nombre: Tipo, clave: tipo, origen: type }
-  - { nombre: Modelo, clave: modelo }
-categorias:
-  - nombre: Tenis
+fields:
+  - { name: Marca, key: marca, source: vendor }
+  - { name: Tipo, key: tipo, source: type }
+  - { name: Modelo, key: modelo }
+categories:
+  - name: Tenis
     handle: tenis
-    regla: { tipo: [tenis] }
-colecciones:
-  - { nombre: Los más buscados, handle: los-mas-buscados, regla: { modelo: [Samba] } }
+    rule: { tipo: [tenis] }
+collections:
+  - { name: Los más buscados, handle: los-mas-buscados, rule: { modelo: [Samba] } }
 menu:
-  - categoria: tenis
-    secciones:
-      - nombre: Todos los tenis
-        enlaces: [ { coleccion: los-mas-buscados } ]
-      - nombre: Marcas
-        mostrar: { valores: modelo, agrupar: marca, grupos: 2, limite: 2 }
-      - nombre: Talla
-        mostrar: { opcion: Talla }
-        nota: Te mostramos solo lo que hay en tu talla.
-    pie:
-      - { nombre: Ver todas las marcas, categoria: tenis }
+  - category: tenis
+    sections:
+      - name: Todos los tenis
+        links: [ { collection: los-mas-buscados } ]
+      - name: Marcas
+        show: { values: modelo, groupBy: marca, groups: 2, limit: 2 }
+      - name: Talla
+        show: { option: Talla }
+        note: Te mostramos solo lo que hay en tu talla.
+    footer:
+      - { name: Ver todas las marcas, category: tenis }
 `)
     // The Type is matched ignoring case: the CSV writes "Tenis", the rule "tenis".
     const tenis = await service.create.productType(api.container, { value: 'Tenis' })
@@ -239,7 +240,7 @@ menu:
     await product('Adidas', 'Campus')
     await product('Nike', 'TN')
     const dunk = await product('Nike', 'Dunk')
-    // A third brand, past `grupos`.
+    // A third brand, past `groups`.
     await product('Vans', 'Knu Skool')
     // Not a tenis: its brand and size are not offered.
     await product('Timberland', 'Bota 6', ['11'], botas.id)
@@ -298,13 +299,76 @@ menu:
     const [entry] = await navigation()
     expect(entry?.sections[2]).toEqual(brandColumn('Nike', ['TN']))
   })
+  test('serves the popular searches and the most-searched models with how many match and the newest photo', async ({
+    expect,
+    service,
+  }) => {
+    await applyStructure(`
+fields:
+  - { name: Marca, key: marca, source: vendor }
+  - { name: Modelo, key: modelo }
+search:
+  popular: [botas, sandalias]
+  trending:
+    - { name: Superstar, filter: { modelo: [Superstar] }, note: Clásicos }
+    - { name: Todo Nike, filter: { marca: [Nike] } }
+    - { name: Suede, filter: { modelo: [Suede] } }
+`)
+    const product = async (overrides: {
+      brand: string
+      metafields: Record<string, string[]>
+      thumbnail?: string | null
+      images?: []
+      priced?: boolean
+    }) => {
+      const { priced = true, ...fields } = overrides
+      const { product } = await service.create.product(api.container, {
+        status: 'published',
+        thumbnail: `https://cdn.test/${faker.string.alphanumeric(8)}.png`,
+        ...fields,
+      })
+      const [variant] = await service.create.productVariants(api.container, product.id)
+      if (!variant) throw new Error('Expected a variant')
+      if (priced) await service.create.variantPrices(api.container, [variant.id])
+      return product
+    }
+    await product({ brand: 'Adidas', metafields: { modelo: ['Superstar'] } })
+    const newest = await product({ brand: 'Adidas', metafields: { modelo: ['Superstar'] } })
+    // The newest Nike has no photo, so the model shows the newest one that has.
+    const nikeWithPhoto = await product({ brand: 'Nike', metafields: { modelo: ['Cortez'] } })
+    await product({ brand: 'Nike', metafields: { modelo: ['Dunk'] }, thumbnail: null, images: [] })
+    // Only an unsellable product matches Suede, so it is left out.
+    await product({ brand: 'Puma', metafields: { modelo: ['Suede'] }, priced: false })
+
+    const response = await api.get<typeof navigationRoutes.GetOutput>('/store/navigation')
+    expect(response.status).toBe(200)
+    expect(response.body.search).toEqual({
+      popular: ['botas', 'sandalias'],
+      trending: [
+        {
+          label: 'Superstar',
+          filters: [{ key: 'modelo', value: 'Superstar' }],
+          note: 'Clásicos',
+          count: 2,
+          thumbnail: newest.thumbnail,
+        },
+        {
+          label: 'Todo Nike',
+          filters: [{ key: 'marca', value: 'Nike' }],
+          note: null,
+          count: 2,
+          thumbnail: nikeWithPhoto.thumbnail,
+        },
+      ],
+    })
+  })
 })
 
 async function applyStructure(text: string) {
   const upload = await api.request
     .post('/admin/uploads')
     .field('access', 'private')
-    .attach('files', Buffer.from(text), { filename: 'estructura.yaml', contentType: 'application/yaml' })
+    .attach('files', Buffer.from(text), { filename: 'catalog-structure.yaml', contentType: 'application/yaml' })
   const [file] = (upload.body as typeof uploadRoutes.PostOutput._zod.output).files
   const applied = await api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId: file?.id })
   if (applied.status !== 200) throw new Error(`The structure was not applied: ${JSON.stringify(applied.body)}`)

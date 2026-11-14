@@ -1,4 +1,4 @@
-import type { StoreNavigationEntryDTO } from './common.js'
+import type { StoreNavigationEntryDTO, StoreSearchDTO } from './common.js'
 
 type CreateStoreCurrencyDTO = {
   currencyCode: string
@@ -19,5 +19,7 @@ export type UpdateStoreDTO = {
   defaultRegionId?: string | null
   lowStockThreshold?: number | null
   navigation?: StoreNavigationEntryDTO[]
+  search?: StoreSearchDTO
+  filters?: string[] | null
   metadata?: string | null
 }

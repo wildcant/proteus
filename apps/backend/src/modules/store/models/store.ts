@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
-import type { StoreNavigationEntryDTO } from '../../../core/types/store/common.js'
+import type { StoreNavigationEntryDTO, StoreSearchDTO } from '../../../core/types/store/common.js'
 
 export const storeTable = pgTable('store', {
   id: text().primaryKey().default(sql`CONCAT('store_', REPLACE(gen_random_uuid()::text, '-', ''))`),
@@ -21,6 +21,10 @@ export const storeTable = pgTable('store', {
   lowStockThreshold: integer(),
   /** The menu, in order, as the structure file's `menu` lists it. Handles, not ids: the groupings live in the product module. */
   navigation: jsonb().$type<StoreNavigationEntryDTO[]>().default([]).notNull(),
+  /** The structure file's `search`: the popular search terms and the most-searched models. */
+  search: jsonb().$type<StoreSearchDTO>().default({ popular: [], trending: [] }).notNull(),
+  /** The structure file's `filters`: the storefront's filters by key, in order; `null` offers every filterable one. */
+  filters: jsonb().$type<string[]>(),
   metadata: text(),
   ...timestamps,
 })

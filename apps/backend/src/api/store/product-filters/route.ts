@@ -10,7 +10,7 @@ import {
 } from '@proteus/http-schemas/store'
 import { COLOR_FILTER_KEY } from '@proteus/store-config'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
-import { buildStoreProductFilters } from '@workflows/product/utils/build-store-product-filters.js'
+import { buildStoreProductFilters, orderStoreFilters } from '@workflows/product/utils/build-store-product-filters.js'
 import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductFilterListParams, contextQuery: StorePricingContextParams }
@@ -21,6 +21,7 @@ export const GET = async (
   req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
 ): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
+  const storeService = req.scope.resolve(Modules.STORE)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
   const listing = linkService.repo('storeCatalogListing')
 
@@ -62,7 +63,7 @@ export const GET = async (
 
   // Price, stock and colour are read by the listing in SQL, over the scope; the metafield and option
   // counts stay with the product module, which takes the market's catalogue as a subquery.
-  const [filters, facets, definitions, categories] = await Promise.all([
+  const [filters, facets, definitions, categories, store] = await Promise.all([
     productService.listProductFilters({ ...scope, ...selections }),
     listing.listStoreFacets({
       currencyCode,
@@ -73,18 +74,24 @@ export const GET = async (
     }),
     productService.listMetafieldDefinitions(),
     productService.listCategories(),
+    storeService.resolveStore(),
   ])
 
   return {
     status: 200,
     json: {
-      filters: buildStoreProductFilters(filters, facets.inStockOptionValues, {
-        namedFieldKeys: new Set(
-          definitions.filter((definition) => definition.source !== 'vendor').map((definition) => definition.key),
-        ),
-        categories,
-        colorFilterKey: COLOR_FILTER_KEY,
-      }),
+      // The structure file's `filters` decides which facets show, and in what order.
+      filters: buildStoreProductFilters(
+        orderStoreFilters(filters, store?.filters ?? null),
+        facets.inStockOptionValues,
+        {
+          namedFieldKeys: new Set(
+            definitions.filter((definition) => definition.source !== 'vendor').map((definition) => definition.key),
+          ),
+          categories,
+          colorFilterKey: COLOR_FILTER_KEY,
+        },
+      ),
       priceBounds: facets.priceBounds,
       correctedQuery,
     },

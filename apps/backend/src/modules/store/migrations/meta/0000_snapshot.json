@@ -1,5 +1,5 @@
 {
-  "id": "26f27b24-b909-40d0-93c8-52ffe2532e89",
+  "id": "61a93c35-7bc5-4503-9f9d-1b934e007409",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -147,6 +147,19 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'[]'::jsonb"
+        },
+        "search": {
+          "name": "search",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"popular\":[],\"trending\":[]}'::jsonb"
+        },
+        "filters": {
+          "name": "filters",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "metadata": {
           "name": "metadata",

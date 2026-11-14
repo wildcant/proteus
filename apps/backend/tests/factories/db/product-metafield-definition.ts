@@ -20,7 +20,7 @@ function generateProductMetafieldDefinition(
   }
 }
 
-/** A `custom` list metafield, as a structure file's `campos` would define it. Disposing deletes its values with it. */
+/** A `custom` list metafield, as a structure file's `fields` would define it. Disposing deletes its values with it. */
 export async function createProductMetafieldDefinition(overrides?: Partial<CreateProductMetafieldDefinition>) {
   const values = generateProductMetafieldDefinition(overrides)
   const result = await db.insert(productMetafieldDefinitionTable).values(values).returning()

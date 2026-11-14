@@ -200,7 +200,7 @@ test.describe('Header', () => {
     await expect(main.getByRole('heading', { level: 3, name: gazelle.title })).toBeVisible()
     await expect(main.getByRole('heading', { level: 3, name: superstar.title })).toBeHidden()
 
-    // A `subcategorias` section is the Category's children, under its title.
+    // A `subcategories` section is the Category's children, under its title.
     await rail.getByRole('button', { name: parent.name }).click()
     await expect(page.getByRole('heading', { name: 'Styles' })).toBeVisible()
     await page.getByRole('link', { name: child.name, exact: true }).click()

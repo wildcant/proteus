@@ -39,7 +39,8 @@ export const StoreProductPriceBounds = z
   .openapi('StoreProductPriceBounds')
 
 /**
- * The storefront's filters: the metafields in the structure file's order, then the options by title.
+ * The storefront's filters: those the structure file's `filters` lists, in its order, or else the
+ * metafields in the file's order, then the options by title.
  * A field's values come in the rank of the Categories that name them. A value no product would keep
  * at the current selection is still listed, at 0, so it can show as unavailable rather than vanish.
  */

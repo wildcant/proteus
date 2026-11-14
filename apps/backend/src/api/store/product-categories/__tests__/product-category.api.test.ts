@@ -50,18 +50,22 @@ test.describe('Shop by category', () => {
         id: men.id,
         name: men.name,
         handle: men.handle,
+        heading: null,
         description: 'For him',
         children: [
           {
             id: tops.id,
             name: tops.name,
             handle: tops.handle,
+            heading: null,
             description: '',
-            children: [{ id: tees.id, name: tees.name, handle: tees.handle, description: '', children: [] }],
+            children: [
+              { id: tees.id, name: tees.name, handle: tees.handle, heading: null, description: '', children: [] },
+            ],
           },
         ],
       },
-      { id: women.id, name: women.name, handle: women.handle, description: '', children: [] },
+      { id: women.id, name: women.name, handle: women.handle, heading: null, description: '', children: [] },
     ])
 
     // One sellable product in each Category, and one in none.

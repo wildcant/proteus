@@ -16,30 +16,30 @@ test.describe('buildStructureManifest', () => {
   test('maps each rule shape to the Shopify condition it can express, or flags it', async ({ expect }) => {
     const manifest = buildStructureManifest(
       parse([
-        'campos:',
-        '  - { nombre: Género, clave: genero, filtro: true }',
-        '  - { nombre: Estilo, clave: estilo }',
-        '  - { nombre: Colección, clave: coleccion }',
-        'categorias:',
-        '  - nombre: Hombre',
+        'fields:',
+        '  - { name: Género, key: genero, filterable: true }',
+        '  - { name: Estilo, key: estilo }',
+        '  - { name: Colección, key: coleccion }',
+        'categories:',
+        '  - name: Hombre',
         '    handle: hombre',
-        '    regla: { genero: [hombre, unisex] }',
-        '    hijos:',
-        '      - nombre: Clásicos',
+        '    rule: { genero: [hombre, unisex] }',
+        '    children:',
+        '      - name: Clásicos',
         '        handle: hombre-clasicos',
-        '        regla: { genero: [hombre, unisex], estilo: [clasicos] }',
-        '      - nombre: Ofertas',
+        '        rule: { genero: [hombre, unisex], estilo: [clasicos] }',
+        '      - name: Ofertas',
         '        handle: hombre-ofertas',
-        '  - nombre: Mujer',
+        '  - name: Mujer',
         '    handle: mujer',
-        '    regla: { genero: [mujer], estilo: [clasicos] }',
-        'colecciones:',
-        '  - nombre: Selección de Don Juan',
-        '    handle: seleccion-de-don-juan',
-        '    regla: { coleccion: [seleccion-de-don-juan] }',
+        '    rule: { genero: [mujer], estilo: [clasicos] }',
+        'collections:',
+        '  - name: Staff picks',
+        '    handle: staff-picks',
+        '    rule: { coleccion: [staff-picks] }',
         'menu:',
-        '  - coleccion: seleccion-de-don-juan',
-        '  - categoria: hombre',
+        '  - collection: staff-picks',
+        '  - category: hombre',
       ]),
     )
 
@@ -80,13 +80,13 @@ test.describe('buildStructureManifest', () => {
         },
       },
       {
-        title: 'Selección de Don Juan',
-        handle: 'seleccion-de-don-juan',
-        rule: { applies: 'all', conditions: [{ metafield: 'custom.coleccion', value: 'seleccion-de-don-juan' }] },
+        title: 'Staff picks',
+        handle: 'staff-picks',
+        rule: { applies: 'all', conditions: [{ metafield: 'custom.coleccion', value: 'staff-picks' }] },
       },
     ])
     expect(manifest.menu).toEqual([
-      { title: 'Selección de Don Juan', collectionHandle: 'seleccion-de-don-juan', url: null, children: [] },
+      { title: 'Staff picks', collectionHandle: 'staff-picks', url: null, children: [] },
       {
         title: 'Hombre',
         collectionHandle: 'hombre',
@@ -131,44 +131,44 @@ test.describe('buildStructureManifest', () => {
     ])
   })
 
-  test('the vendor campo is a Proveedor condition and the Brand filter, and menu sections expand from the CSV products', async ({
+  test('the vendor field is a Proveedor condition and the Brand filter, and menu sections expand from the CSV products', async ({
     expect,
   }) => {
     const structure = parse([
-      'campos:',
-      '  - { nombre: Marca, clave: marca, origen: vendor, filtro: true }',
-      '  - { nombre: Género, clave: genero, filtro: true }',
-      '  - { nombre: Modelo, clave: modelo }',
-      'categorias:',
-      '  - nombre: Hombre',
+      'fields:',
+      '  - { name: Marca, key: marca, source: vendor, filterable: true }',
+      '  - { name: Género, key: genero, filterable: true }',
+      '  - { name: Modelo, key: modelo }',
+      'categories:',
+      '  - name: Hombre',
       '    handle: hombre',
-      '    regla: { genero: [hombre] }',
-      '    hijos:',
-      '      - nombre: Clásicos',
+      '    rule: { genero: [hombre] }',
+      '    children:',
+      '      - name: Clásicos',
       '        handle: hombre-clasicos',
-      '        regla: { genero: [hombre], modelo: [Stan Smith] }',
-      '        hijos:',
-      '          - { nombre: Blancos, handle: hombre-clasicos-blancos }',
-      '  - nombre: Nike',
+      '        rule: { genero: [hombre], modelo: [Stan Smith] }',
+      '        children:',
+      '          - { name: Blancos, handle: hombre-clasicos-blancos }',
+      '  - name: Nike',
       '    handle: nike',
-      '    regla: { marca: [Nike] }',
-      'colecciones:',
-      '  - { nombre: Rebajas, handle: rebajas }',
+      '    rule: { marca: [Nike] }',
+      'collections:',
+      '  - { name: Rebajas, handle: rebajas }',
       'menu:',
-      '  - categoria: hombre',
-      '    secciones:',
-      '      - { nombre: Estilos, mostrar: subcategorias }',
-      '      - { nombre: Marcas, mostrar: { valores: marca } }',
-      '      - { nombre: Modelos, mostrar: { valores: modelo, limite: 2 } }',
-      '      - nombre: Destacados',
-      '        enlaces:',
-      '          - { nombre: Stan Smith Adidas, filtro: { marca: [Adidas], modelo: [Stan Smith] } }',
-      '          - { coleccion: rebajas }',
-      '  - coleccion: rebajas',
-      '    secciones:',
+      '  - category: hombre',
+      '    sections:',
+      '      - { name: Estilos, show: subcategories }',
+      '      - { name: Marcas, show: { values: marca } }',
+      '      - { name: Modelos, show: { values: modelo, limit: 2 } }',
+      '      - name: Destacados',
+      '        links:',
+      '          - { name: Stan Smith Adidas, filter: { marca: [Adidas], modelo: [Stan Smith] } }',
+      '          - { collection: rebajas }',
+      '  - collection: rebajas',
+      '    sections:',
       // A manual Collection's members are picked in the admin: the CSV cannot say which, so no values.
-      '      - { nombre: Marcas, mostrar: { valores: marca } }',
-      '  - categoria: nike',
+      '      - { name: Marcas, show: { values: marca } }',
+      '  - category: nike',
     ])
     const csvProduct = (brand: string, metafields: Record<string, string[]>) => ({
       brand,
@@ -188,7 +188,7 @@ test.describe('buildStructureManifest', () => {
     const manifest = buildStructureManifest(structure, csvProducts)
 
     expect(manifest.metafields.map(({ key }) => key)).toEqual(['genero', 'modelo'])
-    // In campo order, the brand first.
+    // In field order, the brand first.
     expect(manifest.filters).toEqual([
       { name: 'Marca', source: 'vendor' },
       { name: 'Género', source: 'metafield', metafield: 'custom.genero' },
@@ -222,7 +222,7 @@ test.describe('buildStructureManifest', () => {
             leaf('Adidas', 'hombre', '/collections/hombre?filter.p.vendor=Adidas'),
             leaf('Nike', 'hombre', '/collections/hombre?filter.p.vendor=Nike'),
           ]),
-          // Sorted and cut at `limite`; values URL-encoded.
+          // Sorted and cut at `limit`; values URL-encoded.
           section('Modelos', [
             leaf('Air Force 1', 'hombre', '/collections/hombre?filter.p.m.custom.modelo=Air%20Force%201'),
             leaf('Gazelle', 'hombre', '/collections/hombre?filter.p.m.custom.modelo=Gazelle'),
@@ -239,11 +239,11 @@ test.describe('buildStructureManifest', () => {
       },
       // Its only section has no values, so it is left with none.
       { title: 'Rebajas', collectionHandle: 'rebajas', url: null, children: [] },
-      // No secciones: the Category's tree, as before.
+      // No sections: the Category's tree, as before.
       { title: 'Nike', collectionHandle: 'nike', url: null, children: [] },
     ])
 
-    // Without the CSV a `valores` section has nothing to read.
+    // Without the CSV a `values` section has nothing to read.
     expect(() => buildStructureManifest(structure)).toThrow(
       'The menu entry "hombre" lists values in "Marcas": pass the product CSV to read them from.',
     )

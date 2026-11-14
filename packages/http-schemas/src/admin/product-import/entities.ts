@@ -70,7 +70,7 @@ export const AdminProductImportSummary = z
     ignoredColumns: z.array(z.string()),
     /** The metafields the file has a column for, with the name the store gives each. */
     metafields: z.array(z.object({ key: z.string(), name: z.string() })),
-    /** The vendor campo's name, which the store calls the brand; `null` when no campo reads it. */
+    /** The vendor field's name, which the store calls the brand; `null` when no field reads it. */
     brandName: z.string().nullable(),
     firstProduct: AdminImportedProduct.nullable(),
   })

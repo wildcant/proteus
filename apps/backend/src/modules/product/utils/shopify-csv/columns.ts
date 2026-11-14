@@ -42,7 +42,7 @@ export const OPTION_COLUMNS = [
  */
 export const METAFIELD_HEADER = /^.*\(product\.metafields\.([^.\s]+)\.([^\s)]+)\)$/
 
-/** The namespace of a merchant's own metafields, the one the structure file's `campos` define. */
+/** The namespace of a merchant's own metafields, the one the structure file's `fields` define. */
 export const CUSTOM_METAFIELD_NAMESPACE = 'custom'
 
 /** `Price / Colombia` — a price in the currency of the region the market names. */
