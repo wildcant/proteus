@@ -2174,10 +2174,14 @@
             "items": {
               "$ref": "#/components/schemas/StoreProductFilter"
             }
+          },
+          "priceBounds": {
+            "$ref": "#/components/schemas/StoreProductPriceBounds"
           }
         },
         "required": [
-          "filters"
+          "filters",
+          "priceBounds"
         ]
       },
       "StoreProductFilter": {
@@ -2208,13 +2212,48 @@
           "value": {
             "type": "string"
           },
+          "label": {
+            "type": "string"
+          },
           "count": {
             "type": "number"
+          },
+          "soldOut": {
+            "type": "boolean"
+          },
+          "swatch": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
           "value",
-          "count"
+          "label",
+          "count",
+          "soldOut",
+          "swatch"
+        ]
+      },
+      "StoreProductPriceBounds": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "min": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "max": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": [
+          "min",
+          "max"
         ]
       },
       "StoreProductTagValueListResponse": {

@@ -21,6 +21,7 @@ import type {
   ProductScopedOptionDTO,
   ProductVariantDTO,
   ProductVariantOptionDTO,
+  VariantOptionLabelDTO,
   VariantOptionValueDTO,
 } from '../../../core/types/product/common.js'
 import type {
@@ -430,6 +431,32 @@ export class ProductOptionService {
       if (map && global) map[global.optionId] = global.optionValueId
     }
     return maps
+  }
+
+  async listVariantOptionLabels(variantIds: string[], context?: Context): Promise<VariantOptionLabelDTO[]> {
+    const maps = await this.listVariantOptionMaps(variantIds, context)
+    const carried = Object.entries(maps).flatMap(([variantId, map]) =>
+      Object.entries(map).map(([optionId, optionValueId]) => ({ variantId, optionId, optionValueId })),
+    )
+    // An empty filter array would reach the query builder as `inArray(column, [])`.
+    if (carried.length === 0) return []
+
+    const [options, values] = await Promise.all([
+      this.productOptionRepository.find({ id: [...new Set(carried.map((row) => row.optionId))] }, undefined, context),
+      this.productOptionValueRepository.find(
+        { id: [...new Set(carried.map((row) => row.optionValueId))] },
+        undefined,
+        context,
+      ),
+    ])
+    const titleById = new Map(options.map((option) => [option.id, option.title]))
+    const valueById = new Map(values.map((value) => [value.id, value]))
+    return carried.flatMap(({ variantId, optionId, optionValueId }) => {
+      const optionTitle = titleById.get(optionId)
+      const value = valueById.get(optionValueId)
+      if (optionTitle === undefined || !value) return []
+      return [{ variantId, optionTitle, value: value.value, rank: value.rank }]
+    })
   }
 
   /**

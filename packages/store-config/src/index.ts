@@ -36,3 +36,9 @@ export const MARKETS: [Market, ...Market[]] = [
     countries: [{ iso2: 'co', localeCode: 'es-CO', displayName: 'Colombia' }],
   },
 ]
+
+/**
+ * The storefront filter whose values are colours, `option.<title>` for a product option or a field's
+ * key: its values each carry a swatch key, and no other filter's do.
+ */
+export const COLOR_FILTER_KEY = 'option.Color'
