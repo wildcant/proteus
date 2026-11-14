@@ -33,6 +33,7 @@ export function applyMiddleware(definition: RouteDefinition): RouteHandler {
         validatedQuery: {
           pagination: { offset, limit, order: parseOrder(order as string | undefined) },
           filters: { ...filters, ...searchFilter },
+          q,
         },
       }
     }

@@ -1,3 +1,5 @@
+import type { FilterableProductProps } from '@core/types/product/common.js'
+import { buildSearchFilter, PRODUCT_SEARCH_COLUMNS } from '@core/utils/build-search-filter.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -29,7 +31,8 @@ export const GET = async (
   const storeService = req.scope.resolve(Modules.STORE)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
-  const { category, collection, tag, filter, minPrice, maxPrice, ...columnFilters } = req.validatedQuery.filters
+  const { filters: query, q } = req.validatedQuery
+  const { category, collection, tag, filter, minPrice, maxPrice, exact, ...columnFilters } = query
   const { productIds, variants, priceByVariantId } = await listSellableProducts(req.scope, req.pricingContext)
   // The price range is a selection like the others: it moves the counts, so a range that keeps
   // nothing leaves every filter in place at 0 rather than taking them away.
@@ -39,18 +42,34 @@ export const GET = async (
     : undefined
 
   // An empty filter array would reach the query builder as `inArray(column, [])`.
-  if (productIds.length === 0) return { status: 200, json: { filters: [], priceBounds: null } }
+  if (productIds.length === 0) return { status: 200, json: { filters: [], priceBounds: null, correctedQuery: null } }
 
   // The list's scope before any selection: which values are offered, and what the price slider spans.
-  const scope = {
+  const unsearched: FilterableProductProps = {
     ...columnFilters,
     ...buildStoreGroupingFilters({ category, collection }),
     status: 'published' as const,
     id: productIds,
   }
+  // The same filters `GET /store/products` builds, so a count is the size of the list the value leads to.
+  const selections: FilterableProductProps = { ...buildStoreGroupingFilters({ tag, filter }), pricedProductIds }
+
+  // Corrected exactly when the list corrects — `q`, not asked for as written, matching nothing under
+  // the same selections — so the counts describe the products the list then shows.
+  const [asked] =
+    q && !exact
+      ? await productService.listProducts(
+          { ...unsearched, ...selections, ...buildSearchFilter(q, PRODUCT_SEARCH_COLUMNS) },
+          { select: ['id'], limit: 1 },
+        )
+      : []
+  const correctedQuery =
+    q && !exact && !asked ? await productService.correctProductSearch(q, { ...unsearched, ...selections }) : null
+  const search = correctedQuery ?? q
+  const scope = { ...unsearched, ...(search ? buildSearchFilter(search, PRODUCT_SEARCH_COLUMNS) : {}) }
+
   const [filters, inView, definitions, categories, store] = await Promise.all([
-    // The same filters `GET /store/products` builds, so a count is the size of the list the value leads to.
-    productService.listProductFilters({ ...scope, ...buildStoreGroupingFilters({ tag, filter }), pricedProductIds }),
+    productService.listProductFilters({ ...scope, ...selections }),
     productService.listProducts(scope, { select: ['id'] }),
     productService.listMetafieldDefinitions(),
     productService.listCategories(),
@@ -99,6 +118,7 @@ export const GET = async (
         },
       ),
       priceBounds: buildPriceBounds(inViewVariants, priceByVariantId),
+      correctedQuery,
     },
   }
 }
