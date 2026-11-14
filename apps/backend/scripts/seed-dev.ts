@@ -372,6 +372,8 @@ if (existingProducts.length > 0) {
   // --- Cart with line items (for testing payment endpoints) ---
   const existingCarts = await cartService.listCarts()
   if (existingCarts.length === 0) {
+    if (!defaultCurrency) throw new Error('Expected the seeded store to have a default currency')
+    const { currencyCode } = defaultCurrency
     const CART_LINES = [
       { sku: 'MENTSHIRT-MEDIUM-GREEN', quantity: 2 },
       { sku: 'HOODIEOLD-LARGE-OLIVE', quantity: 1 },
@@ -385,7 +387,7 @@ if (existingProducts.length > 0) {
       const product = cartProducts.find((candidate) => candidate.id === variant?.productId)
       const price = importedVariants
         .find((candidate) => candidate.sku === sku)
-        ?.prices.find((candidate) => candidate.currencyCode === 'usd')
+        ?.prices.find((candidate) => candidate.currencyCode === currencyCode)
       if (!variant || !product || !price) {
         throw new Error(`Expected product-import.csv to contain the cart line item variant ${sku}`)
       }
@@ -400,7 +402,7 @@ if (existingProducts.length > 0) {
       }
     })
 
-    const [cart] = await cartService.createCarts([{ currencyCode: 'usd', email: 'test@example.com', items }])
+    const [cart] = await cartService.createCarts([{ currencyCode, email: 'test@example.com', items }])
     const total = items.reduce((sum, item) => sum.plus(item.unitPrice.times(item.quantity)), new BigNumber(0))
     console.info(`Seeded cart ${cart?.id} with ${items.length} line items (total: $${total.toFixed(2)})`)
   } else {

@@ -2,6 +2,8 @@ import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import type { Sql } from 'postgres'
+import { createDatabaseExtensions } from '../../scripts/database-extensions.js'
 
 const backendRoot = join(import.meta.dirname, '../../src')
 const modulesRoot = join(backendRoot, 'modules')
@@ -27,7 +29,8 @@ moduleMigrations.push({
   migrationsTable: 'migrations_links',
 })
 
-export async function migrateAll<T extends Record<string, unknown>>(db: PostgresJsDatabase<T>) {
+export async function migrateAll<T extends Record<string, unknown>>(db: PostgresJsDatabase<T> & { $client: Sql }) {
+  await createDatabaseExtensions(db.$client)
   for (const config of moduleMigrations) {
     await migrate(db, config)
   }

@@ -42,7 +42,7 @@
     "db:status": "docker compose ps",
     "db:reset": "PGPASSWORD=postgres dropdb --force -h 127.0.0.1 -U postgres proteus && PGPASSWORD=postgres createdb -h 127.0.0.1 -U postgres proteus",
     "db:generate": "dotenvx run -f ../../.env.local -- sh -c 'for config in src/modules/*/database.config.ts src/link-modules/database.config.ts; do drizzle-kit generate --config=\"$config\" || exit 1; done'",
-    "db:migrate": "MIGRATING=true sh -c 'for config in src/modules/*/database.config.ts src/link-modules/database.config.ts; do drizzle-kit migrate --config=\"$config\" || exit 1; done'",
+    "db:migrate": "MIGRATING=true sh -c 'tsx scripts/create-database-extensions.ts && for config in src/modules/*/database.config.ts src/link-modules/database.config.ts; do drizzle-kit migrate --config=\"$config\" || exit 1; done'",
     "db:migrate:dev": "dotenvx run -f ../../.env.local -- pnpm run db:migrate",
     "db:seed:dev": "dotenvx run -f ../../.env.local -- tsx scripts/seed-dev.ts",
     "db:seed:providers": "dotenvx run -f ../../.env -- tsx --dns-result-order=ipv4first scripts/seed-providers.ts",

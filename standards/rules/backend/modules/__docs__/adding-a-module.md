@@ -307,6 +307,10 @@ The `--name` is what keeps the tag stable, so the diff is additions inside the e
 `when` timestamp in `meta/_journal.json`. Without it drizzle-kit invents one —
 `0000_perpetual_paper_doll.sql` in `pricing` is a leftover that got through, not a precedent.
 
+A Postgres extension is not something drizzle-kit can generate, so a line hand-added to the migration
+would be dropped at the next regeneration. Extensions live in `scripts/database-extensions.ts`, which
+`db:migrate` and the test setup run before any module migrates.
+
 The project is pre-release with no deployed database to migrate forward, so an append-only history
 buys nothing and accumulates churn instead. The test suite migrates from cold, so a rewritten
 migration is picked up for free; a local dev database needs `pnpm --filter backend run db:restart`
