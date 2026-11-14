@@ -294,4 +294,6 @@ CREATE UNIQUE INDEX "idx_product_variant_ean" ON "product_variant" USING btree (
 CREATE UNIQUE INDEX "idx_product_variant_upc" ON "product_variant" USING btree ("upc") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_product_handle" ON "product" USING btree ("handle") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_product_type_id" ON "product" USING btree ("type_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_product_brand" ON "product" USING btree (lower("brand")) WHERE deleted_at IS NULL;
+CREATE INDEX "idx_product_brand" ON "product" USING btree (lower("brand")) WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_title_trgm" ON "product" USING gin ("title" gin_trgm_ops) WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_product_brand_trgm" ON "product" USING gin ("brand" gin_trgm_ops) WHERE deleted_at IS NULL;

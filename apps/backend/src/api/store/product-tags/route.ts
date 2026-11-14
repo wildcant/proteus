@@ -1,3 +1,4 @@
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import {
@@ -6,7 +7,7 @@ import {
   StoreProductTagValueListResponse,
 } from '@proteus/http-schemas/store'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
-import { listSellableProducts, setPricingContext } from '../middlewares.js'
+import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductTagValueListParams, contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
@@ -17,17 +18,14 @@ export const GET = async (
 ): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
   const { category, collection, ...columnFilters } = req.validatedQuery.filters
-  const { productIds } = await listSellableProducts(req.scope, req.pricingContext)
-
-  // An empty filter array would reach the query builder as `inArray(column, [])`.
-  if (productIds.length === 0) return { status: 200, json: { values: [] } }
+  const listing = req.scope.resolve(ContainerRegistrationKeys.LINK).repo('storeCatalogListing')
 
   // The same filters `GET /store/products` builds, so a chip never offers a value its list cannot show.
   const values = await productService.listProductTagValues({
     ...columnFilters,
     ...buildStoreGroupingFilters({ category, collection }),
     status: 'published',
-    id: productIds,
+    sellableProductIds: listing.sellableProductIds({ currencyCode: req.pricingContext.currencyCode }),
   })
   return { status: 200, json: { values } }
 }

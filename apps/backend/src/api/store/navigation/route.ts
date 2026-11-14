@@ -1,9 +1,10 @@
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreNavigationResponse, StorePricingContextParams } from '@proteus/http-schemas/store'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
 import { buildStoreNavigation } from '@workflows/store/utils/build-store-navigation.js'
-import { listSellableProducts, setPricingContext } from '../middlewares.js'
+import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
@@ -26,16 +27,14 @@ export const GET = async (
   const navigation = store?.navigation ?? []
   if (navigation.length === 0) return { status: 200, json: { navigation: [] } }
 
-  const readsProducts = navigation.some((entry) =>
-    entry.sections.some(
-      (section) => section.type === 'values' || section.type === 'groups' || section.type === 'option',
-    ),
-  )
-  const [categoryTree, [collections], { productIds }] = await Promise.all([
+  // The market's catalogue as a subquery each section's read joins, rather than a list of ids.
+  const sellableProductIds = req.scope
+    .resolve(ContainerRegistrationKeys.LINK)
+    .repo('storeCatalogListing')
+    .sellableProductIds({ currencyCode: req.pricingContext.currencyCode })
+  const [categoryTree, [collections]] = await Promise.all([
     productService.listCategoryTree({ visibleOnly: true }),
     productService.listAndCountCollections(),
-    // Only a section that reads products needs the market's catalogue, and it is the costly read.
-    readsProducts ? listSellableProducts(req.scope, req.pricingContext) : { productIds: [] },
   ])
 
   const read = await Promise.all(
@@ -44,16 +43,12 @@ export const GET = async (
       sections: await Promise.all(
         entry.sections.map(async (section) => {
           if (section.type === 'subcategories' || section.type === 'links') return section
-          // An empty id list would reach the query builder as `inArray(column, [])`.
-          if (productIds.length === 0) {
-            return section.type === 'groups' ? { ...section, read: [] } : { ...section, values: [] }
-          }
           const scope = {
             ...buildStoreGroupingFilters(
               entry.type === 'category' ? { category: entry.handle } : { collection: entry.handle },
             ),
             status: 'published' as const,
-            id: productIds,
+            sellableProductIds,
           }
           if (section.type === 'groups') {
             return {

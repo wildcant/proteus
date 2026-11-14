@@ -1,6 +1,9 @@
+import { BigNumber } from '@core/bignumber.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
+import { vi } from 'vitest'
+import productFilterDefinitions from '../../product-filters/definitions.js'
 import type * as productByHandleRoutes from '../[handle]/route.js'
 import productDefinitions from '../definitions.js'
 import type * as productRoutes from '../route.js'
@@ -32,7 +35,7 @@ const setLowStockThreshold = async (threshold: number | null) => {
  * currency was hardcoded.
  */
 test.beforeEach(async ({ createApi, factories }) => {
-  api = await createApi({ definitions: productDefinitions })
+  api = await createApi({ definitions: [...productDefinitions, ...productFilterDefinitions] })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
   usRegionId = region.id
   await factories.create.store({ defaultRegionId: region.id })
@@ -458,6 +461,90 @@ test.describe('GET /store/products stock', () => {
   })
 })
 
+test.describe('GET /store/products sort', () => {
+  test('a shopper sorts by price, cheapest or dearest first, page by page, and by relevance to a search', async ({
+    expect,
+    service,
+  }) => {
+    /** A product priced per variant; its card's price, and so its place in a price sort, is the cheapest. */
+    const product = async (title: string, amounts: number[], brand: string | null = null) => {
+      const { product } = await service.create.product(api.container, { title, brand, status: 'published' })
+      const variants = await service.create.productVariants(
+        api.container,
+        product.id,
+        amounts.map(() => ({ manageInventory: false })),
+      )
+      await Promise.all(
+        variants.map((variant, index) =>
+          service.create.variantPrices(api.container, [variant.id], {
+            prices: [{ currencyCode: 'usd', amount: new BigNumber(amounts[index] ?? 0) }],
+          }),
+        ),
+      )
+      return product
+    }
+    // Created one after another, so newest first is the reverse of this order — and of every
+    // order asserted below, so none of them can pass by coming back newest first.
+    const exact = await product('Samba OG', [300, 250])
+    const prefix = await product('Sambarose', [100])
+    const inside = await product('Kosamba', [200])
+    // Its title leaves the brand out, as catalogues' do.
+    const branded = await product('Classic Low', [400], 'Samba')
+
+    const pageOf = async (query: string) => {
+      const response = await api.get<typeof productRoutes.GetOutput>(`/store/products?${query}`)
+      expect(response.status).toBe(200)
+      return { ids: response.body.products.map((item) => item.id), count: response.body.count }
+    }
+
+    // The starting price decides: Samba OG's 250, not its 300 — and it is the price the card quotes.
+    expect(await pageOf('order=priceAsc')).toEqual({ ids: [prefix.id, inside.id, exact.id, branded.id], count: 4 })
+    expect(await pageOf('order=priceDesc')).toEqual({ ids: [branded.id, exact.id, inside.id, prefix.id], count: 4 })
+    const cheapest = await api.get<typeof productRoutes.GetOutput>('/store/products?order=priceAsc&limit=3&offset=2')
+    expect(cheapest.body.products[0]?.startingPrice).toMatchObject({ calculatedAmount: '250' })
+    // Sorted before it is paged, so page two continues the price order rather than sorting itself, and
+    // the count is the whole list's.
+    expect(await pageOf('order=priceAsc&limit=2')).toEqual({ ids: [prefix.id, inside.id], count: 4 })
+    expect(await pageOf('order=priceAsc&limit=2&offset=2')).toEqual({ ids: [exact.id, branded.id], count: 4 })
+    // A page past the end still says how long the list is.
+    expect(await pageOf('order=priceAsc&limit=2&offset=8')).toEqual({ ids: [], count: 4 })
+    // The price range narrows before the page is cut, and the count follows it.
+    expect(await pageOf('order=priceAsc&minPrice=150&maxPrice=260&limit=1')).toEqual({ ids: [inside.id], count: 2 })
+
+    // Relevance, the default: a whole title word or the brand first, newest first among them, then the
+    // start of a title word, then anywhere inside one.
+    expect(await pageOf('q=samba')).toEqual({ ids: [branded.id, exact.id, prefix.id, inside.id], count: 4 })
+    // Without a search it is newest first.
+    expect(await pageOf('')).toEqual({ ids: [branded.id, inside.id, prefix.id, exact.id], count: 4 })
+    expect(await pageOf('order=newest&q=samba')).toEqual({
+      ids: [branded.id, inside.id, prefix.id, exact.id],
+      count: 4,
+    })
+    // A column is no longer an order.
+    expect((await api.get('/store/products?order=title')).status).toBe(400)
+  })
+
+  test('the list and its filters read the page from SQL, never every variant in the catalogue', async ({
+    expect,
+    service,
+  }) => {
+    const { product } = await service.create.product(api.container, { status: 'published' })
+    const variants = await service.create.productVariants(api.container, product.id)
+    await service.create.variantPrices(
+      api.container,
+      variants.map((variant) => variant.id),
+    )
+    const listVariants = vi.spyOn(api.container.resolve(Modules.PRODUCT), 'listProductVariants')
+
+    const list = await api.get<typeof productRoutes.GetOutput>('/store/products?order=priceAsc')
+    const filters = await api.get('/store/product-filters')
+
+    expect(list.body.products.map((item) => item.id)).toEqual([product.id])
+    expect(filters.status).toBe(200)
+    expect(listVariants).not.toHaveBeenCalled()
+  })
+})
+
 test.describe('GET /store/products pagination', () => {
   /**
    * The listing carries only what the request's currency can price, so a pager fixture needs a
@@ -519,38 +606,21 @@ test.describe('GET /store/products pagination', () => {
     const ids = await createCollidingCatalogue(service)
     const expected = await idsInTiebreakerOrder(service, ids)
 
-    // Without a second column there is no usable ORDER BY at all, and the rows come back in
+    // `newest` carries `id` as its tiebreaker. Without it every row ties, and the rows come back in
     // insert order — which is what makes this assertion able to fail.
-    expect(await pageIds('limit=10&order=-createdAt,id')).toEqual(expected)
+    expect(await pageIds('limit=10&order=newest')).toEqual(expected)
   })
 
   test('two pages follow one total order, so no row repeats or goes missing', async ({ expect, service }) => {
     const ids = await createCollidingCatalogue(service)
     const expected = await idsInTiebreakerOrder(service, ids)
 
-    const first = await pageIds('limit=5&offset=0&order=-createdAt,id')
-    const second = await pageIds('limit=5&offset=5&order=-createdAt,id')
+    const first = await pageIds('limit=5&offset=0&order=newest')
+    const second = await pageIds('limit=5&offset=5&order=newest')
 
     expect(first).toEqual(expected.slice(0, 5))
     expect(second).toEqual(expected.slice(5))
     expect(first.filter((id) => second.includes(id))).toEqual([])
-  })
-
-  test('a single-column order still parses the way it always did', async ({ expect, service }) => {
-    // Titles are the subject, so they are given rather than faked — and they are plain ASCII so
-    // the expected order does not depend on the database's collation.
-    const products = await service.create.products(
-      api.container,
-      ['Charlie', 'Alpha', 'Bravo'].map((title) => ({ title, status: 'published' as const })),
-    )
-    await priceEveryProduct(
-      service,
-      products.map((product) => product.id),
-    )
-
-    const response = await api.get<typeof productRoutes.GetOutput>('/store/products?limit=10&order=title')
-
-    expect(response.body.products.map((product) => product.title)).toEqual(['Alpha', 'Bravo', 'Charlie'])
   })
 })
 

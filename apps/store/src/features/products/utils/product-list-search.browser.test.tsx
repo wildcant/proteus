@@ -25,7 +25,7 @@ describe('the product list URL', () => {
       q: 'tee',
       tag: ['cotton', '2024'],
       filter: ['genero:women', 'tipo:tops', 'talla:10:30'],
-      sort: 'az' as const,
+      sort: 'priceAsc' as const,
       offset: 24,
     }
     expect(readSearch(stringifySearch(search))).toEqual(search)

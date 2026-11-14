@@ -2440,6 +2440,15 @@
           "brand"
         ]
       },
+      "StoreProductSort": {
+        "type": "string",
+        "enum": [
+          "relevance",
+          "newest",
+          "priceAsc",
+          "priceDesc"
+        ]
+      },
       "StoreProductResponse": {
         "type": "object",
         "properties": {
@@ -4911,7 +4920,7 @@
           },
           {
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/StoreProductSort"
             },
             "required": false,
             "name": "order",

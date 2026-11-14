@@ -10,14 +10,8 @@ import {
 } from '@proteus/http-schemas/store'
 import { COLOR_FILTER_KEY } from '@proteus/store-config'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
-import { buildPriceBounds, buildStoreProductFilters } from '@workflows/product/utils/build-store-product-filters.js'
-import {
-  buildAvailableQuantities,
-  isPurchasable,
-  variantStockProjection,
-} from '@workflows/product/utils/build-variant-stock.js'
-import { productsPricedWithin } from '@workflows/product/utils/products-priced-within.js'
-import { listSellableProducts, setPricingContext } from '../middlewares.js'
+import { buildStoreProductFilters } from '@workflows/product/utils/build-store-product-filters.js'
+import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductFilterListParams, contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
@@ -27,32 +21,30 @@ export const GET = async (
   req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
 ): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const storeService = req.scope.resolve(Modules.STORE)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const listing = linkService.repo('storeCatalogListing')
 
   const { filters: query, q } = req.validatedQuery
   const { category, collection, tag, filter, minPrice, maxPrice, exact, ...columnFilters } = query
-  const { productIds, variants, priceByVariantId } = await listSellableProducts(req.scope, req.pricingContext)
+  const { currencyCode } = req.pricingContext
+  const priceRange = { minPrice, maxPrice }
   // The price range is a selection like the others: it moves the counts, so a range that keeps
   // nothing leaves every filter in place at 0 rather than taking them away.
   const hasPriceRange = minPrice !== undefined || maxPrice !== undefined
-  const pricedProductIds = hasPriceRange
-    ? productsPricedWithin(variants, priceByVariantId, { minPrice, maxPrice })
-    : undefined
-
-  // An empty filter array would reach the query builder as `inArray(column, [])`.
-  if (productIds.length === 0) return { status: 200, json: { filters: [], priceBounds: null, correctedQuery: null } }
 
   // The list's scope before any selection: which values are offered, and what the price slider spans.
   const unsearched: FilterableProductProps = {
     ...columnFilters,
     ...buildStoreGroupingFilters({ category, collection }),
     status: 'published' as const,
-    id: productIds,
+    sellableProductIds: listing.sellableProductIds({ currencyCode }),
   }
+  const groupingSelections = buildStoreGroupingFilters({ tag, filter })
   // The same filters `GET /store/products` builds, so a count is the size of the list the value leads to.
-  const selections: FilterableProductProps = { ...buildStoreGroupingFilters({ tag, filter }), pricedProductIds }
+  const selections: FilterableProductProps = {
+    ...groupingSelections,
+    ...(hasPriceRange ? { selectedProductIds: listing.sellableProductIds({ currencyCode, priceRange }) } : {}),
+  }
 
   // Corrected exactly when the list corrects — `q`, not asked for as written, matching nothing under
   // the same selections — so the counts describe the products the list then shows.
@@ -68,56 +60,32 @@ export const GET = async (
   const search = correctedQuery ?? q
   const scope = { ...unsearched, ...(search ? buildSearchFilter(search, PRODUCT_SEARCH_COLUMNS) : {}) }
 
-  const [filters, inView, definitions, categories, store] = await Promise.all([
+  // Price, stock and colour are read by the listing in SQL, over the scope; the metafield and option
+  // counts stay with the product module, which takes the market's catalogue as a subquery.
+  const [filters, facets, definitions, categories] = await Promise.all([
     productService.listProductFilters({ ...scope, ...selections }),
-    productService.listProducts(scope, { select: ['id'] }),
+    listing.listStoreFacets({
+      currencyCode,
+      products: { ...columnFilters, ...buildStoreGroupingFilters({ category, collection }) },
+      search,
+      selections: groupingSelections,
+      priceRange,
+    }),
     productService.listMetafieldDefinitions(),
     productService.listCategories(),
-    storeService.resolveStore(),
   ])
-
-  /**
-   * Which option values a shopper can still buy, over the scope's priced variants: a size every
-   * product in view has sold out of is drawn disabled. Stock is read for the whole scope rather
-   * than a page, since a filter answers for every product it counts — one read of the links and one
-   * of the levels, the way the list reads a page's.
-   */
-  const inViewIds = new Set(inView.map((product) => product.id))
-  const inViewVariants = variants.filter(
-    (variant) => inViewIds.has(variant.productId) && priceByVariantId.has(variant.id),
-  )
-  const inViewVariantIds = inViewVariants.map((variant) => variant.id)
-  const [optionLabels, inventoryLinks] = await Promise.all([
-    productService.listVariantOptionLabels(inViewVariantIds),
-    linkService.repo('productVariantInventoryItem').findByVariantIds(inViewVariantIds),
-  ])
-  const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  // An empty filter array would reach the query builder as `inArray(column, [])`.
-  const levels = itemIds.length > 0 ? await inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : []
-  const stockOf = variantStockProjection(
-    inventoryLinks,
-    buildAvailableQuantities(levels),
-    store?.lowStockThreshold ?? null,
-  )
-  const inStockVariantIds = new Set(
-    inViewVariants.filter((variant) => isPurchasable(stockOf(variant))).map((variant) => variant.id),
-  )
 
   return {
     status: 200,
     json: {
-      filters: buildStoreProductFilters(
-        filters,
-        optionLabels.filter((label) => inStockVariantIds.has(label.variantId)),
-        {
-          namedFieldKeys: new Set(
-            definitions.filter((definition) => definition.source !== 'vendor').map((definition) => definition.key),
-          ),
-          categories,
-          colorFilterKey: COLOR_FILTER_KEY,
-        },
-      ),
-      priceBounds: buildPriceBounds(inViewVariants, priceByVariantId),
+      filters: buildStoreProductFilters(filters, facets.inStockOptionValues, {
+        namedFieldKeys: new Set(
+          definitions.filter((definition) => definition.source !== 'vendor').map((definition) => definition.key),
+        ),
+        categories,
+        colorFilterKey: COLOR_FILTER_KEY,
+      }),
+      priceBounds: facets.priceBounds,
       correctedQuery,
     },
   }

@@ -21,6 +21,7 @@ import { OrderPaymentCollectionRepository } from './repositories/order-payment-c
 import { ProductVariantInventoryItemRepository } from './repositories/product-variant-inventory-item.js'
 import { ProductVariantPriceSetRepository } from './repositories/product-variant-price-set.js'
 import { RegionPaymentProviderRepository } from './repositories/region-payment-provider.js'
+import { StoreCatalogListingRepository } from './repositories/store-catalog-listing.js'
 import { LinkService } from './services/link-service.js'
 
 export function registerLinkService(sharedContainer: AppContainer): void {
@@ -42,6 +43,7 @@ export function registerLinkService(sharedContainer: AppContainer): void {
 
   const productVariantInventoryItem = new ProductVariantInventoryItemRepository({ getDb, cascadeGraph })
   const cartProduct = new CartProductRepository({ getDb })
+  const storeCatalogListing = new StoreCatalogListingRepository({ getDb })
   const cartPaymentCollection = new CartPaymentCollectionRepository({ getDb, cascadeGraph })
   const inviteRole = new InviteRoleRepository({ getDb, cascadeGraph })
   const productVariantPriceSet = new ProductVariantPriceSetRepository({ getDb, cascadeGraph })
@@ -53,6 +55,7 @@ export function registerLinkService(sharedContainer: AppContainer): void {
   const linkService = new LinkService({
     productVariantInventoryItem,
     cartProduct,
+    storeCatalogListing,
     cartPaymentCollection,
     inviteRole,
     productVariantPriceSet,

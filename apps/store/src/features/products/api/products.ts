@@ -8,6 +8,7 @@ import type {
   ListStoreProductsParams,
   StoreProductListResponse,
   StoreProductResponse,
+  StoreProductSort,
 } from '#/api/generated/model'
 import { getStoreProduct, listStoreProducts } from '#/api/generated/products/products'
 import { queryKeysFactory } from '#/lib/query-key-factory'
@@ -19,32 +20,26 @@ export const PRODUCTS_DEFAULT_LIMIT = 12
 const PRODUCTS_DEFAULT_OFFSET = 0
 
 /**
- * The orders the catalogue can actually be sorted by. Price is absent on purpose: the starting
- * price is computed in the route *after* the list has been paged, so ordering by it would sort
- * each page against itself.
+ * The orders the API sorts by, by the API's own names. `relevance` ranks by the search and is newest
+ * first without one.
  *
  * `productListSearchSchema`'s `z.enum` reads this tuple, so the URL's vocabulary and the query layer's cannot
  * drift.
  */
-export const PRODUCT_SORT_NAMES = ['newest', 'az', 'za'] as const
+export const PRODUCT_SORT_NAMES = [
+  'relevance',
+  'newest',
+  'priceAsc',
+  'priceDesc',
+] as const satisfies readonly StoreProductSort[]
 export type ProductSort = (typeof PRODUCT_SORT_NAMES)[number]
-export const PRODUCT_SORT_DEFAULT: ProductSort = 'newest'
-
-/**
- * Friendly name to the API's `order` string. Every entry carries `id` as a tiebreaker — a seeded
- * catalogue shares one `createdAt` to the microsecond, and an offset pager over rows the database
- * considers equal is free to repeat one page's row on the next.
- */
-const PRODUCT_SORTS: Record<ProductSort, string> = {
-  newest: '-createdAt,id',
-  az: 'title,id',
-  za: '-title,id',
-}
+export const PRODUCT_SORT_DEFAULT: ProductSort = 'relevance'
 
 export const PRODUCT_SORT_LABELS: Record<ProductSort, MessageDescriptor> = {
+  relevance: msg`Relevance`,
   newest: msg`Newest`,
-  az: msg`A–Z`,
-  za: msg`Z–A`,
+  priceAsc: msg`Price: low to high`,
+  priceDesc: msg`Price: high to low`,
 }
 
 /**
@@ -99,7 +94,7 @@ export const productsPageQuery = ({
   filter,
   minPrice,
   maxPrice,
-  order: PRODUCT_SORTS[sort ?? PRODUCT_SORT_DEFAULT],
+  order: sort ?? PRODUCT_SORT_DEFAULT,
   countryCode,
 })
 

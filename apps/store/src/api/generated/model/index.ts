@@ -109,6 +109,7 @@ export * from './storeProductResponseProductPickerTargets.ts';
 export * from './storeProductScopedOption.ts';
 export * from './storeProductScopedOptionRenderAs.ts';
 export * from './storeProductScopedOptionValue.ts';
+export * from './storeProductSort.ts';
 export * from './storeProductTagValueListResponse.ts';
 export * from './storeProductVariant.ts';
 export * from './storeProductVariantOptionValues.ts';

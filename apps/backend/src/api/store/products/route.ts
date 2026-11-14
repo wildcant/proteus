@@ -1,5 +1,4 @@
 import type { FilterableProductProps } from '@core/types/product/common.js'
-import { buildSearchFilter, PRODUCT_SEARCH_COLUMNS } from '@core/utils/build-search-filter.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -9,13 +8,7 @@ import {
   StoreProductListResponse,
 } from '@proteus/http-schemas/store'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
-import {
-  buildAvailableQuantities,
-  isPurchasable,
-  variantStockProjection,
-} from '@workflows/product/utils/build-variant-stock.js'
-import { productsPricedWithin } from '@workflows/product/utils/products-priced-within.js'
-import { listSellableProducts, setPricingContext } from '../middlewares.js'
+import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { query: StoreProductListParams, contextQuery: StorePricingContextParams }
 export const GetMiddlewares = [setPricingContext()] as const
@@ -25,90 +18,57 @@ export const GET = async (
   req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
 ): Promise<HttpResult<typeof GetOutput>> => {
   const productService = req.scope.resolve(Modules.PRODUCT)
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const storeService = req.scope.resolve(Modules.STORE)
+  const pricingService = req.scope.resolve(Modules.PRICING)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
+  const listing = linkService.repo('storeCatalogListing')
 
-  const { pagination, filters, q } = req.validatedQuery
+  const { pagination, filters, q, order = 'relevance' } = req.validatedQuery
   const { offset, limit } = pagination
   const { category, collection, tag, filter, minPrice, maxPrice, exact, ...columnFilters } = filters
+  const { currencyCode } = req.pricingContext
 
-  const { variants, priceByVariantId, startingPriceByProductId } = await listSellableProducts(
-    req.scope,
-    req.pricingContext,
-  )
-
-  // Every product priced in the range is sellable here, so the range narrows the catalogue itself.
-  const listedProductIds = productsPricedWithin(variants, priceByVariantId, { minPrice, maxPrice })
-
-  // An empty filter array would reach the query builder as `inArray(column, [])`, and a market
-  // that can price nothing has no page to draw either way.
-  if (listedProductIds.length === 0) {
-    return { status: 200, json: { products: [], count: 0, offset, limit, correctedQuery: null } }
-  }
-
-  const listed: FilterableProductProps = {
+  const products: FilterableProductProps = {
     ...columnFilters,
     ...buildStoreGroupingFilters({ category, collection, tag, filter }),
-    status: 'published',
-    id: listedProductIds,
   }
-  const searchPage = (search: string | undefined) =>
-    productService.listAndCountProducts(
-      { ...listed, ...(search ? buildSearchFilter(search, PRODUCT_SEARCH_COLUMNS) : {}) },
-      pagination,
-    )
+  const priceRange = { minPrice, maxPrice }
+  // Filtered, sorted, paged and counted in one query: price and stock are no product column, and
+  // reading the catalogue to page it in memory is what this replaced.
+  const listPage = (search: string | undefined) =>
+    listing.listStoreProducts({ currencyCode, products, search, priceRange, sort: order, limit, offset })
 
   // A search that matches nothing is run again as its closest spelling, when the titles and brands in
   // view hold one, so a typo lands on results rather than on an empty page — unless the shopper asked
   // for `q` as written.
-  const asked = await searchPage(q)
-  const correctedQuery = q && !exact && asked[1] === 0 ? await productService.correctProductSearch(q, listed) : null
-  const [products, count] = correctedQuery ? await searchPage(correctedQuery) : asked
+  const asked = await listPage(q)
+  const correctedQuery =
+    q && !exact && asked.count === 0
+      ? await productService.correctProductSearch(q, {
+          ...products,
+          status: 'published',
+          sellableProductIds: listing.sellableProductIds({ currencyCode, priceRange }),
+        })
+      : null
+  const { rows, count } = correctedQuery ? await listPage(correctedQuery) : asked
+  if (rows.length === 0) return { status: 200, json: { products: [], count, offset, limit, correctedQuery } }
 
-  /**
-   * The grid's stock answer, at the product's grain: sold out when no variant of it can be bought.
-   *
-   * Read for the page that is being drawn rather than for the catalogue the pricing filter walked,
-   * because the inventory rows are the one thing here the whole catalogue does not already need —
-   * and a card the shopper will never scroll to does not need its badge resolved. It is one query
-   * over the levels of whatever the page holds, not one per inventory item: `limit` reaches 100 and
-   * every variant has an item of its own, so per-item reads would put hundreds of concurrent
-   * `SELECT`s against a pool of ten and hold it for the duration.
-   *
-   * Only the variants a price was found for count, which is the same set the product page would
-   * offer: a variant this market cannot quote is one no shopper can buy here either, and letting
-   * it keep a product out of the sold-out state would badge the card against what its page says.
-   */
-  const pagedProductIds = new Set(products.map((product) => product.id))
-  const pagedVariants = variants.filter(
-    (variant) => pagedProductIds.has(variant.productId) && priceByVariantId.has(variant.id),
-  )
-  const inventoryLinks = await linkService
-    .repo('productVariantInventoryItem')
-    .findByVariantIds(pagedVariants.map((variant) => variant.id))
-
-  const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  const [levels, store] = await Promise.all([
-    // An empty filter array would reach the query builder as `inArray(column, [])`.
-    itemIds.length > 0 ? inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : [],
-    storeService.resolveStore(),
+  // The card details, for the page alone: the products in the listing's order, and the starting price
+  // each one's cheapest variant quotes.
+  const [pageProducts, startingPrices] = await Promise.all([
+    productService.listProducts({ id: rows.map((row) => row.productId) }),
+    pricingService.calculatePrices(
+      rows.map((row) => row.startingPriceSetId),
+      req.pricingContext,
+    ),
   ])
-  const stockOf = variantStockProjection(
-    inventoryLinks,
-    buildAvailableQuantities(levels),
-    store?.lowStockThreshold ?? null,
-  )
+  const productById = new Map(pageProducts.map((product) => [product.id, product]))
+  const priceBySetId = new Map(startingPrices.map((price) => [price.id, price]))
 
-  const purchasableProductIds = new Set(
-    pagedVariants.filter((variant) => isPurchasable(stockOf(variant))).map((variant) => variant.productId),
-  )
+  const listed = rows.flatMap((row) => {
+    const product = productById.get(row.productId)
+    if (!product) return []
+    return [{ ...product, startingPrice: priceBySetId.get(row.startingPriceSetId), soldOut: !row.purchasable }]
+  })
 
-  const enrichedProducts = products.map((product) => ({
-    ...product,
-    startingPrice: startingPriceByProductId.get(product.id),
-    soldOut: !purchasableProductIds.has(product.id),
-  }))
-
-  return { status: 200, json: { products: enrichedProducts, count, offset, limit, correctedQuery } }
+  return { status: 200, json: { products: listed, count, offset, limit, correctedQuery } }
 }

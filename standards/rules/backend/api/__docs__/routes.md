@@ -184,6 +184,22 @@ pair of rules rather than widening these.
 | PATCH/POST update | 200 |
 | DELETE | 200 |
 
+### A store list filters, sorts, pages and counts in SQL
+
+A store route that lists from the catalogue — the product list, its filters, the navigation's values,
+the tag chips — hands Postgres the whole question and reads back one page. It never loads the
+catalogue into memory to filter, sort, page or count it, and never passes the catalogue to a query
+as an `id IN (...)` list. A shop with ten thousand products answers a list request in one query
+over the page, not in thirty thousand variant rows priced in JavaScript and sliced at the end.
+
+What a list orders or narrows by but no single module holds — a price, a stock answer, a colour
+family — is joined in `link-modules`: `linkService.repo('storeCatalogListing')` is that query for
+the product list, under the ADR 0004 escape hatch
+([ADR 0035](../../../../../docs/adr/0035-the-store-catalogue-listing-is-a-live-join.md)). A product
+module read that needs the market's catalogue takes it as a subquery
+(`sellableProductIds` / `selectedProductIds`), not as ids. What the page's cards need — images,
+groupings, labels — is read after the cut, for the page's ids alone.
+
 ### Auth is a namespace default the definition overrides
 
 Admin and store routes default to `auth: 'required'`. Override with `auth: 'public'` (store product
@@ -213,6 +229,7 @@ handler on `/hooks/` that verifies nothing is the bug this paragraph exists to m
 | `route-returns-non-200-status` | a GET, PATCH or DELETE answers 200 |
 | `route-method-without-output` | a handler co-exports the `Output` its definition forwards |
 | `route-list-without-as-const` | a `Throws` or `Middlewares` list carries `as const` |
+| `store-route-lists-every-variant` | a store route never reads every variant in the catalogue |
 
 `route-omits-workflow-errors` sits at `standards/rules/backend/` rather than in this directory,
 because its claim spans both sides of the call: its `files:` glob covers `route.ts` *and*
@@ -249,6 +266,10 @@ see it raise. Write the reason above the suppression.
   forgotten `throws:` or a `middlewares:` wired to the wrong method is a plain omission rather than a
   shape. A rule matching one file cannot see the other; typecheck catches a misspelt export and the
   OpenAPI diff catches a stale one, and what falls between the two is unchecked today.
+- **That a store list never pages in memory.** `store-route-lists-every-variant` catches the read
+  that started it — `listProductVariants()` with no filter under `src/api/store/` — and the API
+  journeys spy on it. Slicing a list a route did read whole, or building an `id IN (...)` from one, has
+  no shape a rule could tell from a page-scoped read; review catches those.
 
 ## Relationship with route helpers
 

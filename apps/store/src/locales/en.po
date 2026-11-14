@@ -80,10 +80,6 @@ msgstr "<0>Expired</0> — add this card again to use it"
 msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 msgstr "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 
-#: src/features/products/api/products.ts:46
-msgid "A–Z"
-msgstr "A–Z"
-
 #: src/components/store/footer/footer.tsx:56
 #: src/components/store/header/header.tsx:79
 #: src/components/store/side-menu/side-menu.tsx:110
@@ -643,7 +639,7 @@ msgstr "Name"
 msgid "New password"
 msgstr "New password"
 
-#: src/features/products/api/products.ts:45
+#: src/features/products/api/products.ts:40
 msgid "Newest"
 msgstr "Newest"
 
@@ -819,6 +815,14 @@ msgstr "Price: {0} – {1}"
 msgid "Price: from {0}"
 msgstr "Price: from {0}"
 
+#: src/features/products/api/products.ts:42
+msgid "Price: high to low"
+msgstr "Price: high to low"
+
+#: src/features/products/api/products.ts:41
+msgid "Price: low to high"
+msgstr "Price: low to high"
+
 #. placeholder {0}: format(maxPrice)
 #: src/features/products/components/price-menu/price-menu.tsx:39
 msgid "Price: up to {0}"
@@ -844,6 +848,10 @@ msgstr "Ref."
 #: src/features/auth/api/auth.ts:46
 msgid "Registration failed"
 msgstr "Registration failed"
+
+#: src/features/products/api/products.ts:39
+msgid "Relevance"
+msgstr "Relevance"
 
 #: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:79
 #: src/features/address/components/delete-address-button/delete-address-button.tsx:32
@@ -1302,7 +1310,3 @@ msgstr "Your password has been reset. Sign in with your new password to pick up 
 #: src/features/checkout/components/return-failure/return-failure.tsx:26
 msgid "Your payment did not finish"
 msgstr "Your payment did not finish"
-
-#: src/features/products/api/products.ts:47
-msgid "Z–A"
-msgstr "Z–A"

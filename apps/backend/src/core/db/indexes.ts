@@ -33,13 +33,16 @@ function livePredicate(extraPredicate?: SQL): SQL {
 
 type IndexColumns = Parameters<ReturnType<typeof index>['on']>
 
-/** A non-unique index covering only rows that are not soft-deleted. */
-export function liveIndex(name: string, extraPredicate?: SQL) {
+/**
+ * A non-unique index covering only rows that are not soft-deleted. `method` picks an index type other
+ * than btree — `gin` with `column.op('gin_trgm_ops')` for a trigram index a substring search reads.
+ */
+export function liveIndex(name: string, extraPredicate?: SQL, method?: 'gin') {
   return {
     on: (...columns: IndexColumns) =>
-      index(name)
-        .on(...columns)
-        .where(livePredicate(extraPredicate)),
+      (method ? index(name).using(method, ...columns) : index(name).on(...columns)).where(
+        livePredicate(extraPredicate),
+      ),
   }
 }
 

@@ -5,7 +5,17 @@ import { createFindParams, type FindParams } from '../../common.js'
 /** One filter selection, `<key>:<value>`. The value is everything after the first colon. */
 const metafieldSelection = z.string().regex(/^[^:]+:.+$/s, i18n.t('Write a filter as key:value'))
 
+/**
+ * The orders the storefront offers. Names rather than columns, because two of them sort by the price
+ * the market quotes, which no product column holds. `relevance` ranks by how well the title matches
+ * `q`, and is `newest` when there is no `q`.
+ */
+export const StoreProductSort = z.enum(['relevance', 'newest', 'priceAsc', 'priceDesc']).openapi('StoreProductSort')
+export type StoreProductSort = z.infer<typeof StoreProductSort>
+
 export const StoreProductListParams = createFindParams().extend({
+  /** Defaults to `relevance`. */
+  order: StoreProductSort.optional(),
   /** Each word matches a product's title or brand, ignoring case; a product must match every word. */
   q: z.string().optional(),
   /**

@@ -1,0 +1,16 @@
+id: store-route-lists-every-variant
+snapshots:
+  ? |
+    const all = await req.scope.resolve(Modules.PRODUCT).listProductVariants()
+  : labels:
+    - source: req.scope.resolve(Modules.PRODUCT).listProductVariants()
+      style: primary
+      start: 18
+      end: 74
+  ? |
+    const variants = await productService.listProductVariants()
+  : labels:
+    - source: productService.listProductVariants()
+      style: primary
+      start: 23
+      end: 59
