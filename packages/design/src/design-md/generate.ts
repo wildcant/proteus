@@ -15,8 +15,10 @@ export function generateDesignMd(config: ResolvedConfig): Map<string, string> {
     name: designMd.name,
     description: designMd.description,
     tokens: buildTokens(readSnapshot(config.snapshot), config.tokens),
-    sets: readComponentSets(config.snapshot),
-    context: componentsContext(config),
+    components:
+      designMd.components === false
+        ? undefined
+        : { sets: readComponentSets(config.snapshot), context: componentsContext(config) },
   })
   const document = existsSync(designMd.output) ? readFileSync(designMd.output, 'utf8') : ''
   return new Map([[designMd.output, withFrontmatter(document, frontmatter)]])

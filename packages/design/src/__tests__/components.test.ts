@@ -19,6 +19,7 @@ const context: ComponentsContext = {
   textStyles: tokenSnapshot.textStyles,
   effectStyles: tokenSnapshot.effectStyles,
   textStylePrefix: 'type-',
+  responsiveSizes: new Set(['layout-header']),
 }
 
 const repo = join(import.meta.dirname, '../../../..')
@@ -881,6 +882,34 @@ describe('components', () => {
     )
   })
 
+  it('writes a thick stroke as its pixels, since a stroke token has no border-width utility to name', () => {
+    const ringed = single('Ringed', 'components/ui', {
+      variants: [
+        {
+          ...frame('Ringed', 'horizontal'),
+          type: 'COMPONENT',
+          strokes: [{ type: 'solid', color: '#000000' }],
+          strokeWeight: 2,
+          strokeAlign: 'inside',
+          boundVariables: { stroke: 'c:ink', strokeWeight: 'st:focus' },
+          children: [
+            {
+              ...frame('hairline', 'horizontal'),
+              strokes: [{ type: 'solid', color: '#000000' }],
+              strokeWeight: 1.5,
+              strokeAlign: 'inside',
+              boundVariables: { stroke: 'c:line' },
+            },
+          ],
+        },
+      ],
+    })
+    const source = buildComponents([ringed], context).files.get('/shop/src/components/ui/ringed/ringed.variants.ts')
+    expect(source).toContain('border-2 border-ink')
+    expect(source).toContain('border-[1.5px] border-line')
+    expect(source).not.toContain('border-focus')
+  })
+
   it("makes a text layer's tabular figures tabular-nums; any other OpenType feature stops the build", () => {
     const counter = (fontFeatures: Record<string, boolean>) =>
       single('Counter', 'components/ui', {
@@ -920,6 +949,36 @@ describe('components', () => {
     expect(
       buildComponents([bar], context).files.get('/shop/src/features/shop/components/bar/bar.variants.ts'),
     ).toContain("export const barField = cva('flex-1')")
+  })
+
+  it('sizes a layer bound to a responsive size with its CSS variable, and stops on a binding it cannot map', () => {
+    // The mobile bar is as tall as layout/header; the lg one hugs its rows, so the height comes off there.
+    const bar = (height: string) =>
+      single('Bar', 'components/store', {
+        properties: [variantProperty('viewport', ['mobile', 'lg'])],
+        variants: [
+          {
+            ...frame('viewport=mobile', 'horizontal'),
+            type: 'COMPONENT',
+            sizing: { horizontal: 'fixed', vertical: 'fixed' },
+            width: 390,
+            height: 60,
+            boundVariables: { height },
+          },
+          {
+            ...frame('viewport=lg', 'vertical'),
+            type: 'COMPONENT',
+            sizing: { horizontal: 'fixed', vertical: 'hug' },
+            width: 1440,
+          },
+        ],
+      })
+    expect(
+      buildComponents([bar('l:header')], context).files.get('/shop/src/components/store/bar/bar.variants.ts'),
+    ).toContain("export const bar = cva('flex h-(--layout-header) lg:h-auto lg:flex-col')")
+    expect(() => buildComponents([bar('l:gutter')], context)).toThrow(
+      'height 60 is bound to a variable that is no space/*, stroke/* or responsive size',
+    )
   })
 
   it('formats the generated file with its classes in the order the repo lint sorts them', () => {

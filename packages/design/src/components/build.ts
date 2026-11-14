@@ -19,6 +19,7 @@
 //   a text layer's tnum feature     -> tabular-nums; any other OpenType feature stops the build
 //   a vector (a glyph in a slot, say) -> text-* on its layer or slot: the glyph draws in currentColor
 //   a minimum width or height bound to space/* -> min-w-* / min-h-*
+//   a size bound to a responsive size (a Viewport number, `layout/header`) -> h-(--layout-header)
 //   a wrapping auto layout          -> flex-wrap, with gap-x-* / gap-y-* from its gap and crossGap
 //   a slot                          -> a cva for its frame; its content is the component's children in code. Its
 //                                    default text named after a text property gets a cva too
@@ -52,6 +53,9 @@ export type ComponentsContext = {
   /** The token snapshot's effect styles: a layer's `shadow/*` style is its `shadow-*` class. */
   effectStyles: { id: string; name: string }[]
   textStylePrefix: string
+  /** The responsive sizes the tokens CSS declares on :root (`layout-header` for `--layout-header`): the Viewport
+   * collection's numbers no text style uses. A size bound to one is `h-(--layout-header)`. */
+  responsiveSizes: Set<string>
 }
 
 /** Tailwind's default breakpoints, in order. `mobile` is the base: no prefix. */
@@ -134,6 +138,10 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
     const name = id ? variables[id]?.name : undefined
     return name?.startsWith(prefix) ? name.slice(prefix.length).replaceAll('/', '-') : null
   }
+  const responsiveSize = (id: string | undefined) => {
+    const key = id ? variables[id]?.name.replaceAll('/', '-') : undefined
+    return key && context.responsiveSizes.has(key) ? `(--${key})` : null
+  }
   const byValue = (prefix: string) =>
     new Map(
       Object.values(variables)
@@ -154,6 +162,7 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
   const ctx: SlotContext = {
     neverShown,
     token,
+    responsiveSize,
     spaceByValue: byValue('space/'),
     strokeByValue: byValue('stroke/'),
     textStyleNames,
@@ -697,6 +706,8 @@ type SlotContext = {
   parentStretches: boolean
   note: (message: string) => void
   fail: (message: string) => string
+  /** `(--key)` for a variable the tokens CSS declares as a responsive size, else null. */
+  responsiveSize: (id: string | undefined) => string | null
 }
 
 function layersNeverShown(variants: Layer[]) {
@@ -861,13 +872,20 @@ function colorClass(node: Layer, prefix: string, { token, fail }: SlotContext) {
   return `${prefix}-${name}${suffix}`
 }
 
-// space/* sizes, or stroke/* for a rule as thick as a stroke. A rule drawn as a layer with no binding is read as
-// the stroke of its thickness.
+// space/* sizes, stroke/* for a rule as thick as a stroke, or a responsive size (`layout/header`, `(--layout-header)`).
+// A rule drawn as a layer with no binding is read as the stroke of its thickness. A binding to anything else stops
+// the build: dropping it would leave the size to the content.
 function sizeToken(node: Layer, horizontal: boolean, parentLayout: string | undefined, ctx: SlotContext) {
   const bound = node.boundVariables?.[horizontal ? 'width' : 'height']
-  const named = ctx.token(bound, 'space/') ?? ctx.token(bound, 'stroke/')
+  const named = ctx.token(bound, 'space/') ?? ctx.token(bound, 'stroke/') ?? ctx.responsiveSize(bound)
   if (named) return named
   const value = horizontal ? node.width : node.height
+  if (bound) {
+    ctx.fail(
+      `${horizontal ? 'width' : 'height'} ${value} is bound to a variable that is no space/*, stroke/* or responsive size`,
+    )
+    return null
+  }
   const asStroke = ctx.strokeByValue.get(value)
   if (!asStroke || !parentLayout) return null
   ctx.note(
@@ -917,7 +935,8 @@ function boundSizeClass(
   ctx: SlotContext,
 ) {
   if (!node[field] || node.type === 'INSTANCE') return ''
-  const named = ctx.token(node.boundVariables?.[field], 'space/')
+  const bound = node.boundVariables?.[field]
+  const named = ctx.token(bound, 'space/') ?? ctx.responsiveSize(bound)
   if (named) return `${prefix}-${named}`
   ctx.note(`${ctx.setName} › ${node.name}: ${field} ${node[field]} is not bound; it is left out`)
   return ''
@@ -1240,9 +1259,11 @@ function borderSlots(node: Layer, strokes: number, { token, fail }: SlotContext)
       : fail('stroke is not bound to a Theme colour')
   // strokeSides [top, right, bottom, left] when only some sides have the stroke.
   const sides = node.strokeSides ?? [1, 1, 1, 1]
-  // A weight bound to stroke/* is its class (border-tick); 1 px is the default border.
-  const named = token(bound.strokeWeight, 'stroke/')
-  const width = node.strokeWeight === 1 ? '' : named ? `-${named}` : `-[${node.strokeWeight}px]`
+  // 1 px is the default border. Any other weight is its pixels (border-2, border-[1.5px]), bound to stroke/* or not:
+  // the tokens export no border-width theme, so a token-named class (border-focus) would read as a colour and draw
+  // nothing.
+  const weight = node.strokeWeight ?? 1
+  const width = weight === 1 ? '' : Number.isInteger(weight) ? `-${weight}` : `-[${weight}px]`
   const borderWidth = sides.every(Boolean)
     ? `border${width}`
     : ['t', 'r', 'b', 'l']

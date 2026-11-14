@@ -93,7 +93,9 @@ draws in `currentColor`, so its Theme colour is `text-*` on its layer, or on the
 on `components.inline` has an `inline-flex` root (a button that sits in a sentence); every other root is
 `flex`; a set on `components.fullWidth` has a `w-full` root (the form controls). A grid auto layout of equal
 columns is `grid` (`grid-cols-*` past one column, `gap-*` from gap and crossGap); its cells stretch their
-children. A maximum width or height bound to `space/*` is `max-w-*` / `max-h-*`. A frame that scrolls
+children. A maximum width or height bound to `space/*` is `max-w-*` / `max-h-*`. A size (or minimum or maximum)
+bound to a responsive size, a Viewport number no text style uses (`layout/header`), is its CSS variable
+(`h-(--layout-header)`); a size bound to any other variable stops the build. A frame that scrolls
 (prototype overflow) is `overflow-y-auto` / `overflow-x-auto` / `overflow-auto`, else a clipping frame is
 `overflow-hidden`; FigCraft's node.get doesn't report overflow, so the export reads it from the saved file's
 `document.json`. An empty slot is `items-stretch`: the caller's content fills it as a block would. A layer on
@@ -129,7 +131,8 @@ The generated files go through the repo's Biome: formatted, and their classes so
 Theme mode), `typography` (each `type/*` style at the base viewport), `rounded` (`radius/*`),
 `spacing` (`space/*`), and `components`, one entry per variant of each exported set (the `viewport`
 read at `mobile`) with its fill, text colour, text style and token-bound size as references
-(`{colors.accent}`). `name` and `description` come from `designMd` in the config.
+(`{colors.accent}`). `name` and `description` come from `designMd` in the config; `"components": false`
+leaves `components` out, for a repo whose prose points at the `*.variants.ts` files instead.
 
 ## Flow
 
@@ -261,7 +264,7 @@ so one design-file convention serves every project.
 | `duration/<key>` (ms) | `--transition-duration-<key>`, which `duration-<key>` reads |
 | `ease/<key>` (a string) | `--ease-<key>` |
 | Effect style `shadow/<key>` (drop and inner shadows) | `--shadow-<key>`; a colour bound to a `color/*` role is `var(--<role>)` |
-| `stroke/<key>` | TS output only |
+| `stroke/<key>` | TS output only. A stroke weight bound to one exports as its pixels (`border-2`, `border-[1.5px]`), since the CSS has no border-width theme to name |
 | Viewport collection, any number (one value per viewport mode) | Responsive: `clamp()` between the first and last mode (`fluid`), or overridden by `min-width` (`steps`). With `fluid`, a mode between the two is a drawing mode: it must hold the interpolated value at its width, or the build stops |
 | Text style `type/<name>` | Class `type-<name>`: family, size, weight, line height, letter spacing and case |
 | Any other name | Kept in the TS output under `other`, never dropped |
@@ -324,7 +327,8 @@ Committed and shared, one section per exporter. The machine paths are in `design
   "designMd": {                                       // optional
     "output": "../../DESIGN.md",
     "name": "Proteus",
-    "description": "…"
+    "description": "…",
+    "components": true                                // optional; false leaves `components` out
   },
   "flow": {                                           // optional
     "output": "../../apps/store/src/navigation/flow.gen.ts",

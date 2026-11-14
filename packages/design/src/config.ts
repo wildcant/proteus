@@ -113,6 +113,11 @@ type DesignMdSection = {
   output: string
   name: string
   description: string
+  /**
+   * Also write `components`, one entry per variant of each exported set; default true. Off when the prose points
+   * at the `*.variants.ts` files instead, which hold the same thing exactly.
+   */
+  components?: boolean
 }
 
 type FlowSection = {

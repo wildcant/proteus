@@ -1,6 +1,7 @@
 import type { ResolvedConfig } from '../config.ts'
 import { formatTs } from '../files.ts'
 import { readSnapshot } from '../tokens/snapshot.ts'
+import { buildTokens } from '../tokens/tokens.ts'
 import { buildComponents, type ComponentsContext } from './build.ts'
 import { readComponentSets } from './snapshot.ts'
 
@@ -13,6 +14,7 @@ export function componentsContext(config: ResolvedConfig): ComponentsContext {
     textStyles: tokens.textStyles,
     effectStyles: tokens.effectStyles,
     textStylePrefix: config.tokens.textStyles.prefix,
+    responsiveSizes: new Set(buildTokens(tokens, config.tokens).responsive.map((r) => r.key)),
   }
 }
 
