@@ -312,8 +312,9 @@ test.describe('Structure files', () => {
         '  - name: Color',
         '    role: grouping',
         '    buckets:',
-        '      - { name: Black, swatch: black, words: [black] }',
-        '      - { name: Red, swatch: red, words: [red, burgundy] }',
+        // A swatch is free text: the storefront decides what it means.
+        "      - { name: Black, swatch: 'https://cdn.test/black.png', words: [black] }",
+        "      - { name: Red, swatch: '#c00', words: [red, burgundy] }",
         '  - name: Size',
         '    role: availability',
         '',
@@ -324,23 +325,26 @@ test.describe('Structure files', () => {
     const shapeOf = (title: string) => {
       const option = options.body.productOptions.find((candidate) => candidate.title === title)
       if (!option) return undefined
-      const bucketName = new Map(option.buckets.map((bucket) => [bucket.id, bucket.name]))
       return {
         listingRole: option.listingRole,
         buckets: option.buckets.map(({ name, swatch, words }) => ({ name, swatch, words })),
-        values: option.values.map((value) => [value.value, value.bucketId ? bucketName.get(value.bucketId) : null]),
+        values: option.values.map((value) => [
+          value.value,
+          option.buckets.filter((bucket) => bucket.valueIds.includes(value.id)).map((bucket) => bucket.name),
+        ]),
       }
     }
     expect(shapeOf('Color')).toEqual({
       listingRole: 'grouping',
       buckets: [
-        { name: 'Black', swatch: 'black', words: ['black'] },
-        { name: 'Red', swatch: 'red', words: ['red', 'burgundy'] },
+        { name: 'Black', swatch: 'https://cdn.test/black.png', words: ['black'] },
+        { name: 'Red', swatch: '#c00', words: ['red', 'burgundy'] },
       ],
+      // A value joins every bucket holding one of its words.
       values: [
-        ['Black / Red', 'Black'],
-        ['Burgundy', 'Red'],
-        ['Navy', null],
+        ['Black / Red', ['Black', 'Red']],
+        ['Burgundy', ['Red']],
+        ['Navy', []],
       ],
     })
     // An option the file names and the catalogue lacks is created with it.

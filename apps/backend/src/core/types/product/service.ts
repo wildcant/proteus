@@ -352,6 +352,11 @@ export type IProductModuleService = {
     data: UpsertProductMetafieldDefinitionDTO[],
     context?: Context,
   ): Promise<ProductMetafieldDefinitionDTO[]>
+  /**
+   * Each product's field values by key, in their written order: metafields, and the brand and Product
+   * Type under the vendor and type fields' keys. One read for all of `productIds`.
+   */
+  listFieldValuesOfProducts(productIds: string[], context?: Context): Promise<Record<string, Record<string, string[]>>>
   /** A product's metafields that hold values, by key. */
   retrieveProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]>
 

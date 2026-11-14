@@ -12,7 +12,9 @@ import {
   buildListingBadges,
   buildListingGroups,
   buildVariantImageUrls,
+  findActiveGroupValue,
 } from '@workflows/product/utils/build-listing-card.js'
+import { buildListingSublines } from '@workflows/product/utils/build-listing-subline.js'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import {
@@ -70,7 +72,7 @@ export const GET = async (
   // each one's cheapest variant quotes, and the page's variants and options for its groups,
   // availability and badges.
   const pageIds = rows.map((row) => row.productId)
-  const [pageProducts, startingPrices, pageVariants, groupingsByProductId, listingOptions] = await Promise.all([
+  const [pageProducts, startingPrices, pageVariants, groupingsByProductId, listingOptions, store] = await Promise.all([
     productService.listProducts({ id: pageIds }),
     pricingService.calculatePrices(
       rows.map((row) => row.startingPriceSetId),
@@ -79,6 +81,7 @@ export const GET = async (
     productService.listProductVariants({ productId: pageIds }),
     productService.listProductGroupings(pageIds),
     productService.listProductListingOptions(pageIds),
+    storeService.resolveStore(),
   ])
   const productById = new Map(pageProducts.map((product) => [product.id, product]))
   const priceBySetId = new Map(startingPrices.map((price) => [price.id, price]))
@@ -89,14 +92,18 @@ export const GET = async (
    * at the product's grain, the card needs them per variant.
    */
   const pageVariantIds = pageVariants.map((variant) => variant.id)
-  const [priceLinks, inventoryLinks, optionLabels, variantImages, store] = await Promise.all([
-    linkService.repo('productVariantPriceSet').findByVariantIds(pageVariantIds),
-    linkService.repo('productVariantInventoryItem').findByVariantIds(pageVariantIds),
-    productService.listVariantOptionLabels(pageVariantIds),
-    // An empty filter array would reach the query builder as `inArray(column, [])`.
-    pageVariantIds.length > 0 ? productService.listProductVariantImages({ variantId: pageVariantIds }) : [],
-    storeService.resolveStore(),
-  ])
+  // The subline's fields, for the page in one read, only when the store has a subline at all.
+  const card = store?.card ?? { subline: null, listSeparator: ', ' }
+  const [priceLinks, inventoryLinks, optionLabels, variantImages, fieldValuesByProductId, categories] =
+    await Promise.all([
+      linkService.repo('productVariantPriceSet').findByVariantIds(pageVariantIds),
+      linkService.repo('productVariantInventoryItem').findByVariantIds(pageVariantIds),
+      productService.listVariantOptionLabels(pageVariantIds),
+      // An empty filter array would reach the query builder as `inArray(column, [])`.
+      pageVariantIds.length > 0 ? productService.listProductVariantImages({ variantId: pageVariantIds }) : [],
+      card.subline ? productService.listFieldValuesOfProducts(pageIds) : {},
+      card.subline ? productService.listCategories() : [],
+    ])
   const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
   const imageIds = [...new Set(variantImages.map((link) => link.imageId))]
   const [variantPrices, levels, images] = await Promise.all([
@@ -120,18 +127,34 @@ export const GET = async (
     purchasableVariantIds,
   })
   const availableByProductId = buildListingAvailability(purchasableVariants, optionLabels, listingOptions)
+  const sublineByProductId = buildListingSublines(pageProducts, {
+    card,
+    typeByProductId: new Map(
+      Object.entries(groupingsByProductId).flatMap(([id, groupings]) =>
+        groupings.type ? [[id, groupings.type.value]] : [],
+      ),
+    ),
+    fieldValuesByProductId,
+    categories,
+  })
 
   const listed = rows.flatMap((row) => {
     const product = productById.get(row.productId)
     if (!product) return []
+    const groups = groupsByProductId.get(product.id) ?? null
+    // A filter on the grouping option opens the card on the colourway it chose, photo and all.
+    const activeGroupValue = findActiveGroupValue(groups, products.optionValues)
     return [
       {
         ...product,
+        thumbnail: activeGroupValue?.thumbnail ?? product.thumbnail,
         startingPrice: priceBySetId.get(row.startingPriceSetId),
         soldOut: !row.purchasable,
         badges: buildListingBadges(groupingsByProductId[product.id]?.collections ?? []),
-        groups: groupsByProductId.get(product.id) ?? null,
+        groups,
+        activeGroupValue: activeGroupValue?.value ?? null,
         available: availableByProductId.get(product.id) ?? null,
+        subline: sublineByProductId.get(product.id) ?? null,
       },
     ]
   })

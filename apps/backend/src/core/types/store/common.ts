@@ -56,6 +56,13 @@ type StoreSearchTrendingDTO = { name: string; filter: Record<string, string[]>; 
  */
 export type StoreSearchDTO = { popular: string[]; trending: StoreSearchTrendingDTO[] }
 
+/**
+ * The list card, as the structure file's `card` has it: `subline`, the template of the line under a
+ * card's title (`"{type} para {genero|lower} · {estilo}"`), `null` for none; and `listSeparator`, what
+ * joins the values of a field that holds several.
+ */
+export type StoreCardDTO = { subline: string | null; listSeparator: string }
+
 export type StoreDTO = {
   id: string
   name: string
@@ -73,6 +80,8 @@ export type StoreDTO = {
   search: StoreSearchDTO
   /** The structure file's `filters`, the filter keys in display order; `null` when it has none. */
   filters: string[] | null
+  /** The structure file's `card`. */
+  card: StoreCardDTO
   metadata: string | null
   createdAt: Date
   updatedAt: Date

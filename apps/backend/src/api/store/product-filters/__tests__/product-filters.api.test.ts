@@ -635,11 +635,11 @@ async function applyStructure(text: string) {
 }
 
 test.describe('Option buckets', () => {
-  test('an option with buckets is counted and filtered by bucket, with the bucket’s swatch, and regroups when its buckets change', async ({
+  test('an option with buckets is counted and filtered by bucket, a value in each bucket it reaches, with the bucket’s swatch, and regroups when its buckets change', async ({
     expect,
     service,
   }) => {
-    // Each value joins the first bucket, by rank, holding one of its words: "Black / Red" is Black.
+    // Each value joins every bucket holding one of its words: "Black / Red" is Black and Red.
     const colour = await service.create.productOption(api.container, {
       title: 'Color',
       values: ['Black / Red', 'Jet Black', 'Burgundy', 'Navy'].map((value, rank) => ({ value, rank })),
@@ -676,17 +676,19 @@ test.describe('Option buckets', () => {
             `${value} ${count}${soldOut ? ' sold out' : ''}${swatch ? ` (${swatch})` : ''}`,
         )
     }
-    const listed = async (selection: string) => {
-      const response = await api.get<typeof productRoutes.GetOutput>(
-        `/store/products?filter=${encodeURIComponent(`option.Color:${selection}`)}`,
-      )
+    const listed = async (...selections: string[]) => {
+      const query = selections.map((selection) => `filter=${encodeURIComponent(`option.Color:${selection}`)}`)
+      const response = await api.get<typeof productRoutes.GetOutput>(`/store/products?${query.join('&')}`)
       expect(response.status).toBe(200)
       return response.body.products.map((product) => product.id).sort()
     }
 
     // Buckets in their order, then a value no bucket holds as itself.
-    expect(await colourFacet()).toEqual(['Black 2 (black)', 'Red 1 (red)', 'Navy 1'])
+    expect(await colourFacet()).toEqual(['Black 2 (black)', 'Red 2 (red)', 'Navy 1'])
     expect(await listed('Black')).toEqual([idOf['Black / Red'], idOf['Jet Black']].sort())
+    expect(await listed('Red')).toEqual([idOf['Black / Red'], idOf.Burgundy].sort())
+    // Both buckets chosen, a product in both is listed once.
+    expect(await listed('Black', 'Red')).toEqual([idOf['Black / Red'], idOf['Jet Black'], idOf.Burgundy].sort())
     expect(await listed('Navy')).toEqual([idOf.Navy])
     // A bucketed value is chosen by its bucket, never by its own name.
     expect(await listed('Jet Black')).toEqual([])
@@ -700,7 +702,7 @@ test.describe('Option buckets', () => {
       ],
     })
     expect(patched.status).toBe(200)
-    expect(await colourFacet()).toEqual(['Black 2 (black)', 'Red 1 (red)', 'Blue 1 (blue)'])
+    expect(await colourFacet()).toEqual(['Black 2 (black)', 'Red 2 (red)', 'Blue 1 (blue)'])
     expect(await listed('Blue')).toEqual([idOf.Navy])
   })
 })

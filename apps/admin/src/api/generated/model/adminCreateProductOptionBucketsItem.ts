@@ -14,7 +14,7 @@ export type AdminCreateProductOptionBucketsItem = {
   name: string;
   /**
      * @minLength 1
-     * @maxLength 255
+     * @maxLength 2048
      * @nullable
      */
   swatch?: string | null;

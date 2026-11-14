@@ -18,8 +18,8 @@ export const StoreProductFilterValue = z
      */
     soldOut: z.boolean(),
     /**
-     * The colour filter's stable key for the value's swatch, `cafe` for "Café": the value lower-cased,
-     * without accents, words joined by hyphens. `null` on every other filter.
+     * An option value's bucket swatch, as the structure file wrote it: a hex, a CSS colour, an image URL
+     * or a key, whatever the storefront reads it as. `null` for a value in no bucket with one, and on a field.
      */
     swatch: z.string().nullable(),
   })

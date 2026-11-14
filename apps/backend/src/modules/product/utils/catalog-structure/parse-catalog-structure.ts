@@ -11,6 +11,7 @@ import type {
   StoreNavigationSectionDTO,
   StoreSearchDTO,
 } from '../../../../core/types/store/common.js'
+import { parseSublineTemplate, SUBLINE_BUILTIN_PLACEHOLDERS, sublineKeys } from '../../../../core/utils/card-subline.js'
 import { OPTION_FILTER_PREFIX } from '../../../../core/utils/product-filter-key.js'
 import { HANDLE_PATTERN } from '../../../../core/utils/to-handle.js'
 
@@ -94,13 +95,19 @@ const collection = z.strictObject(
 )
 
 /**
- * A filter bucket of an option: `name` is what the filter offers, `swatch` the key the storefront draws
- * it by, and `words` the words that put a value in it, matched whole and ignoring case.
+ * A filter bucket of an option: `name` is what the filter offers, `swatch` free text the storefront
+ * draws it from (a hex, a CSS colour, an image URL, a key: Proteus does not read it), and `words` the
+ * words that put a value in it, matched whole and ignoring case. A value joins every bucket holding
+ * one of its words.
  */
 const bucket = z.strictObject(
   {
     name,
-    swatch: name.optional(),
+    swatch: z
+      .string({ error: ifWrongType('Must be text.') })
+      .trim()
+      .min(1, 'Must not be empty.')
+      .optional(),
     words: z.array(name, { error: ifWrongType('Must be a list of words.') }).default([]),
   },
   { error: ifWrongType('Must be a bucket with name, swatch and words.') },
@@ -108,7 +115,7 @@ const bucket = z.strictObject(
 
 /**
  * A product option by its title: `role`, the part it plays on the list card, and `buckets`, the groups
- * its filter offers in place of its raw values. Each value joins the first bucket holding one of its words.
+ * its filter offers in place of its raw values. Each value joins every bucket holding one of its words.
  */
 const option = z.strictObject(
   {
@@ -196,6 +203,24 @@ const search = z.strictObject(
   { error: ifWrongType('Must be a mapping with popular and trending.') },
 )
 
+/**
+ * The list card: `subline`, the template of the line under its title (`"{type} para {genero|lower}"`,
+ * see `card-subline.ts`), and `listSeparator`, what joins a field's several values (default `", "`).
+ */
+const card = z.strictObject(
+  {
+    subline: name.optional(),
+    listSeparator: z
+      .string({ error: ifWrongType('Must be text.') })
+      .min(1, 'Must not be empty.')
+      .optional(),
+  },
+  { error: ifWrongType('Must be a mapping with subline and listSeparator.') },
+)
+
+/** What joins a field's several values in a subline when the file names no `listSeparator`. */
+const DEFAULT_LIST_SEPARATOR = ', '
+
 /** A storefront filter by its key: a field's key, or `option.<Title>` for a product option. */
 const filterKey = z
   .string({ error: ifWrongType('Must be a key or option.<Title>.') })
@@ -211,10 +236,11 @@ const structureFile = z.strictObject(
     menu: z.array(menuEntry, { error: ifWrongType('Must be a list of menu entries.') }).default([]),
     search: search.default({ popular: [], trending: [] }),
     filters: z.array(filterKey, { error: ifWrongType('Must be a list of filter keys.') }).optional(),
+    card: card.optional(),
   },
   {
     error: ifWrongType(
-      'The file must be a mapping with fields, categories, collections, options, menu, search and filters.',
+      'The file must be a mapping with fields, categories, collections, options, menu, search, filters and card.',
     ),
   },
 )
@@ -236,7 +262,8 @@ export type ParsedCatalogStructure =
  * has `subcategories`; `groups` needs `groupBy`, which must differ from `values`. A `search` popular
  * term (ignoring case) and a trending model's name are each listed once, and a model's `filter` reads
  * only declared keys. Each `filters` key is listed once and is a declared field with
- * `filterable: true` or `option.<Title>`.
+ * `filterable: true` or `option.<Title>`. A `card.subline` reads only `{type}`, `{brand}` and declared
+ * keys, with no modifier but `lower`.
  */
 export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const document = parseDocument(text, { prettyErrors: false })
@@ -262,6 +289,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     menu,
     search,
     filters,
+    card: rawCard,
   } = parsed.data
   const errors: CatalogStructureErrorDTO[] = []
 
@@ -511,6 +539,21 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     }
   })
 
+  const subline = rawCard?.subline
+  if (subline !== undefined) {
+    const parsedSubline = parseSublineTemplate(subline)
+    if ('error' in parsedSubline) errors.push({ path: 'card.subline', message: parsedSubline.error })
+    else {
+      for (const sublineKey of sublineKeys(parsedSubline.template)) {
+        if (keys.has(sublineKey) || (SUBLINE_BUILTIN_PLACEHOLDERS as readonly string[]).includes(sublineKey)) continue
+        errors.push({
+          path: 'card.subline',
+          message: `No field in the file has the key "${sublineKey}", and it is not {type} or {brand}.`,
+        })
+      }
+    }
+  }
+
   if (errors.length > 0) return fail(errors)
   return {
     structure: {
@@ -521,6 +564,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       menu: navigation,
       search: searchStructure,
       filters: filters ?? null,
+      card: { subline: subline ?? null, listSeparator: rawCard?.listSeparator ?? DEFAULT_LIST_SEPARATOR },
     },
     errors: [],
   }

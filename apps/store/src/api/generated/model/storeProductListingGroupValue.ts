@@ -8,6 +8,7 @@
 
 export interface StoreProductListingGroupValue {
   value: string;
+  buckets: string[];
   /** @nullable */
   thumbnail: string | null;
   inStock: boolean;

@@ -1,5 +1,5 @@
 {
-  "id": "46e2e6f8-7ec4-4ecb-b178-1ca62a687cc6",
+  "id": "2bbafbb8-5b0d-4dbb-961b-45190b4cdd83",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -869,6 +869,116 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.product_option_value_bucket": {
+      "name": "product_option_value_bucket",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "CONCAT('optvbk_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "value_id": {
+          "name": "value_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bucket_id": {
+          "name": "bucket_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_product_option_value_bucket_value_bucket": {
+          "name": "idx_product_option_value_bucket_value_bucket",
+          "columns": [
+            {
+              "expression": "value_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "bucket_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_product_option_value_bucket_bucket_id": {
+          "name": "idx_product_option_value_bucket_bucket_id",
+          "columns": [
+            {
+              "expression": "bucket_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "product_option_value_bucket_value_id_product_option_value_id_fk": {
+          "name": "product_option_value_bucket_value_id_product_option_value_id_fk",
+          "tableFrom": "product_option_value_bucket",
+          "tableTo": "product_option_value",
+          "columnsFrom": ["value_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "product_option_value_bucket_bucket_id_product_option_bucket_id_fk": {
+          "name": "product_option_value_bucket_bucket_id_product_option_bucket_id_fk",
+          "tableFrom": "product_option_value_bucket",
+          "tableTo": "product_option_bucket",
+          "columnsFrom": ["bucket_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.product_option_value": {
       "name": "product_option_value",
       "schema": "",
@@ -891,12 +1001,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "bucket_id": {
-          "name": "bucket_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "rank": {
           "name": "rank",
@@ -980,15 +1084,6 @@
           "columnsFrom": ["option_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "product_option_value_bucket_id_product_option_bucket_id_fk": {
-          "name": "product_option_value_bucket_id_product_option_bucket_id_fk",
-          "tableFrom": "product_option_value",
-          "tableTo": "product_option_bucket",
-          "columnsFrom": ["bucket_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

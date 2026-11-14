@@ -18,9 +18,11 @@ import {
   inventoryLevelTable,
   optionFilterValue,
   optionValueBucket,
+  optionValueInBucket,
   priceTable,
   productOptionBucketTable,
   productOptionTable,
+  productOptionValueBucketTable,
   productOptionValueTable,
   productProductOptionTable,
   productProductOptionValueTable,
@@ -173,6 +175,7 @@ export class StoreCatalogListingRepository {
         AND ${productOptionTable.deletedAt} IS NULL
       JOIN ${productOptionValueTable} ON ${productOptionValueTable.id} = ${productProductOptionValueTable.optionValueId}
         AND ${productOptionValueTable.deletedAt} IS NULL
+      LEFT JOIN ${productOptionValueBucketTable} ON ${optionValueInBucket}
       LEFT JOIN ${productOptionBucketTable} ON ${optionValueBucket}
       LEFT JOIN (${this.stockedVariants()}) stocked_variant ON stocked_variant.variant_id = priced_variant.variant_id
       WHERE ${scope} AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}`)

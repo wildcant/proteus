@@ -1,5 +1,5 @@
 {
-  "id": "61a93c35-7bc5-4503-9f9d-1b934e007409",
+  "id": "ec8e68d1-2611-4bfe-a19b-bcdbed510dd9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -160,6 +160,13 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "card": {
+          "name": "card",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"subline\":null,\"listSeparator\":\", \"}'::jsonb"
         },
         "metadata": {
           "name": "metadata",

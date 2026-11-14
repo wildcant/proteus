@@ -9,6 +9,7 @@ import { productMetafieldDefinitionTable } from '../models/product-metafield-def
 import { productOptionTable } from '../models/product-option.js'
 import { productOptionBucketTable } from '../models/product-option-bucket.js'
 import { productOptionValueTable } from '../models/product-option-value.js'
+import { productOptionValueBucketTable } from '../models/product-option-value-bucket.js'
 import { productProductCategoryTable } from '../models/product-product-category.js'
 import { productProductCollectionTable } from '../models/product-product-collection.js'
 import { productProductOptionTable } from '../models/product-product-option.js'
@@ -164,14 +165,21 @@ function inGroupings(
 }
 
 /**
- * What the store filter calls an option value: its bucket's name when the value is in a live bucket,
- * else the value itself. For a `FROM` that left-joins {@link productOptionBucketTable} on the value.
+ * What the store filter calls an option value: the name of a live bucket it is in, else the value
+ * itself. For a `FROM` that left-joins {@link optionValueInBucket} and then {@link optionValueBucket}:
+ * a value in two buckets is two rows, one per bucket, so it counts and matches under each.
  */
 export const optionFilterValue = sql<string>`COALESCE(${productOptionBucketTable.name}, ${productOptionValueTable.value})`
 
-/** The live bucket of the joined option value, for a left join. */
+/** The joined option value's live bucket pairs, for a left join. */
+export const optionValueInBucket = and(
+  eq(productOptionValueBucketTable.valueId, productOptionValueTable.id),
+  isNull(productOptionValueBucketTable.deletedAt),
+)
+
+/** The live bucket of the joined pair, for a left join after {@link optionValueInBucket}. */
 export const optionValueBucket = and(
-  eq(productOptionBucketTable.id, productOptionValueTable.bucketId),
+  eq(productOptionBucketTable.id, productOptionValueBucketTable.bucketId),
   isNull(productOptionBucketTable.deletedAt),
 )
 
@@ -187,6 +195,7 @@ function offersOptionValue(title: string, values: string[]): SQL {
       )
       .innerJoin(productOptionTable, eq(productOptionTable.id, productProductOptionTable.optionId))
       .innerJoin(productOptionValueTable, eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId))
+      .leftJoin(productOptionValueBucketTable, optionValueInBucket)
       .leftJoin(productOptionBucketTable, optionValueBucket)
       .where(
         and(

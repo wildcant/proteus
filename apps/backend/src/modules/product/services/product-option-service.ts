@@ -39,11 +39,12 @@ import type { ProductRepository } from '../repositories/product.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionBucketRepository } from '../repositories/product-option-bucket.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import type { ProductOptionValueBucketRepository } from '../repositories/product-option-value-bucket.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
-import { bucketFor } from '../utils/bucket-for.js'
+import { bucketsFor } from '../utils/buckets-for.js'
 import {
   buildCombinations,
   buildPickerTargets,
@@ -83,6 +84,7 @@ type InjectedDependencies = {
   productOptionRepository: ProductOptionRepository
   productOptionValueRepository: ProductOptionValueRepository
   productOptionBucketRepository: ProductOptionBucketRepository
+  productOptionValueBucketRepository: ProductOptionValueBucketRepository
   productProductOptionRepository: ProductProductOptionRepository
   productProductOptionValueRepository: ProductProductOptionValueRepository
   productVariantOptionRepository: ProductVariantOptionRepository
@@ -115,6 +117,7 @@ export class ProductOptionService {
   private productOptionRepository: ProductOptionRepository
   private productOptionValueRepository: ProductOptionValueRepository
   private productOptionBucketRepository: ProductOptionBucketRepository
+  private productOptionValueBucketRepository: ProductOptionValueBucketRepository
   private productProductOptionRepository: ProductProductOptionRepository
   private productProductOptionValueRepository: ProductProductOptionValueRepository
   private productVariantOptionRepository: ProductVariantOptionRepository
@@ -127,6 +130,7 @@ export class ProductOptionService {
     productOptionRepository,
     productOptionValueRepository,
     productOptionBucketRepository,
+    productOptionValueBucketRepository,
     productProductOptionRepository,
     productProductOptionValueRepository,
     productVariantOptionRepository,
@@ -134,6 +138,7 @@ export class ProductOptionService {
     logger,
   }: InjectedDependencies) {
     this.productOptionBucketRepository = productOptionBucketRepository
+    this.productOptionValueBucketRepository = productOptionValueBucketRepository
     this.productRepository = productRepository
     this.productVariantRepository = productVariantRepository
     this.productOptionRepository = productOptionRepository
@@ -191,11 +196,11 @@ export class ProductOptionService {
 
   async retrieveProductOption(optionId: string, context?: Context): Promise<ProductOptionWithValuesDTO> {
     const option = await this.productOptionRepository.findByIdOrFail(optionId, undefined, context)
-    const [values, buckets] = await Promise.all([
+    const [values, bucketsByOptionId] = await Promise.all([
       this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, context),
-      this.productOptionBucketRepository.find({ optionId }, { order: { rank: 'ASC' } }, context),
+      this.listBucketsByOptionId([optionId], context),
     ])
-    return { ...option, values, buckets }
+    return { ...option, values, buckets: bucketsByOptionId.get(optionId) ?? [] }
   }
 
   async updateProductOption(
@@ -243,15 +248,16 @@ export class ProductOptionService {
     this.logger.debug(`Creating ${data.length} product option value(s)`)
     return this.withTransaction(context, async (ctx) => {
       const created = await this.productOptionValueRepository.createMany(data, ctx)
-      return this.groupOptionValues([...new Set(created.map((value) => value.optionId))], ctx, created)
+      await this.groupOptionValues([...new Set(created.map((value) => value.optionId))], ctx, created)
+      return created
     })
   }
 
   async createProductOptionValue(data: CreateProductOptionValueDTO, context?: Context): Promise<ProductOptionValueDTO> {
     return this.withTransaction(context, async (ctx) => {
       const created = await this.productOptionValueRepository.create(data, ctx)
-      const [grouped] = await this.groupOptionValues([created.optionId], ctx, [created])
-      return grouped ?? created
+      await this.groupOptionValues([created.optionId], ctx, [created])
+      return created
     })
   }
 
@@ -501,11 +507,16 @@ export class ProductOptionService {
     ])
     const titleById = new Map(options.map((option) => [option.id, option.title]))
     const valueById = new Map(values.map((value) => [value.id, value]))
+    const bucketsByValueId = await this.listBucketNamesByValueId(
+      options.map((option) => option.id),
+      context,
+    )
     return carried.flatMap(({ variantId, optionId, optionValueId }) => {
       const optionTitle = titleById.get(optionId)
       const value = valueById.get(optionValueId)
       if (optionTitle === undefined || !value) return []
-      return [{ variantId, optionId, optionTitle, value: value.value, rank: value.rank }]
+      const buckets = bucketsByValueId.get(value.id) ?? []
+      return [{ variantId, optionId, optionTitle, value: value.value, rank: value.rank, buckets }]
     })
   }
 
@@ -1195,9 +1206,36 @@ export class ProductOptionService {
       { order: { rank: 'ASC' } },
       context,
     )
+    const pairs =
+      buckets.length > 0
+        ? await this.productOptionValueBucketRepository.find(
+            { bucketId: buckets.map((bucket) => bucket.id) },
+            undefined,
+            context,
+          )
+        : []
+    const valueIdsByBucketId = new Map<string, string[]>()
+    for (const pair of pairs) {
+      valueIdsByBucketId.set(pair.bucketId, [...(valueIdsByBucketId.get(pair.bucketId) ?? []), pair.valueId])
+    }
     const byOptionId = new Map<string, ProductOptionBucketDTO[]>()
-    for (const bucket of buckets) byOptionId.set(bucket.optionId, [...(byOptionId.get(bucket.optionId) ?? []), bucket])
+    for (const bucket of buckets) {
+      const withValues = { ...bucket, valueIds: valueIdsByBucketId.get(bucket.id) ?? [] }
+      byOptionId.set(bucket.optionId, [...(byOptionId.get(bucket.optionId) ?? []), withValues])
+    }
     return byOptionId
+  }
+
+  /** The names of the buckets each value of `optionIds` is in, in the buckets' rank order. */
+  private async listBucketNamesByValueId(optionIds: string[], context?: Context): Promise<Map<string, string[]>> {
+    const bucketsByOptionId = await this.listBucketsByOptionId(optionIds, context)
+    const namesByValueId = new Map<string, string[]>()
+    for (const bucket of [...bucketsByOptionId.values()].flat()) {
+      for (const valueId of bucket.valueIds) {
+        namesByValueId.set(valueId, [...(namesByValueId.get(valueId) ?? []), bucket.name])
+      }
+    }
+    return namesByValueId
   }
 
   /** Writes the option's buckets as given, in rank order: a kept name keeps its row, so values stay put. */
@@ -1233,26 +1271,46 @@ export class ProductOptionService {
   }
 
   /**
-   * Puts each value of `optionIds` in the first bucket by rank holding one of its words — at write
-   * time, so the filter groups by `bucket_id` rather than matching text per query. Returns `values`
-   * (default: every value of the options) as they now stand.
+   * Puts each value of `optionIds` in every bucket holding one of its words — at write time, so the
+   * filter joins a pivot rather than matching text per query. `values` (default: every value of the
+   * options) are the ones regrouped; a pair already right is left as it is.
    */
   private async groupOptionValues(
     optionIds: string[],
     context: Context,
     values?: ProductOptionValueDTO[],
-  ): Promise<ProductOptionValueDTO[]> {
-    if (optionIds.length === 0) return values ?? []
+  ): Promise<void> {
+    if (optionIds.length === 0) return
     const [bucketsByOptionId, current] = await Promise.all([
       this.listBucketsByOptionId(optionIds, context),
       values ?? this.productOptionValueRepository.find({ optionId: optionIds }, undefined, context),
     ])
-    return Promise.all(
-      current.map((value) => {
-        const bucketId = bucketFor(value.value, bucketsByOptionId.get(value.optionId) ?? [])
-        if (bucketId === value.bucketId) return value
-        return this.productOptionValueRepository.update(value.id, { bucketId }, context)
+    if (current.length === 0) return
+    const existing = await this.productOptionValueBucketRepository.find(
+      { valueId: current.map((value) => value.id) },
+      undefined,
+      context,
+    )
+    const wanted = new Set(
+      current.flatMap((value) =>
+        bucketsFor(value.value, bucketsByOptionId.get(value.optionId) ?? []).map(
+          (bucketId) => `${value.id}:${bucketId}`,
+        ),
+      ),
+    )
+    const held = new Set(existing.map((pair) => `${pair.valueId}:${pair.bucketId}`))
+    await this.productOptionValueBucketRepository.delete(
+      existing.filter((pair) => !wanted.has(`${pair.valueId}:${pair.bucketId}`)).map((pair) => pair.id),
+      context,
+    )
+    const missing = [...wanted].filter((pair) => !held.has(pair))
+    if (missing.length === 0) return
+    await this.productOptionValueBucketRepository.createMany(
+      missing.map((pair) => {
+        const [valueId = '', bucketId = ''] = pair.split(':')
+        return { valueId, bucketId }
       }),
+      context,
     )
   }
 }

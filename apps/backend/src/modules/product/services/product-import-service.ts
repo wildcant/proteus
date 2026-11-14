@@ -17,9 +17,10 @@ import type { ProductMetafieldDefinitionRepository } from '../repositories/produ
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionBucketRepository } from '../repositories/product-option-bucket.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import type { ProductOptionValueBucketRepository } from '../repositories/product-option-value-bucket.js'
 import type { ProductTagRepository } from '../repositories/product-tag.js'
 import type { ProductTypeRepository } from '../repositories/product-type.js'
-import { bucketFor } from '../utils/bucket-for.js'
+import { bucketsFor } from '../utils/buckets-for.js'
 import { chunkImportedProducts } from '../utils/shopify-csv/chunk-products.js'
 import { CUSTOM_METAFIELD_NAMESPACE } from '../utils/shopify-csv/columns.js'
 import { parseShopifyCsv } from '../utils/shopify-csv/parse-shopify-csv.js'
@@ -33,6 +34,7 @@ type InjectedDependencies = {
   productOptionRepository: ProductOptionRepository
   productOptionValueRepository: ProductOptionValueRepository
   productOptionBucketRepository: ProductOptionBucketRepository
+  productOptionValueBucketRepository: ProductOptionValueBucketRepository
   withTransaction: WithTransaction
 }
 
@@ -55,6 +57,7 @@ export class ProductImportService {
   private productOptionRepository: ProductOptionRepository
   private productOptionValueRepository: ProductOptionValueRepository
   private productOptionBucketRepository: ProductOptionBucketRepository
+  private productOptionValueBucketRepository: ProductOptionValueBucketRepository
   private withTransaction: WithTransaction
 
   constructor(dependencies: InjectedDependencies) {
@@ -66,6 +69,7 @@ export class ProductImportService {
     this.productOptionRepository = dependencies.productOptionRepository
     this.productOptionValueRepository = dependencies.productOptionValueRepository
     this.productOptionBucketRepository = dependencies.productOptionBucketRepository
+    this.productOptionValueBucketRepository = dependencies.productOptionValueBucketRepository
     this.withTransaction = dependencies.withTransaction
   }
 
@@ -250,16 +254,19 @@ export class ProductImportService {
             (value) => this.productOptionValueRepository.find({ optionId, value }, undefined, ctx),
             (row) => row.value,
             async (values) => {
-              // A new value joins its bucket as it is written, as the option service's writes do.
-              const buckets = await this.productOptionBucketRepository.find(
-                { optionId },
-                { order: { rank: 'ASC' } },
-                ctx,
+              // A new value joins its buckets as it is written, as the option service's writes do.
+              const [buckets, created] = await Promise.all([
+                this.productOptionBucketRepository.find({ optionId }, { order: { rank: 'ASC' } }, ctx),
+                this.productOptionValueRepository.createMany(
+                  values.map((value) => ({ optionId, value })),
+                  ctx,
+                ),
+              ])
+              const pairs = created.flatMap((row) =>
+                bucketsFor(row.value, buckets).map((bucketId) => ({ valueId: row.id, bucketId })),
               )
-              return this.productOptionValueRepository.createMany(
-                values.map((value) => ({ optionId, value, bucketId: bucketFor(value, buckets) })),
-                ctx,
-              )
+              if (pairs.length > 0) await this.productOptionValueBucketRepository.createMany(pairs, ctx)
+              return created
             },
           )
           return { optionId, valueIds }

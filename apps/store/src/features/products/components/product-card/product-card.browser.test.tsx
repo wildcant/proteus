@@ -60,7 +60,9 @@ function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductLis
     soldOut: false,
     badges: [],
     groups: null,
+    activeGroupValue: null,
     available: null,
+    subline: null,
     ...overrides,
   } satisfies StoreProductListItem
 }

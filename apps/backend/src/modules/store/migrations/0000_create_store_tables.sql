@@ -16,6 +16,7 @@ CREATE TABLE "store" (
 	"navigation" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"search" jsonb DEFAULT '{"popular":[],"trending":[]}'::jsonb NOT NULL,
 	"filters" jsonb,
+	"card" jsonb DEFAULT '{"subline":null,"listSeparator":", "}'::jsonb NOT NULL,
 	"metadata" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
