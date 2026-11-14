@@ -52,6 +52,7 @@ import type {
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
+  VariantOptionLabelDTO,
   VariantReassignmentDTO,
 } from '../../../core/types/product/common.js'
 import type {
@@ -1140,6 +1141,10 @@ export class ProductModuleService implements IProductModuleService {
     context?: Context,
   ): Promise<Record<string, Record<string, string>>> {
     return this.productOptionService.listVariantOptionMaps(variantIds, context)
+  }
+
+  async listVariantOptionLabels(variantIds: string[], context?: Context): Promise<VariantOptionLabelDTO[]> {
+    return this.productOptionService.listVariantOptionLabels(variantIds, context)
   }
 
   async enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO> {

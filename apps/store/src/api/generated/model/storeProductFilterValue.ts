@@ -8,5 +8,9 @@
 
 export interface StoreProductFilterValue {
   value: string;
+  label: string;
   count: number;
+  soldOut: boolean;
+  /** @nullable */
+  swatch: string | null;
 }

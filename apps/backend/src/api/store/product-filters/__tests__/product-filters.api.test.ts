@@ -316,3 +316,164 @@ test.describe('Filter by option and price', () => {
     })
   })
 })
+
+test.describe('Labels and value order', () => {
+  test('a field value reads and ranks as the Category that selects exactly it, a brand and an option as written', async ({
+    expect,
+    http,
+    service,
+  }) => {
+    await service.create.metafieldDefinitions(api.container, [
+      { key: 'brand', name: 'Brand', filterable: true, source: 'vendor' },
+      { key: 'gender', name: 'Gender', filterable: true },
+      { key: 'style', name: 'Style', filterable: true },
+    ])
+    const createCategory = async (name: string, rank: number, rule: Record<string, string[]>) => {
+      const response = await api.post(
+        '/admin/product-categories',
+        http.admin.createProductCategory({ name, rank, rule, isActive: true }),
+      )
+      expect(response.status).toBe(201)
+    }
+    // Running ranks before Classics: the filter lists styles as the menu does, not alphabetically. A
+    // rule over two values names neither.
+    await createCategory('Running', 0, { style: ['running'] })
+    await createCategory('Classics', 1, { style: ['classics'] })
+    await createCategory('All styles', 2, { style: ['classics', 'skate'] })
+    const size = await service.create.productOption(api.container, {
+      title: 'Size',
+      values: [{ value: 'xl', rank: 0 }],
+    })
+    const sizeValueId = size.values[0]?.id ?? ''
+
+    const product = async (brand: string, metafields: Record<string, string[]>) => {
+      const { product } = await service.create.product(api.container, { status: 'published', brand, metafields })
+      await service.update.productOptions(api.container, product.id, {
+        options: [{ optionId: size.id, valueIds: [sizeValueId] }],
+      })
+      const [variant] = await service.create.productVariants(api.container, product.id, [
+        { optionValues: { [size.id]: sizeValueId } },
+      ])
+      if (!variant) throw new Error('Expected a variant')
+      await service.create.variantPrices(api.container, [variant.id])
+    }
+    // A lower-case brand stays as written: only a field's stored value is turned into a name.
+    await product('adidas', { gender: ['men'], style: ['classics'] })
+    await product('adidas', { gender: ['women'], style: ['skate'] })
+    await product('adidas', { gender: ['women'], style: ['running'] })
+
+    const response = await api.get<typeof productFilterRoutes.GetOutput>('/store/product-filters')
+    expect(response.status).toBe(200)
+    expect(
+      Object.fromEntries(
+        response.body.filters.map((filter) => [
+          filter.key,
+          filter.values.map(({ value, label }) => `${value}: ${label}`),
+        ]),
+      ),
+    ).toEqual({
+      brand: ['adidas: adidas'],
+      // No Category names a gender: the value, capitalised.
+      gender: ['men: Men', 'women: Women'],
+      // Named and ordered by the Category that selects exactly each; one no Category names comes last.
+      style: ['running: Running', 'classics: Classics', 'skate: Skate'],
+      'option.Size': ['xl: xl'],
+    })
+  })
+})
+
+test.describe('Stock, swatches and price bounds', () => {
+  test('a size nothing in view has left is sold out, the colour filter keys its swatches, and the slider spans the scope', async ({
+    expect,
+    service,
+  }) => {
+    const option = async (title: string, values: string[]) => {
+      const created = await service.create.productOption(api.container, {
+        title,
+        values: values.map((value, rank) => ({ value, rank })),
+      })
+      const idOf = (value: string) => {
+        const found = created.values.find((candidate) => candidate.value === value)
+        if (!found) throw new Error(`No ${title} ${value}`)
+        return found.id
+      }
+      return { id: created.id, idOf }
+    }
+    const size = await option('Size', ['40', '41'])
+    const color = await option('Color', ['Café', 'Navy Blue'])
+
+    /** A product in one colour, in each size of `stock` — units on the shelf by size — every variant at `amount`. */
+    const product = async (title: string, colour: string, amount: number, stock: Record<string, number>) => {
+      const { product } = await service.create.product(api.container, { title, status: 'published' })
+      const sizes = Object.keys(stock)
+      await service.update.productOptions(api.container, product.id, {
+        options: [
+          { optionId: color.id, valueIds: [color.idOf(colour)] },
+          { optionId: size.id, valueIds: sizes.map(size.idOf) },
+        ],
+      })
+      const variants = await service.create.productVariants(
+        api.container,
+        product.id,
+        sizes.map((value) => ({ optionValues: { [color.id]: color.idOf(colour), [size.id]: size.idOf(value) } })),
+      )
+      await service.create.variantPrices(
+        api.container,
+        variants.map((variant) => variant.id),
+        { prices: [{ currencyCode: 'usd', amount: new BigNumber(amount) }] },
+      )
+      await Promise.all(
+        variants.map((variant, index) =>
+          service.create.variantStock(api.container, {
+            variantId: variant.id,
+            level: { stockedQuantity: stock[sizes[index] ?? ''] ?? 0 },
+          }),
+        ),
+      )
+    }
+    // Size 40 is on two products and sold out on both; 41 is left on one of its two.
+    await product('Runner', 'Navy Blue', 120, { '40': 0, '41': 2 })
+    await product('Court', 'Café', 180, { '40': 0 })
+    await product('Trail', 'Navy Blue', 90, { '41': 0 })
+
+    const filtersOf = async (query: string) => {
+      const response = await api.get<typeof productFilterRoutes.GetOutput>(`/store/product-filters?${query}`)
+      expect(response.status).toBe(200)
+      const { filters, priceBounds } = response.body
+      return {
+        filters: Object.fromEntries(
+          filters.map((filter) => [
+            filter.key,
+            filter.values.map(
+              ({ value, count, soldOut, swatch }) =>
+                `${value} ${count}${soldOut ? ' sold out' : ''}${swatch ? ` (${swatch})` : ''}`,
+            ),
+          ]),
+        ),
+        priceBounds,
+      }
+    }
+
+    // Only the store's colour filter carries swatch keys: lower-cased, accents dropped, words hyphenated.
+    // Court has nothing left, so its colour is sold out as well as its size.
+    expect(await filtersOf('')).toEqual({
+      filters: {
+        'option.Color': ['Café 1 sold out (cafe)', 'Navy Blue 2 (navy-blue)'],
+        'option.Size': ['40 2 sold out', '41 2'],
+      },
+      priceBounds: { min: '90', max: '180' },
+    })
+    // The bounds hold still while a range or a value is chosen, so the slider does not shrink under the shopper.
+    expect((await filtersOf('minPrice=100&maxPrice=150&filter=option.Color:Café')).priceBounds).toEqual({
+      min: '90',
+      max: '180',
+    })
+    // A search narrows the scope, so both the stock answer and the bounds follow it: Trail's 41 is gone.
+    expect(await filtersOf('q=trail')).toEqual({
+      filters: { 'option.Color': ['Navy Blue 1 sold out (navy-blue)'], 'option.Size': ['41 1 sold out'] },
+      priceBounds: { min: '90', max: '90' },
+    })
+    // A scope nothing in view is priced in has no slider.
+    expect((await filtersOf('q=nothing-matches')).priceBounds).toBeNull()
+  })
+})

@@ -6,7 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreProductFilter } from './storeProductFilter.ts';
+import type { StoreProductPriceBounds } from './storeProductPriceBounds.ts';
 
 export interface StoreProductFilterListResponse {
   filters: StoreProductFilter[];
+  priceBounds: StoreProductPriceBounds | null;
 }

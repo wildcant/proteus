@@ -613,88 +613,88 @@ msgid "Only an import waiting in preview can be confirmed or canceled."
 msgstr "Solo se puede confirmar o cancelar una importación en vista previa."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:376
+#: src/modules/product/services/product-module-service.ts:377
 msgid "Variant creation returned no rows"
 msgstr "La creación de la variante no devolvió filas"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:455
+#: src/modules/product/services/product-module-service.ts:456
 msgid "Variant \"{variantId}\" not found"
 msgstr "No se encontró la variante \"{variantId}\""
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1270
+#: src/modules/product/services/product-module-service.ts:1275
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "Estas opciones no encajan con las variantes del producto: {reasons}. Elimina primero esas variantes o haz el cambio desde el admin, que las mueve por ti."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1375
+#: src/modules/product/services/product-module-service.ts:1380
 msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
 msgstr "No hay ningún metacampo definido con la clave {keys}. Decláralo en campos del archivo de estructura."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:216
+#: src/modules/product/services/product-option-service.ts:217
 msgid "Cannot delete option(s) that are currently linked to products. Remove them from all products first."
 msgstr "No puedes eliminar opciones que están vinculadas a productos. Quítalas primero de todos los productos."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:494
+#: src/modules/product/services/product-option-service.ts:521
 msgid "Variant \"{variantId}\" was given option value \"{optionValueId}\", which its product does not offer."
 msgstr "La variante \"{variantId}\" recibió el valor de opción \"{optionValueId}\", que su producto no ofrece."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:564
+#: src/modules/product/services/product-option-service.ts:591
 msgid "This product's options produce {totalCombinations} combinations, above the limit of {limit}. Reduce the options or the values they offer."
 msgstr "Las opciones de este producto generan {totalCombinations} combinaciones, por encima del límite de {limit}. Reduce las opciones o los valores que ofrecen."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:648
-#: src/modules/product/services/product-option-service.ts:706
+#: src/modules/product/services/product-option-service.ts:675
+#: src/modules/product/services/product-option-service.ts:733
 msgid "Variant ({label}) with the provided options already exists."
 msgstr "Ya existe una variante ({label}) con las opciones indicadas."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:657
+#: src/modules/product/services/product-option-service.ts:684
 msgid "Variant \"{variant}\" has the same combination of option values as \"{clash}\"."
 msgstr "La variante \"{variant}\" tiene la misma combinación de valores de opción que \"{clash}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:686
+#: src/modules/product/services/product-option-service.ts:713
 msgid "A combination belongs to a single variant, so it cannot be assigned to several at once."
 msgstr "Una combinación pertenece a una sola variante, así que no puedes asignarla a varias a la vez."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:755
+#: src/modules/product/services/product-option-service.ts:782
 msgid "These options would leave the product with {total} variants, above the limit of {limit}. Reduce the options or the values they offer."
 msgstr "Estas opciones dejarían el producto con {total} variantes, por encima del límite de {limit}. Reduce las opciones o los valores que ofrecen."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:835
+#: src/modules/product/services/product-option-service.ts:862
 msgid "Product has {optionCount} option(s) but {valueCount} option value(s) were provided for the variant: {variant}."
 msgstr "El producto tiene {optionCount} opción(es), pero se enviaron {valueCount} valor(es) de opción para la variante: {variant}."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:847
+#: src/modules/product/services/product-option-service.ts:874
 msgid "Option \"{optionId}\" is not available on this product."
 msgstr "La opción \"{optionId}\" no está disponible en este producto."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:854
+#: src/modules/product/services/product-option-service.ts:881
 msgid "Option value \"{optionValueId}\" does not exist for option {optionTitle}."
 msgstr "El valor de opción \"{optionValueId}\" no existe para la opción {optionTitle}."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:862
+#: src/modules/product/services/product-option-service.ts:889
 msgid "The provided options are not a valid combination for the variant: {variant}."
 msgstr "Las opciones indicadas no forman una combinación válida para la variante: {variant}."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:952
+#: src/modules/product/services/product-option-service.ts:979
 msgid "Option(s) {optionIds} were sent with no values. An option a product offers must offer at least one; drop the option instead."
 msgstr "Las opciones {optionIds} se enviaron sin valores. Cada opción que ofrece un producto debe tener al menos un valor; quita la opción si no lo tiene."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-option-service.ts:1054
+#: src/modules/product/services/product-option-service.ts:1081
 msgid "Cannot remove option value(s) that are currently used by products. Remove them from all products first."
 msgstr "No puedes eliminar valores de opción que usan los productos. Quítalos primero de todos los productos."
 
