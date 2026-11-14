@@ -5,6 +5,8 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminProductOptionBucket } from './adminProductOptionBucket.ts';
+import type { AdminProductOptionListingRole } from './adminProductOptionListingRole.ts';
 import type { AdminProductOptionMetadata } from './adminProductOptionMetadata.ts';
 import type { AdminProductOptionRenderAs } from './adminProductOptionRenderAs.ts';
 import type { AdminProductOptionValue } from './adminProductOptionValue.ts';
@@ -13,9 +15,11 @@ export interface AdminProductOption {
   id: string;
   title: string;
   renderAs: AdminProductOptionRenderAs;
+  listingRole: AdminProductOptionListingRole;
   /** @nullable */
   metadata: AdminProductOptionMetadata;
   values: AdminProductOptionValue[];
+  buckets: AdminProductOptionBucket[];
   createdAt: string;
   updatedAt: string;
 }

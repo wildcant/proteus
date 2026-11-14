@@ -10,6 +10,8 @@ export const AdminCreateProductCollection = z
     thumbnail: httpUrl.nullable().optional(),
     /** Absent or null makes a manual Collection. A rule fills it with the products that match. */
     rule: AdminProductGroupingRule.nullable().optional(),
+    /** The badge a member's list card wears, `new`; null gives none. */
+    badge: shortText.min(1).nullable().optional(),
   })
   .openapi('AdminCreateProductCollection')
 export type AdminCreateProductCollectionBody = z.infer<typeof AdminCreateProductCollection>
@@ -22,6 +24,8 @@ export const AdminUpdateProductCollection = z
     thumbnail: httpUrl.nullable().optional(),
     /** A new rule re-matches every product. Null makes it manual and keeps the members it has. */
     rule: AdminProductGroupingRule.nullable().optional(),
+    /** The badge a member's list card wears, `new`; null gives none. */
+    badge: shortText.min(1).nullable().optional(),
   })
   .openapi('AdminUpdateProductCollection')
 export type AdminUpdateProductCollectionBody = z.infer<typeof AdminUpdateProductCollection>

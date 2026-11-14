@@ -204,20 +204,7 @@ export type IInviteRoleRepository = {
 /** The orders the store list offers; mirrors `StoreProductSort` in `@proteus/http-schemas`. */
 export type StoreProductSort = 'relevance' | 'newest' | 'priceAsc' | 'priceDesc'
 
-/**
- * The colour families a list can be narrowed by: each family by name, with the words a colourway of it
- * holds ("Red" → `['red', 'burgundy']`). A colourway is in a family when one of its words is one of
- * the family's, as a whole word and ignoring case, so "Black / Red" is in Black and in Red.
- */
-export type StoreColorFamilies = {
-  /** The product option whose values are colourways. */
-  optionTitle: string
-  families: Record<string, string[]>
-  /** The families the shopper chose. A product with a colourway in any of them is in. */
-  selected: string[]
-}
-
-/** What narrows the store list: the product's own filters, and the ones that read price or colour. */
+/** What narrows the store list: the product's own filters, and the ones that read price. */
 export type StoreCatalogFilters = {
   /** The market's currency: only products with a variant priced in it are listed. */
   currencyCode: string
@@ -227,7 +214,6 @@ export type StoreCatalogFilters = {
   search?: string
   /** A product is in when any one priced variant is in the range, either end optional. */
   priceRange?: { minPrice?: number; maxPrice?: number }
-  colorFamilies?: StoreColorFamilies
 }
 
 export type ListStoreProductsOptions = StoreCatalogFilters & {
@@ -250,10 +236,6 @@ export type ListStoreFacetsOptions = {
   /** The list's scope before any selection: which values are offered, and what the price slider spans. */
   products: FilterableProductProps
   search?: string
-  /** The selections the colour family counts apply, every one but the families' own. */
-  selections: FilterableProductProps
-  priceRange?: { minPrice?: number; maxPrice?: number }
-  colorFamilies?: StoreColorFamilies
 }
 
 export type StoreFacetsDTO = {
@@ -261,17 +243,15 @@ export type StoreFacetsDTO = {
   priceBounds: { min: BigNumber; max: BigNumber } | null
   /** The option values some purchasable priced variant in scope carries: every other one is sold out. */
   inStockOptionValues: Array<{ optionTitle: string; value: string }>
-  /** Each family with how many products would remain once it is chosen, in `families` order. */
-  colorFamilyCounts: Array<{ family: string; count: number }>
 }
 
 export type IStoreCatalogListingRepository = {
   /**
    * The products the store sells in this market — published, with a variant priced in its currency —
-   * as a subquery of product ids, narrowed by `priceRange` and `colorFamilies` when given. For the
+   * as a subquery of product ids, narrowed by `priceRange` when given. For the
    * product module's reads, as `sellableProductIds` / `selectedProductIds`.
    */
-  sellableProductIds(filters: Pick<StoreCatalogFilters, 'currencyCode' | 'priceRange' | 'colorFamilies'>): SQL
+  sellableProductIds(filters: Pick<StoreCatalogFilters, 'currencyCode' | 'priceRange'>): SQL
   listStoreProducts(
     options: ListStoreProductsOptions,
     context?: Context,

@@ -34,6 +34,7 @@ import type {
   ProductImportPlanDTO,
   ProductImportReferencesDTO,
   ProductImportSettingsDTO,
+  ProductListingOptionsDTO,
   ProductMetafieldDefinitionDTO,
   ProductMetafieldDTO,
   ProductOptionCombinationDTO,
@@ -424,6 +425,11 @@ export type IProductModuleService = {
   listVariantOptionMaps(variantIds: string[], context?: Context): Promise<Record<string, Record<string, string>>>
   /** Each variant's option values with their option's title and the value's rank, one row per value. */
   listVariantOptionLabels(variantIds: string[], context?: Context): Promise<VariantOptionLabelDTO[]>
+  /**
+   * The option each product's list card reads per role — the first in the product's option order
+   * whose `listingRole` it is — keyed by product id; every id given has an entry.
+   */
+  listProductListingOptions(productIds: string[], context?: Context): Promise<Record<string, ProductListingOptionsDTO>>
   /** How many of the product's variants carry each option value, keyed by option value id. */
   countVariantsByOptionValue(productId: string, context?: Context): Promise<Record<string, number>>
   /** The product's options with each value's variant usage attached. */

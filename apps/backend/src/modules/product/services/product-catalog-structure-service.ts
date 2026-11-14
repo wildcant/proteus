@@ -18,6 +18,7 @@ import {
 } from '../utils/catalog-structure/plan-catalog-structure-changes.js'
 import type { ProductCategoryService } from './product-category-service.js'
 import type { ProductGroupingService } from './product-grouping-service.js'
+import type { ProductOptionService } from './product-option-service.js'
 import type { ProductRuleMembershipService } from './product-rule-membership-service.js'
 
 type InjectedDependencies = {
@@ -29,6 +30,7 @@ type InjectedDependencies = {
 
 type Collaborators = {
   productCategoryService: ProductCategoryService
+  productOptionService: ProductOptionService
   productGroupingService: ProductGroupingService
   productRuleMembershipService: ProductRuleMembershipService
 }
@@ -53,6 +55,7 @@ export class ProductCatalogStructureService {
   private productMetafieldDefinitionRepository: ProductMetafieldDefinitionRepository
   private withTransaction: WithTransaction
   private productCategoryService: ProductCategoryService
+  private productOptionService: ProductOptionService
   private productGroupingService: ProductGroupingService
   private productRuleMembershipService: ProductRuleMembershipService
 
@@ -62,6 +65,7 @@ export class ProductCatalogStructureService {
     this.productMetafieldDefinitionRepository = dependencies.productMetafieldDefinitionRepository
     this.withTransaction = dependencies.withTransaction
     this.productCategoryService = collaborators.productCategoryService
+    this.productOptionService = collaborators.productOptionService
     this.productGroupingService = collaborators.productGroupingService
     this.productRuleMembershipService = collaborators.productRuleMembershipService
   }
@@ -129,7 +133,7 @@ export class ProductCatalogStructureService {
 
       const collectionIdOf = new Map(collections.map((collection) => [collection.handle, collection.id]))
       for (const collection of structure.collections) {
-        const fields = { title: collection.name, rule: collection.rule }
+        const fields = { title: collection.name, rule: collection.rule, badge: collection.badge }
         const existingId = collectionIdOf.get(collection.handle)
         if (existingId) await this.productGroupingService.updateCollection(existingId, fields, transactionContext)
         else {
@@ -149,6 +153,18 @@ export class ProductCatalogStructureService {
         .map((collection) => collection.id)
       if (absentCollectionIds.length > 0) {
         await this.productGroupingService.softDeleteCollections(absentCollectionIds, transactionContext)
+      }
+
+      // The options the file names get exactly its role and buckets, which regroups their values.
+      for (const option of structure.options) {
+        const [existing] = await this.productOptionService.listProductOptions(
+          { title: option.name },
+          undefined,
+          transactionContext,
+        )
+        const fields = { listingRole: option.listingRole, buckets: option.buckets }
+        if (existing) await this.productOptionService.updateProductOption(existing.id, fields, transactionContext)
+        else await this.productOptionService.createProductOption({ title: option.name, ...fields }, transactionContext)
       }
 
       await this.productRuleMembershipService.syncRuleMemberships(undefined, transactionContext)

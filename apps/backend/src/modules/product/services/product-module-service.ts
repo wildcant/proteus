@@ -39,6 +39,7 @@ import type {
   ProductImportPlanDTO,
   ProductImportReferencesDTO,
   ProductImportSettingsDTO,
+  ProductListingOptionsDTO,
   ProductMetafieldDefinitionDTO,
   ProductMetafieldDTO,
   ProductOptionCombinationDTO,
@@ -97,6 +98,7 @@ import type { ProductImportRepository } from '../repositories/product-import.js'
 import type { ProductMetafieldRepository } from '../repositories/product-metafield.js'
 import type { ProductMetafieldDefinitionRepository } from '../repositories/product-metafield-definition.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
+import type { ProductOptionBucketRepository } from '../repositories/product-option-bucket.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
@@ -126,7 +128,7 @@ import { ProductRuleMembershipService } from './product-rule-membership-service.
 const SEARCH_CORRECTION_SIMILARITY = 0.3
 
 /**
- * Everything the module is built from. The five option repositories are not used here — they are
+ * Everything the module is built from. The six option repositories are not used here — they are
  * what `ProductOptionService` is built from, and this is the only place that builds it.
  */
 type InjectedDependencies = {
@@ -134,6 +136,7 @@ type InjectedDependencies = {
   productVariantRepository: ProductVariantRepository
   productOptionRepository: ProductOptionRepository
   productOptionValueRepository: ProductOptionValueRepository
+  productOptionBucketRepository: ProductOptionBucketRepository
   productProductOptionRepository: ProductProductOptionRepository
   productProductOptionValueRepository: ProductProductOptionValueRepository
   productImageRepository: ProductImageRepository
@@ -209,6 +212,7 @@ export class ProductModuleService implements IProductModuleService {
     this.productRuleMembershipService = new ProductRuleMembershipService(dependencies)
     this.productCatalogStructureService = new ProductCatalogStructureService(dependencies, {
       productCategoryService: this.productCategoryService,
+      productOptionService: this.productOptionService,
       productGroupingService: this.productGroupingService,
       productRuleMembershipService: this.productRuleMembershipService,
     })
@@ -1178,6 +1182,13 @@ export class ProductModuleService implements IProductModuleService {
 
   async listVariantOptionLabels(variantIds: string[], context?: Context): Promise<VariantOptionLabelDTO[]> {
     return this.productOptionService.listVariantOptionLabels(variantIds, context)
+  }
+
+  async listProductListingOptions(
+    productIds: string[],
+    context?: Context,
+  ): Promise<Record<string, ProductListingOptionsDTO>> {
+    return this.productOptionService.listProductListingOptions(productIds, context)
   }
 
   async enrichVariant(variant: ProductVariantDTO, context?: Context): Promise<EnrichedProductVariantDTO> {

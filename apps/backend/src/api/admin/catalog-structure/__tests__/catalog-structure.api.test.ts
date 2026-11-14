@@ -13,6 +13,8 @@ import collectionDefinitions from '../../collections/definitions.js'
 import type * as collectionRoutes from '../../collections/route.js'
 import productCategoryDefinitions from '../../product-categories/definitions.js'
 import type * as categoryRoutes from '../../product-categories/route.js'
+import productOptionDefinitions from '../../product-options/definitions.js'
+import type * as productOptionRoutes from '../../product-options/route.js'
 import type * as productByIdRoutes from '../../products/[id]/route.js'
 import productDefinitions from '../../products/definitions.js'
 import type * as productRoutes from '../../products/route.js'
@@ -36,6 +38,7 @@ test.beforeEach(async ({ createApi, factories }) => {
       ...productDefinitions,
       ...productCategoryDefinitions,
       ...collectionDefinitions,
+      ...productOptionDefinitions,
       ...storeNavigationDefinitions,
       ...storeCategoryDefinitions,
     ],
@@ -288,5 +291,70 @@ test.describe('Structure files', () => {
       { handle: 'men', name: 'Men', heading: null },
       { handle: 'women', name: 'Women', heading: null },
     ])
+  })
+
+  test('options get their list card role and filter buckets, and collections their badge', async ({
+    expect,
+    service,
+  }) => {
+    // Values written before the file: applying it groups them.
+    await service.create.productOption(api.container, {
+      title: 'Color',
+      values: ['Black / Red', 'Burgundy', 'Navy'].map((value, rank) => ({ value, rank })),
+    })
+    const file = (badge: string | null) =>
+      [
+        'collections:',
+        '  - name: New in',
+        '    handle: new-in',
+        ...(badge ? [`    badge: ${badge}`] : []),
+        'options:',
+        '  - name: Color',
+        '    role: grouping',
+        '    buckets:',
+        '      - { name: Black, swatch: black, words: [black] }',
+        '      - { name: Red, swatch: red, words: [red, burgundy] }',
+        '  - name: Size',
+        '    role: availability',
+        '',
+      ].join('\n')
+
+    expect((await apply(await upload(file('new')))).status).toBe(200)
+    const options = await api.get<typeof productOptionRoutes.GetOutput>('/admin/product-options?limit=10')
+    const shapeOf = (title: string) => {
+      const option = options.body.productOptions.find((candidate) => candidate.title === title)
+      if (!option) return undefined
+      const bucketName = new Map(option.buckets.map((bucket) => [bucket.id, bucket.name]))
+      return {
+        listingRole: option.listingRole,
+        buckets: option.buckets.map(({ name, swatch, words }) => ({ name, swatch, words })),
+        values: option.values.map((value) => [value.value, value.bucketId ? bucketName.get(value.bucketId) : null]),
+      }
+    }
+    expect(shapeOf('Color')).toEqual({
+      listingRole: 'grouping',
+      buckets: [
+        { name: 'Black', swatch: 'black', words: ['black'] },
+        { name: 'Red', swatch: 'red', words: ['red', 'burgundy'] },
+      ],
+      values: [
+        ['Black / Red', 'Black'],
+        ['Burgundy', 'Red'],
+        ['Navy', null],
+      ],
+    })
+    // An option the file names and the catalogue lacks is created with it.
+    expect(shapeOf('Size')).toEqual({ listingRole: 'availability', buckets: [], values: [] })
+    const badges = async () =>
+      (await api.get<typeof collectionRoutes.GetOutput>('/admin/collections')).body.collections.map(
+        ({ handle, badge }) => ({ handle, badge }),
+      )
+    expect(await badges()).toEqual([{ handle: 'new-in', badge: 'new' }])
+
+    // Dropping the badge is an update.
+    const dropped = await preview(await upload(file(null)))
+    expect(dropped.body.catalogStructure.collections.update.map((collection) => collection.handle)).toEqual(['new-in'])
+    expect((await apply(await upload(file(null)))).status).toBe(200)
+    expect(await badges()).toEqual([{ handle: 'new-in', badge: null }])
   })
 })

@@ -5,6 +5,8 @@ import catalogStructureDefinitions from '../../../admin/catalog-structure/defini
 import type * as structureRoutes from '../../../admin/catalog-structure/route.js'
 import adminCategoryDefinitions from '../../../admin/product-categories/definitions.js'
 import type * as adminCategoryRoutes from '../../../admin/product-categories/route.js'
+import type * as adminOptionRoutes from '../../../admin/product-options/[id]/route.js'
+import adminOptionDefinitions from '../../../admin/product-options/definitions.js'
 import uploadDefinitions from '../../../admin/uploads/definitions.js'
 import type * as uploadRoutes from '../../../admin/uploads/route.js'
 import productDefinitions from '../../products/definitions.js'
@@ -23,6 +25,7 @@ test.beforeEach(async ({ createApi, factories }) => {
       ...productDefinitions,
       ...catalogStructureDefinitions,
       ...uploadDefinitions,
+      ...adminOptionDefinitions,
     ],
   })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
@@ -392,11 +395,8 @@ test.describe('Labels and value order', () => {
   })
 })
 
-test.describe('Stock, swatches and price bounds', () => {
-  test('a size nothing in view has left is sold out, the colour filter keys its swatches, and the slider spans the scope', async ({
-    expect,
-    service,
-  }) => {
+test.describe('Stock and price bounds', () => {
+  test('a size nothing in view has left is sold out, and the slider spans the scope', async ({ expect, service }) => {
     const option = async (title: string, values: string[]) => {
       const created = await service.create.productOption(api.container, {
         title,
@@ -464,11 +464,10 @@ test.describe('Stock, swatches and price bounds', () => {
       }
     }
 
-    // Only the store's colour filter carries swatch keys: lower-cased, accents dropped, words hyphenated.
     // Court has nothing left, so its colour is sold out as well as its size.
     expect(await filtersOf('')).toEqual({
       filters: {
-        'option.Color': ['Café 1 sold out (cafe)', 'Navy Blue 2 (navy-blue)'],
+        'option.Color': ['Café 1 sold out', 'Navy Blue 2'],
         'option.Size': ['40 2 sold out', '41 2'],
       },
       priceBounds: { min: '90', max: '180' },
@@ -480,7 +479,7 @@ test.describe('Stock, swatches and price bounds', () => {
     })
     // A search narrows the scope, so both the stock answer and the bounds follow it: Trail's 41 is gone.
     expect(await filtersOf('q=trail')).toEqual({
-      filters: { 'option.Color': ['Navy Blue 1 sold out (navy-blue)'], 'option.Size': ['41 1 sold out'] },
+      filters: { 'option.Color': ['Navy Blue 1 sold out'], 'option.Size': ['41 1 sold out'] },
       priceBounds: { min: '90', max: '90' },
     })
     // A scope nothing in view is priced in has no slider.
@@ -634,3 +633,74 @@ async function applyStructure(text: string) {
   const applied = await api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId: file?.id })
   if (applied.status !== 200) throw new Error(`The structure was not applied: ${JSON.stringify(applied.body)}`)
 }
+
+test.describe('Option buckets', () => {
+  test('an option with buckets is counted and filtered by bucket, with the bucket’s swatch, and regroups when its buckets change', async ({
+    expect,
+    service,
+  }) => {
+    // Each value joins the first bucket, by rank, holding one of its words: "Black / Red" is Black.
+    const colour = await service.create.productOption(api.container, {
+      title: 'Color',
+      values: ['Black / Red', 'Jet Black', 'Burgundy', 'Navy'].map((value, rank) => ({ value, rank })),
+      buckets: [
+        { name: 'Black', swatch: 'black', words: ['Black'] },
+        { name: 'Red', swatch: 'red', words: ['red', 'burgundy'] },
+      ],
+    })
+    const products = await Promise.all(
+      colour.values.map(async (value) => {
+        const { product } = await service.create.product(api.container, { title: value.value, status: 'published' })
+        await service.update.productOptions(api.container, product.id, {
+          options: [{ optionId: colour.id, valueIds: [value.id] }],
+        })
+        const variants = await service.create.productVariants(api.container, product.id, [
+          { manageInventory: false, optionValues: { [colour.id]: value.id } },
+        ])
+        await service.create.variantPrices(
+          api.container,
+          variants.map((variant) => variant.id),
+        )
+        return [value.value, product.id] as const
+      }),
+    )
+    const idOf = Object.fromEntries(products)
+
+    const colourFacet = async () => {
+      const response = await api.get<typeof productFilterRoutes.GetOutput>('/store/product-filters')
+      expect(response.status).toBe(200)
+      return response.body.filters
+        .find((filter) => filter.key === 'option.Color')
+        ?.values.map(
+          ({ value, count, soldOut, swatch }) =>
+            `${value} ${count}${soldOut ? ' sold out' : ''}${swatch ? ` (${swatch})` : ''}`,
+        )
+    }
+    const listed = async (selection: string) => {
+      const response = await api.get<typeof productRoutes.GetOutput>(
+        `/store/products?filter=${encodeURIComponent(`option.Color:${selection}`)}`,
+      )
+      expect(response.status).toBe(200)
+      return response.body.products.map((product) => product.id).sort()
+    }
+
+    // Buckets in their order, then a value no bucket holds as itself.
+    expect(await colourFacet()).toEqual(['Black 2 (black)', 'Red 1 (red)', 'Navy 1'])
+    expect(await listed('Black')).toEqual([idOf['Black / Red'], idOf['Jet Black']].sort())
+    expect(await listed('Navy')).toEqual([idOf.Navy])
+    // A bucketed value is chosen by its bucket, never by its own name.
+    expect(await listed('Jet Black')).toEqual([])
+
+    // Rewriting the buckets regroups every value at once: Navy now has one.
+    const patched = await api.patch<typeof adminOptionRoutes.PatchOutput>(`/admin/product-options/${colour.id}`, {
+      buckets: [
+        { name: 'Black', swatch: 'black', words: ['black'] },
+        { name: 'Red', swatch: 'red', words: ['red', 'burgundy'] },
+        { name: 'Blue', swatch: 'blue', words: ['navy'] },
+      ],
+    })
+    expect(patched.status).toBe(200)
+    expect(await colourFacet()).toEqual(['Black 2 (black)', 'Red 1 (red)', 'Blue 1 (blue)'])
+    expect(await listed('Blue')).toEqual([idOf.Navy])
+  })
+})

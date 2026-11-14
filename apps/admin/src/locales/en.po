@@ -113,6 +113,10 @@ msgstr "A keyword shoppers can filter products by. A product can have several."
 msgid "A product can sit in several collections."
 msgstr "A product can sit in several collections."
 
+#: src/features/product-options/components/listing-role-select.tsx:31
+msgid "A product shows the first option in its order for each."
+msgstr "A product shows the first option in its order for each."
+
 #: src/routes/_authed/settings/regions/index.tsx:25
 msgid "A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency."
 msgstr "A region is an area that you sell products in. It can cover multiple countries, and has different providers and currency."
@@ -410,7 +414,7 @@ msgstr "Bytes"
 #: src/features/collections/components/edit-collection-form.tsx:35
 #: src/features/customers/components/update-customer-form.tsx:49
 #: src/features/orders/components/order-general-section.tsx:66
-#: src/features/product-options/components/edit-product-option-form.tsx:46
+#: src/features/product-options/components/edit-product-option-form.tsx:50
 #: src/features/product-options/components/manage-product-options-form.tsx:64
 #: src/features/products/components/create-product-form/create-product-form.tsx:73
 #: src/features/products/components/edit-product-form.tsx:32
@@ -622,7 +626,7 @@ msgstr "Create"
 msgid "Create a collection to group products for a campaign or a season."
 msgstr "Create a collection to group products for a campaign or a season."
 
-#: src/features/product-options/components/create-product-option-form.tsx:27
+#: src/features/product-options/components/create-product-option-form.tsx:28
 msgid "Create a new product option with values."
 msgstr "Create a new product option with values."
 
@@ -674,7 +678,7 @@ msgstr "Create fulfillments"
 msgid "Create invites"
 msgstr "Create invites"
 
-#: src/features/product-options/components/create-product-option-form.tsx:24
+#: src/features/product-options/components/create-product-option-form.tsx:25
 msgid "Create Option"
 msgstr "Create Option"
 
@@ -967,8 +971,8 @@ msgstr "e.g. Ada"
 msgid "e.g. ada@example.com"
 msgstr "e.g. ada@example.com"
 
-#: src/features/product-options/components/create-product-option-form.tsx:31
-#: src/features/product-options/components/edit-product-option-form.tsx:27
+#: src/features/product-options/components/create-product-option-form.tsx:32
+#: src/features/product-options/components/edit-product-option-form.tsx:28
 msgid "e.g. Color, Size"
 msgstr "e.g. Color, Size"
 
@@ -1078,7 +1082,7 @@ msgstr "Edit prices"
 msgid "Edit Product"
 msgstr "Edit Product"
 
-#: src/features/product-options/components/edit-product-option-form.tsx:22
+#: src/features/product-options/components/edit-product-option-form.tsx:23
 msgid "Edit Product Option"
 msgstr "Edit Product Option"
 
@@ -2171,6 +2175,10 @@ msgstr "Not a supported image. Supported file types are: {extensions}."
 msgid "Not a YAML file. Choose a file ending in .yaml or .yml."
 msgstr "Not a YAML file. Choose a file ending in .yaml or .yml."
 
+#: src/features/product-options/components/listing-role-select.tsx:27
+msgid "Not shown"
+msgstr "Not shown"
+
 #: src/features/inventory/hooks/use-inventory-table.tsx:66
 msgid "Nothing tracked yet"
 msgstr "Nothing tracked yet"
@@ -2187,9 +2195,17 @@ msgstr "Notifications"
 msgid "Now"
 msgstr "Now"
 
+#: src/features/product-options/components/listing-role-select.tsx:19
+msgid "On the list card"
+msgstr "On the list card"
+
 #: src/components/form/file-upload-field.tsx:60
 msgid "One or more files exceed the maximum file size of {maxSize}:{fileList}"
 msgstr "One or more files exceed the maximum file size of {maxSize}:{fileList}"
+
+#: src/features/product-options/components/listing-role-select.tsx:28
+msgid "One swatch per value, with its photo (colour)"
+msgstr "One swatch per value, with its photo (colour)"
 
 #: src/features/product-options/components/option-row-actions.tsx:36
 msgid "Option \"{title}\" deleted"
@@ -2581,8 +2597,8 @@ msgstr "Rule"
 #: src/features/collections/components/create-collection-form.tsx:44
 #: src/features/collections/components/edit-collection-form.tsx:38
 #: src/features/customers/components/update-customer-form.tsx:52
-#: src/features/product-options/components/create-product-option-form.tsx:51
-#: src/features/product-options/components/edit-product-option-form.tsx:49
+#: src/features/product-options/components/create-product-option-form.tsx:55
+#: src/features/product-options/components/edit-product-option-form.tsx:53
 #: src/features/product-options/components/manage-product-options-form.tsx:67
 #: src/features/products/components/edit-product-form.tsx:35
 #: src/features/products/components/edit-product-organization-form.tsx:39
@@ -2884,6 +2900,10 @@ msgstr "The store sells in no currencies yet, so a region has none to settle in.
 msgid "The structure file has errors. After you fix them, try importing it again."
 msgstr "The structure file has errors. After you fix them, try importing it again."
 
+#: src/features/product-options/components/listing-role-select.tsx:29
+msgid "The values in stock (size)"
+msgstr "The values in stock (size)"
+
 #: src/components/layout/theme-toggle.tsx:42
 msgid "Theme: {current}. Switch to {next}."
 msgstr "Theme: {current}. Switch to {next}."
@@ -2945,8 +2965,8 @@ msgstr "Thumbnail"
 #: src/features/collections/components/create-collection-form.tsx:32
 #: src/features/collections/components/edit-collection-form.tsx:27
 #: src/features/collections/hooks/use-collection-table.tsx:16
-#: src/features/product-options/components/create-product-option-form.tsx:31
-#: src/features/product-options/components/edit-product-option-form.tsx:27
+#: src/features/product-options/components/create-product-option-form.tsx:32
+#: src/features/product-options/components/edit-product-option-form.tsx:28
 #: src/features/product-options/hooks/use-product-option-table.tsx:21
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:28
 #: src/features/products/components/edit-product-form.tsx:27
@@ -3032,8 +3052,8 @@ msgstr "Try requesting a new invite link."
 msgid "Type"
 msgstr "Type"
 
-#: src/features/product-options/components/create-product-option-form.tsx:42
-#: src/features/product-options/components/edit-product-option-form.tsx:38
+#: src/features/product-options/components/create-product-option-form.tsx:46
+#: src/features/product-options/components/edit-product-option-form.tsx:42
 msgid "Type a value and press Enter"
 msgstr "Type a value and press Enter"
 
@@ -3107,8 +3127,8 @@ msgstr "Value"
 msgid "Value \"{valueName}\" removed"
 msgstr "Value \"{valueName}\" removed"
 
-#: src/features/product-options/components/create-product-option-form.tsx:35
-#: src/features/product-options/components/edit-product-option-form.tsx:31
+#: src/features/product-options/components/create-product-option-form.tsx:39
+#: src/features/product-options/components/edit-product-option-form.tsx:35
 #: src/features/product-options/components/option-value-selector.tsx:89
 #: src/features/product-options/hooks/use-option-values-table.tsx:20
 #: src/features/product-options/hooks/use-product-option-table.tsx:23

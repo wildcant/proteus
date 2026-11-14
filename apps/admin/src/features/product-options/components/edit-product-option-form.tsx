@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteDrawer, TagInput, useRouteModal } from '@proteus/ui'
 import type { AdminProductOption } from '#/api/generated/model'
+import { ListingRoleSelect } from '#/features/product-options/components/listing-role-select'
 import { useEditProductOptionForm } from '#/features/product-options/hooks/use-edit-product-option-form'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 
@@ -26,6 +27,9 @@ export function EditProductOptionForm({ option }: { option: AdminProductOption }
             <form.AppField name="title">
               {(field) => <field.TextField label={t`Title`} autoFocus placeholder={t`e.g. Color, Size`} />}
             </form.AppField>
+            <form.Field name="listingRole">
+              {(field) => <ListingRoleSelect value={field.state.value} onChange={field.handleChange} />}
+            </form.Field>
             <div>
               <h2 className="mb-2 font-medium text-sm">
                 <Trans>Values</Trans>

@@ -117,6 +117,32 @@ export const StoreProduct = z
 export type StoreProduct = z.infer<typeof StoreProduct>
 
 /**
+ * One value of the card's grouping option ("Black / Red", "Oak"): the image of its first variant that
+ * has one, whether any of its variants can be bought, and the variant the product page opens on.
+ */
+export const StoreProductListingGroupValue = z
+  .object({
+    value: z.string(),
+    thumbnail: z.string().nullable(),
+    inStock: z.boolean(),
+    variantId: z.string(),
+  })
+  .openapi('StoreProductListingGroupValue')
+export type StoreProductListingGroupValue = z.infer<typeof StoreProductListingGroupValue>
+
+/** The values of the option whose `listingRole` is `grouping` on this product, in the option's order. */
+export const StoreProductListingGroups = z
+  .object({ option: z.string(), values: z.array(StoreProductListingGroupValue) })
+  .openapi('StoreProductListingGroups')
+export type StoreProductListingGroups = z.infer<typeof StoreProductListingGroups>
+
+/** The in-stock values of the option whose `listingRole` is `availability` on this product, in its order. */
+export const StoreProductListingAvailability = z
+  .object({ option: z.string(), values: z.array(z.string()) })
+  .openapi('StoreProductListingAvailability')
+export type StoreProductListingAvailability = z.infer<typeof StoreProductListingAvailability>
+
+/**
  * A product as the grid draws it: no variants, so the stock answer arrives at the product's grain
  * rather than the variant's.
  *
@@ -128,5 +154,11 @@ export const StoreProductListItem = StoreProduct.extend({
   startingPrice: StoreCalculatedPrice.optional(),
   /** Whether no variant of this product can be bought. */
   soldOut: z.boolean(),
+  /** The badges of the product's Collections (`new`), each once. */
+  badges: z.array(z.string()),
+  /** `null` when the product offers no option whose `listingRole` is `grouping`. */
+  groups: StoreProductListingGroups.nullable(),
+  /** `null` when the product offers no option whose `listingRole` is `availability`. */
+  available: StoreProductListingAvailability.nullable(),
 }).openapi('StoreProductListItem')
 export type StoreProductListItem = z.infer<typeof StoreProductListItem>

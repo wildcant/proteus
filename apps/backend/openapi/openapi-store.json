@@ -2391,10 +2391,25 @@
               },
               "soldOut": {
                 "type": "boolean"
+              },
+              "badges": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "groups": {
+                "$ref": "#/components/schemas/StoreProductListingGroups"
+              },
+              "available": {
+                "$ref": "#/components/schemas/StoreProductListingAvailability"
               }
             },
             "required": [
-              "soldOut"
+              "soldOut",
+              "badges",
+              "groups",
+              "available"
             ]
           }
         ]
@@ -2417,6 +2432,74 @@
           "id",
           "currencyCode",
           "calculatedAmount"
+        ]
+      },
+      "StoreProductListingGroups": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "option": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProductListingGroupValue"
+            }
+          }
+        },
+        "required": [
+          "option",
+          "values"
+        ]
+      },
+      "StoreProductListingGroupValue": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "inStock": {
+            "type": "boolean"
+          },
+          "variantId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "thumbnail",
+          "inStock",
+          "variantId"
+        ]
+      },
+      "StoreProductListingAvailability": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "option": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "option",
+          "values"
         ]
       },
       "StoreProduct": {

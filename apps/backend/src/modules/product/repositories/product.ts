@@ -10,13 +10,14 @@ import { BaseRepository } from '../../../core/utils/base-repository.js'
 import { productTable } from '../models/product.js'
 import { productMetafieldTable } from '../models/product-metafield.js'
 import { productOptionTable } from '../models/product-option.js'
+import { productOptionBucketTable } from '../models/product-option-bucket.js'
 import { productOptionValueTable } from '../models/product-option-value.js'
 import { productProductOptionTable } from '../models/product-product-option.js'
 import { productProductOptionValueTable } from '../models/product-product-option-value.js'
 import { productProductTagTable } from '../models/product-product-tag.js'
 import { productTagTable } from '../models/product-tag.js'
 import { productTypeTable } from '../models/product-type.js'
-import { productGroupingWhere } from '../utils/product-where.js'
+import { optionFilterValue, optionValueBucket, productGroupingWhere } from '../utils/product-where.js'
 
 export class ProductRepository extends BaseRepository(productTable) {
   /**
@@ -208,8 +209,9 @@ export class ProductRepository extends BaseRepository(productTable) {
     return (
       client
         .select({
-          value: productOptionValueTable.value,
+          value: optionFilterValue,
           count: sql<number>`COUNT(DISTINCT ${this.table.id}) FILTER (WHERE ${narrowed})`.mapWith(Number),
+          swatch: sql<string | null>`MIN(${productOptionBucketTable.swatch})`,
         })
         .from(productProductOptionValueTable)
         .innerJoin(
@@ -220,6 +222,7 @@ export class ProductRepository extends BaseRepository(productTable) {
           productOptionValueTable,
           eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId),
         )
+        .leftJoin(productOptionBucketTable, optionValueBucket)
         .innerJoin(this.table, eq(this.table.id, productProductOptionTable.productId))
         .where(
           and(
@@ -230,13 +233,14 @@ export class ProductRepository extends BaseRepository(productTable) {
             this.buildWhere(scope),
           ),
         )
-        .groupBy(productOptionValueTable.value)
-        // The option's own order first; values it leaves tied go by number when they are numbers, so a
-        // size 9 comes before 10, and by text otherwise.
+        // A bucketed value counts as its bucket, so "Black / Red" and "Jet Black" are one "Black".
+        .groupBy(optionFilterValue)
+        // The buckets' or the option's own order first; values it leaves tied go by number when they are
+        // numbers, so a size 9 comes before 10, and by text otherwise.
         .orderBy(
-          sql`MIN(${productOptionValueTable.rank})`,
-          sql`CASE WHEN ${productOptionValueTable.value} ~ '^[0-9]+([.,][0-9]+)?$' THEN replace(${productOptionValueTable.value}, ',', '.')::numeric END NULLS LAST`,
-          asc(productOptionValueTable.value),
+          sql`MIN(COALESCE(${productOptionBucketTable.rank}, ${productOptionValueTable.rank}))`,
+          sql`CASE WHEN ${optionFilterValue} ~ '^[0-9]+([.,][0-9]+)?$' THEN replace(${optionFilterValue}, ',', '.')::numeric END NULLS LAST`,
+          asc(optionFilterValue),
         )
     )
   }

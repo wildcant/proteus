@@ -39,6 +39,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0029](adr/0029-cron-is-a-temporal-schedule-on-a-worker-of-its-own.md) | Cron is a Temporal Schedule on a Worker of its own | One Schedule per job starting a driver workflow on `proteus-cron`; `JobDefinition` unchanged, handler outside the sandbox |
 | [0034](adr/0034-store-entities-layer-replaces-the-feature-graph.md) | Code two store features share lives in an entity | `src/entities/<entity>/` sits between shared code and features; entities import only shared code; supersedes 0020 |
 | [0036](adr/0036-the-structure-file-has-english-keys.md) | The structure file has English keys | Keys are English (`fields`, `categories`, `rule`), values stay in the shop's language; no Spanish aliases |
+| [0037](adr/0037-option-roles-buckets-and-collection-badges.md) | Option roles, filter buckets and collection badges | An option's `listingRole` (`grouping` / `availability`) drives the list card; buckets assigned at write time group filter values; Collections carry badges |
 
 ---
 

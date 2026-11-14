@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { entityId, MAX_ITEMS, shortText } from '../../bounded.js'
 import { metadata } from '../../common.js'
-import { ProductOptionRenderAs } from './entities.js'
+import { ProductOptionListingRole, ProductOptionRenderAs } from './entities.js'
 
 const CreateOptionValue = z.object({
   value: shortText.min(1),
@@ -20,10 +20,20 @@ const UpsertOptionValue = z.object({
   metadata: metadata.optional(),
 })
 
+/** A bucket as written; its place in the array is its rank. */
+const OptionBucketInput = z.object({
+  name: shortText.min(1),
+  swatch: shortText.min(1).nullable().optional(),
+  words: z.array(shortText.min(1)).max(MAX_ITEMS.batch).optional(),
+})
+
 export const AdminCreateProductOption = z
   .object({
     title: shortText.min(1),
     renderAs: ProductOptionRenderAs.optional(),
+    listingRole: z.union([ProductOptionListingRole, z.null()]).optional(),
+    /** Replaces the buckets, in rank order, and regroups every value. */
+    buckets: z.array(OptionBucketInput).max(MAX_ITEMS.batch).optional(),
     metadata: metadata.optional(),
     values: z.array(CreateOptionValue).max(MAX_ITEMS.batch).optional(),
   })
@@ -34,6 +44,9 @@ export const AdminUpdateProductOption = z
   .object({
     title: shortText.min(1).optional(),
     renderAs: ProductOptionRenderAs.optional(),
+    listingRole: z.union([ProductOptionListingRole, z.null()]).optional(),
+    /** Replaces the buckets, in rank order, and regroups every value. */
+    buckets: z.array(OptionBucketInput).max(MAX_ITEMS.batch).optional(),
     metadata: metadata.optional(),
     values: z.array(UpsertOptionValue).max(MAX_ITEMS.batch).optional(),
   })

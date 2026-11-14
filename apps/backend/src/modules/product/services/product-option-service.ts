@@ -12,6 +12,8 @@ import type {
   FilterableProductVariantOptionProps,
   PickerVariantDTO,
   ProductDTO,
+  ProductListingOptionsDTO,
+  ProductOptionBucketDTO,
   ProductOptionCombinationDTO,
   ProductOptionCombinationPageDTO,
   ProductOptionDTO,
@@ -27,6 +29,7 @@ import type {
 import type {
   CreateProductOptionDTO,
   CreateProductOptionValueDTO,
+  ProductOptionBucketInput,
   SetProductOptionsDTO,
   UpdateProductOptionDTO,
   UpsertProductOptionValueInput,
@@ -34,11 +37,13 @@ import type {
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { ProductRepository } from '../repositories/product.js'
 import type { ProductOptionRepository } from '../repositories/product-option.js'
+import type { ProductOptionBucketRepository } from '../repositories/product-option-bucket.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
 import type { ProductProductOptionValueRepository } from '../repositories/product-product-option-value.js'
 import type { ProductVariantRepository } from '../repositories/product-variant.js'
 import type { ProductVariantOptionRepository } from '../repositories/product-variant-option.js'
+import { bucketFor } from '../utils/bucket-for.js'
 import {
   buildCombinations,
   buildPickerTargets,
@@ -77,6 +82,7 @@ type InjectedDependencies = {
   productVariantRepository: ProductVariantRepository
   productOptionRepository: ProductOptionRepository
   productOptionValueRepository: ProductOptionValueRepository
+  productOptionBucketRepository: ProductOptionBucketRepository
   productProductOptionRepository: ProductProductOptionRepository
   productProductOptionValueRepository: ProductProductOptionValueRepository
   productVariantOptionRepository: ProductVariantOptionRepository
@@ -108,6 +114,7 @@ export class ProductOptionService {
   private productVariantRepository: ProductVariantRepository
   private productOptionRepository: ProductOptionRepository
   private productOptionValueRepository: ProductOptionValueRepository
+  private productOptionBucketRepository: ProductOptionBucketRepository
   private productProductOptionRepository: ProductProductOptionRepository
   private productProductOptionValueRepository: ProductProductOptionValueRepository
   private productVariantOptionRepository: ProductVariantOptionRepository
@@ -119,12 +126,14 @@ export class ProductOptionService {
     productVariantRepository,
     productOptionRepository,
     productOptionValueRepository,
+    productOptionBucketRepository,
     productProductOptionRepository,
     productProductOptionValueRepository,
     productVariantOptionRepository,
     withTransaction,
     logger,
   }: InjectedDependencies) {
+    this.productOptionBucketRepository = productOptionBucketRepository
     this.productRepository = productRepository
     this.productVariantRepository = productVariantRepository
     this.productOptionRepository = productOptionRepository
@@ -140,16 +149,17 @@ export class ProductOptionService {
 
   async createProductOption(data: CreateProductOptionDTO, context?: Context): Promise<ProductOptionWithValuesDTO> {
     return this.withTransaction(context, async (ctx) => {
-      const { values: valueInputs, ...optionData } = data
+      const { values: valueInputs, buckets: bucketInputs, ...optionData } = data
       const option = await this.productOptionRepository.create(optionData, ctx)
-      const values =
-        valueInputs && valueInputs.length > 0
-          ? await this.productOptionValueRepository.createMany(
-              valueInputs.map((v, index) => ({ ...v, optionId: option.id, rank: v.rank ?? index })),
-              ctx,
-            )
-          : []
-      return { ...option, values }
+      if (bucketInputs) await this.replaceOptionBuckets(option.id, bucketInputs, ctx)
+      if (valueInputs && valueInputs.length > 0) {
+        await this.productOptionValueRepository.createMany(
+          valueInputs.map((v, index) => ({ ...v, optionId: option.id, rank: v.rank ?? index })),
+          ctx,
+        )
+      }
+      await this.groupOptionValues([option.id], ctx)
+      return this.retrieveProductOption(option.id, ctx)
     })
   }
 
@@ -181,8 +191,11 @@ export class ProductOptionService {
 
   async retrieveProductOption(optionId: string, context?: Context): Promise<ProductOptionWithValuesDTO> {
     const option = await this.productOptionRepository.findByIdOrFail(optionId, undefined, context)
-    const values = await this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, context)
-    return { ...option, values }
+    const [values, buckets] = await Promise.all([
+      this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, context),
+      this.productOptionBucketRepository.find({ optionId }, { order: { rank: 'ASC' } }, context),
+    ])
+    return { ...option, values, buckets }
   }
 
   async updateProductOption(
@@ -191,20 +204,17 @@ export class ProductOptionService {
     context?: Context,
   ): Promise<UpdatedProductOption> {
     return this.withTransaction(context, async (ctx) => {
-      const { values: valueInputs, ...optionData } = data
+      const { values: valueInputs, buckets: bucketInputs, ...optionData } = data
 
-      const option =
-        Object.keys(optionData).length > 0
-          ? await this.productOptionRepository.update(optionId, optionData, ctx)
-          : await this.productOptionRepository.findByIdOrFail(optionId, undefined, ctx)
+      if (Object.keys(optionData).length > 0) await this.productOptionRepository.update(optionId, optionData, ctx)
+      if (bucketInputs) await this.replaceOptionBuckets(optionId, bucketInputs, ctx)
+      const { renamedValueIds } = valueInputs
+        ? await this.replaceOptionValues(optionId, valueInputs, ctx)
+        : { renamedValueIds: [] }
+      // A renamed value or a new bucket can move a value to another bucket.
+      if (valueInputs || bucketInputs) await this.groupOptionValues([optionId], ctx)
 
-      if (valueInputs) {
-        const { values, renamedValueIds } = await this.replaceOptionValues(optionId, valueInputs, ctx)
-        return { option: { ...option, values }, renamedValueIds }
-      }
-
-      const values = await this.productOptionValueRepository.find({ optionId }, { order: { rank: 'ASC' } }, ctx)
-      return { option: { ...option, values }, renamedValueIds: [] }
+      return { option: await this.retrieveProductOption(optionId, ctx), renamedValueIds }
     })
   }
 
@@ -232,13 +242,16 @@ export class ProductOptionService {
   ): Promise<ProductOptionValueDTO[]> {
     this.logger.debug(`Creating ${data.length} product option value(s)`)
     return this.withTransaction(context, async (ctx) => {
-      return this.productOptionValueRepository.createMany(data, ctx)
+      const created = await this.productOptionValueRepository.createMany(data, ctx)
+      return this.groupOptionValues([...new Set(created.map((value) => value.optionId))], ctx, created)
     })
   }
 
   async createProductOptionValue(data: CreateProductOptionValueDTO, context?: Context): Promise<ProductOptionValueDTO> {
     return this.withTransaction(context, async (ctx) => {
-      return this.productOptionValueRepository.create(data, ctx)
+      const created = await this.productOptionValueRepository.create(data, ctx)
+      const [grouped] = await this.groupOptionValues([created.optionId], ctx, [created])
+      return grouped ?? created
     })
   }
 
@@ -285,6 +298,7 @@ export class ProductOptionService {
     )
 
     const optionById = new Map(options.map((option) => [option.id, option]))
+    const bucketsByOptionId = await this.listBucketsByOptionId(optionIds, context)
 
     return productOptionLinks.flatMap((link) => {
       const option = optionById.get(link.optionId)
@@ -295,7 +309,11 @@ export class ProductOptionService {
       const offered = new Set(
         valueLinks.filter((value) => value.productProductOptionId === link.id).map((value) => value.optionValueId),
       )
-      return { ...option, values: allValues.filter((value) => offered.has(value.id)) }
+      return {
+        ...option,
+        values: allValues.filter((value) => offered.has(value.id)),
+        buckets: bucketsByOptionId.get(option.id) ?? [],
+      }
     })
   }
 
@@ -433,6 +451,38 @@ export class ProductOptionService {
     return maps
   }
 
+  async listProductListingOptions(
+    productIds: string[],
+    context?: Context,
+  ): Promise<Record<string, ProductListingOptionsDTO>> {
+    const listingOptions: Record<string, ProductListingOptionsDTO> = Object.fromEntries(
+      productIds.map((productId) => [productId, { grouping: null, availability: null }]),
+    )
+    // An empty filter array would reach the query builder as `inArray(column, [])`.
+    if (productIds.length === 0) return listingOptions
+
+    const links = await this.productProductOptionRepository.find(
+      { productId: productIds },
+      { order: { rank: 'ASC' } },
+      context,
+    )
+    if (links.length === 0) return listingOptions
+    const options = await this.productOptionRepository.find(
+      { id: [...new Set(links.map((link) => link.optionId))] },
+      undefined,
+      context,
+    )
+    const optionById = new Map(options.map((option) => [option.id, option]))
+    // Links come in each product's option order, so the first option in a role is the one it reads.
+    for (const link of links) {
+      const option = optionById.get(link.optionId)
+      const card = listingOptions[link.productId]
+      if (!option?.listingRole || !card || card[option.listingRole]) continue
+      card[option.listingRole] = { id: option.id, title: option.title }
+    }
+    return listingOptions
+  }
+
   async listVariantOptionLabels(variantIds: string[], context?: Context): Promise<VariantOptionLabelDTO[]> {
     const maps = await this.listVariantOptionMaps(variantIds, context)
     const carried = Object.entries(maps).flatMap(([variantId, map]) =>
@@ -455,7 +505,7 @@ export class ProductOptionService {
       const optionTitle = titleById.get(optionId)
       const value = valueById.get(optionValueId)
       if (optionTitle === undefined || !value) return []
-      return [{ variantId, optionTitle, value: value.value, rank: value.rank }]
+      return [{ variantId, optionId, optionTitle, value: value.value, rank: value.rank }]
     })
   }
 
@@ -1127,9 +1177,82 @@ export class ProductOptionService {
       }
     }
 
+    const bucketsByOptionId = await this.listBucketsByOptionId(optionIds, context)
     return options.map((option) => ({
       ...option,
       values: valuesByOptionId.get(option.id) ?? [],
+      buckets: bucketsByOptionId.get(option.id) ?? [],
     }))
+  }
+
+  private async listBucketsByOptionId(
+    optionIds: string[],
+    context?: Context,
+  ): Promise<Map<string, ProductOptionBucketDTO[]>> {
+    if (optionIds.length === 0) return new Map()
+    const buckets = await this.productOptionBucketRepository.find(
+      { optionId: optionIds },
+      { order: { rank: 'ASC' } },
+      context,
+    )
+    const byOptionId = new Map<string, ProductOptionBucketDTO[]>()
+    for (const bucket of buckets) byOptionId.set(bucket.optionId, [...(byOptionId.get(bucket.optionId) ?? []), bucket])
+    return byOptionId
+  }
+
+  /** Writes the option's buckets as given, in rank order: a kept name keeps its row, so values stay put. */
+  private async replaceOptionBuckets(
+    optionId: string,
+    inputs: ProductOptionBucketInput[],
+    context: Context,
+  ): Promise<void> {
+    const existing = await this.productOptionBucketRepository.find({ optionId }, undefined, context)
+    const wanted = new Set(inputs.map((input) => input.name))
+    const dropped = existing.filter((bucket) => !wanted.has(bucket.name))
+    if (dropped.length > 0) {
+      await this.productOptionBucketRepository.softDelete(
+        dropped.map((bucket) => bucket.id),
+        context,
+      )
+    }
+    const byName = new Map(existing.map((bucket) => [bucket.name, bucket]))
+    await Promise.all(
+      inputs.map((input, rank) => {
+        const columns = {
+          name: input.name,
+          swatch: input.swatch ?? null,
+          words: (input.words ?? []).map((word) => word.toLowerCase()),
+          rank,
+        }
+        const kept = byName.get(input.name)
+        return kept
+          ? this.productOptionBucketRepository.update(kept.id, columns, context)
+          : this.productOptionBucketRepository.create({ ...columns, optionId }, context)
+      }),
+    )
+  }
+
+  /**
+   * Puts each value of `optionIds` in the first bucket by rank holding one of its words — at write
+   * time, so the filter groups by `bucket_id` rather than matching text per query. Returns `values`
+   * (default: every value of the options) as they now stand.
+   */
+  private async groupOptionValues(
+    optionIds: string[],
+    context: Context,
+    values?: ProductOptionValueDTO[],
+  ): Promise<ProductOptionValueDTO[]> {
+    if (optionIds.length === 0) return values ?? []
+    const [bucketsByOptionId, current] = await Promise.all([
+      this.listBucketsByOptionId(optionIds, context),
+      values ?? this.productOptionValueRepository.find({ optionId: optionIds }, undefined, context),
+    ])
+    return Promise.all(
+      current.map((value) => {
+        const bucketId = bucketFor(value.value, bucketsByOptionId.get(value.optionId) ?? [])
+        if (bucketId === value.bucketId) return value
+        return this.productOptionValueRepository.update(value.id, { bucketId }, context)
+      }),
+    )
   }
 }

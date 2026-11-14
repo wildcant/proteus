@@ -5,7 +5,6 @@ import type {
   ListStoreFacetsOptions,
   ListStoreProductsOptions,
   StoreCatalogFilters,
-  StoreColorFamilies,
   StoreFacetsDTO,
   StoreListedProductDTO,
   StoreProductSort,
@@ -17,7 +16,10 @@ import { productVariantInventoryItemTable } from '../definitions/product-variant
 import { productVariantPriceSetTable } from '../definitions/product-variant-price-set.js'
 import {
   inventoryLevelTable,
+  optionFilterValue,
+  optionValueBucket,
   priceTable,
+  productOptionBucketTable,
   productOptionTable,
   productOptionValueTable,
   productProductOptionTable,
@@ -32,11 +34,6 @@ type PriceRange = StoreCatalogFilters['priceRange']
 
 /** Splits text into the words a search reads, as `findClosestSearchWord` and the relevance score do. */
 const WORD_SEPARATOR = '[[:space:][:punct:]]+'
-
-const escapeRegex = (word: string) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-/** Any of `words` as a whole word, for `~*`; `null` when there is no word to match. */
-const familyPattern = (words: string[]) => (words.length > 0 ? `\\m(${words.map(escapeRegex).join('|')})\\M` : null)
 
 /**
  * The store's product list and its facets, read in one query each across product, pricing and
@@ -64,14 +61,7 @@ export class StoreCatalogListingRepository {
     return (context?.transaction as Database) ?? this.#getDb()
   }
 
-  sellableProductIds({
-    currencyCode,
-    priceRange,
-    colorFamilies,
-  }: Pick<StoreCatalogFilters, 'currencyCode' | 'priceRange' | 'colorFamilies'>): SQL {
-    const inColors = colorFamilies?.selected.length
-      ? this.holdsColorFamily(colorFamilies, colorFamilies.selected)
-      : undefined
+  sellableProductIds({ currencyCode, priceRange }: Pick<StoreCatalogFilters, 'currencyCode' | 'priceRange'>): SQL {
     const { minPrice, maxPrice } = priceRange ?? {}
     // Plain joins rather than a correlated `EXISTS` per variant, so the planner can hash the whole set.
     return sql`SELECT ${productVariantTable.productId} FROM ${productVariantTable}
@@ -84,15 +74,14 @@ export class StoreCatalogListingRepository {
         AND ${priceTable.deletedAt} IS NULL
       WHERE ${productVariantTable.deletedAt} IS NULL
         ${minPrice === undefined ? sql`` : sql`AND ${priceTable.amount} >= ${minPrice}`}
-        ${maxPrice === undefined ? sql`` : sql`AND ${priceTable.amount} <= ${maxPrice}`}
-        ${inColors ? sql`AND ${inColors}` : sql``}`
+        ${maxPrice === undefined ? sql`` : sql`AND ${priceTable.amount} <= ${maxPrice}`}`
   }
 
   /**
    * One page of the store list, in the shopper's order, with the total it was cut from.
    *
    * Every product published with a variant priced in the market, narrowed by the product filters,
-   * the search, the price range (any one priced variant inside it) and the colour families. The
+   * the search, and the price range (any one priced variant inside it). The
    * starting price is the cheapest priced variant's; whether the product can be bought is read for
    * the page only, after the cut, since a card the shopper will never reach needs no stock.
    *
@@ -114,7 +103,7 @@ export class StoreCatalogListingRepository {
         COUNT(*) OVER () AS total
       FROM ${productTable}
       JOIN (${this.pricedVariants(options.currencyCode)}) priced_variant ON priced_variant.product_id = ${productTable.id}
-      WHERE ${this.listedWhere(options)}
+      WHERE ${this.scopeWhere(options.products, options.search)}
       GROUP BY ${productTable.id}
       ${this.inPriceRange(options.priceRange)}
       ORDER BY ${order}
@@ -151,17 +140,16 @@ export class StoreCatalogListingRepository {
   }
 
   /**
-   * The parts of the store filters that read price, stock or colour, over the list's scope:
+   * The parts of the store filters that read price or stock, over the list's scope:
    *
    * - the price slider's bounds, over every priced variant in scope;
    * - the option values a shopper can still buy — some purchasable priced variant in scope carries
-   *   them — so a size nothing in view has left is drawn sold out;
-   * - each colour family's count, applying every selection but the families' own, the way the
-   *   product repository counts a metafield.
+   *   them — so a size nothing in view has left is drawn sold out. A bucketed value is named by its
+   *   bucket, as the option's facet counts it.
    */
   async listStoreFacets(options: ListStoreFacetsOptions, context?: Context): Promise<StoreFacetsDTO> {
     const client = this.getClient(context)
-    const { currencyCode, colorFamilies } = options
+    const { currencyCode } = options
     const scope = this.scopeWhere(options.products, options.search)
     const pricedVariants = this.pricedVariants(currencyCode)
 
@@ -172,7 +160,7 @@ export class StoreCatalogListingRepository {
       WHERE ${scope}`)
 
     const inStockQuery = client.execute<{ optionTitle: string; value: string }>(sql`
-      SELECT DISTINCT ${productOptionTable.title} AS "optionTitle", ${productOptionValueTable.value} AS value
+      SELECT DISTINCT ${productOptionTable.title} AS "optionTitle", ${optionFilterValue} AS value
       FROM ${productTable}
       JOIN (${pricedVariants}) priced_variant ON priced_variant.product_id = ${productTable.id}
       JOIN ${productVariantOptionTable} ON ${productVariantOptionTable.variantId} = priced_variant.variant_id
@@ -185,64 +173,17 @@ export class StoreCatalogListingRepository {
         AND ${productOptionTable.deletedAt} IS NULL
       JOIN ${productOptionValueTable} ON ${productOptionValueTable.id} = ${productProductOptionValueTable.optionValueId}
         AND ${productOptionValueTable.deletedAt} IS NULL
+      LEFT JOIN ${productOptionBucketTable} ON ${optionValueBucket}
       LEFT JOIN (${this.stockedVariants()}) stocked_variant ON stocked_variant.variant_id = priced_variant.variant_id
       WHERE ${scope} AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}`)
 
-    const [bounds, inStock, colorFamilyCounts] = await Promise.all([
-      boundsQuery,
-      inStockQuery,
-      colorFamilies ? this.countColorFamilies(options, colorFamilies, context) : [],
-    ])
+    const [bounds, inStock] = await Promise.all([boundsQuery, inStockQuery])
 
     const [range] = bounds
     return {
       priceBounds: range?.min && range.max ? { min: new BigNumber(range.min), max: new BigNumber(range.max) } : null,
       inStockOptionValues: inStock.map((row) => ({ optionTitle: row.optionTitle, value: row.value })),
-      colorFamilyCounts,
     }
-  }
-
-  /**
-   * Every family's count in one pass: the scope's colourway values joined to the families' patterns,
-   * counted by family. The price range and the other selections apply; the families' own selection
-   * does not, because choosing a family widens the list (families OR) rather than narrowing it.
-   */
-  private async countColorFamilies(
-    options: ListStoreFacetsOptions,
-    colorFamilies: StoreColorFamilies,
-    context?: Context,
-  ): Promise<Array<{ family: string; count: number }>> {
-    const families = Object.entries(colorFamilies.families)
-    // A family with no words matches nothing, so it has no pattern to join and counts 0.
-    const patterns = families.flatMap(([, words], ordinal) => {
-      const pattern = familyPattern(words)
-      return pattern ? [sql`(${ordinal}::int, ${pattern})`] : []
-    })
-    if (patterns.length === 0) return families.map(([family]) => ({ family, count: 0 }))
-
-    const { minPrice, maxPrice } = options.priceRange ?? {}
-    const above = minPrice === undefined ? sql`TRUE` : sql`priced_variant.amount >= ${minPrice}`
-    const below = maxPrice === undefined ? sql`TRUE` : sql`priced_variant.amount <= ${maxPrice}`
-    // The market's priced products as a join the planner hashes, each knowing whether a variant sits
-    // in the price range — the range a selection here like the others.
-    const rows = await this.getClient(context).execute<{ ordinal: number; count: string }>(sql`
-      SELECT family.ordinal, COUNT(DISTINCT ${productTable.id}) AS count
-      FROM ${productTable}
-      JOIN (
-        SELECT priced_variant.product_id, bool_or(${above} AND ${below}) AS in_range
-        FROM (${this.pricedVariants(options.currencyCode)}) priced_variant
-        GROUP BY priced_variant.product_id
-      ) priced_product ON priced_product.product_id = ${productTable.id}
-      ${this.colourwayValues(colorFamilies.optionTitle)}
-      JOIN (VALUES ${sql.join(patterns, sql`, `)}) AS family (ordinal, pattern)
-        ON ${productOptionValueTable.value} ~* family.pattern
-      WHERE ${this.scopeWhere(options.products, options.search)}
-        AND ${productWhere(options.selections)}
-        AND priced_product.in_range
-      GROUP BY family.ordinal`)
-
-    const countByOrdinal = new Map(rows.map((row) => [Number(row.ordinal), Number(row.count)]))
-    return families.map(([family], ordinal) => ({ family, count: countByOrdinal.get(ordinal) ?? 0 }))
   }
 
   private async countListed(options: ListStoreProductsOptions, context?: Context): Promise<number> {
@@ -251,7 +192,7 @@ export class StoreCatalogListingRepository {
         SELECT ${productTable.id}
         FROM ${productTable}
         JOIN (${this.pricedVariants(options.currencyCode)}) priced_variant ON priced_variant.product_id = ${productTable.id}
-        WHERE ${this.listedWhere(options)}
+        WHERE ${this.scopeWhere(options.products, options.search)}
         GROUP BY ${productTable.id}
         ${this.inPriceRange(options.priceRange)}
       ) listed`)
@@ -289,47 +230,6 @@ export class StoreCatalogListingRepository {
       ...(search ? buildSearchFilter(search, PRODUCT_SEARCH_COLUMNS) : {}),
       status: 'published',
     })
-  }
-
-  private listedWhere({ products, search, colorFamilies }: ListStoreProductsOptions): SQL {
-    const scope = this.scopeWhere(products, search)
-    if (!colorFamilies || colorFamilies.selected.length === 0) return scope
-    return sql`${scope} AND ${this.holdsColorFamily(colorFamilies, colorFamilies.selected)}`
-  }
-
-  /**
-   * The outer `product` offers a colourway in one of `chosen`: a live value of the colour option
-   * holding one of the families' words as a whole word, ignoring case. No family, or one with no
-   * words, matches nothing.
-   */
-  private holdsColorFamily({ optionTitle, families }: StoreColorFamilies, chosen: string[]): SQL {
-    const pattern = familyPattern(chosen.flatMap((family) => families[family] ?? []))
-    if (!pattern) return sql`FALSE`
-    return sql`EXISTS (
-      SELECT 1 FROM ${productProductOptionValueTable}
-      JOIN ${productProductOptionTable} ON ${productProductOptionTable.id} = ${productProductOptionValueTable.productProductOptionId}
-        AND ${productProductOptionTable.deletedAt} IS NULL
-      JOIN ${productOptionTable} ON ${productOptionTable.id} = ${productProductOptionTable.optionId}
-        AND ${productOptionTable.deletedAt} IS NULL
-      JOIN ${productOptionValueTable} ON ${productOptionValueTable.id} = ${productProductOptionValueTable.optionValueId}
-        AND ${productOptionValueTable.deletedAt} IS NULL
-      WHERE ${productProductOptionTable.productId} = ${productTable.id}
-        AND ${productProductOptionValueTable.deletedAt} IS NULL
-        AND ${productOptionTable.title} = ${optionTitle}
-        AND ${productOptionValueTable.value} ~* ${pattern}
-    )`
-  }
-
-  /** The joins from a `FROM product` to its live values of the option titled `optionTitle`. */
-  private colourwayValues(optionTitle: string): SQL {
-    return sql`JOIN ${productProductOptionTable} ON ${productProductOptionTable.productId} = ${productTable.id}
-        AND ${productProductOptionTable.deletedAt} IS NULL
-      JOIN ${productOptionTable} ON ${productOptionTable.id} = ${productProductOptionTable.optionId}
-        AND ${productOptionTable.deletedAt} IS NULL AND ${productOptionTable.title} = ${optionTitle}
-      JOIN ${productProductOptionValueTable} ON ${productProductOptionValueTable.productProductOptionId} = ${productProductOptionTable.id}
-        AND ${productProductOptionValueTable.deletedAt} IS NULL
-      JOIN ${productOptionValueTable} ON ${productOptionValueTable.id} = ${productProductOptionValueTable.optionValueId}
-        AND ${productOptionValueTable.deletedAt} IS NULL`
   }
 
   /**

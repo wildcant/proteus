@@ -87,9 +87,36 @@ const category: z.ZodType<RawCategory> = z.lazy(() =>
   ),
 )
 
+/** `badge`: what a member's list card wears, `new`. */
 const collection = z.strictObject(
-  { name, handle, rule: rule.optional() },
+  { name, handle, rule: rule.optional(), badge: name.optional() },
   { error: ifWrongType('Must be a collection with name and handle.') },
+)
+
+/**
+ * A filter bucket of an option: `name` is what the filter offers, `swatch` the key the storefront draws
+ * it by, and `words` the words that put a value in it, matched whole and ignoring case.
+ */
+const bucket = z.strictObject(
+  {
+    name,
+    swatch: name.optional(),
+    words: z.array(name, { error: ifWrongType('Must be a list of words.') }).default([]),
+  },
+  { error: ifWrongType('Must be a bucket with name, swatch and words.') },
+)
+
+/**
+ * A product option by its title: `role`, the part it plays on the list card, and `buckets`, the groups
+ * its filter offers in place of its raw values. Each value joins the first bucket holding one of its words.
+ */
+const option = z.strictObject(
+  {
+    name,
+    role: z.enum(['grouping', 'availability'], { error: 'Must be "grouping" or "availability".' }).optional(),
+    buckets: z.array(bucket, { error: ifWrongType('Must be a list of buckets.') }).optional(),
+  },
+  { error: ifWrongType('Must be an option with name, role and buckets.') },
 )
 
 /** `limit` on a `values` section, how many values it shows at most, and `groups`, how many groups. */
@@ -180,12 +207,15 @@ const structureFile = z.strictObject(
     fields: z.array(field, { error: ifWrongType('Must be a list of fields.') }).default([]),
     categories: z.array(category, { error: ifWrongType('Must be a list of categories.') }).default([]),
     collections: z.array(collection, { error: ifWrongType('Must be a list of collections.') }).default([]),
+    options: z.array(option, { error: ifWrongType('Must be a list of options.') }).default([]),
     menu: z.array(menuEntry, { error: ifWrongType('Must be a list of menu entries.') }).default([]),
     search: search.default({ popular: [], trending: [] }),
     filters: z.array(filterKey, { error: ifWrongType('Must be a list of filter keys.') }).optional(),
   },
   {
-    error: ifWrongType('The file must be a mapping with fields, categories, collections, menu, search and filters.'),
+    error: ifWrongType(
+      'The file must be a mapping with fields, categories, collections, options, menu, search and filters.',
+    ),
   },
 )
 
@@ -224,7 +254,15 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
     return fail(parsed.error.issues.map((issue) => ({ path: formatPath(issue.path), message: issue.message })))
   }
 
-  const { fields, categories: rawCategories, collections: rawCollections, menu, search, filters } = parsed.data
+  const {
+    fields,
+    categories: rawCategories,
+    collections: rawCollections,
+    options: rawOptions,
+    menu,
+    search,
+    filters,
+  } = parsed.data
   const errors: CatalogStructureErrorDTO[] = []
 
   const keys = new Set<string>()
@@ -286,7 +324,39 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       })
     }
     collectionHandles.add(raw.handle)
-    return { name: raw.name, handle: raw.handle, rule: toRule(raw.rule, `collections[${index}]`) }
+    return {
+      name: raw.name,
+      handle: raw.handle,
+      rule: toRule(raw.rule, `collections[${index}]`),
+      badge: raw.badge ?? null,
+    }
+  })
+
+  const optionNames = new Set<string>()
+  const options = rawOptions.map((raw, index) => {
+    if (optionNames.has(raw.name)) {
+      errors.push({ path: `options[${index}].name`, message: `The option "${raw.name}" is listed more than once.` })
+    }
+    optionNames.add(raw.name)
+    const bucketNames = new Set<string>()
+    for (const [bucketIndex, rawBucket] of (raw.buckets ?? []).entries()) {
+      if (bucketNames.has(rawBucket.name)) {
+        errors.push({
+          path: `options[${index}].buckets[${bucketIndex}].name`,
+          message: `The bucket "${rawBucket.name}" is used more than once.`,
+        })
+      }
+      bucketNames.add(rawBucket.name)
+    }
+    return {
+      name: raw.name,
+      listingRole: raw.role ?? null,
+      buckets: (raw.buckets ?? []).map((rawBucket) => ({
+        name: rawBucket.name,
+        swatch: rawBucket.swatch ?? null,
+        words: rawBucket.words,
+      })),
+    }
   })
 
   /** A Category or Collection named by handle, reported at `path` when the file declares no such one. */
@@ -447,6 +517,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       metafields,
       categories,
       collections,
+      options,
       menu: navigation,
       search: searchStructure,
       filters: filters ?? null,

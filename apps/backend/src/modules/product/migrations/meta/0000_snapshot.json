@@ -1,5 +1,5 @@
 {
-  "id": "45cc06ad-4e51-421e-8925-7cb969597b3b",
+  "id": "46e2e6f8-7ec4-4ecb-b178-1ca62a687cc6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -183,6 +183,12 @@
         "rule": {
           "name": "rule",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "badge": {
+          "name": "badge",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -742,6 +748,127 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.product_option_bucket": {
+      "name": "product_option_bucket",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "CONCAT('optbkt_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "option_id": {
+          "name": "option_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "swatch": {
+          "name": "swatch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "words": {
+          "name": "words",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "rank": {
+          "name": "rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_product_option_bucket_option_id": {
+          "name": "idx_product_option_bucket_option_id",
+          "columns": [
+            {
+              "expression": "option_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_product_option_bucket_option_id_name": {
+          "name": "idx_product_option_bucket_option_id_name",
+          "columns": [
+            {
+              "expression": "option_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "product_option_bucket_option_id_product_option_id_fk": {
+          "name": "product_option_bucket_option_id_product_option_id_fk",
+          "tableFrom": "product_option_bucket",
+          "tableTo": "product_option",
+          "columnsFrom": ["option_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.product_option_value": {
       "name": "product_option_value",
       "schema": "",
@@ -764,6 +891,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "bucket_id": {
+          "name": "bucket_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "rank": {
           "name": "rank",
@@ -848,6 +981,15 @@
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "product_option_value_bucket_id_product_option_bucket_id_fk": {
+          "name": "product_option_value_bucket_id_product_option_bucket_id_fk",
+          "tableFrom": "product_option_value",
+          "tableTo": "product_option_bucket",
+          "columnsFrom": ["bucket_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -880,6 +1022,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'text'"
+        },
+        "listing_role": {
+          "name": "listing_role",
+          "type": "product_option_listing_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
         },
         "metadata": {
           "name": "metadata",
@@ -2406,6 +2555,11 @@
     }
   },
   "enums": {
+    "public.product_option_listing_role": {
+      "name": "product_option_listing_role",
+      "schema": "public",
+      "values": ["grouping", "availability"]
+    },
     "public.product_option_render_as": {
       "name": "product_option_render_as",
       "schema": "public",

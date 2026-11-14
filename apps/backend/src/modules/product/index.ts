@@ -8,6 +8,7 @@ import { productImportTable } from './models/product-import.js'
 import { productMetafieldTable } from './models/product-metafield.js'
 import { productMetafieldDefinitionTable } from './models/product-metafield-definition.js'
 import { productOptionTable } from './models/product-option.js'
+import { productOptionBucketTable } from './models/product-option-bucket.js'
 import { productOptionValueTable } from './models/product-option-value.js'
 import { productProductCategoryTable } from './models/product-product-category.js'
 import { productProductCollectionTable } from './models/product-product-collection.js'
@@ -27,6 +28,7 @@ import { ProductImportRepository } from './repositories/product-import.js'
 import { ProductMetafieldRepository } from './repositories/product-metafield.js'
 import { ProductMetafieldDefinitionRepository } from './repositories/product-metafield-definition.js'
 import { ProductOptionRepository } from './repositories/product-option.js'
+import { ProductOptionBucketRepository } from './repositories/product-option-bucket.js'
 import { ProductOptionValueRepository } from './repositories/product-option-value.js'
 import { ProductProductCategoryRepository } from './repositories/product-product-category.js'
 import { ProductProductCollectionRepository } from './repositories/product-product-collection.js'
@@ -57,6 +59,7 @@ export default Module(Modules.PRODUCT, {
     productMetafieldTable,
     productOptionTable,
     productOptionValueTable,
+    productOptionBucketTable,
     productProductCategoryTable,
     productProductCollectionTable,
     productProductOptionTable,
@@ -74,6 +77,7 @@ export default Module(Modules.PRODUCT, {
     productVariantRepository: ProductVariantRepository,
     productOptionRepository: ProductOptionRepository,
     productOptionValueRepository: ProductOptionValueRepository,
+    productOptionBucketRepository: ProductOptionBucketRepository,
     productProductOptionRepository: ProductProductOptionRepository,
     productProductOptionValueRepository: ProductProductOptionValueRepository,
     productImageRepository: ProductImageRepository,
