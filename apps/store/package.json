@@ -32,6 +32,7 @@
     "@proteus/design": "workspace:*",
     "@proteus/http-schemas": "workspace:*",
     "@proteus/ui-core": "workspace:*",
+    "@proteus/store-config": "workspace:*",
     "@proteus/utils": "workspace:*",
     "@stripe/react-stripe-js": "^6.8.2",
     "@stripe/stripe-js": "^9.15.0",

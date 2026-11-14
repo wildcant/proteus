@@ -1,3 +1,4 @@
+import { MARKETS, STORE_NAME } from '@proteus/store-config'
 import type { ILinkService } from '../../src/core/types/link/service.js'
 import type { IPaymentModuleService } from '../../src/core/types/payment/service.js'
 import type { IRegionModuleService } from '../../src/core/types/region/service.js'
@@ -5,30 +6,16 @@ import type { IStoreModuleService } from '../../src/core/types/store/service.js'
 import { SEED_COUNTRIES } from '../fixtures/countries.js'
 
 /**
- * The markets the store trades in, and everything that has to exist for one to be reachable:
+ * The markets the store trades in (`@proteus/store-config`), and everything that has to exist for
+ * one to be reachable:
  * regions, the ISO country table with the sellable ones opted in, the store, and which payment
  * providers each region offers.
  *
  * Extracted from the development seed because the storefront now needs markets to render at all —
  * the router reads its routable URL segments from the country endpoint — so the end-to-end
- * database has to carry them too. One definition, two callers: a market added here appears in
- * both without either being remembered.
+ * database has to carry them too. One definition, two callers: a market added to the config
+ * appears in both without either being remembered.
  */
-
-type Market = {
-  name: string
-  currencyCode: string
-  /** `localeCode` is optional here on purpose. The check in `seedMarkets` is what enforces it, so a
-   *  market missing one fails the seed naming the country rather than failing to compile. */
-  countries: { iso2: string; localeCode?: string }[]
-}
-
-export const MARKETS: Market[] = [
-  { name: 'United States', currencyCode: 'usd', countries: [{ iso2: 'us', localeCode: 'en-US' }] },
-  { name: 'Colombia', currencyCode: 'cop', countries: [{ iso2: 'co', localeCode: 'es-CO' }] },
-]
-
-const STORE_NAME = 'Proteus'
 
 /**
  * Units available at or below which a variant counts as running low, for both the shopkeeper's
@@ -49,7 +36,6 @@ export async function seedMarkets({ regionService, storeService, paymentService,
   // A region owns a currency and a country belongs to at most one region, so assigning a region is
   // what makes a country sellable. Everything else here derives from this one table.
   const [primaryMarket] = MARKETS
-  if (!primaryMarket) throw new Error('Expected at least one market to seed')
 
   const existingRegions = await regionService.listRegions()
   const regions =
@@ -100,7 +86,7 @@ export async function seedMarkets({ regionService, storeService, paymentService,
     const named = withoutLocale.map((country) => `${country.displayName} (${country.id})`).join(', ')
     throw new Error(
       `Sellable countries with no locale code: ${named}. A country with an owning region is one the ` +
-        'storefront formats money and dates for, so it needs a BCP 47 tag — add one in MARKETS.',
+        'storefront formats money and dates for, so it needs a BCP 47 tag — add one in MARKETS (@proteus/store-config).',
     )
   }
 

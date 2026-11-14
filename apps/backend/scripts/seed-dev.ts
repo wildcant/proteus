@@ -1,6 +1,7 @@
 import { createReadStream } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { MARKETS } from '@proteus/store-config'
 import { BigNumber } from '../src/core/bignumber.js'
 import { buildEvent } from '../src/core/event-bus/events.js'
 import { defineSubscriber } from '../src/core/event-bus/types.js'
@@ -26,7 +27,7 @@ import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
 import { SOURCE_LOCALE } from '../src/workflows/admin/utils/admin-locales.js'
 import { importProductWorkflow } from '../src/workflows/product/import-product.js'
 import { seedAdmin } from './seed/admin.js'
-import { MARKETS, seedMarkets } from './seed/markets.js'
+import { seedMarkets } from './seed/markets.js'
 import { SEED_IMAGE_DIR, seedImageFile } from './seed/seed-images.js'
 
 // The catalogue is imported through workflows, and `import-product` runs `create-product` inside a

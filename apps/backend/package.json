@@ -80,6 +80,7 @@
     "@dotenvx/dotenvx": "catalog:",
     "@lingui/core": "catalog:",
     "@proteus/http-schemas": "workspace:*",
+    "@proteus/store-config": "workspace:*",
     "@proteus/utils": "workspace:*",
     "@sendgrid/mail": "^8.1.6",
     "@temporalio/activity": "^1.23.0",

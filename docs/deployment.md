@@ -270,6 +270,7 @@ steps below, `<store>` is the new store's short name.
    | `package.json` | the Worker name in `sync-secrets:backend` |
    | `scripts/pull-keys.sh`, `scripts/push-keys.sh` | the R2 paths of both key objects (for example `dotenv-keys/<store>/.env.keys`) |
    | `apps/backend/src/config.ts` | `projectConfig.providers`: the integrations the store uses |
+   | `packages/store-config/src/index.ts` | `STORE_NAME` and `MARKETS`: the store's name, and the countries, currencies and locales it sells in. The first market is the default. |
    | `apps/backend/docker-compose.yml`, `apps/backend/docker-compose.test.yml` | add `name: <store>` and `name: <store>-test` at the top, so local Docker containers and volumes stay apart from Proteus |
 
 3. **Generate new keys.** The fork must not share keys with Proteus. For each of `.env.local`,

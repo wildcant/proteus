@@ -76,7 +76,7 @@ msgstr "<0>No pudimos eliminar esa tarjeta.</0> Inténtalo de nuevo."
 msgid "<0>Expired</0> — add this card again to use it"
 msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:102
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:104
 msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu compra pronto para no quedarte sin ellos."
 
@@ -231,7 +231,7 @@ msgstr "Al realizar tu pedido aceptas nuestros Términos y condiciones, nuestro 
 msgid "Calculated"
 msgstr "Calculado"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:141
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:143
 msgid "Calculated at checkout"
 msgstr "Se calcula al finalizar la compra"
 
@@ -262,7 +262,7 @@ msgstr "Carrito"
 msgid "Check your email"
 msgstr "Revisa tu correo"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:165
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:167
 msgid "Checkout"
 msgstr "Finalizar compra"
 
@@ -289,7 +289,7 @@ msgstr "Borrar filtros"
 msgid "Clear search"
 msgstr "Borrar búsqueda"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:78
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:80
 msgid "Close cart"
 msgstr "Cerrar carrito"
 
@@ -301,7 +301,7 @@ msgstr "Cerrar menú"
 msgid "Close search"
 msgstr "Cerrar búsqueda"
 
-#: src/routes/__root.tsx:133
+#: src/routes/__root.tsx:134
 msgid "Close toast"
 msgstr "Cerrar notificación"
 
@@ -717,7 +717,7 @@ msgstr "Pedido #{displayId}"
 msgid "Order progress"
 msgstr "Progreso del pedido"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:130
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:132
 #: src/features/checkout/components/checkout-summary/checkout-summary.tsx:53
 #: src/features/checkout/components/checkout-summary/checkout-summary.tsx:74
 msgid "Order summary"
@@ -829,7 +829,7 @@ msgstr "Precio: hasta {0}"
 msgid "Products"
 msgstr "Productos"
 
-#: src/routes/__root.tsx:64
+#: src/routes/__root.tsx:65
 msgid "Proteus — modern storefront powered by TanStack Start"
 msgstr "Proteus — tienda moderna impulsada por TanStack Start"
 
@@ -948,7 +948,7 @@ msgstr "Enviar a"
 msgid "Shipped"
 msgstr "Enviado"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:138
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:140
 #: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:91
 #: src/features/orders/components/order-summary/order-summary.tsx:48
 msgid "Shipping"
@@ -1117,7 +1117,7 @@ msgstr "Este enlace de verificación no es válido o ya venció. Solicita uno nu
 msgid "To"
 msgstr "Hasta"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:146
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:148
 #: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:103
 #: src/features/orders/components/order-summary/order-summary.tsx:56
 msgid "Total"
@@ -1267,7 +1267,7 @@ msgstr "Tendrás que ingresarla de nuevo la próxima vez."
 msgid "Your addresses"
 msgstr "Tus direcciones"
 
-#: src/features/cart/components/cart-drawer/cart-drawer.tsx:70
+#: src/features/cart/components/cart-drawer/cart-drawer.tsx:72
 msgid "Your Bag"
 msgstr "Tu carrito"
 
