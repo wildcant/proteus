@@ -7,7 +7,7 @@
 //   components   one entry per variant of each exported set (the design-only viewport read at mobile, interaction
 //                at rest): its
 //                fill, the colour and text style of its first text, and its token-bound size, as references
-//                (`{colors.accent}`)
+//                (`{colors.accent}`); left out when `designMd.components` is false
 import type { ComponentsContext } from '../components/build.ts'
 import { kebab } from '../components/build.ts'
 import { type ComponentSet, type Layer, notExportedBecause } from '../components/snapshot.ts'
@@ -19,8 +19,8 @@ export function buildFrontmatter(input: {
   name: string
   description: string
   tokens: Tokens
-  sets: ComponentSet[]
-  context: ComponentsContext
+  /** Left out when `designMd.components` is false. */
+  components?: { sets: ComponentSet[]; context: ComponentsContext }
 }): string {
   const { tokens } = input
   const baseMode = tokens.themeModes[0] ?? ''
@@ -49,8 +49,8 @@ export function buildFrontmatter(input: {
     `typography: ${flow(typography)}`,
     `rounded: ${flow(lengths(tokens.radius))}`,
     `spacing: ${flow(lengths(tokens.space))}`,
-    `components: ${flow(components(input.sets, input.context))}`,
   ]
+  if (input.components) lines.push(`components: ${flow(components(input.components.sets, input.components.context))}`)
   return `---\n${lines.join('\n')}\n---\n`
 }
 

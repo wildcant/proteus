@@ -45,12 +45,16 @@ const variables = [
   primitive('s:6', 'space/6', 24),
   primitive('s:11', 'space/11', 44),
   primitive('r:full', 'radius/full', 9999),
+  primitive('st:focus', 'stroke/focus', 2),
   role('c:ink', 'color/ink', '0d1012', 'f4f5f6'),
   role('c:surface', 'color/surface', 'ffffff', '0d1012'),
   role('c:accent', 'color/accent', '004eba', '7aa9ff'),
   role('c:line', 'color/line', 'dee0e3', '2e3238'),
   role('c:ring', 'color/focus-ring', '0d1012', 'f4f5f6'),
   primitive('s:56', 'space/56', 224),
+  // A responsive size: the tokens CSS declares it as --layout-header (the components tests' context says so).
+  primitive('l:header', 'layout/header', 60),
+  primitive('l:gutter', 'layout/gutter', 20),
 ]
 
 const textStyle = (name: string, size: number, fontStyle: string): TextStyle => ({

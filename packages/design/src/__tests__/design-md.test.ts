@@ -63,17 +63,23 @@ const homeScreen: ComponentSet = {
 }
 
 describe('DESIGN.md frontmatter', () => {
-  const frontmatter = buildFrontmatter({
+  const tokensOnly = {
     name: 'Shop',
     description: 'A test shop.',
     tokens: buildTokens(tokenSnapshot, tokensConfig),
-    sets: [button, promoBanner, homeScreen],
-    context: {
-      config: componentsConfig,
-      variables: tokenSnapshot.variables,
-      textStyles: tokenSnapshot.textStyles,
-      effectStyles: tokenSnapshot.effectStyles,
-      textStylePrefix: 'type-',
+  }
+  const frontmatter = buildFrontmatter({
+    ...tokensOnly,
+    components: {
+      sets: [button, promoBanner, homeScreen],
+      context: {
+        config: componentsConfig,
+        variables: tokenSnapshot.variables,
+        textStyles: tokenSnapshot.textStyles,
+        effectStyles: tokenSnapshot.effectStyles,
+        textStylePrefix: 'type-',
+        responsiveSizes: new Set(['layout-header']),
+      },
     },
   })
 
@@ -88,6 +94,22 @@ describe('DESIGN.md frontmatter', () => {
         'rounded: { full: "9999px" }',
         'spacing: { "2": "8px", "4": "16px", "6": "24px", "11": "44px", "56": "224px" }',
         'components: { button: { backgroundColor: "{colors.accent}", textColor: "{colors.surface}", typography: "{typography.heading}", height: "{spacing.11}" }, button-secondary: { backgroundColor: "{colors.surface}", textColor: "{colors.ink}", typography: "{typography.heading}" }, promo-banner: { backgroundColor: "{colors.accent}", textColor: "{colors.surface}", typography: "{typography.heading}" } }',
+        '---',
+        '',
+      ].join('\n'),
+    )
+  })
+
+  it('leaves out components when the config turns them off', () => {
+    expect(buildFrontmatter(tokensOnly)).toBe(
+      [
+        '---',
+        'name: Shop',
+        'description: A test shop.',
+        'colors: { ink: "#0d1012", surface: "#ffffff", accent: "#004eba", line: "#dee0e3", focus-ring: "#0d1012" }',
+        'typography: { heading: { fontFamily: "Manrope", fontSize: "20px", fontWeight: 700, lineHeight: "30px" }, body: { fontFamily: "Manrope", fontSize: "16px", fontWeight: 400, lineHeight: "24px" } }',
+        'rounded: { full: "9999px" }',
+        'spacing: { "2": "8px", "4": "16px", "6": "24px", "11": "44px", "56": "224px" }',
         '---',
         '',
       ].join('\n'),
