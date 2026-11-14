@@ -14,8 +14,6 @@ export interface AdminProductOptionValue {
   /** @nullable */
   rank: number | null;
   /** @nullable */
-  bucketId: string | null;
-  /** @nullable */
   metadata: AdminProductOptionValueMetadata;
   createdAt: string;
   updatedAt: string;

@@ -12,12 +12,18 @@ import { productMetafieldTable } from '../models/product-metafield.js'
 import { productOptionTable } from '../models/product-option.js'
 import { productOptionBucketTable } from '../models/product-option-bucket.js'
 import { productOptionValueTable } from '../models/product-option-value.js'
+import { productOptionValueBucketTable } from '../models/product-option-value-bucket.js'
 import { productProductOptionTable } from '../models/product-product-option.js'
 import { productProductOptionValueTable } from '../models/product-product-option-value.js'
 import { productProductTagTable } from '../models/product-product-tag.js'
 import { productTagTable } from '../models/product-tag.js'
 import { productTypeTable } from '../models/product-type.js'
-import { optionFilterValue, optionValueBucket, productGroupingWhere } from '../utils/product-where.js'
+import {
+  optionFilterValue,
+  optionValueBucket,
+  optionValueInBucket,
+  productGroupingWhere,
+} from '../utils/product-where.js'
 
 export class ProductRepository extends BaseRepository(productTable) {
   /**
@@ -222,6 +228,7 @@ export class ProductRepository extends BaseRepository(productTable) {
           productOptionValueTable,
           eq(productOptionValueTable.id, productProductOptionValueTable.optionValueId),
         )
+        .leftJoin(productOptionValueBucketTable, optionValueInBucket)
         .leftJoin(productOptionBucketTable, optionValueBucket)
         .innerJoin(this.table, eq(this.table.id, productProductOptionTable.productId))
         .where(
@@ -233,7 +240,8 @@ export class ProductRepository extends BaseRepository(productTable) {
             this.buildWhere(scope),
           ),
         )
-        // A bucketed value counts as its bucket, so "Black / Red" and "Jet Black" are one "Black".
+        // A bucketed value counts as each of its buckets, so "Black / Red" and "Jet Black" are one "Black",
+        // and "Black / Red" is a "Red" too. `COUNT(DISTINCT)` counts a product once per bucket it reaches.
         .groupBy(optionFilterValue)
         // The buckets' or the option's own order first; values it leaves tied go by number when they are
         // numbers, so a size 9 comes before 10, and by text otherwise.

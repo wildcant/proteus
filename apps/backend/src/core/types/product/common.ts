@@ -1,7 +1,7 @@
 import type { SQL } from 'drizzle-orm'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 import type { PriceDTO } from '../pricing/common.js'
-import type { StoreNavigationEntryDTO, StoreSearchDTO } from '../store/common.js'
+import type { StoreCardDTO, StoreNavigationEntryDTO, StoreSearchDTO } from '../store/common.js'
 
 export type ProductStatusType = 'draft' | 'proposed' | 'published' | 'rejected'
 
@@ -140,6 +140,8 @@ export type VariantOptionLabelDTO = {
   value: string
   /** The value's place in its option: sizes small to large. `null` when unranked. */
   rank: number | null
+  /** The names of the filter buckets the value is in, in the buckets' order. */
+  buckets: string[]
 }
 
 /**
@@ -275,18 +277,19 @@ export type ProductOptionDTO = {
 
 /**
  * A group the store filter offers in place of an option's raw values ("Black" for "Black / Red"). A
- * value joins the first bucket by rank holding one of its words, when the value or the buckets are
- * written.
+ * value joins every bucket holding one of its words, when the value or the buckets are written.
  */
 export type ProductOptionBucketDTO = {
   id: string
   optionId: string
   name: string
-  /** The key the storefront draws the bucket's swatch by; `null` draws none. */
+  /** Whatever the storefront draws the bucket's swatch from: a hex, an image URL, a key. `null` draws none. */
   swatch: string | null
   /** Lower-cased, matched against a value's words as whole words. */
   words: string[]
   rank: number
+  /** The option's values in the bucket. */
+  valueIds: string[]
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -322,8 +325,6 @@ export type ProductOptionValueDTO = {
   optionId: string
   value: string
   rank: number | null
-  /** The filter bucket the value is grouped under; `null` when none of the option's buckets holds it. */
-  bucketId: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
@@ -567,6 +568,7 @@ export type CatalogStructureDTO = {
   search: StoreSearchDTO
   /** The storefront's filters by key, in the order it shows them; `null` offers every filterable one. */
   filters: string[] | null
+  card: StoreCardDTO
 }
 
 /** One problem with a structure file. `path` names where it is, `categories[0].children[1].handle`. */

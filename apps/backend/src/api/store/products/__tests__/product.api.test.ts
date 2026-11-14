@@ -3,10 +3,14 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
+import catalogStructureDefinitions from '../../../admin/catalog-structure/definitions.js'
+import type * as structureRoutes from '../../../admin/catalog-structure/route.js'
 import adminCollectionDefinitions from '../../../admin/collections/definitions.js'
 import type * as adminCollectionRoutes from '../../../admin/collections/route.js'
 import type * as adminOptionRoutes from '../../../admin/product-options/[id]/route.js'
 import adminOptionDefinitions from '../../../admin/product-options/definitions.js'
+import uploadDefinitions from '../../../admin/uploads/definitions.js'
+import type * as uploadRoutes from '../../../admin/uploads/route.js'
 import productFilterDefinitions from '../../product-filters/definitions.js'
 import type * as productByHandleRoutes from '../[handle]/route.js'
 import productDefinitions from '../definitions.js'
@@ -45,6 +49,8 @@ test.beforeEach(async ({ createApi, factories }) => {
       ...productFilterDefinitions,
       ...adminCollectionDefinitions,
       ...adminOptionDefinitions,
+      ...catalogStructureDefinitions,
+      ...uploadDefinitions,
     ],
   })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
@@ -478,11 +484,13 @@ const createOption = async (
   title: string,
   values: string[],
   listingRole: 'grouping' | 'availability' | null = null,
+  buckets: Array<{ name: string; words: string[] }> = [],
 ) => {
   const option = await service.create.productOption(api.container, {
     title,
     listingRole,
     values: values.map((value, rank) => ({ value, rank })),
+    buckets,
   })
   const idOf = (value: string) => {
     const found = option.values.find((candidate) => candidate.value === value)
@@ -570,11 +578,15 @@ test.describe('GET /store/products card details', () => {
 })
 
 test.describe('GET /store/products groups', () => {
-  test('a card lists its grouping option’s values in order, each with its image, its stock and the variant it opens on', async ({
+  test('a card lists its grouping option’s values in order, each with its buckets, its image, its stock and the variant it opens on, and a colour filter opens it on its colourway', async ({
     expect,
     service,
   }) => {
-    const colour = await createOption(service, 'Color', ['Black / Red', 'All White', 'Navy'], 'grouping')
+    const colour = await createOption(service, 'Color', ['Black / Red', 'All White', 'Navy'], 'grouping', [
+      { name: 'Black', words: ['black'] },
+      { name: 'Red', words: ['red'] },
+      { name: 'White', words: ['white'] },
+    ])
     const size = await createOption(service, 'Size', ['40', '41', '42'])
     // A second grouping option, after Color in the product's order, is not the one the card reads.
     const material = await createOption(service, 'Material', ['Suede'], 'grouping')
@@ -585,6 +597,7 @@ test.describe('GET /store/products groups', () => {
     })
     const { product: suede, images } = await service.create.product(api.container, {
       status: 'published',
+      thumbnail: 'https://cdn.test/cover.png',
       images: [
         { url: 'https://cdn.test/cover.png' },
         { url: 'https://cdn.test/red.png' },
@@ -645,12 +658,91 @@ test.describe('GET /store/products groups', () => {
       values: [
         // Each opens the product page on its first variant that can be bought, in variant order; a sold-out
         // value on its first.
-        { value: 'Black / Red', thumbnail: 'https://cdn.test/red.png', inStock: true, variantId: secondRed.id },
-        { value: 'All White', thumbnail: 'https://cdn.test/white.png', inStock: true, variantId: white.id },
-        { value: 'Navy', thumbnail: null, inStock: false, variantId: navy.id },
+        {
+          value: 'Black / Red',
+          buckets: ['Black', 'Red'],
+          thumbnail: 'https://cdn.test/red.png',
+          inStock: true,
+          variantId: secondRed.id,
+        },
+        {
+          value: 'All White',
+          buckets: ['White'],
+          thumbnail: 'https://cdn.test/white.png',
+          inStock: true,
+          variantId: white.id,
+        },
+        { value: 'Navy', buckets: [], thumbnail: null, inStock: false, variantId: navy.id },
       ],
     })
     expect(groupsOf(plain.id)).toBeNull()
+
+    /** The suede card under a colour filter: the value it opens on and the photo it shows. */
+    const openedOn = async (...selections: string[]) => {
+      const query = selections.map((selection) => `filter=${encodeURIComponent(`option.Color:${selection}`)}`)
+      const filtered = await api.get<typeof productRoutes.GetOutput>(`/store/products?${query.join('&')}`)
+      expect(filtered.status).toBe(200)
+      const card = filtered.body.products.find((product) => product.id === suede.id)
+      return card && { activeGroupValue: card.activeGroupValue, thumbnail: card.thumbnail }
+    }
+    expect(await openedOn()).toEqual({ activeGroupValue: null, thumbnail: 'https://cdn.test/cover.png' })
+    // A bucket opens the card on the first value in it, and its photo.
+    expect(await openedOn('Red')).toEqual({ activeGroupValue: 'Black / Red', thumbnail: 'https://cdn.test/red.png' })
+    expect(await openedOn('White', 'Black')).toEqual({
+      activeGroupValue: 'Black / Red',
+      thumbnail: 'https://cdn.test/red.png',
+    })
+    expect(await openedOn('White')).toEqual({ activeGroupValue: 'All White', thumbnail: 'https://cdn.test/white.png' })
+    // A value in no bucket is chosen by itself; with no photo of its own the card keeps the product's.
+    expect(await openedOn('Navy')).toEqual({ activeGroupValue: 'Navy', thumbnail: 'https://cdn.test/cover.png' })
+  })
+})
+
+test.describe('GET /store/products subline', () => {
+  test('a card’s subline follows the structure file’s template, field values by their labels, segments missing a value dropped, read once for the page', async ({
+    expect,
+    service,
+  }) => {
+    await applyStructure(`
+fields:
+  - { name: Género, key: genero }
+  - { name: Estilo, key: estilo }
+categories:
+  - { name: Hombre, handle: hombre, rule: { genero: [men] } }
+  - { name: Mujer, handle: mujer, rule: { genero: [women] } }
+card:
+  subline: "{type} para {genero|lower} · {estilo}"
+  listSeparator: " y "
+`)
+    const sneakers = await service.create.productType(api.container, { value: 'Zapatillas' })
+    const listed = async (fields: { typeId?: string; metafields?: Record<string, string[]> }) => {
+      const { product } = await service.create.product(api.container, { status: 'published', ...fields })
+      const variants = await service.create.productVariants(api.container, product.id)
+      await service.create.variantPrices(
+        api.container,
+        variants.map((variant) => variant.id),
+      )
+      return product.id
+    }
+    const women = await listed({ typeId: sneakers.id, metafields: { genero: ['women'], estilo: ['clasicos'] } })
+    const both = await listed({ typeId: sneakers.id, metafields: { genero: ['men', 'women'] } })
+    const noGender = await listed({ typeId: sneakers.id, metafields: { estilo: ['urbano'] } })
+    const bare = await listed({})
+    const fieldValues = vi.spyOn(api.container.resolve(Modules.PRODUCT), 'listFieldValuesOfProducts')
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products')
+    expect(response.status).toBe(200)
+    const sublineOf = (id: string) => response.body.products.find((product) => product.id === id)?.subline
+
+    // A value a Category names reads as its name, else capitalised; `|lower` lower-cases it.
+    expect(sublineOf(women)).toBe('Zapatillas para mujer · Clasicos')
+    // Several values join with the file's separator.
+    expect(sublineOf(both)).toBe('Zapatillas para hombre y mujer')
+    // No gender: "Zapatillas para" goes whole.
+    expect(sublineOf(noGender)).toBe('Urbano')
+    expect(sublineOf(bare)).toBeNull()
+    // One read for the page's fields, not one per card.
+    expect(fieldValues.mock.calls.map(([ids]) => [...ids].sort())).toEqual([[women, both, noGender, bare].sort()])
   })
 })
 
@@ -977,3 +1069,13 @@ test.describe('GET /store/products/:handle across markets', () => {
     expect(co.body.product.variants[0]?.calculatedPrice.calculatedAmount).toBe('480000')
   })
 })
+
+async function applyStructure(text: string) {
+  const upload = await api.request
+    .post('/admin/uploads')
+    .field('access', 'private')
+    .attach('files', Buffer.from(text), { filename: 'catalog-structure.yaml', contentType: 'application/yaml' })
+  const [file] = (upload.body as typeof uploadRoutes.PostOutput._zod.output).files
+  const applied = await api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId: file?.id })
+  if (applied.status !== 200) throw new Error(`The structure was not applied: ${JSON.stringify(applied.body)}`)
+}

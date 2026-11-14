@@ -6,7 +6,13 @@ import type {
 
 type CardVariant = { id: string; productId: string; variantRank: number | null }
 
-type GroupValue = { value: string; thumbnail: string | null; inStock: boolean; variantId: string }
+type GroupValue = {
+  value: string
+  buckets: string[]
+  thumbnail: string | null
+  inStock: boolean
+  variantId: string
+}
 
 const rankOf = (rank: number | null) => rank ?? Number.MAX_SAFE_INTEGER
 
@@ -49,12 +55,12 @@ export function buildListingGroups(
   const labelByVariantId = labelsOfRole(variants, labels, (id) => listingOptions[id]?.grouping?.id)
   const ordered = [...variants].sort((a, b) => rankOf(a.variantRank) - rankOf(b.variantRank))
 
-  const byProductId = new Map<string, Map<string, { rank: number | null; variantIds: string[] }>>()
+  const byProductId = new Map<string, Map<string, { rank: number | null; buckets: string[]; variantIds: string[] }>>()
   for (const variant of ordered) {
     const label = labelByVariantId.get(variant.id)
     if (!label) continue
     const byValue = byProductId.get(variant.productId) ?? new Map()
-    const group = byValue.get(label.value) ?? { rank: label.rank, variantIds: [] }
+    const group = byValue.get(label.value) ?? { rank: label.rank, buckets: label.buckets, variantIds: [] }
     group.variantIds.push(variant.id)
     byValue.set(label.value, group)
     byProductId.set(variant.productId, byValue)
@@ -66,12 +72,13 @@ export function buildListingGroups(
       if (!option) return []
       const values = [...byValue]
         .sort(([valueA, a], [valueB, b]) => rankOf(a.rank) - rankOf(b.rank) || valueA.localeCompare(valueB))
-        .flatMap(([value, { variantIds }]) => {
+        .flatMap(([value, { buckets, variantIds }]) => {
           const [first] = variantIds
           if (first === undefined) return []
           return [
             {
               value,
+              buckets,
               thumbnail: variantIds.map((id) => imageUrlByVariantId.get(id)).find((url) => url !== undefined) ?? null,
               inStock: variantIds.some((id) => purchasableVariantIds.has(id)),
               variantId: variantIds.find((id) => purchasableVariantIds.has(id)) ?? first,
@@ -80,6 +87,24 @@ export function buildListingGroups(
         })
       return [[productId, { option: option.title, values }]]
     }),
+  )
+}
+
+/**
+ * The first group value the request's filter on the grouping option selects, the colourway a card opens
+ * on when the shopper filters by it: a value is selected by any of its buckets' names, or by itself
+ * when it is in none, as the filter selects it. `null` when the filter names none of the values.
+ */
+export function findActiveGroupValue(
+  groups: { option: string; values: GroupValue[] } | null,
+  optionValues: Record<string, string[]> | undefined,
+): GroupValue | null {
+  const selected = groups ? optionValues?.[groups.option] : undefined
+  if (!groups || !selected || selected.length === 0) return null
+  return (
+    groups.values.find((value) =>
+      (value.buckets.length > 0 ? value.buckets : [value.value]).some((name) => selected.includes(name)),
+    ) ?? null
   )
 }
 

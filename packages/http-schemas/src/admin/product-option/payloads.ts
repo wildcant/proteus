@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { entityId, MAX_ITEMS, shortText } from '../../bounded.js'
+import { entityId, MAX_ITEMS, MAX_LENGTH, shortText } from '../../bounded.js'
 import { metadata } from '../../common.js'
 import { ProductOptionListingRole, ProductOptionRenderAs } from './entities.js'
 
@@ -23,7 +23,8 @@ const UpsertOptionValue = z.object({
 /** A bucket as written; its place in the array is its rank. */
 const OptionBucketInput = z.object({
   name: shortText.min(1),
-  swatch: shortText.min(1).nullable().optional(),
+  /** Free text the storefront reads as it likes (a hex, a CSS colour, an image URL, a key), up to a URL's length. */
+  swatch: z.string().min(1).max(MAX_LENGTH.url).nullable().optional(),
   words: z.array(shortText.min(1)).max(MAX_ITEMS.batch).optional(),
 })
 

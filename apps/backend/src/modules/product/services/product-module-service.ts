@@ -100,6 +100,7 @@ import type { ProductMetafieldDefinitionRepository } from '../repositories/produ
 import type { ProductOptionRepository } from '../repositories/product-option.js'
 import type { ProductOptionBucketRepository } from '../repositories/product-option-bucket.js'
 import type { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import type { ProductOptionValueBucketRepository } from '../repositories/product-option-value-bucket.js'
 import type { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
 import type { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import type { ProductProductOptionRepository } from '../repositories/product-product-option.js'
@@ -137,6 +138,7 @@ type InjectedDependencies = {
   productOptionRepository: ProductOptionRepository
   productOptionValueRepository: ProductOptionValueRepository
   productOptionBucketRepository: ProductOptionBucketRepository
+  productOptionValueBucketRepository: ProductOptionValueBucketRepository
   productProductOptionRepository: ProductProductOptionRepository
   productProductOptionValueRepository: ProductProductOptionValueRepository
   productImageRepository: ProductImageRepository
@@ -1074,6 +1076,13 @@ export class ProductModuleService implements IProductModuleService {
     return this.withTransaction(context, (transactionContext) =>
       this.productMetafieldDefinitionRepository.upsertByKey(data, transactionContext),
     )
+  }
+
+  async listFieldValuesOfProducts(
+    productIds: string[],
+    context?: Context,
+  ): Promise<Record<string, Record<string, string[]>>> {
+    return this.productMetafieldRepository.findOrderedFieldValuesOfProducts([...new Set(productIds)], context)
   }
 
   async retrieveProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]> {

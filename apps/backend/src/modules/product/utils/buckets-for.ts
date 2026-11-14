@@ -9,10 +9,10 @@ function valueWords(value: string): Set<string> {
 }
 
 /**
- * The bucket a value belongs in: the first of `buckets` (in rank order) listing one of its words, so
- * "Black / Red" is in Black when Black ranks above Red. `null` when none lists any.
+ * The buckets a value belongs in: every one of `buckets` listing one of its words, in their order, so
+ * "Black and White" is in Black and in White. Empty when none lists any.
  */
-export function bucketFor(value: string, buckets: Array<{ id: string; words: string[] }>): string | null {
+export function bucketsFor(value: string, buckets: Array<{ id: string; words: string[] }>): string[] {
   const words = valueWords(value)
-  return buckets.find((bucket) => bucket.words.some((word) => words.has(word)))?.id ?? null
+  return buckets.filter((bucket) => bucket.words.some((word) => words.has(word))).map((bucket) => bucket.id)
 }

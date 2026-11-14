@@ -15,6 +15,7 @@ import { ProductMetafieldDefinitionRepository } from '../repositories/product-me
 import { ProductOptionRepository } from '../repositories/product-option.js'
 import { ProductOptionBucketRepository } from '../repositories/product-option-bucket.js'
 import { ProductOptionValueRepository } from '../repositories/product-option-value.js'
+import { ProductOptionValueBucketRepository } from '../repositories/product-option-value-bucket.js'
 import { ProductProductCategoryRepository } from '../repositories/product-product-category.js'
 import { ProductProductCollectionRepository } from '../repositories/product-product-collection.js'
 import { ProductProductOptionRepository } from '../repositories/product-product-option.js'
@@ -57,6 +58,7 @@ test.beforeEach(({ getDb, logger }) => {
     productOptionRepository,
     productOptionValueRepository,
     productOptionBucketRepository: new ProductOptionBucketRepository({ getDb, cascadeGraph }),
+    productOptionValueBucketRepository: new ProductOptionValueBucketRepository({ getDb, cascadeGraph }),
     productProductOptionRepository,
     productProductOptionValueRepository,
     productImageRepository,

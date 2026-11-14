@@ -18,11 +18,13 @@ export const AdminProductOptionBucket = z
   .object({
     id: z.string(),
     name: z.string(),
-    /** The key the storefront draws the bucket's swatch by. */
+    /** Whatever the storefront draws the bucket's swatch from: a hex, a CSS colour, an image URL, a key. */
     swatch: z.string().nullable(),
-    /** A value joins the first bucket, by rank, holding one of its words. */
+    /** A value joins every bucket holding one of its words. */
     words: z.array(z.string()),
     rank: z.number(),
+    /** The option's values in the bucket; a value in none is counted as itself. */
+    valueIds: z.array(z.string()),
   })
   .openapi('AdminProductOptionBucket')
 export type AdminProductOptionBucket = z.input<typeof AdminProductOptionBucket>
@@ -33,8 +35,6 @@ export const AdminProductOptionValue = z
     optionId: z.string(),
     value: z.string(),
     rank: z.number().nullable(),
-    /** The bucket the store filter counts the value under; `null` counts it as itself. */
-    bucketId: z.string().nullable(),
     metadata,
     createdAt: dateToIso,
     updatedAt: dateToIso,

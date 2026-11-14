@@ -3,7 +3,6 @@ import { integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { productOptionTable } from './product-option.js'
-import { productOptionBucketTable } from './product-option-bucket.js'
 
 export const productOptionValueTable = pgTable(
   'product_option_value',
@@ -13,8 +12,6 @@ export const productOptionValueTable = pgTable(
       .notNull()
       .references(() => productOptionTable.id, { onDelete: 'cascade' }),
     value: text().notNull(),
-    /** The filter bucket the value is grouped under, assigned when the value or the buckets are written. */
-    bucketId: text().references(() => productOptionBucketTable.id, { onDelete: 'set null' }),
     rank: integer().default(0),
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     ...timestamps,

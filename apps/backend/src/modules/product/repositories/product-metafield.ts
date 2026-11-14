@@ -83,6 +83,31 @@ export class ProductMetafieldRepository extends BaseRepository(productMetafieldT
     return byProduct
   }
 
+  /**
+   * Every product's field values by key, each list in its written order: its metafield values, its
+   * brand under the vendor field's key and its Product Type under the type field's. Three queries for
+   * all of `productIds`; a product with none maps to no keys.
+   */
+  async findOrderedFieldValuesOfProducts(
+    productIds: string[],
+    context?: Context,
+  ): Promise<Record<string, Record<string, string[]>>> {
+    const byProduct: Record<string, Record<string, string[]>> = {}
+    const [metafieldRows, brandRows, typeRows] = await Promise.all([
+      this.findRows(productIds, context),
+      this.findBrandRows(productIds, context),
+      this.findTypeRows(productIds, context),
+    ])
+    for (const row of [...metafieldRows, ...brandRows, ...typeRows]) {
+      const fields = byProduct[row.productId] ?? {}
+      const values = fields[row.key] ?? []
+      if (!values.includes(row.value)) values.push(row.value)
+      fields[row.key] = values
+      byProduct[row.productId] = fields
+    }
+    return byProduct
+  }
+
   /** One product's metafields that hold values, by key, each list in its written order. */
   async findProductMetafields(productId: string, context?: Context): Promise<ProductMetafieldDTO[]> {
     const metafields: ProductMetafieldDTO[] = []

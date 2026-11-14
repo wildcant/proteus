@@ -13,4 +13,5 @@ export interface AdminProductOptionBucket {
   swatch: string | null;
   words: string[];
   rank: number;
+  valueIds: string[];
 }

@@ -15,5 +15,9 @@ export type StoreProductListItem = StoreProduct & ({
   soldOut: boolean;
   badges: string[];
   groups: StoreProductListingGroups | null;
+  /** @nullable */
+  activeGroupValue: string | null;
   available: StoreProductListingAvailability | null;
+  /** @nullable */
+  subline: string | null;
 });

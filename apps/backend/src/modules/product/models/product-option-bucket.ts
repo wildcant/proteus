@@ -6,8 +6,8 @@ import { productOptionTable } from './product-option.js'
 
 /**
  * A group the store filter offers in place of an option's raw values: "Black" for "Black / Red" and
- * "Jet Black". A value joins one at write time (`product_option_value.bucket_id`), the first bucket by
- * rank holding one of its words, so the filter groups by a column rather than matching text per query.
+ * "Jet Black". A value joins at write time every bucket holding one of its words
+ * (`product_option_value_bucket`), so the filter joins a pivot rather than matching text per query.
  */
 export const productOptionBucketTable = pgTable(
   'product_option_bucket',
@@ -17,7 +17,7 @@ export const productOptionBucketTable = pgTable(
       .notNull()
       .references(() => productOptionTable.id, { onDelete: 'cascade' }),
     name: text().notNull(),
-    /** The key the storefront draws the bucket's swatch by; `null` draws none. */
+    /** Whatever the storefront draws the bucket's swatch from; Proteus does not read it. `null` draws none. */
     swatch: text(),
     /** The words that put a value in the bucket, lower-cased, matched as whole words. */
     words: text().array().default(sql`'{}'::text[]`).notNull(),

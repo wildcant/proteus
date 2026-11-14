@@ -129,6 +129,7 @@ test.describe('parseCatalogStructure', () => {
       // Left out: search offers nothing, and every filter shows.
       search: { popular: [], trending: [] },
       filters: null,
+      card: { subline: null, listSeparator: ', ' },
     })
   })
 
@@ -516,6 +517,40 @@ test.describe('parseCatalogStructure', () => {
     ])
   })
 
+  test('reads the card’s subline template and list separator', async ({ expect }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'fields:',
+        '  - { name: Género, key: genero }',
+        '  - { name: Estilo, key: estilo }',
+        'card:',
+        '  subline: "{type} para {genero|lower} · {estilo} · {brand}"',
+        '  listSeparator: " y "',
+      ]),
+    )
+    expect(errors).toEqual([])
+    expect(structure?.card).toEqual({
+      subline: '{type} para {genero|lower} · {estilo} · {brand}',
+      listSeparator: ' y ',
+    })
+  })
+
+  test('refuses a subline naming an undeclared key, an unknown modifier or a lone brace', async ({ expect }) => {
+    const errorsOf = (subline: string) =>
+      parseCatalogStructure(yaml(['fields:', '  - { name: Género, key: genero }', 'card:', `  subline: "${subline}"`]))
+        .errors
+    expect(errorsOf('{type} para {suela}')).toEqual([
+      { path: 'card.subline', message: 'No field in the file has the key "suela", and it is not {type} or {brand}.' },
+    ])
+    expect(errorsOf('{genero|upper}')).toEqual([
+      { path: 'card.subline', message: '"upper" is not a modifier; the one there is is "lower".' },
+    ])
+    expect(errorsOf('{genero} {type')).toEqual([{ path: 'card.subline', message: 'A "{" or "}" has no partner.' }])
+    expect(errorsOf('{} para {genero}')).toEqual([
+      { path: 'card.subline', message: 'A placeholder must name a key, like "{type}".' },
+    ])
+  })
+
   test('refuses a file that is not YAML, or not a structure', async ({ expect }) => {
     const broken = parseCatalogStructure('categories: [\n')
     expect(broken.structure).toBeNull()
@@ -525,7 +560,8 @@ test.describe('parseCatalogStructure', () => {
     expect(parseCatalogStructure('- hombre\n').errors).toEqual([
       {
         path: '',
-        message: 'The file must be a mapping with fields, categories, collections, options, menu, search and filters.',
+        message:
+          'The file must be a mapping with fields, categories, collections, options, menu, search, filters and card.',
       },
     ])
   })

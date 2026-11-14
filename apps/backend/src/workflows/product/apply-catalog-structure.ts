@@ -18,7 +18,7 @@ type ApplyCatalogStructureOutput = {
 }
 
 /**
- * Applies a structure file: the store's menu, search and filters, then the Categories and
+ * Applies a structure file: the store's menu, search, filters and list card, then the Categories and
  * Collections. The file is the source, so groupings it leaves out are deleted.
  *
  * The store's part goes first because it is the step that can be undone: the groupings are the
@@ -52,13 +52,13 @@ export const applyCatalogStructureWorkflow = createWorkflow<ApplyCatalogStructur
         const storeService = container.resolve(Modules.STORE)
         const store = await storeService.resolveStore()
         if (!store) throw new WorkflowTerminalError({ type: ErrorTypes.NOT_FOUND, message: NO_STORE_CONFIGURED })
-        const { menu, search, filters } = structure
-        await storeService.updateStores([store.id], { navigation: menu, search, filters })
+        const { menu, search, filters, card } = structure
+        await storeService.updateStores([store.id], { navigation: menu, search, filters, card })
         return {
           storeId: store.id,
           current: store.navigation,
           next: menu,
-          previous: { search: store.search, filters: store.filters },
+          previous: { search: store.search, filters: store.filters, card: store.card },
         }
       },
       async ({ storeId, current, previous }, { container }) => {

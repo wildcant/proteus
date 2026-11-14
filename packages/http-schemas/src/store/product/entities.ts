@@ -117,12 +117,15 @@ export const StoreProduct = z
 export type StoreProduct = z.infer<typeof StoreProduct>
 
 /**
- * One value of the card's grouping option ("Black / Red", "Oak"): the image of its first variant that
- * has one, whether any of its variants can be bought, and the variant the product page opens on.
+ * One value of the card's grouping option ("Black / Red", "Oak"): the filter buckets it is in, the
+ * image of its first variant that has one, whether any of its variants can be bought, and the variant
+ * the product page opens on.
  */
 export const StoreProductListingGroupValue = z
   .object({
     value: z.string(),
+    /** The names of the filter buckets the value is in ("Black", "Red"), in the buckets' order. */
+    buckets: z.array(z.string()),
     thumbnail: z.string().nullable(),
     inStock: z.boolean(),
     variantId: z.string(),
@@ -158,7 +161,15 @@ export const StoreProductListItem = StoreProduct.extend({
   badges: z.array(z.string()),
   /** `null` when the product offers no option whose `listingRole` is `grouping`. */
   groups: StoreProductListingGroups.nullable(),
+  /**
+   * The first group value the request's filter on the grouping option selects (by a bucket's name, or
+   * by itself when it is in none): the colourway the card opens on. When it has a thumbnail, it is the
+   * item's `thumbnail`. `null` when the filter names no group value.
+   */
+  activeGroupValue: z.string().nullable(),
   /** `null` when the product offers no option whose `listingRole` is `availability`. */
   available: StoreProductListingAvailability.nullable(),
+  /** The line under the card's title, from the structure file's `card.subline`; `null` for none. */
+  subline: z.string().nullable(),
 }).openapi('StoreProductListItem')
 export type StoreProductListItem = z.infer<typeof StoreProductListItem>
