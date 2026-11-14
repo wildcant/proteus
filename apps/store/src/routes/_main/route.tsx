@@ -29,7 +29,7 @@ const menuLink: MenuLinkTo = (target) => {
     ? links.MENU_LINK('ProductListPage/collection', { params, search })
     : links.MENU_LINK('ProductListPage/category', { params, search })
 }
-const productLink = (productId: string) => links.PRODUCT({ params: { productId } })
+const productLink = (handle: string) => links.PRODUCT({ params: { handle } })
 
 const headerLinks: HeaderLinks = {
   home: links.HOME(),

@@ -26,7 +26,7 @@ import { Route as CheckoutCheckoutIndexRouteImport } from './routes/_checkout/ch
 import { Route as CheckoutCheckoutAddressesRouteRouteImport } from './routes/_checkout/checkout/addresses/route'
 import { Route as MainCategoriesHandleRouteImport } from './routes/_main/categories/$handle'
 import { Route as MainCollectionsHandleRouteImport } from './routes/_main/collections/$handle'
-import { Route as MainProductsProductIdRouteImport } from './routes/_main/products/$productId'
+import { Route as MainProductsHandleRouteImport } from './routes/_main/products/$handle'
 import { Route as CheckoutCheckoutAddressesNewRouteImport } from './routes/_checkout/checkout/addresses/new'
 import { Route as MainAuthedAccountIndexRouteImport } from './routes/_main/_authed/account/index'
 import { Route as MainAuthedAccountAddressesRouteRouteImport } from './routes/_main/_authed/account/addresses/route'
@@ -120,9 +120,9 @@ const MainCollectionsHandleRoute = MainCollectionsHandleRouteImport.update({
   path: '/collections/$handle',
   getParentRoute: () => MainRouteRoute,
 } as any)
-const MainProductsProductIdRoute = MainProductsProductIdRouteImport.update({
-  id: '/$productId',
-  path: '/$productId',
+const MainProductsHandleRoute = MainProductsHandleRouteImport.update({
+  id: '/$handle',
+  path: '/$handle',
   getParentRoute: () => MainProductsRouteRoute,
 } as any)
 const CheckoutCheckoutAddressesNewRoute =
@@ -198,7 +198,7 @@ export interface FileRoutesByFullPath {
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/categories/$handle': typeof MainCategoriesHandleRoute
   '/collections/$handle': typeof MainCollectionsHandleRoute
-  '/products/$productId': typeof MainProductsProductIdRoute
+  '/products/$handle': typeof MainProductsHandleRoute
   '/checkout/': typeof CheckoutCheckoutIndexRoute
   '/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
@@ -223,7 +223,7 @@ export interface FileRoutesByTo {
   '/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/categories/$handle': typeof MainCategoriesHandleRoute
   '/collections/$handle': typeof MainCollectionsHandleRoute
-  '/products/$productId': typeof MainProductsProductIdRoute
+  '/products/$handle': typeof MainProductsHandleRoute
   '/checkout': typeof CheckoutCheckoutIndexRoute
   '/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
   '/account/payment-methods': typeof MainAuthedAccountPaymentMethodsRoute
@@ -253,7 +253,7 @@ export interface FileRoutesById {
   '/_checkout/checkout/addresses': typeof CheckoutCheckoutAddressesRouteRouteWithChildren
   '/_main/categories/$handle': typeof MainCategoriesHandleRoute
   '/_main/collections/$handle': typeof MainCollectionsHandleRoute
-  '/_main/products/$productId': typeof MainProductsProductIdRoute
+  '/_main/products/$handle': typeof MainProductsHandleRoute
   '/_checkout/checkout/': typeof CheckoutCheckoutIndexRoute
   '/_main/_authed/account/addresses': typeof MainAuthedAccountAddressesRouteRouteWithChildren
   '/_checkout/checkout/addresses/new': typeof CheckoutCheckoutAddressesNewRoute
@@ -281,7 +281,7 @@ export interface FileRouteTypes {
     | '/checkout/addresses'
     | '/categories/$handle'
     | '/collections/$handle'
-    | '/products/$productId'
+    | '/products/$handle'
     | '/checkout/'
     | '/account/addresses'
     | '/checkout/addresses/new'
@@ -306,7 +306,7 @@ export interface FileRouteTypes {
     | '/checkout/addresses'
     | '/categories/$handle'
     | '/collections/$handle'
-    | '/products/$productId'
+    | '/products/$handle'
     | '/checkout'
     | '/checkout/addresses/new'
     | '/account/payment-methods'
@@ -335,7 +335,7 @@ export interface FileRouteTypes {
     | '/_checkout/checkout/addresses'
     | '/_main/categories/$handle'
     | '/_main/collections/$handle'
-    | '/_main/products/$productId'
+    | '/_main/products/$handle'
     | '/_checkout/checkout/'
     | '/_main/_authed/account/addresses'
     | '/_checkout/checkout/addresses/new'
@@ -476,11 +476,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainCollectionsHandleRouteImport
       parentRoute: typeof MainRouteRoute
     }
-    '/_main/products/$productId': {
-      id: '/_main/products/$productId'
-      path: '/$productId'
-      fullPath: '/products/$productId'
-      preLoaderRoute: typeof MainProductsProductIdRouteImport
+    '/_main/products/$handle': {
+      id: '/_main/products/$handle'
+      path: '/$handle'
+      fullPath: '/products/$handle'
+      preLoaderRoute: typeof MainProductsHandleRouteImport
       parentRoute: typeof MainProductsRouteRoute
     }
     '/_checkout/checkout/addresses/new': {
@@ -662,11 +662,11 @@ const MainAuthedRouteRouteWithChildren = MainAuthedRouteRoute._addFileChildren(
 )
 
 interface MainProductsRouteRouteChildren {
-  MainProductsProductIdRoute: typeof MainProductsProductIdRoute
+  MainProductsHandleRoute: typeof MainProductsHandleRoute
 }
 
 const MainProductsRouteRouteChildren: MainProductsRouteRouteChildren = {
-  MainProductsProductIdRoute: MainProductsProductIdRoute,
+  MainProductsHandleRoute: MainProductsHandleRoute,
 }
 
 const MainProductsRouteRouteWithChildren =

@@ -41,7 +41,7 @@ function renderInRouter(ui: ReactNode) {
 }
 
 /** The PDP, as a plain path: this router has no such route. */
-const productLink = (productId: string) => ({ to: `/products/${productId}` })
+const productLink = (handle: string) => ({ to: `/products/${handle}` })
 
 function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductListItem, 'id' | 'title'>) {
   return {
@@ -66,7 +66,7 @@ test('a sold-out product wears the badge', async () => {
   await renderInRouter(
     <ProductCard
       product={product({ id: 'prod_gone', title: 'Sport Shorts', soldOut: true })}
-      link={productLink('prod_gone')}
+      link={productLink('sport-shorts')}
     />,
   )
 
@@ -75,7 +75,7 @@ test('a sold-out product wears the badge', async () => {
 
 test('a product in stock carries no badge', async () => {
   await renderInRouter(
-    <ProductCard product={product({ id: 'prod_here', title: 'Sport Shorts' })} link={productLink('prod_here')} />,
+    <ProductCard product={product({ id: 'prod_here', title: 'Sport Shorts' })} link={productLink('sport-shorts')} />,
   )
 
   // The card first, then the absence. An unanchored `not.toBeInTheDocument()` passes against a
@@ -91,9 +91,9 @@ test('a sold-out product stays in the grid, in the place the API gave it', async
     <ProductGrid
       productLink={productLink}
       products={[
-        product({ id: 'prod_first', title: 'Linen Shirt' }),
-        product({ id: 'prod_gone', title: 'Sport Shorts', soldOut: true }),
-        product({ id: 'prod_last', title: 'Wool Coat' }),
+        product({ id: 'prod_first', handle: 'linen-shirt', title: 'Linen Shirt' }),
+        product({ id: 'prod_gone', handle: 'sport-shorts', title: 'Sport Shorts', soldOut: true }),
+        product({ id: 'prod_last', handle: 'wool-coat', title: 'Wool Coat' }),
       ]}
     />,
   )
@@ -111,4 +111,7 @@ test('a sold-out product stays in the grid, in the place the API gave it', async
   const badges = page.getByText('Sold out').elements()
   expect(badges).toHaveLength(1)
   expect(badges[0]?.closest('a')?.textContent).toContain('Sport Shorts')
+
+  // Each card is addressed by its product's handle, the readable half of the URL, not its id.
+  expect(badges[0]?.closest('a')?.getAttribute('href')).toBe('/products/sport-shorts')
 })

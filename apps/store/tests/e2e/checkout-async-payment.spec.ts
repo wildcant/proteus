@@ -60,7 +60,7 @@ test.describe('Checkout — a payment that is still settling', () => {
 
     const sessions = watchPaymentSessions(page)
 
-    await addToCartAndCheckout(page, navigate, product.id)
+    await addToCartAndCheckout(page, navigate, product.handle)
     await page.getByLabel('Email').fill('settling-payment@example.com')
     await page.getByLabel('Email').blur()
     await fillShippingAddress(page)
@@ -127,12 +127,12 @@ test.describe('Checkout — a payment that is still settling', () => {
 
 /** The routes this spec navigates to. Narrower than the fixture's, which is why it accepts it. */
 type Navigate = (options: {
-  to: Extract<FileRouteTypes['to'], '/products/$productId'>
+  to: Extract<FileRouteTypes['to'], '/products/$handle'>
   params?: Record<string, string>
 }) => Promise<void>
 
-async function addToCartAndCheckout(page: Page, navigate: Navigate, productId: string) {
-  await navigate({ to: '/products/$productId', params: { productId } })
+async function addToCartAndCheckout(page: Page, navigate: Navigate, handle: string) {
+  await navigate({ to: '/products/$handle', params: { handle } })
 
   // Generous, and not decoration: this is the only spec in its file, so it pays for the cold
   // route compile and the first cart write of the run with nothing ahead of it to have warmed

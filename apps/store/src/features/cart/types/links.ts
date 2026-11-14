@@ -10,7 +10,7 @@ export type BagLinks = {
   /** CHECKOUT. */
   checkout: LinkTarget
   /** PRODUCT: a line's product page. */
-  product: (productId: string) => LinkTarget
+  product: (handle: string) => LinkTarget
   /** BROWSE, from the empty bag. */
   browse: LinkTarget
 }

@@ -34,23 +34,23 @@ import { useFormatters } from '#/hooks/use-formatters'
 import { useMarket } from '#/hooks/use-market'
 
 type ProductDetailProps = {
-  productId: string
+  handle: string
   /** The `?variant` the route read. */
   variantId: string | undefined
   links: ProductDetailLinks
 }
 
-export function ProductDetail({ productId, variantId, links }: ProductDetailProps) {
+export function ProductDetail({ handle, variantId, links }: ProductDetailProps) {
   const navigate = useNavigate()
   const { current } = useMarket()
   const { formatPrice } = useFormatters()
-  const { product } = useSuspenseProduct(productId, { countryCode: current.iso2 })
+  const { product } = useSuspenseProduct(handle, { countryCode: current.iso2 })
 
-  // The market has no product under this id — either none exists or none of its variants have a
+  // The market has no product under this handle — either none exists or none of its variants have a
   // price here. Both arrive as the API's one not-found, and both read the same to the shopper.
   if (!product) return <ProductError browseLink={links.browse} />
 
-  // An unknown id in the URL falls back to the first variant rather than erroring.
+  // An unknown variant id in the URL falls back to the first variant rather than erroring.
   const selectedVariant = product.variants.find((variant) => variant.id === variantId) ?? product.variants[0]
 
   // A variant shows its own photos; products whose variants carry no links keep the full gallery.

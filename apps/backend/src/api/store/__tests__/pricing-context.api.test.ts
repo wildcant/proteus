@@ -3,13 +3,13 @@ import type { ApiErrorBody, TestApi, TestResponse } from '@tests/setup/create-ap
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import cartDefinitions from '../carts/definitions.js'
 import type * as cartRoutes from '../carts/route.js'
-import type * as productByIdRoutes from '../products/[id]/route.js'
+import type * as productByHandleRoutes from '../products/[handle]/route.js'
 import productDefinitions from '../products/definitions.js'
 import type * as productRoutes from '../products/route.js'
 
 type Factories = Fixtures['factories']
 type Services = Fixtures['service']
-type ProductBody = TestResponse<typeof productByIdRoutes.GetOutput>['body']
+type ProductBody = TestResponse<typeof productByHandleRoutes.GetOutput>['body']
 
 let api: TestApi
 
@@ -67,12 +67,20 @@ test.describe('currency from the country on the request', () => {
     await createMarkets(factories)
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const colombian = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`, undefined, {
-      query: { countryCode: 'co' },
-    })
-    const american = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`, undefined, {
-      query: { countryCode: 'us' },
-    })
+    const colombian = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${product.handle}`,
+      undefined,
+      {
+        query: { countryCode: 'co' },
+      },
+    )
+    const american = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${product.handle}`,
+      undefined,
+      {
+        query: { countryCode: 'us' },
+      },
+    )
 
     expect(priceOf(colombian.body)).toMatchObject({ currencyCode: 'cop', calculatedAmount: '360000' })
     expect(priceOf(american.body)).toMatchObject({ currencyCode: 'usd', calculatedAmount: '90' })
@@ -98,9 +106,13 @@ test.describe('currency from the country on the request', () => {
     await createMarkets(factories)
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const { body } = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`, undefined, {
-      query: { countryCode: 'CO' },
-    })
+    const { body } = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${product.handle}`,
+      undefined,
+      {
+        query: { countryCode: 'CO' },
+      },
+    )
 
     expect(priceOf(body)?.currencyCode).toBe('cop')
   })
@@ -113,7 +125,7 @@ test.describe('currency from the country on the request', () => {
     await createMarkets(factories)
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const { status, body } = await api.get<ApiErrorBody>(`/store/products/${product.id}`, undefined, {
+    const { status, body } = await api.get<ApiErrorBody>(`/store/products/${product.handle}`, undefined, {
       query: { countryCode: 'qq' },
     })
 
@@ -125,7 +137,7 @@ test.describe('currency from the country on the request', () => {
     await createMarkets(factories)
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const { status } = await api.get<ApiErrorBody>(`/store/products/${product.id}`, undefined, {
+    const { status } = await api.get<ApiErrorBody>(`/store/products/${product.handle}`, undefined, {
       query: { countryCode: 'zz' },
     })
 
@@ -143,9 +155,13 @@ test.describe('currency from the cart on the request', () => {
     const { product } = await createVariantPricedInBothMarkets(service)
     const created = await api.post<typeof cartRoutes.PostOutput>('/store/carts', {}, { query: { countryCode: 'co' } })
 
-    const { body } = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`, undefined, {
-      query: { cartId: created.body.cart.id },
-    })
+    const { body } = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${product.handle}`,
+      undefined,
+      {
+        query: { cartId: created.body.cart.id },
+      },
+    )
 
     expect(priceOf(body)?.currencyCode).toBe('cop')
   })
@@ -159,9 +175,13 @@ test.describe('currency from the cart on the request', () => {
     const { product } = await createVariantPricedInBothMarkets(service)
     const created = await api.post<typeof cartRoutes.PostOutput>('/store/carts', {}, { query: { countryCode: 'co' } })
 
-    const { body } = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`, undefined, {
-      query: { countryCode: 'us', cartId: created.body.cart.id },
-    })
+    const { body } = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${product.handle}`,
+      undefined,
+      {
+        query: { countryCode: 'us', cartId: created.body.cart.id },
+      },
+    )
 
     expect(priceOf(body)?.currencyCode).toBe('usd')
   })
@@ -170,8 +190,8 @@ test.describe('currency from the cart on the request', () => {
     await createMarkets(factories)
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const { status, body } = await api.get<typeof productByIdRoutes.GetOutput>(
-      `/store/products/${product.id}`,
+    const { status, body } = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${product.handle}`,
       undefined,
       { query: { cartId: 'cart_gonebeforetheshoppercameback' } },
     )
@@ -190,7 +210,7 @@ test.describe("currency from the store's default region", () => {
     await createMarkets(factories)
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const { status, body } = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const { status, body } = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(status).toBe(200)
     expect(priceOf(body)).toMatchObject({ currencyCode: 'usd', calculatedAmount: '90' })
@@ -204,7 +224,7 @@ test.describe("currency from the store's default region", () => {
     await createMarkets(factories, { storeDefault: 'none' })
     const { product } = await createVariantPricedInBothMarkets(service)
 
-    const { status, body } = await api.get<ApiErrorBody>(`/store/products/${product.id}`)
+    const { status, body } = await api.get<ApiErrorBody>(`/store/products/${product.handle}`)
 
     expect(status).toBe(500)
     expect(body.message).toContain('default region')

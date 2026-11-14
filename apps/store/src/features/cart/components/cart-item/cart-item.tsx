@@ -35,7 +35,7 @@ export function CartItem({
   item: StoreCartLineItem
   currencyCode: string
   /** PRODUCT: the line's product page. */
-  productLink: (productId: string) => LinkTarget
+  productLink: (handle: string) => LinkTarget
   className?: string
 }) {
   // Not disabled while saving — the hook holds the value and debounces, so taps land on the click.
@@ -59,9 +59,8 @@ export function CartItem({
 
       <div className={cn(cartItemInfo(), 'min-w-0')}>
         <div className={cartItemDetails()}>
-          {/* productId, not a handle: the product page is addressed by id. */}
-          {item.productId ? (
-            <Link {...productLink(item.productId)} className={cartItemTitle()}>
+          {item.productHandle ? (
+            <Link {...productLink(item.productHandle)} className={cartItemTitle()}>
               {item.title}
             </Link>
           ) : (

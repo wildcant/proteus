@@ -2,7 +2,7 @@ import type { ProductListSearch } from '#/features/products/utils/product-list-s
 import type { LinkTarget } from '#/lib/link-target'
 
 /** A product card's link, its PRODUCT event on the screen the card is on. */
-export type ProductLinkTo = (productId: string) => LinkTarget
+export type ProductLinkTo = (handle: string) => LinkTarget
 
 /** The search panel's ways out, the `Root` screen's search states on the flow map. */
 export type SearchLinks = {

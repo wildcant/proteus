@@ -237,7 +237,7 @@ test.describe('Products', () => {
     await using product = await factories.create.product({ status: 'published', description })
     await authenticate({ as: 'customer' })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
 
     await expect(page.getByRole('heading', { name: product.title })).toBeVisible()
     if (!product.description) throw new Error('Seeded product is missing a description')
@@ -250,8 +250,8 @@ test.describe('Products', () => {
 
     // Pin the starting variant so the assertion does not depend on how variants come back ordered.
     await navigate({
-      to: '/products/$productId',
-      params: { productId: catalog.product.id },
+      to: '/products/$handle',
+      params: { handle: catalog.product.handle },
       search: { variant: catalog.blackVariant.id },
     })
 
@@ -272,8 +272,8 @@ test.describe('Products', () => {
     await authenticate({ as: 'customer' })
 
     await navigate({
-      to: '/products/$productId',
-      params: { productId: catalog.product.id },
+      to: '/products/$handle',
+      params: { handle: catalog.product.handle },
       search: { variant: catalog.sBlack.id },
     })
 
@@ -300,8 +300,8 @@ test.describe('Products', () => {
 
     // M only exists in Black, so from M the White swatch has no variant to land on.
     await navigate({
-      to: '/products/$productId',
-      params: { productId: catalog.product.id },
+      to: '/products/$handle',
+      params: { handle: catalog.product.handle },
       search: { variant: catalog.mBlack.id },
     })
 
@@ -317,7 +317,7 @@ test.describe('Products', () => {
     // The dots are `lg:hidden` and playwright.config.ts declares one project at 1280, so this test
     // has to set its own viewport — the carousel only exists below `lg`.
     await page.setViewportSize({ width: 390, height: 844 })
-    await navigate({ to: '/products/$productId', params: { productId: catalog.product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: catalog.product.handle } })
 
     const scroller = page.getByRole('list', { name: `${catalog.product.title} images` })
     await expect(scroller.getByRole('img')).toHaveCount(2)
@@ -340,7 +340,7 @@ test.describe('Products', () => {
     await using catalog = await createProductWithColourways(factories)
     await authenticate({ as: 'customer' })
 
-    await navigate({ to: '/products/$productId', params: { productId: catalog.product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: catalog.product.handle } })
 
     await expect(page.getByLabel('Variant')).toBeVisible()
   })

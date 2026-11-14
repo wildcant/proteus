@@ -1240,7 +1240,12 @@ msgid "Not authenticated"
 msgstr "No has iniciado sesión"
 
 #. js-lingui-explicit-id
-#: src/api/store/products/[id]/route.ts:102
+#: src/api/store/products/[handle]/route.ts:38
+msgid "Product with handle \"{handle}\" not found"
+msgstr "No se encontró el producto con identificador \"{handle}\""
+
+#. js-lingui-explicit-id
+#: src/api/store/products/[handle]/route.ts:109
 msgid "Product with id \"{id}\" has no price in {currencyCode}"
 msgstr "El producto con id \"{id}\" no tiene precio en {currencyCode}"
 

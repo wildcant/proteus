@@ -39,10 +39,10 @@ export const screens = {
   ProductListPage: { route: '/_main/', to: '/' },
   'ProductListPage/category': { route: '/_main/categories/$handle', to: '/categories/$handle' },
   'ProductListPage/collection': { route: '/_main/collections/$handle', to: '/collections/$handle' },
-  ProductDetail: { route: '/_main/products/$productId', to: '/products/$productId' },
+  ProductDetail: { route: '/_main/products/$handle', to: '/products/$handle' },
   'ProductDetail/bagOpen': {
-    route: '/_main/products/$productId',
-    to: '/products/$productId',
+    route: '/_main/products/$handle',
+    to: '/products/$handle',
     search: { modal: 'cart' },
   },
 

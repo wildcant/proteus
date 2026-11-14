@@ -9,7 +9,7 @@ import { flowLinks } from '#/navigation/links'
 
 const links = flowLinks('ProductListPage')
 const listLinks: ProductListLinks = {
-  product: (productId) => links.PRODUCT({ params: { productId } }),
+  product: (handle) => links.PRODUCT({ params: { handle } }),
   shopAll: links.SHOP_ALL(),
   // These stay on whichever list route is showing: the home page, a category or a collection.
   filter: links.FILTER,

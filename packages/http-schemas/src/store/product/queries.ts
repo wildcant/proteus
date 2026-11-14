@@ -26,3 +26,7 @@ export const StoreProductListParams = createFindParams().extend({
 })
 
 export type StoreProductListQuery = FindParams<typeof StoreProductListParams>
+
+/** A product's handle, the storefront's address for it: `/products/<handle>`. */
+export const StoreProductHandleParams = z.object({ handle: z.string().min(1) })
+export type StoreProductHandleParams = z.infer<typeof StoreProductHandleParams>

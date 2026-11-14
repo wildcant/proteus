@@ -1,7 +1,7 @@
 import { Modules } from '@core/utils/modules-definition.js'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
-import type * as productByIdRoutes from '../[id]/route.js'
+import type * as productByHandleRoutes from '../[handle]/route.js'
 import productDefinitions from '../definitions.js'
 import type * as productRoutes from '../route.js'
 
@@ -38,7 +38,7 @@ test.beforeEach(async ({ createApi, factories }) => {
   await factories.create.store({ defaultRegionId: region.id })
 })
 
-test.describe('GET /store/products/:id', () => {
+test.describe('GET /store/products/:handle', () => {
   /**
    * Two images and two variants: the first variant takes both images in reverse rank order to prove
    * the response re-orders them, the second takes none.
@@ -62,7 +62,7 @@ test.describe('GET /store/products/:id', () => {
 
   test('returns the product images ordered by rank', async ({ expect, service }) => {
     const { product } = await createProductWithVariantImages(service)
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.status).toBe(200)
     expect(response.body.product.images).toEqual([
@@ -73,7 +73,7 @@ test.describe('GET /store/products/:id', () => {
 
   test('gives each variant only its own images, in image rank order', async ({ expect, service }) => {
     const { product, first, second, linked, unlinked } = await createProductWithVariantImages(service)
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     const imageIdsByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.imageIds]))
     expect(imageIdsByVariantId.get(linked.id)).toEqual([first.id, second.id])
@@ -88,7 +88,7 @@ test.describe('GET /store/products/:id', () => {
     const [otherImage] = otherImages
     if (!otherImage) throw new Error('Expected the other product to have an image')
     await service.create.variantImages(api.container, [{ imageId: otherImage.id, variantId: linked.id }])
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.body.product.images.map((image) => image.url)).not.toContain('https://cdn.test/other.png')
     const variant = response.body.product.variants.find((v) => v.id === linked.id)
@@ -97,14 +97,14 @@ test.describe('GET /store/products/:id', () => {
 
   test('returns no variants for a product that has none', async ({ expect, service }) => {
     const { product } = await service.create.product(api.container)
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.status).toBe(200)
     expect(response.body.product.variants).toEqual([])
   })
 })
 
-test.describe('GET /store/products/:id options', () => {
+test.describe('GET /store/products/:handle options', () => {
   /**
    * A product offering Size (S/M) then Colour (Red), with one priced variant per size so the
    * response carries a complete combination for each.
@@ -156,7 +156,7 @@ test.describe('GET /store/products/:id options', () => {
     service,
   }) => {
     const { product, size, colour } = await createProductWithOptions(service)
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.body.product.options.map((option) => option.id)).toEqual([size.id, colour.id])
     expect(response.body.product.options.map((option) => option.renderAs)).toEqual(['text', 'swatch'])
@@ -165,7 +165,7 @@ test.describe('GET /store/products/:id options', () => {
 
   test('gives each variant its own Option Combination keyed by option id', async ({ expect, service }) => {
     const { product, size, colour, small, medium, valueId } = await createProductWithOptions(service)
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     const combinationByVariantId = new Map(response.body.product.variants.map((v) => [v.id, v.optionValues]))
     expect(combinationByVariantId.get(small.id)).toEqual({
@@ -184,7 +184,7 @@ test.describe('GET /store/products/:id options', () => {
     // behind it would be reported unreachable and this spec would be asserting the wrong thing.
     await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 5 } })
     await service.create.variantStock(api.container, { variantId: medium.id, level: { stockedQuantity: 5 } })
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     const fromSmall = response.body.product.pickerTargets[small.id]
     // A value pointing at the variant you are on is how the picker knows to render it selected.
@@ -218,7 +218,7 @@ test.describe('GET /store/products/:id options', () => {
     ])
     if (!small || !medium) throw new Error('Expected two variants to exist')
     await service.create.variantPrices(api.container, [small.id])
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.body.product.variants.map((variant) => variant.id)).toEqual([small.id])
     expect(response.body.product.pickerTargets[small.id]?.[idOf('M')]).toBeNull()
@@ -248,7 +248,7 @@ test.describe('GET /store/products/:id options', () => {
     if (!variant) throw new Error('Expected a variant to exist')
     await service.create.variantImages(api.container, [{ imageId: image.id, variantId: variant.id }])
     await service.create.variantPrices(api.container, [variant.id])
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.body.product.options[0]?.values[0]?.swatchImageUrl).toBe('https://cdn.test/red.png')
   })
@@ -271,7 +271,7 @@ test.describe('GET /store/products/:id options', () => {
     ])
     if (!variant) throw new Error('Expected a variant to exist')
     await service.create.variantPrices(api.container, [variant.id])
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.body.product.options[0]?.values[0]?.swatchImageUrl).toBeNull()
   })
@@ -284,15 +284,15 @@ test.describe('GET /store/products/:id options', () => {
     const [variant] = await service.create.productVariants(api.container, product.id)
     if (!variant) throw new Error('Expected a variant to exist')
     await service.create.variantPrices(api.container, [variant.id])
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${product.id}`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.body.product.options).toEqual([])
     expect(response.body.product.variants[0]?.optionValues).toEqual({})
   })
 
   /** The shopper-visible answer per variant, which is the only thing these specs assert. */
-  const stockByVariantId = async (productId: string) => {
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${productId}`)
+  const stockByVariantId = async (handle: string) => {
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${handle}`)
     return new Map(response.body.product.variants.map((variant) => [variant.id, variant.stock]))
   }
 
@@ -310,7 +310,7 @@ test.describe('GET /store/products/:id options', () => {
     await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 0 } })
     await service.create.variantStock(api.container, { variantId: medium.id, level: { stockedQuantity: 0 } })
 
-    const stock = await stockByVariantId(product.id)
+    const stock = await stockByVariantId(product.handle)
 
     expect(stock.get(small.id)).toEqual({ state: 'available' })
     expect(stock.get(medium.id)).toEqual({ state: 'available' })
@@ -322,7 +322,7 @@ test.describe('GET /store/products/:id options', () => {
     const { product, small, medium } = await createProductWithOptions(service)
     await service.create.variantStock(api.container, { variantId: small.id, level: { stockedQuantity: 5 } })
 
-    const stock = await stockByVariantId(product.id)
+    const stock = await stockByVariantId(product.handle)
 
     expect(stock.get(small.id)).toEqual({ state: 'available' })
     expect(stock.get(medium.id)).toEqual({ state: 'soldOut' })
@@ -357,7 +357,7 @@ test.describe('GET /store/products/:id options', () => {
       quantity: 1,
     })
 
-    const stock = await stockByVariantId(product.id)
+    const stock = await stockByVariantId(product.handle)
 
     expect(stock.get(small.id)).toEqual({ state: 'available' })
     expect(stock.get(medium.id)).toEqual({ state: 'low', remaining: 2 })
@@ -384,7 +384,7 @@ test.describe('GET /store/products/:id options', () => {
       level: { stockedQuantity: 4 },
     })
 
-    const stock = await stockByVariantId(product.id)
+    const stock = await stockByVariantId(product.handle)
 
     expect(stock.get(small.id)).toEqual({ state: 'soldOut' })
     expect(stock.get(medium.id)).toEqual({ state: 'low', remaining: 4 })
@@ -407,7 +407,7 @@ test.describe('GET /store/products/:id options', () => {
       level: { stockedQuantity: 0 },
     })
 
-    const stock = await stockByVariantId(product.id)
+    const stock = await stockByVariantId(product.handle)
 
     expect(stock.get(small.id)).toEqual({ state: 'available' })
     expect(stock.get(medium.id)).toEqual({ state: 'soldOut' })
@@ -626,7 +626,7 @@ test.describe('GET /store/products across markets', () => {
   })
 })
 
-test.describe('GET /store/products/:id across markets', () => {
+test.describe('GET /store/products/:handle across markets', () => {
   test.beforeEach(async ({ factories }) => {
     await factories.create.country({ id: 'us', regionId: usRegionId, localeCode: 'en-US' })
     const colombia = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
@@ -637,17 +637,17 @@ test.describe('GET /store/products/:id across markets', () => {
     // Every variant would be dropped for having no price, leaving a page with no amount, no
     // picker and nothing to add to a cart. The store does not sell it here, so it says so.
     const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
-    const response = await api.get<ApiErrorBody>(`/store/products/${usdOnly.id}?countryCode=co`)
+    const response = await api.get<ApiErrorBody>(`/store/products/${usdOnly.handle}?countryCode=co`)
 
     expect(response.status).toBe(404)
     expect(response.body.type).toBe('not_found')
   })
 
-  test('answers an unpriced product exactly as it answers an unknown id', async ({ expect, factories }) => {
+  test('answers an unpriced product exactly as it answers an unknown handle', async ({ expect, factories }) => {
     const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
 
-    const unpriced = await api.get<ApiErrorBody>(`/store/products/${usdOnly.id}?countryCode=co`)
-    const unknown = await api.get<ApiErrorBody>('/store/products/prod_does_not_exist?countryCode=co')
+    const unpriced = await api.get<ApiErrorBody>(`/store/products/${usdOnly.handle}?countryCode=co`)
+    const unknown = await api.get<ApiErrorBody>('/store/products/no-such-product?countryCode=co')
 
     expect(unpriced.status).toBe(unknown.status)
     expect(unpriced.body.type).toBe(unknown.body.type)
@@ -656,7 +656,9 @@ test.describe('GET /store/products/:id across markets', () => {
 
   test('returns the same product in the market it is priced in', async ({ expect, factories }) => {
     const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
-    const response = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${usdOnly.id}?countryCode=us`)
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${usdOnly.handle}?countryCode=us`,
+    )
 
     expect(response.status).toBe(200)
     expect(response.body.product.variants).toHaveLength(1)
@@ -674,8 +676,12 @@ test.describe('GET /store/products/:id across markets', () => {
       ],
     })
 
-    const us = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${bothMarkets.id}?countryCode=us`)
-    const co = await api.get<typeof productByIdRoutes.GetOutput>(`/store/products/${bothMarkets.id}?countryCode=co`)
+    const us = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${bothMarkets.handle}?countryCode=us`,
+    )
+    const co = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${bothMarkets.handle}?countryCode=co`,
+    )
 
     expect(us.status).toBe(200)
     expect(co.status).toBe(200)

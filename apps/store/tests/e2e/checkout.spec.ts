@@ -18,7 +18,7 @@ test.describe('Checkout', () => {
     disposeCartAfterTest(page, factories, cleanup)
 
     // 1. Add product to cart as guest
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     // Adding opens the cart panel — that is the confirmation now, in place of a toast, and it
@@ -81,7 +81,7 @@ test.describe('Checkout', () => {
     disposeCartAfterTest(page, factories, cleanup)
 
     // 1. Add product to cart as guest
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
@@ -144,7 +144,7 @@ test.describe('Checkout', () => {
 
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
@@ -174,7 +174,7 @@ test.describe('Checkout', () => {
 
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
@@ -247,7 +247,7 @@ test.describe('Checkout', () => {
     const savedAddress = page.getByRole('listitem').filter({ hasText: '123 Main St, Austin' })
     await expect(savedAddress).toBeVisible({ timeout: 10000 })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
     await expect(cartPanel).toBeVisible()
@@ -287,7 +287,7 @@ test.describe('Checkout', () => {
     disposeCartAfterTest(page, factories, cleanup)
 
     await page.setViewportSize({ width: 390, height: 844 })
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
 
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
@@ -349,7 +349,7 @@ test.describe('Checkout', () => {
     await page.getByRole('button', { name: /sign in/i }).click()
     await expect(page).toHaveURL('/en-US/account', { timeout: 15000 })
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
     await expect(cartPanel).toBeVisible()
@@ -374,7 +374,7 @@ test.describe('Checkout', () => {
 
     disposeCartAfterTest(page, factories, cleanup)
 
-    await navigate({ to: '/products/$productId', params: { productId: product.id } })
+    await navigate({ to: '/products/$handle', params: { handle: product.handle } })
     await page.getByRole('button', { name: /add to cart/i }).click()
     const cartPanel = page.locator('[data-slot="drawer-popup"]')
     await expect(cartPanel).toBeVisible()

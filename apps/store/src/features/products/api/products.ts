@@ -134,30 +134,30 @@ export const useProducts = (query: ListStoreProductsParams, options?: ProductsLi
   return { ...data, ...rest }
 }
 
-/** The detail answer, with the product absent when this market has none under that id. */
+/** The detail answer, with the product absent when this market has none under that handle. */
 type ProductDetail = { product: StoreProductResponse['product'] | undefined }
 
 type ProductQueryOptions = Omit<UseQueryOptions<ProductDetail, Error, ProductDetail>, 'queryFn' | 'queryKey'>
 /**
- * Shared query config. Use in route loaders via `prefetchQuery(productQueryOptions(id, market))`.
+ * Shared query config. Use in route loaders via `prefetchQuery(productQueryOptions(handle, market))`.
  *
  * `countryCode` is in the key for the reason it is in `productsPageQuery`: the same product is a
  * different answer in a different market, and one key for both would serve pesos to a shopper
  * reading dollars.
  */
-export const productQueryOptions = (id: string, query: GetStoreProductParams, options?: ProductQueryOptions) =>
+export const productQueryOptions = (handle: string, query: GetStoreProductParams, options?: ProductQueryOptions) =>
   queryOptions({
-    queryKey: productsQueryKeys.detail(id, query),
+    queryKey: productsQueryKeys.detail(handle, query),
     /**
-     * A 404 resolves rather than throws, because it is an answer: the API returns one both for an
-     * id we never had and for a product this market cannot price, which is the ordinary case now
+     * A 404 resolves rather than throws, because it is an answer: the API returns one both for a
+     * handle we never had and for a product this market cannot price, which is the ordinary case now
      * that a market decides the catalogue. Thrown, it reached the route's error boundary — and an
      * error boundary on a routine path costs a retry, a dev console pair per attempt, and the
      * whole match's data. Every other status still throws, which is what the boundary is for.
      */
     queryFn: async () => {
       try {
-        return await getStoreProduct(id, query)
+        return await getStoreProduct(handle, query)
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) return { product: undefined }
         throw error
@@ -166,7 +166,7 @@ export const productQueryOptions = (id: string, query: GetStoreProductParams, op
     ...options,
   })
 /** Suspends until product detail resolves. Use inside a `<Suspense>` boundary. */
-export const useSuspenseProduct = (id: string, query: GetStoreProductParams, options?: ProductQueryOptions) => {
-  const { data, ...rest } = useSuspenseQuery(productQueryOptions(id, query, options))
+export const useSuspenseProduct = (handle: string, query: GetStoreProductParams, options?: ProductQueryOptions) => {
+  const { data, ...rest } = useSuspenseQuery(productQueryOptions(handle, query, options))
   return { ...data, ...rest }
 }
