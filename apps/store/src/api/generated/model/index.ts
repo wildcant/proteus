@@ -102,6 +102,7 @@ export * from './storeProductFilterValue.ts';
 export * from './storeProductImage.ts';
 export * from './storeProductListItem.ts';
 export * from './storeProductListResponse.ts';
+export * from './storeProductPriceBounds.ts';
 export * from './storeProductResponse.ts';
 export * from './storeProductResponseProduct.ts';
 export * from './storeProductResponseProductPickerTargets.ts';

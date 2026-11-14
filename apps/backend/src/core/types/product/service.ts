@@ -47,6 +47,7 @@ import type {
   ProductVariantDTO,
   ProductVariantImageDTO,
   ProductVariantOptionDTO,
+  VariantOptionLabelDTO,
   VariantReassignmentDTO,
   VariantReconciliationPlanDTO,
 } from './common.js'
@@ -415,6 +416,8 @@ export type IProductModuleService = {
    * picker only ever compares ids and the labels already travel once on the product's options.
    */
   listVariantOptionMaps(variantIds: string[], context?: Context): Promise<Record<string, Record<string, string>>>
+  /** Each variant's option values with their option's title and the value's rank, one row per value. */
+  listVariantOptionLabels(variantIds: string[], context?: Context): Promise<VariantOptionLabelDTO[]>
   /** How many of the product's variants carry each option value, keyed by option value id. */
   countVariantsByOptionValue(productId: string, context?: Context): Promise<Record<string, number>>
   /** The product's options with each value's variant usage attached. */

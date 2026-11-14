@@ -110,6 +110,15 @@ export type ProductVariantDTO = {
 
 export type ProductVariantExtendedDTO = ProductVariantDTO & { prices?: PriceDTO[] }
 
+/** One option value a variant carries, as a list reads it: by the option's title, in the option's order. */
+export type VariantOptionLabelDTO = {
+  variantId: string
+  optionTitle: string
+  value: string
+  /** The value's place in its option: sizes small to large. `null` when unranked. */
+  rank: number | null
+}
+
 /**
  * One entry of a variant's Option Combination, resolved for display: both the ids a client posts
  * back and the labels it renders. Always in the product's option order.
