@@ -34,6 +34,7 @@ import { CartEmpty } from '#/features/cart/components/cart-empty/cart-empty'
 import { CartItem } from '#/features/cart/components/cart-item/cart-item'
 import type { BagLinks } from '#/features/cart/types/links'
 import { useFormatters } from '#/hooks/use-formatters'
+import { useMarket } from '#/hooks/use-market'
 import { useModal } from '#/lib/modal-state'
 
 /**
@@ -49,7 +50,8 @@ export function CartDrawer({ links }: { links: BagLinks }) {
 
   const items = cart?.items ?? []
   const sortedItems = [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  const currencyCode = cart?.currencyCode ?? 'usd'
+  const { current: market } = useMarket()
+  const currencyCode = cart?.currencyCode ?? market.currencyCode
   const hasItems = sortedItems.length > 0
   // A bag still loading keeps the notice and the body: showing them only once it resolved would
   // shove the rows down.

@@ -1,3 +1,4 @@
+import { MARKETS } from '@proteus/store-config'
 /**
  * A Market is the country a shopper is shopping in. It carries four fields and each does a
  * different job: `localeCode` is the URL segment, the document language attribute, and the tag
@@ -28,16 +29,15 @@ export type Market = {
 }
 
 /**
- * The market served when the backend cannot be reached, and the one every such fallback lands on.
+ * The market served when the backend cannot be reached, and the one every such fallback lands on:
+ * the first country of the first market in `@proteus/store-config`.
  *
  * Compiled in because it is the answer when the fetch itself fails. When the backend answers, the
  * default is the country behind `store.defaultRegionId` instead — see `SellableMarkets`.
  */
 export const DEFAULT_MARKET: Market = {
-  localeCode: 'en-US',
-  iso2: 'us',
-  displayName: 'United States',
-  currencyCode: 'usd',
+  ...MARKETS[0].countries[0],
+  currencyCode: MARKETS[0].currencyCode,
 }
 
 /**

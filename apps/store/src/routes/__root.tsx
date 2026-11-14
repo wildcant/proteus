@@ -1,6 +1,7 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
+import { STORE_NAME } from '@proteus/store-config'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools'
 import type { QueryClient } from '@tanstack/react-query'
@@ -57,7 +58,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient; mark
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Proteus',
+        title: STORE_NAME,
       },
       {
         name: 'description',
