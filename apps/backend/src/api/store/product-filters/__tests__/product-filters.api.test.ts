@@ -1,6 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
 import type { TestApi } from '@tests/setup/create-api.js'
-import { test } from '@tests/setup/test-extend.js'
+import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import adminCategoryDefinitions from '../../../admin/product-categories/definitions.js'
 import type * as adminCategoryRoutes from '../../../admin/product-categories/route.js'
 import productDefinitions from '../../products/definitions.js'
@@ -313,6 +313,101 @@ test.describe('Filter by option and price', () => {
       'Género (genero)': ['men 0', 'women 0'],
       'Color (option.Color)': ['Negro 0', 'Blanco 0'],
       'Talla (option.Talla)': ['9 0', '10 0', '11 0'],
+    })
+  })
+})
+
+test.describe('Search', () => {
+  /**
+   * The titles leave the brand out, as an imported catalogue's often do, so only the brand says a
+   * pair is a Jordan. The list and its filters search alike, so each journey reads both.
+   */
+  const createCatalogue = async (service: Fixtures['service']) => {
+    await service.create.metafieldDefinitions(api.container, [
+      { key: 'marca', name: 'Marca', filterable: true, source: 'vendor' },
+    ])
+    const product = async (title: string, brand: string) => {
+      const { product } = await service.create.product(api.container, { title, brand, status: 'published' })
+      const [variant] = await service.create.productVariants(api.container, product.id)
+      if (!variant) throw new Error('Expected a variant')
+      await service.create.variantPrices(api.container, [variant.id])
+      return product
+    }
+    return {
+      retro: await product('Retro 1 Negro', 'Jordan'),
+      dunk: await product('Dunk Low Blanco', 'Nike'),
+    }
+  }
+
+  const searchOf = async (query: string) => {
+    const [list, filters] = await Promise.all([
+      api.get<typeof productRoutes.GetOutput>(`/store/products?${query}`),
+      api.get<typeof productFilterRoutes.GetOutput>(`/store/product-filters?${query}`),
+    ])
+    return {
+      ids: list.body.products.map((item) => item.id),
+      correctedQuery: list.body.correctedQuery,
+      brands: filters.body.filters
+        .find((filter) => filter.key === 'marca')
+        ?.values.map(({ value, count }) => `${value} ${count}`),
+      filtersCorrectedQuery: filters.body.correctedQuery,
+    }
+  }
+
+  test('a search word matches the brand, ignoring case, though no title holds it', async ({ expect, service }) => {
+    const { retro } = await createCatalogue(service)
+
+    expect(await searchOf('q=JORDAN')).toEqual({
+      ids: [retro.id],
+      correctedQuery: null,
+      brands: ['Jordan 1'],
+      filtersCorrectedQuery: null,
+    })
+  })
+
+  test('every search word must match, each in the title or the brand', async ({ expect, service }) => {
+    const { retro } = await createCatalogue(service)
+
+    expect(await searchOf('q=jordan%20negro')).toEqual({
+      ids: [retro.id],
+      correctedQuery: null,
+      brands: ['Jordan 1'],
+      filtersCorrectedQuery: null,
+    })
+    // Each word is held somewhere, so nothing is corrected: the pair is just not in white.
+    expect(await searchOf('q=jordan%20blanco')).toEqual({
+      ids: [],
+      correctedQuery: null,
+      brands: [],
+      filtersCorrectedQuery: null,
+    })
+  })
+
+  test('a misspelt brand is corrected to the brand, and the words already held stay', async ({ expect, service }) => {
+    const { retro } = await createCatalogue(service)
+
+    expect(await searchOf('q=jordna%20Negro')).toEqual({
+      ids: [retro.id],
+      correctedQuery: 'jordan Negro',
+      brands: ['Jordan 1'],
+      filtersCorrectedQuery: 'jordan Negro',
+    })
+  })
+
+  test('exact searches the term as typed', async ({ expect, service }) => {
+    const { retro } = await createCatalogue(service)
+
+    expect(await searchOf('q=jordna&exact=true')).toEqual({
+      ids: [],
+      correctedQuery: null,
+      brands: [],
+      filtersCorrectedQuery: null,
+    })
+    expect(await searchOf('q=jordan&exact=true')).toEqual({
+      ids: [retro.id],
+      correctedQuery: null,
+      brands: ['Jordan 1'],
+      filtersCorrectedQuery: null,
     })
   })
 })

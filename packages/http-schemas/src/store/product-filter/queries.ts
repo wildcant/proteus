@@ -7,6 +7,7 @@ import { StoreProductListParams } from '../product/queries.js'
  */
 export const StoreProductFilterListParams = StoreProductListParams.pick({
   q: true,
+  exact: true,
   category: true,
   collection: true,
   tag: true,

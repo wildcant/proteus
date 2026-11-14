@@ -8,6 +8,7 @@
 
 export type ListStoreProductFiltersParams = {
 q?: string;
+exact?: boolean | string;
 /**
  * @minLength 1
  */

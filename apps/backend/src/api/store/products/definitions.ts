@@ -1,6 +1,5 @@
 import type { RouteDefinition } from '@framework/http/types.js'
-import { searchable, Tags } from '@framework/http/types.js'
-import type { ProductDTO } from '../../../core/types/product/common.js'
+import { Tags } from '@framework/http/types.js'
 import * as productByHandleRoutes from './[handle]/route.js'
 import * as productRoutes from './route.js'
 
@@ -12,7 +11,6 @@ export default [
     auth: 'public',
     middlewares: productRoutes.GetMiddlewares,
     input: productRoutes.GetInput,
-    searchableColumns: searchable<ProductDTO>('title'),
     operationId: 'listStoreProducts',
     summary: 'List published products',
     tags: [Tags.PRODUCTS],

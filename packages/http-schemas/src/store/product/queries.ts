@@ -6,7 +6,13 @@ import { createFindParams, type FindParams } from '../../common.js'
 const metafieldSelection = z.string().regex(/^[^:]+:.+$/s, i18n.t('Write a filter as key:value'))
 
 export const StoreProductListParams = createFindParams().extend({
+  /** Each word matches a product's title or brand, ignoring case; a product must match every word. */
   q: z.string().optional(),
+  /**
+   * Searches `q` as written. Without it, a `q` that matches nothing is searched as its closest spelling
+   * among the titles and brands in view, and the response names it in `correctedQuery`.
+   */
+  exact: z.union([z.boolean(), z.string().transform((value) => value === 'true')]).optional(),
   /** A Category's handle. Lists its products and its Visible descendants'; a hidden Category matches nothing. */
   category: z.string().min(1).optional(),
   /** A Collection's handle. Lists its members; an unknown or deleted Collection matches nothing. */

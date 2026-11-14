@@ -19,6 +19,7 @@ offset?: number | null;
 limit?: number;
 order?: string;
 q?: string;
+exact?: boolean | string;
 /**
  * @minLength 1
  */
