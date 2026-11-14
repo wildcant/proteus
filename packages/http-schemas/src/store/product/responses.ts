@@ -24,6 +24,8 @@ export const StoreProductResponse = z
       pickerTargets: z.record(z.string(), z.record(z.string(), z.string().nullable())),
       /** The fields holding a value, in the structure file's order: what a product-data list shows. */
       fields: z.array(StoreProductField),
+      /** The line under the title, the list card's `card.subline` template filled in; `null` for none. */
+      subline: z.string().nullable(),
     }),
   })
   .openapi('StoreProductResponse')

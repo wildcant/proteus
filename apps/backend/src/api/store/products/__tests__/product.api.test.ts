@@ -161,6 +161,37 @@ fields:
       { key: 'tipo', name: 'Tipo', values: ['Tenis'] },
       { key: 'color', name: 'Color', values: ['Negro', 'Crema'] },
     ])
+    // The file draws no card, so there is no line under the title either.
+    expect(response.body.product.subline).toBeNull()
+  })
+
+  test('the line under the title is the list card’s subline, from the same template', async ({ expect, service }) => {
+    await applyStructure(`
+fields:
+  - { name: Género, key: genero }
+  - { name: Estilo, key: estilo }
+categories:
+  - { name: Hombre, handle: hombre, rule: { genero: [men] } }
+card:
+  subline: "{type} para {genero|lower} · {estilo}"
+`)
+    const sneakers = await service.create.productType(api.container, { value: 'Tenis' })
+    const { product } = await service.create.product(api.container, {
+      status: 'published',
+      typeId: sneakers.id,
+      metafields: { genero: ['men'], estilo: ['altos'] },
+    })
+    const variants = await service.create.productVariants(api.container, product.id)
+    await service.create.variantPrices(
+      api.container,
+      variants.map((variant) => variant.id),
+    )
+
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
+
+    expect(response.status).toBe(200)
+    // `{type}` as written, the gender by its Category's name and lowered, the style capitalised: as the card says it.
+    expect(response.body.product.subline).toBe('Tenis para hombre · Altos')
   })
 })
 
