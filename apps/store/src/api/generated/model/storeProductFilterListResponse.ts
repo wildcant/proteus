@@ -9,4 +9,6 @@ import type { StoreProductFilter } from './storeProductFilter.ts';
 
 export interface StoreProductFilterListResponse {
   filters: StoreProductFilter[];
+  /** @nullable */
+  correctedQuery: string | null;
 }

@@ -18,6 +18,10 @@ export const StoreProductFilter = z
  * current selection is still listed, at 0, so it can show as unavailable rather than vanish.
  */
 export const StoreProductFilterListResponse = z
-  .object({ filters: z.array(StoreProductFilter) })
+  .object({
+    filters: z.array(StoreProductFilter),
+    /** As on `GET /store/products`: the search the counts were taken for, when `q` matched nothing. */
+    correctedQuery: z.string().nullable(),
+  })
   .openapi('StoreProductFilterListResponse')
 export type StoreProductFilterListResponse = z.input<typeof StoreProductFilterListResponse>

@@ -314,6 +314,12 @@ export type IProductModuleService = {
    */
   listProductFilters(filters: FilterableProductProps, context?: Context): Promise<ProductFilterDTO[]>
   /**
+   * The closest spelling of `q` that the titles and brands of the products matching `filters` hold:
+   * each word no title or brand contains is swapped for the most similar of their words, when one is
+   * similar enough. `null` when no word changes.
+   */
+  correctProductSearch(q: string, filters: FilterableProductProps, context?: Context): Promise<string | null>
+  /**
    * The distinct values of the field `key` — a metafield, or the brand for the vendor field, filterable
    * or not — on the products matching `filters`, sorted. Empty for a key no definition has.
    */

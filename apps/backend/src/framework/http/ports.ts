@@ -17,6 +17,8 @@ type InferQuery<T> = T extends ZodSchema
         order?: Record<string, 'ASC' | 'DESC'>
       }
       filters: Omit<T['_zod']['output'], 'offset' | 'limit' | 'order' | 'q'>
+      /** The search as given, for a route that does more with it than `searchableColumns` filters. */
+      q: T['_zod']['output'] extends { q?: infer Q } ? Q : undefined
     }
   : T
 

@@ -2174,10 +2174,17 @@
             "items": {
               "$ref": "#/components/schemas/StoreProductFilter"
             }
+          },
+          "correctedQuery": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
-          "filters"
+          "filters",
+          "correctedQuery"
         ]
       },
       "StoreProductFilter": {
@@ -2248,13 +2255,20 @@
             "items": {
               "$ref": "#/components/schemas/StoreProductListItem"
             }
+          },
+          "correctedQuery": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
           "count",
           "offset",
           "limit",
-          "products"
+          "products",
+          "correctedQuery"
         ]
       },
       "StoreProductListItem": {
@@ -4611,6 +4625,21 @@
           },
           {
             "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": false,
+            "name": "exact",
+            "in": "query"
+          },
+          {
+            "schema": {
               "type": "string",
               "minLength": 1
             },
@@ -4855,6 +4884,21 @@
             },
             "required": false,
             "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "required": false,
+            "name": "exact",
             "in": "query"
           },
           {

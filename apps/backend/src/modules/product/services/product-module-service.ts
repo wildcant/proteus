@@ -84,6 +84,7 @@ import type {
   VariantImageInput,
 } from '../../../core/types/product/mutations.js'
 import type { IProductModuleService } from '../../../core/types/product/service.js'
+import { buildSearchFilter, PRODUCT_SEARCH_COLUMNS } from '../../../core/utils/build-search-filter.js'
 import { OPTION_FILTER_PREFIX } from '../../../core/utils/product-filter-key.js'
 import { toHandle } from '../../../core/utils/to-handle.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
@@ -115,6 +116,13 @@ import { ProductGroupingService } from './product-grouping-service.js'
 import { ProductImportService } from './product-import-service.js'
 import { ProductOptionService } from './product-option-service.js'
 import { ProductRuleMembershipService } from './product-rule-membership-service.js'
+
+/**
+ * How alike a misspelt search word and a title or brand word must be, as `pg_trgm` scores it, before
+ * the word is corrected to it. Postgres' own default for the `%` operator: "adidsa" reaches `adidas`,
+ * while a word sharing only a letter or two with every title stays as typed.
+ */
+const SEARCH_CORRECTION_SIMILARITY = 0.3
 
 /**
  * Everything the module is built from. The five option repositories are not used here — they are
@@ -990,6 +998,31 @@ export class ProductModuleService implements IProductModuleService {
       values: await this.productRepository.findOptionValueCounts(option, filters, context),
     }))
     return Promise.all([...metafieldFilters, ...optionFilters])
+  }
+
+  async correctProductSearch(q: string, filters: FilterableProductProps, context?: Context): Promise<string | null> {
+    const words = q.trim().split(/\s+/).filter(Boolean)
+    const corrected = await Promise.all(
+      words.map(async (word) => {
+        // A word some title or brand already holds is the shopper's own, even when the words together
+        // match nothing: correcting it would answer a different question than the one asked.
+        const [holder] = await this.productRepository.find(
+          { ...filters, ...buildSearchFilter(word, PRODUCT_SEARCH_COLUMNS) },
+          { select: ['id'], limit: 1 },
+          context,
+        )
+        if (holder) return word
+        const closest = await this.productRepository.findClosestSearchWord(
+          word.toLowerCase(),
+          filters,
+          SEARCH_CORRECTION_SIMILARITY,
+          context,
+        )
+        return closest ?? word
+      }),
+    )
+    const correctedQuery = corrected.join(' ')
+    return correctedQuery === words.join(' ') ? null : correctedQuery
   }
 
   async listProductFieldValues(key: string, filters: FilterableProductProps, context?: Context): Promise<string[]> {
