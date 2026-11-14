@@ -1,4 +1,4 @@
-import type { StoreCardDTO, StoreNavigationEntryDTO, StoreSearchDTO } from './common.js'
+import type { StoreCardDTO, StoreNavigationEntryDTO, StoreRelatedMatchDTO, StoreSearchDTO } from './common.js'
 
 type CreateStoreCurrencyDTO = {
   currencyCode: string
@@ -22,5 +22,6 @@ export type UpdateStoreDTO = {
   search?: StoreSearchDTO
   filters?: string[] | null
   card?: StoreCardDTO
+  related?: StoreRelatedMatchDTO[] | null
   metadata?: string | null
 }

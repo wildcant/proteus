@@ -1070,6 +1070,103 @@ test.describe('GET /store/products/:handle across markets', () => {
   })
 })
 
+test.describe('GET /store/products similarTo', () => {
+  test('a product page’s related row ranks the products sharing most of what the store relates them by, buyable ones only on request, by default the Category, the type and the brand', async ({
+    expect,
+    service,
+  }) => {
+    const fields = `
+fields:
+  - { name: Modelo, key: modelo }
+  - { name: Estilo, key: estilo }
+  - { name: Género, key: genero }
+categories:
+  - { name: Hombre, handle: hombre, rule: { genero: [men] } }
+  - { name: Mujer, handle: mujer, rule: { genero: [women] } }
+`
+    await applyStructure(fields)
+    const colour = await createOption(service, 'Color', ['Negro y Crema', 'Negro Cemento', 'Blanco'], null, [
+      { name: 'Negro', words: ['negro'] },
+      { name: 'Blanco', words: ['blanco'] },
+    ])
+    const sneakers = await service.create.productType(api.container, { value: 'Tenis' })
+    const pair = async (
+      title: string,
+      fields: { brand?: string; typeId?: string; metafields: Record<string, string[]> },
+      colourValue: string,
+      { stocked = 3, priced = true } = {},
+    ) => {
+      const { product } = await service.create.product(api.container, { title, status: 'published', ...fields })
+      await service.update.productOptions(api.container, product.id, {
+        options: [{ optionId: colour.id, valueIds: [colour.idOf(colourValue)] }],
+      })
+      const [variant] = await service.create.productVariants(api.container, product.id, [
+        { optionValues: { [colour.id]: colour.idOf(colourValue) } },
+      ])
+      if (!variant) throw new Error('Expected a variant')
+      if (priced) await service.create.variantPrices(api.container, [variant.id])
+      await service.create.variantStock(api.container, { variantId: variant.id, level: { stockedQuantity: stocked } })
+      return product
+    }
+    const retro = await pair(
+      'Retro 3 Negro y Crema',
+      { brand: 'Jordan', typeId: sneakers.id, metafields: { modelo: ['retro-3'], estilo: ['altos'], genero: ['men'] } },
+      'Negro y Crema',
+    )
+    // Created in the reverse of every ranking below, so neither can pass by coming back newest first.
+    const sameModel = await pair(
+      'Retro 3 Blanco Rosa',
+      { brand: 'jordan', typeId: sneakers.id, metafields: { modelo: ['retro-3'], genero: ['women'] } },
+      'Blanco',
+    )
+    const sameStyle = await pair(
+      'Bota Clásica',
+      { typeId: sneakers.id, metafields: { estilo: ['altos'], genero: ['men'] } },
+      'Blanco',
+      { stocked: 0 },
+    )
+    const sameColour = await pair('Samba Negro', { typeId: sneakers.id, metafields: {} }, 'Negro Cemento')
+    await pair('Sandalia', { metafields: { estilo: ['playa'], genero: ['women'] } }, 'Blanco')
+    // The market cannot price it, so however alike it is, the row never shows it.
+    await pair(
+      'Retro 3 Rojo',
+      { brand: 'Jordan', typeId: sneakers.id, metafields: { modelo: ['retro-3'], genero: ['men'] } },
+      'Negro Cemento',
+      { priced: false },
+    )
+
+    const relatedTo = async (query: string) => {
+      const response = await api.get<typeof productRoutes.GetOutput>(
+        `/store/products?similarTo=${retro.handle}${query}`,
+      )
+      expect(response.status).toBe(200)
+      return { ids: response.body.products.map((item) => item.id), count: response.body.count }
+    }
+
+    // No `related` in the file: the shared Category is worth 2, the type and the brand (ignoring case) 1
+    // each. The sandal shares none and the product never relates to itself.
+    expect(await relatedTo('')).toEqual({ ids: [sameStyle.id, sameModel.id, sameColour.id], count: 3 })
+
+    await applyStructure(`${fields}
+related:
+  - { key: modelo, weight: 4 }
+  - { key: estilo, weight: 2 }
+  - { key: category, weight: 1 }
+  - { key: option.Color, weight: 1 }
+`)
+    // The model 4; the style and the Category 3; a colour in the same bucket, though not the same value, 1.
+    expect(await relatedTo('')).toEqual({ ids: [sameModel.id, sameStyle.id, sameColour.id], count: 3 })
+    // Only what a shopper can buy now: the sold-out boots go, and the count with them.
+    expect(await relatedTo('&available=true')).toEqual({ ids: [sameModel.id, sameColour.id], count: 2 })
+    // The list's own filters still narrow it, and the page is cut after the ranking.
+    expect(await relatedTo('&filter=genero:women')).toEqual({ ids: [sameModel.id], count: 1 })
+    expect(await relatedTo('&limit=1&offset=1')).toEqual({ ids: [sameStyle.id], count: 3 })
+    // An unknown handle relates to nothing.
+    const unknown = await api.get<typeof productRoutes.GetOutput>('/store/products?similarTo=no-such-pair')
+    expect(unknown.body).toMatchObject({ products: [], count: 0 })
+  })
+})
+
 async function applyStructure(text: string) {
   const upload = await api.request
     .post('/admin/uploads')

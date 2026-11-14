@@ -1,7 +1,12 @@
 import { sql } from 'drizzle-orm'
 import { integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { timestamps } from '../../../core/db/columns.js'
-import type { StoreCardDTO, StoreNavigationEntryDTO, StoreSearchDTO } from '../../../core/types/store/common.js'
+import type {
+  StoreCardDTO,
+  StoreNavigationEntryDTO,
+  StoreRelatedMatchDTO,
+  StoreSearchDTO,
+} from '../../../core/types/store/common.js'
 
 export const storeTable = pgTable('store', {
   id: text().primaryKey().default(sql`CONCAT('store_', REPLACE(gen_random_uuid()::text, '-', ''))`),
@@ -27,6 +32,8 @@ export const storeTable = pgTable('store', {
   filters: jsonb().$type<string[]>(),
   /** The structure file's `card`: the list card's subline template and the separator of a field's values. */
   card: jsonb().$type<StoreCardDTO>().default({ subline: null, listSeparator: ', ' }).notNull(),
+  /** The structure file's `related`: how the product page relates products; `null` relates them by the default match. */
+  related: jsonb().$type<StoreRelatedMatchDTO[]>(),
   metadata: text(),
   ...timestamps,
 })

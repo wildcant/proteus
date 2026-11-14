@@ -17,6 +17,8 @@ export { productProductOptionTable } from '../modules/product/models/product-pro
 export { productProductOptionValueTable } from '../modules/product/models/product-product-option-value.js'
 export { productVariantTable } from '../modules/product/models/product-variant.js'
 export { productVariantOptionTable } from '../modules/product/models/product-variant-option.js'
+// Not a table either: how alike two products are, which the listing ranks related products by.
+export { productIdByHandle, productSimilarity } from '../modules/product/utils/product-similarity.js'
 // Not a table: the product list's WHERE, so a cross-module listing narrows exactly as the list does.
 export {
   optionFilterValue,

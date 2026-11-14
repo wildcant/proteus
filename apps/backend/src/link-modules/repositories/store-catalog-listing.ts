@@ -20,12 +20,14 @@ import {
   optionValueBucket,
   optionValueInBucket,
   priceTable,
+  productIdByHandle,
   productOptionBucketTable,
   productOptionTable,
   productOptionValueBucketTable,
   productOptionValueTable,
   productProductOptionTable,
   productProductOptionValueTable,
+  productSimilarity,
   productTable,
   productVariantOptionTable,
   productVariantTable,
@@ -85,7 +87,8 @@ export class StoreCatalogListingRepository {
    * Every product published with a variant priced in the market, narrowed by the product filters,
    * the search, and the price range (any one priced variant inside it). The
    * starting price is the cheapest priced variant's; whether the product can be bought is read for
-   * the page only, after the cut, since a card the shopper will never reach needs no stock.
+   * the page only, after the cut, since a card the shopper will never reach needs no stock — unless
+   * `purchasableOnly` asks for buyable products alone. `similarTo` ranks by likeness to one product first.
    *
    * Every order ends newest first and then by id, so rows the order cannot tell apart keep one total
    * order and an offset pager never repeats a row across pages.
@@ -95,8 +98,8 @@ export class StoreCatalogListingRepository {
     context?: Context,
   ): Promise<{ rows: StoreListedProductDTO[]; count: number }> {
     const client = this.getClient(context)
-    const { sort, limit, offset, search } = options
-    const order = this.listOrder(sort, search)
+    const { limit, offset } = options
+    const order = this.rankedOrder(options)
 
     const listed = sql`
       SELECT ${productTable.id} AS product_id,
@@ -105,7 +108,7 @@ export class StoreCatalogListingRepository {
         COUNT(*) OVER () AS total
       FROM ${productTable}
       JOIN (${this.pricedVariants(options.currencyCode)}) priced_variant ON priced_variant.product_id = ${productTable.id}
-      WHERE ${this.scopeWhere(options.products, options.search)}
+      WHERE ${this.listWhere(options)}
       GROUP BY ${productTable.id}
       ${this.inPriceRange(options.priceRange)}
       ORDER BY ${order}
@@ -118,12 +121,7 @@ export class StoreCatalogListingRepository {
       total: string
     }>(sql`
       SELECT page.product_id AS "productId", page.starting_price_set_id AS "startingPriceSetId", page.total,
-        EXISTS (
-          SELECT 1 FROM (${this.pricedVariants(options.currencyCode)}) priced_variant
-          LEFT JOIN LATERAL (${this.stockedVariants(sql`priced_variant.variant_id`)}) stocked_variant ON TRUE
-          WHERE priced_variant.product_id = page.product_id
-            AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}
-        ) AS purchasable
+        ${this.hasPurchasableVariant(options.currencyCode, sql`page.product_id`)} AS purchasable
       FROM (${listed}) page
       ORDER BY page.ordinal`)
 
@@ -195,7 +193,7 @@ export class StoreCatalogListingRepository {
         SELECT ${productTable.id}
         FROM ${productTable}
         JOIN (${this.pricedVariants(options.currencyCode)}) priced_variant ON priced_variant.product_id = ${productTable.id}
-        WHERE ${this.scopeWhere(options.products, options.search)}
+        WHERE ${this.listWhere(options)}
         GROUP BY ${productTable.id}
         ${this.inPriceRange(options.priceRange)}
       ) listed`)
@@ -224,6 +222,38 @@ export class StoreCatalogListingRepository {
     const above = minPrice === undefined ? sql`TRUE` : sql`priced_variant.amount >= ${minPrice}`
     const below = maxPrice === undefined ? sql`TRUE` : sql`priced_variant.amount <= ${maxPrice}`
     return sql`HAVING bool_or(${above} AND ${below})`
+  }
+
+  /**
+   * The list's scope, narrowed by what only the list asks: a product like `similarTo` (sharing at least
+   * one match, and not the product itself), and one a shopper can buy now.
+   */
+  private listWhere(options: ListStoreProductsOptions): SQL {
+    const parts = [this.scopeWhere(options.products, options.search)]
+    if (options.similarTo) {
+      const sourceId = productIdByHandle(options.similarTo.handle)
+      parts.push(sql`${productTable.id} IS DISTINCT FROM ${sourceId}`)
+      parts.push(sql`${productSimilarity(sourceId, options.similarTo.match)} > 0`)
+    }
+    if (options.purchasableOnly) parts.push(this.hasPurchasableVariant(options.currencyCode, sql`${productTable.id}`))
+    return sql.join(parts, sql` AND `)
+  }
+
+  /** Some variant of `productId` priced in `currencyCode` can be bought now. */
+  private hasPurchasableVariant(currencyCode: string, productId: SQL): SQL {
+    return sql`EXISTS (
+      SELECT 1 FROM (${this.pricedVariants(currencyCode)}) priced_variant
+      LEFT JOIN LATERAL (${this.stockedVariants(sql`priced_variant.variant_id`)}) stocked_variant ON TRUE
+      WHERE priced_variant.product_id = ${productId}
+        AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}
+    )`
+  }
+
+  /** The list's order, after the likeness to `similarTo` when there is one. */
+  private rankedOrder({ sort, search, similarTo }: ListStoreProductsOptions): SQL {
+    const order = this.listOrder(sort, search)
+    if (!similarTo) return order
+    return sql`${productSimilarity(productIdByHandle(similarTo.handle), similarTo.match)} DESC, ${order}`
   }
 
   /** The product list's scope: published, the product filters and the search. */
