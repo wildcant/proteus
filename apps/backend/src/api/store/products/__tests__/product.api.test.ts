@@ -125,6 +125,45 @@ test.describe('GET /store/products/:handle', () => {
   })
 })
 
+test.describe('GET /store/products/:handle fields', () => {
+  test('a product page lists the fields holding a value, in the structure file’s order, the brand and type among them by their source', async ({
+    expect,
+    service,
+  }) => {
+    await applyStructure(`
+fields:
+  - { name: Marca, key: marca, source: vendor }
+  - { name: Modelo, key: modelo }
+  - { name: Material, key: material }
+  - { name: Tipo, key: tipo, source: type }
+  - { name: Color, key: color }
+`)
+    const sneakers = await service.create.productType(api.container, { value: 'Tenis' })
+    const { product } = await service.create.product(api.container, {
+      status: 'published',
+      brand: 'Jordan',
+      typeId: sneakers.id,
+      metafields: { modelo: ['Retro 3'], color: ['Negro', 'Crema'] },
+    })
+    const variants = await service.create.productVariants(api.container, product.id)
+    await service.create.variantPrices(
+      api.container,
+      variants.map((variant) => variant.id),
+    )
+
+    const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
+
+    expect(response.status).toBe(200)
+    // Material holds nothing and is left out; Color keeps its values in their written order.
+    expect(response.body.product.fields).toEqual([
+      { key: 'marca', name: 'Marca', values: ['Jordan'] },
+      { key: 'modelo', name: 'Modelo', values: ['Retro 3'] },
+      { key: 'tipo', name: 'Tipo', values: ['Tenis'] },
+      { key: 'color', name: 'Color', values: ['Negro', 'Crema'] },
+    ])
+  })
+})
+
 test.describe('GET /store/products/:handle options', () => {
   /**
    * A product offering Size (S/M) then Colour (Red), with one priced variant per size so the

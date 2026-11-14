@@ -96,6 +96,7 @@ export * from './storeProductCategoryTreeNode.ts';
 export * from './storeProductCategoryTreeResponse.ts';
 export * from './storeProductCollection.ts';
 export * from './storeProductCollectionListResponse.ts';
+export * from './storeProductField.ts';
 export * from './storeProductFilter.ts';
 export * from './storeProductFilterListResponse.ts';
 export * from './storeProductFilterValue.ts';

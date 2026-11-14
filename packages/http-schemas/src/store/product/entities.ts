@@ -35,6 +35,19 @@ export const StoreProductScopedOptionValue = z
 export type StoreProductScopedOptionValue = z.infer<typeof StoreProductScopedOptionValue>
 
 /**
+ * One of the product's fields, as the structure file declares them: a metafield, or the brand or Product Type when
+ * the field is sourced from them. `values` in their written order.
+ */
+export const StoreProductField = z
+  .object({
+    key: z.string(),
+    name: z.string(),
+    values: z.array(z.string()),
+  })
+  .openapi('StoreProductField')
+export type StoreProductField = z.infer<typeof StoreProductField>
+
+/**
  * A Product Option as this product offers it: only the values it sells, in its own display order.
  * The storefront never sees the global option, so this is the only shape it knows.
  */

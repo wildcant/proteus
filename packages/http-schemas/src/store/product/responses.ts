@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import {
   StoreProduct,
+  StoreProductField,
   StoreProductImage,
   StoreProductListItem,
   StoreProductScopedOption,
@@ -21,6 +22,8 @@ export const StoreProductResponse = z
        * selected when its target is the variant itself.
        */
       pickerTargets: z.record(z.string(), z.record(z.string(), z.string().nullable())),
+      /** The fields holding a value, in the structure file's order: what a product-data list shows. */
+      fields: z.array(StoreProductField),
     }),
   })
   .openapi('StoreProductResponse')

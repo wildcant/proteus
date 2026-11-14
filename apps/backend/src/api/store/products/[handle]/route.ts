@@ -41,11 +41,19 @@ export const GET = async (
     })
   }
 
-  const [variants, images, options] = await Promise.all([
+  const [variants, images, options, definitions, fieldValuesByProductId] = await Promise.all([
     productService.listProductVariants({ productId: product.id }),
     productService.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } }),
     productService.listProductOptionsForProduct(product.id),
+    productService.listMetafieldDefinitions(),
+    productService.listFieldValuesOfProducts([product.id]),
   ])
+  // The definitions come in the structure file's order; a field the product holds nothing under is left out.
+  const fieldValues = fieldValuesByProductId[product.id] ?? {}
+  const fields = definitions.flatMap(({ key, name }) => {
+    const values = fieldValues[key] ?? []
+    return values.length > 0 ? [{ key, name, values }] : []
+  })
 
   const variantIds = variants.map((variant) => variant.id)
   const [links, variantImages, optionValuesByVariantId, inventoryLinks] = await Promise.all([
@@ -136,7 +144,14 @@ export const GET = async (
   return {
     status: 200,
     json: {
-      product: { ...product, images, options: optionsForResponse, variants: variantsForResponse, pickerTargets },
+      product: {
+        ...product,
+        images,
+        options: optionsForResponse,
+        variants: variantsForResponse,
+        pickerTargets,
+        fields,
+      },
     },
   }
 }

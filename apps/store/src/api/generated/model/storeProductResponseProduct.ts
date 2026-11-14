@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreProduct } from './storeProduct.ts';
+import type { StoreProductField } from './storeProductField.ts';
 import type { StoreProductImage } from './storeProductImage.ts';
 import type { StoreProductResponseProductPickerTargets } from './storeProductResponseProductPickerTargets.ts';
 import type { StoreProductScopedOption } from './storeProductScopedOption.ts';
@@ -16,4 +17,5 @@ export type StoreProductResponseProduct = StoreProduct & {
   options: StoreProductScopedOption[];
   variants: StoreProductVariant[];
   pickerTargets: StoreProductResponseProductPickerTargets;
+  fields: StoreProductField[];
 };
