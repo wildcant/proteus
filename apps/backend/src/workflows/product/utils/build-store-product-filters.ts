@@ -1,6 +1,4 @@
-import type { BigNumber } from '@core/bignumber.js'
-import type { CalculatedPriceSetDTO } from '@core/types/pricing/common.js'
-import type { ProductCategoryDTO, ProductFilterDTO, VariantOptionLabelDTO } from '@core/types/product/common.js'
+import type { ProductCategoryDTO, ProductFilterDTO } from '@core/types/product/common.js'
 import { OPTION_FILTER_PREFIX } from '@core/utils/product-filter-key.js'
 import { buildFieldValueLabel, findNamingCategory } from './build-field-value-label.js'
 
@@ -19,13 +17,13 @@ type StoreProductFilterShape = {
 
 /**
  * The filters as the storefront draws them. An option's value is sold out when no variant carrying
- * it can be bought — `inStockLabels` are the option values of the variants in view that can. A field
+ * it can be bought — `inStockLabels` are the option values some purchasable variant in view carries. A field
  * value reads as the Category that names it, in that Category's place; a brand's or an option's
  * reads as itself, in the order the filter came in.
  */
 export function buildStoreProductFilters(
   filters: ProductFilterDTO[],
-  inStockLabels: VariantOptionLabelDTO[],
+  inStockLabels: Array<{ optionTitle: string; value: string }>,
   { namedFieldKeys, categories, colorFilterKey }: StoreProductFilterShape,
 ): StoreProductFilter[] {
   const inStock = new Set(inStockLabels.map((label) => `${OPTION_FILTER_PREFIX}${label.optionTitle}:${label.value}`))
@@ -64,24 +62,4 @@ function swatchKey(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
-}
-
-/** The cheapest and dearest price over `variants`, for the price slider; `null` when none is priced. */
-export function buildPriceBounds(
-  variants: { id: string }[],
-  priceByVariantId: Map<string, CalculatedPriceSetDTO>,
-): { min: BigNumber; max: BigNumber } | null {
-  const amounts = variants.flatMap((variant) => {
-    const amount = priceByVariantId.get(variant.id)?.calculatedAmount
-    return amount ? [amount] : []
-  })
-  const [first] = amounts
-  if (!first) return null
-  return amounts.reduce(
-    (bounds, amount) => ({
-      min: amount.isLessThan(bounds.min) ? amount : bounds.min,
-      max: amount.isGreaterThan(bounds.max) ? amount : bounds.max,
-    }),
-    { min: first, max: first },
-  )
 }

@@ -16,10 +16,12 @@ import type { OrderPaymentCollectionRepository } from '../repositories/order-pay
 import type { ProductVariantInventoryItemRepository } from '../repositories/product-variant-inventory-item.js'
 import type { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
 import type { RegionPaymentProviderRepository } from '../repositories/region-payment-provider.js'
+import type { StoreCatalogListingRepository } from '../repositories/store-catalog-listing.js'
 
 export type LinkRepositoryMap = {
   productVariantInventoryItem: ProductVariantInventoryItemRepository
   cartProduct: CartProductRepository
+  storeCatalogListing: StoreCatalogListingRepository
   cartPaymentCollection: CartPaymentCollectionRepository
   inviteRole: InviteRoleRepository
   productVariantPriceSet: ProductVariantPriceSetRepository
@@ -60,6 +62,7 @@ export class LinkService {
   constructor({
     productVariantInventoryItem,
     cartProduct,
+    storeCatalogListing,
     cartPaymentCollection,
     inviteRole,
     productVariantPriceSet,
@@ -73,6 +76,7 @@ export class LinkService {
     this.repositories = {
       productVariantInventoryItem,
       cartProduct,
+      storeCatalogListing,
       cartPaymentCollection,
       inviteRole,
       productVariantPriceSet,

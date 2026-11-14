@@ -11,6 +11,7 @@ import type {
   IProductVariantInventoryItemRepository,
   IProductVariantPriceSetRepository,
   IRegionPaymentProviderRepository,
+  IStoreCatalogListingRepository,
   OrderCartDTO,
   OrderFulfillmentDTO,
   OrderPaymentCollectionDTO,
@@ -21,6 +22,7 @@ import type {
 
 type ILinkRepositoryMap = {
   cartProduct: ICartProductRepository
+  storeCatalogListing: IStoreCatalogListingRepository
 
   // Writable.
   productVariantInventoryItem: IProductVariantInventoryItemRepository

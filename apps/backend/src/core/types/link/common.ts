@@ -1,5 +1,7 @@
+import type { SQL } from 'drizzle-orm'
 import type { BigNumber } from '../../bignumber.js'
 import type { Context } from '../context.js'
+import type { FilterableProductProps } from '../product/common.js'
 
 export type ProductVariantInventoryItemDTO = {
   id: string
@@ -197,4 +199,82 @@ export type IInviteRoleRepository = {
   create(data: Partial<InviteRoleDTO>, context?: Context): Promise<InviteRoleDTO>
   createMany(data: Partial<InviteRoleDTO>[], context?: Context): Promise<InviteRoleDTO[]>
   softDelete(ids: string[], context?: Context): Promise<void>
+}
+
+/** The orders the store list offers; mirrors `StoreProductSort` in `@proteus/http-schemas`. */
+export type StoreProductSort = 'relevance' | 'newest' | 'priceAsc' | 'priceDesc'
+
+/**
+ * The colour families a list can be narrowed by: each family by name, with the words a colourway of it
+ * holds ("Red" → `['red', 'burgundy']`). A colourway is in a family when one of its words is one of
+ * the family's, as a whole word and ignoring case, so "Black / Red" is in Black and in Red.
+ */
+export type StoreColorFamilies = {
+  /** The product option whose values are colourways. */
+  optionTitle: string
+  families: Record<string, string[]>
+  /** The families the shopper chose. A product with a colourway in any of them is in. */
+  selected: string[]
+}
+
+/** What narrows the store list: the product's own filters, and the ones that read price or colour. */
+export type StoreCatalogFilters = {
+  /** The market's currency: only products with a variant priced in it are listed. */
+  currencyCode: string
+  /** The column and grouping filters, as `listProducts` takes them; the listing adds `published`. */
+  products: FilterableProductProps
+  /** Each word must match the title or the brand, as the product list's `q`. */
+  search?: string
+  /** A product is in when any one priced variant is in the range, either end optional. */
+  priceRange?: { minPrice?: number; maxPrice?: number }
+  colorFamilies?: StoreColorFamilies
+}
+
+export type ListStoreProductsOptions = StoreCatalogFilters & {
+  sort: StoreProductSort
+  limit: number
+  offset: number
+}
+
+/** One listed product: what the list's order and its card read from price and stock. */
+export type StoreListedProductDTO = {
+  productId: string
+  /** The cheapest priced variant's price set, so the card's "from" price is that variant's. */
+  startingPriceSetId: string
+  /** Some priced variant can be bought. */
+  purchasable: boolean
+}
+
+export type ListStoreFacetsOptions = {
+  currencyCode: string
+  /** The list's scope before any selection: which values are offered, and what the price slider spans. */
+  products: FilterableProductProps
+  search?: string
+  /** The selections the colour family counts apply, every one but the families' own. */
+  selections: FilterableProductProps
+  priceRange?: { minPrice?: number; maxPrice?: number }
+  colorFamilies?: StoreColorFamilies
+}
+
+export type StoreFacetsDTO = {
+  /** The cheapest and dearest priced variant in scope; `null` when nothing in scope is priced. */
+  priceBounds: { min: BigNumber; max: BigNumber } | null
+  /** The option values some purchasable priced variant in scope carries: every other one is sold out. */
+  inStockOptionValues: Array<{ optionTitle: string; value: string }>
+  /** Each family with how many products would remain once it is chosen, in `families` order. */
+  colorFamilyCounts: Array<{ family: string; count: number }>
+}
+
+export type IStoreCatalogListingRepository = {
+  /**
+   * The products the store sells in this market — published, with a variant priced in its currency —
+   * as a subquery of product ids, narrowed by `priceRange` and `colorFamilies` when given. For the
+   * product module's reads, as `sellableProductIds` / `selectedProductIds`.
+   */
+  sellableProductIds(filters: Pick<StoreCatalogFilters, 'currencyCode' | 'priceRange' | 'colorFamilies'>): SQL
+  listStoreProducts(
+    options: ListStoreProductsOptions,
+    context?: Context,
+  ): Promise<{ rows: StoreListedProductDTO[]; count: number }>
+  listStoreFacets(options: ListStoreFacetsOptions, context?: Context): Promise<StoreFacetsDTO>
 }

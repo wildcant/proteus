@@ -18,6 +18,7 @@ import { OrderPaymentCollectionRepository } from '../repositories/order-payment-
 import { ProductVariantInventoryItemRepository } from '../repositories/product-variant-inventory-item.js'
 import { ProductVariantPriceSetRepository } from '../repositories/product-variant-price-set.js'
 import { RegionPaymentProviderRepository } from '../repositories/region-payment-provider.js'
+import { StoreCatalogListingRepository } from '../repositories/store-catalog-listing.js'
 import { LinkService } from '../services/link-service.js'
 
 const cascadeGraph = buildCascadeGraph({
@@ -55,6 +56,7 @@ test.beforeEach(({ getDb }) => {
     cartPaymentCollection,
     inviteRole,
     cartProduct,
+    storeCatalogListing: new StoreCatalogListingRepository({ getDb }),
     orderCart,
     orderPaymentCollection,
     orderFulfillment,

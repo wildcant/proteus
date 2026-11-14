@@ -1,3 +1,4 @@
+import type { SQL } from 'drizzle-orm'
 import type { BaseFilterable, OperatorMap } from '../common.js'
 import type { PriceDTO } from '../pricing/common.js'
 import type { StoreNavigationEntryDTO } from '../store/common.js'
@@ -69,11 +70,18 @@ export interface FilterableProductProps extends BaseFilterable<FilterableProduct
    */
   optionValues?: Record<string, string[]>
   /**
-   * The products the shopper's price range keeps, resolved by the caller from pricing. A selection
-   * like `metafields`: a filter count applies it, but it never narrows which values are offered.
+   * The products the store sells in the request's market, as a subquery of product ids
+   * (`storeCatalogListing.sellableProductIds`). Part of the scope: it decides which values are
+   * offered. A subquery rather than an id list, so no caller loads the catalogue to pass it in.
    * Not a column, as `tagId`.
    */
-  pricedProductIds?: string[]
+  sellableProductIds?: SQL
+  /**
+   * The products the shopper's cross-module selections keep — the price range today — as a subquery
+   * of product ids, like `sellableProductIds`. A selection like `metafields`: a filter count applies
+   * it, but it never narrows which values are offered. Not a column, as `tagId`.
+   */
+  selectedProductIds?: SQL
   /** Members of any of the Categories with these handles. Not a column, as `categoryId`. */
   categoryHandle?: string | string[]
   /** Widens `categoryId` / `categoryHandle` to the matched Categories' descendants. */
