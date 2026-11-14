@@ -11,4 +11,6 @@ import type { StoreProductPriceBounds } from './storeProductPriceBounds.ts';
 export interface StoreProductFilterListResponse {
   filters: StoreProductFilter[];
   priceBounds: StoreProductPriceBounds | null;
+  /** @nullable */
+  correctedQuery: string | null;
 }

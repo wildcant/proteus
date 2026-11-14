@@ -51,6 +51,8 @@ export const StoreProductFilterListResponse = z
      * never shrinks the slider it was chosen on. `null` when nothing in view has a price.
      */
     priceBounds: StoreProductPriceBounds.nullable(),
+    /** As on `GET /store/products`: the search the counts were taken for, when `q` matched nothing. */
+    correctedQuery: z.string().nullable(),
   })
   .openapi('StoreProductFilterListResponse')
 export type StoreProductFilterListResponse = z.input<typeof StoreProductFilterListResponse>

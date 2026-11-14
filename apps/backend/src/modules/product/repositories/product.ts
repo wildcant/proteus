@@ -259,6 +259,39 @@ export class ProductRepository extends BaseRepository(productTable) {
     )
   }
 
+  /**
+   * The word of the matched products' titles and brands most like `word` by trigram similarity
+   * (`pg_trgm`), when one scores above `threshold`: the words a search matches, so "jordna" finds the
+   * brand Jordan though no title holds it. Words are lower-cased and split at spaces and punctuation,
+   * so "Air Force 1" offers `air`, `force` and `1`. Ties go to the alphabetically first word, so one
+   * search always corrects the same way.
+   */
+  async findClosestSearchWord(
+    word: string,
+    filters: FilterableProductProps,
+    threshold: number,
+    context?: Context,
+  ): Promise<string | null> {
+    const client = this.getClient(context)
+    const searchWords = client
+      .selectDistinct({
+        word: sql<string>`lower(regexp_split_to_table(concat_ws(' ', ${this.table.title}, ${this.table.brand}), '[[:space:][:punct:]]+'))`.as(
+          'word',
+        ),
+      })
+      .from(this.table)
+      .where(this.buildWhere(filters))
+      .as('search_word')
+    const similarity = sql`similarity(${searchWords.word}, ${word})`
+    const [closest] = await client
+      .select({ word: searchWords.word })
+      .from(searchWords)
+      .where(and(sql`${searchWords.word} <> ''`, sql`${similarity} > ${threshold}`))
+      .orderBy(sql`${similarity} DESC`, asc(searchWords.word))
+      .limit(1)
+    return closest?.word ?? null
+  }
+
   /** The grouping filters: each one an `EXISTS`, ANDed with the column filters and each other. */
   protected override extraWhere(filters?: FilterableProductProps): SQL | undefined {
     if (!filters) return undefined

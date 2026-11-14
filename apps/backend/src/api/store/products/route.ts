@@ -1,3 +1,5 @@
+import type { FilterableProductProps } from '@core/types/product/common.js'
+import { buildSearchFilter, PRODUCT_SEARCH_COLUMNS } from '@core/utils/build-search-filter.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -27,9 +29,9 @@ export const GET = async (
   const storeService = req.scope.resolve(Modules.STORE)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
-  const { pagination, filters } = req.validatedQuery
+  const { pagination, filters, q } = req.validatedQuery
   const { offset, limit } = pagination
-  const { category, collection, tag, filter, minPrice, maxPrice, ...columnFilters } = filters
+  const { category, collection, tag, filter, minPrice, maxPrice, exact, ...columnFilters } = filters
 
   const { variants, priceByVariantId, startingPriceByProductId } = await listSellableProducts(
     req.scope,
@@ -41,17 +43,28 @@ export const GET = async (
 
   // An empty filter array would reach the query builder as `inArray(column, [])`, and a market
   // that can price nothing has no page to draw either way.
-  if (listedProductIds.length === 0) return { status: 200, json: { products: [], count: 0, offset, limit } }
+  if (listedProductIds.length === 0) {
+    return { status: 200, json: { products: [], count: 0, offset, limit, correctedQuery: null } }
+  }
 
-  const [products, count] = await productService.listAndCountProducts(
-    {
-      ...columnFilters,
-      ...buildStoreGroupingFilters({ category, collection, tag, filter }),
-      status: 'published',
-      id: listedProductIds,
-    },
-    pagination,
-  )
+  const listed: FilterableProductProps = {
+    ...columnFilters,
+    ...buildStoreGroupingFilters({ category, collection, tag, filter }),
+    status: 'published',
+    id: listedProductIds,
+  }
+  const searchPage = (search: string | undefined) =>
+    productService.listAndCountProducts(
+      { ...listed, ...(search ? buildSearchFilter(search, PRODUCT_SEARCH_COLUMNS) : {}) },
+      pagination,
+    )
+
+  // A search that matches nothing is run again as its closest spelling, when the titles and brands in
+  // view hold one, so a typo lands on results rather than on an empty page — unless the shopper asked
+  // for `q` as written.
+  const asked = await searchPage(q)
+  const correctedQuery = q && !exact && asked[1] === 0 ? await productService.correctProductSearch(q, listed) : null
+  const [products, count] = correctedQuery ? await searchPage(correctedQuery) : asked
 
   /**
    * The grid's stock answer, at the product's grain: sold out when no variant of it can be bought.
@@ -97,5 +110,5 @@ export const GET = async (
     soldOut: !purchasableProductIds.has(product.id),
   }))
 
-  return { status: 200, json: { products: enrichedProducts, count, offset, limit } }
+  return { status: 200, json: { products: enrichedProducts, count, offset, limit, correctedQuery } }
 }

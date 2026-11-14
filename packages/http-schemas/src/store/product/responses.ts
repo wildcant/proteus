@@ -28,5 +28,10 @@ export type StoreProductResponse = z.input<typeof StoreProductResponse>
 
 export const StoreProductListResponse = PaginatedResponse.extend({
   products: z.array(StoreProductListItem),
+  /**
+   * The search that was run instead of `q`, when `q` matched nothing and a close spelling did:
+   * `products` and `count` are that search's. `null` when `q` was run as given.
+   */
+  correctedQuery: z.string().nullable(),
 }).openapi('StoreProductListResponse')
 export type StoreProductListResponse = z.input<typeof StoreProductListResponse>

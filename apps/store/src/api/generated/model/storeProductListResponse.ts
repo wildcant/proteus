@@ -12,4 +12,6 @@ export interface StoreProductListResponse {
   offset: number;
   limit: number;
   products: StoreProductListItem[];
+  /** @nullable */
+  correctedQuery: string | null;
 }
