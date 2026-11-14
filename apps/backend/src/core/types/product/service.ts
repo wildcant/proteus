@@ -363,7 +363,7 @@ export type IProductModuleService = {
 
   // Structure files
   /**
-   * Reads a structure file (`estructura.yaml`) into a plan: the structure, every error with its
+   * Reads a structure file (`catalog-structure.yaml`) into a plan: the structure, every error with its
    * path, and what applying it would create, update, move and delete. Writes nothing.
    */
   planCatalogStructure(source: AsyncIterable<Uint8Array | string>, context?: Context): Promise<CatalogStructurePlanDTO>

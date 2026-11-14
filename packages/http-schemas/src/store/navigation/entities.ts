@@ -65,3 +65,27 @@ export const StoreNavigationEntry = z
   })
   .openapi('StoreNavigationEntry')
 export type StoreNavigationEntry = z.input<typeof StoreNavigationEntry>
+
+/**
+ * A most-searched model: `label` and the field values it filters the list by, as a menu link's
+ * `filters`; `note`, a short line under it, null for none; `count`, how many published products this
+ * market sells match it; and `thumbnail`, the newest one's photo, null when none has one. A model
+ * nothing matches is not served.
+ */
+export const StoreSearchTrendingLink = z
+  .object({
+    label: z.string(),
+    filters: z.array(StoreNavigationFilter),
+    note: z.string().nullable(),
+    count: z.number().int(),
+    thumbnail: z.string().nullable(),
+  })
+  .openapi('StoreSearchTrendingLink')
+
+/**
+ * What search offers before a term finds anything, as the structure file has it: `popular`, the terms
+ * a search chip runs, and `trending`, the most-searched models. Both empty when the file sets neither.
+ */
+export const StoreSearch = z
+  .object({ popular: z.array(z.string()), trending: z.array(StoreSearchTrendingLink) })
+  .openapi('StoreSearch')

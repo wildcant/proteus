@@ -2861,8 +2861,8 @@ msgid "The file exceeds the maximum file size of {maxSize}."
 msgstr "El archivo supera el tamaño máximo de {maxSize}."
 
 #: src/features/products/components/import-structure/structure-upload-step.tsx:57
-msgid "The file lists the product metafields as <0>campos</0>, then <1>categorias</1> with their <2>hijos</2>, <3>colecciones</3> and the <4>menu</4>. A <5>regla</5> fills a category or collection with the products whose metafields match, and <6>filtro: true</6> offers a metafield as a storefront filter. The file is the source: metafields, categories and collections it leaves out are deleted."
-msgstr "El archivo enumera los metacampos de producto como <0>campos</0>, luego las <1>categorias</1> con sus <2>hijos</2>, las <3>colecciones</3> y el <4>menu</4>. Una <5>regla</5> llena una categoría o colección con los productos cuyos metacampos coinciden, y <6>filtro: true</6> ofrece un metacampo como filtro en la tienda. El archivo manda: los metacampos, categorías y colecciones que no incluye se eliminan."
+msgid "The file lists the product metafields as <0>fields</0>, then <1>categories</1> with their <2>children</2>, <3>collections</3> and the <4>menu</4>. A <5>rule</5> fills a category or collection with the products whose metafields match, and <6>filterable: true</6> offers a metafield as a storefront filter. The file is the source: metafields, categories and collections it leaves out are deleted."
+msgstr "El archivo enumera los metacampos de producto como <0>fields</0>, luego las <1>categories</1> con sus <2>children</2>, las <3>collections</3> y el <4>menu</4>. Una <5>rule</5> llena una categoría o colección con los productos cuyos metacampos coinciden, y <6>filterable: true</6> ofrece un metacampo como filtro en la tienda. El archivo manda: los metacampos, categorías y colecciones que no incluye se eliminan."
 
 #: src/features/collections/components/collection-thumbnail-picker.tsx:28
 msgid "The image exceeds the maximum file size of {maxSize}."

@@ -2,6 +2,7 @@ CREATE TYPE "public"."product_option_render_as" AS ENUM('text', 'swatch');--> st
 CREATE TABLE "product_category" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('pcat_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"name" text NOT NULL,
+	"heading" text,
 	"description" text DEFAULT '' NOT NULL,
 	"handle" text NOT NULL,
 	"parent_id" text,

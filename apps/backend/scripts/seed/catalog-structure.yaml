@@ -1,113 +1,125 @@
-# Store structure for the development catalogue in product-import.csv. `campos` are the product
-# metafields the rules read; `filtro: true` also offers one as a storefront filter, in this order.
-# `origen: vendor` makes a campo the product's brand, the CSV's Vendor column, and `origen: type` its
-# Product Type, the Type column, instead of a metafield. A rule maps each clave to the values that
-# satisfy it: every clave must match, each by any one of its values.
+# Store structure for the development catalogue in product-import.csv. `fields` are the product
+# metafields the rules read; `filterable: true` also offers one as a storefront filter. `source: vendor`
+# makes a field the product's brand, the CSV's Vendor column, and `source: type` its Product Type, the
+# Type column, instead of a metafield. A rule maps each key to the values that satisfy it: every key
+# must match, each by any one of its values. A category may add a `heading`, its page's title when it
+# should read differently from the menu's name.
 #
-# A menu entry may open a panel of `secciones` instead of its children, each one of:
-#   - nombre: Estilos
-#     mostrar: subcategorias                  # the entry's child categories, then "View all"
-#   - nombre: Marcas
-#     mostrar: { valores: marca, limite: 8 }  # each value of a campo among the entry's products
-#   - nombre: Marcas
-#     mostrar: { valores: modelo, agrupar: marca, grupos: 6, limite: 6 }
-#                                             # one column per brand with its models, most products first
-#   - nombre: Size
-#     mostrar: { opcion: Size }               # the sizes the entry's products offer, as chips
-#   - nombre: Destacados
-#     enlaces:                                # fixed links
-#       - { nombre: Tops, filtro: { tipo: [tops] } }      # the entry's list, filtered
-#       - { coleccion: featured }                         # or a category or collection
-# Any section may add a `nota`, a line of text under it, and an entry may add `pie`, links in the
-# same shape as `enlaces` set apart below its sections.
-campos:
-  - nombre: Género
-    clave: genero
-    filtro: true
-  - nombre: Tipo
-    clave: tipo
-    filtro: true
-  - nombre: Colecciones
-    clave: colecciones
-  - { nombre: Marca, clave: marca, origen: vendor, filtro: true }
-  - nombre: Modelo
-    clave: modelo
-categorias:
-  - nombre: Men
+# A menu entry may open a panel of `sections` instead of its children, each one of:
+#   - name: Styles
+#     show: subcategories                  # the entry's child categories, then "View all"
+#   - name: Brands
+#     show: { values: marca, limit: 8 }    # each value of a field among the entry's products
+#   - name: Brands
+#     show: { values: modelo, groupBy: marca, groups: 6, limit: 6 }
+#                                          # one column per brand with its models, most products first
+#   - name: Size
+#     show: { option: Size }               # the sizes the entry's products offer, as chips
+#   - name: Featured
+#     links:                               # fixed links
+#       - { name: Tops, filter: { tipo: [tops] } }   # the entry's list, filtered
+#       - { collection: featured }                   # or a category or collection
+# Any section may add a `note`, a line of text under it, and an entry may add `footer`, links in the
+# same shape as `links` set apart below its sections.
+#
+# `search` is what search offers before a term finds anything: `popular` terms and `trending` models,
+# each a list filtered as a link is. `filters` names the storefront's filters in the order it shows
+# them: a field's key or `option.<Title>`.
+fields:
+  - name: Género
+    key: genero
+    filterable: true
+  - name: Tipo
+    key: tipo
+    filterable: true
+  - name: Colecciones
+    key: colecciones
+  - { name: Marca, key: marca, source: vendor, filterable: true }
+  - name: Modelo
+    key: modelo
+categories:
+  - name: Men
     handle: men
-    regla: { genero: [men] }
-    hijos:
-      - nombre: Tops
+    rule: { genero: [men] }
+    children:
+      - name: Tops
         handle: men-tops
-        regla: { genero: [men], tipo: [tops] }
-      - nombre: Bottoms
+        rule: { genero: [men], tipo: [tops] }
+      - name: Bottoms
         handle: men-bottoms
-        regla: { genero: [men], tipo: [bottoms] }
-      - nombre: Shoes
+        rule: { genero: [men], tipo: [bottoms] }
+      - name: Shoes
         handle: men-shoes
-        regla: { genero: [men], tipo: [shoes] }
-  - nombre: Women
+        rule: { genero: [men], tipo: [shoes] }
+  - name: Women
     handle: women
-    regla: { genero: [women] }
-    hijos:
-      - nombre: Tops
+    rule: { genero: [women] }
+    children:
+      - name: Tops
         handle: women-tops
-        regla: { genero: [women], tipo: [tops] }
-      - nombre: Bottoms
+        rule: { genero: [women], tipo: [tops] }
+      - name: Bottoms
         handle: women-bottoms
-        regla: { genero: [women], tipo: [bottoms] }
-  - nombre: Unisex
+        rule: { genero: [women], tipo: [bottoms] }
+  - name: Unisex
     handle: unisex
-    regla: { genero: [unisex] }
-    hijos:
-      - nombre: Tops
+    rule: { genero: [unisex] }
+    children:
+      - name: Tops
         handle: unisex-tops
-        regla: { genero: [unisex], tipo: [tops] }
-      - nombre: Bottoms
+        rule: { genero: [unisex], tipo: [tops] }
+      - name: Bottoms
         handle: unisex-bottoms
-        regla: { genero: [unisex], tipo: [bottoms] }
-      - nombre: Shoes
+        rule: { genero: [unisex], tipo: [bottoms] }
+      - name: Shoes
         handle: unisex-shoes
-        regla: { genero: [unisex], tipo: [shoes] }
-      - nombre: Accessories
+        rule: { genero: [unisex], tipo: [shoes] }
+      - name: Accessories
         handle: unisex-accessories
-        regla: { genero: [unisex], tipo: [accessories] }
-  - nombre: Shoes
+        rule: { genero: [unisex], tipo: [accessories] }
+  - name: Shoes
     handle: shoes
-    regla: { tipo: [shoes] }
-colecciones:
-  - nombre: Featured
+    heading: All shoes
+    rule: { tipo: [shoes] }
+collections:
+  - name: Featured
     handle: featured
-    regla: { colecciones: [featured] }
-  - nombre: Essentials
+    rule: { colecciones: [featured] }
+  - name: Essentials
     handle: essentials
-    regla: { colecciones: [essentials] }
-  - nombre: Active
+    rule: { colecciones: [essentials] }
+  - name: Active
     handle: active
-    regla: { colecciones: [active] }
+    rule: { colecciones: [active] }
 menu:
-  - categoria: men
-    secciones:
-      - { nombre: Category, mostrar: subcategorias }
-      - nombre: Size
-        mostrar: { opcion: Size }
-        nota: Only what comes in your size.
-  - categoria: women
-    secciones:
-      - { nombre: Category, mostrar: subcategorias }
-      - nombre: Size
-        mostrar: { opcion: Size }
-        nota: Only what comes in your size.
-  - categoria: shoes
-    secciones:
-      - nombre: All shoes
-        enlaces:
-          - { nombre: Men's shoes, categoria: men-shoes }
-          - { nombre: Unisex shoes, categoria: unisex-shoes }
-          - { coleccion: active }
-      - nombre: Brands
-        mostrar: { valores: modelo, agrupar: marca, grupos: 6, limite: 6 }
-    pie:
-      - { nombre: All brands, categoria: shoes }
-  - categoria: unisex
-  - coleccion: featured
+  - category: men
+    sections:
+      - { name: Category, show: subcategories }
+      - name: Size
+        show: { option: Size }
+        note: Only what comes in your size.
+  - category: women
+    sections:
+      - { name: Category, show: subcategories }
+      - name: Size
+        show: { option: Size }
+        note: Only what comes in your size.
+  - category: shoes
+    sections:
+      - name: All shoes
+        links:
+          - { name: Men's shoes, category: men-shoes }
+          - { name: Unisex shoes, category: unisex-shoes }
+          - { collection: active }
+      - name: Brands
+        show: { values: modelo, groupBy: marca, groups: 6, limit: 6 }
+    footer:
+      - { name: All brands, category: shoes }
+  - category: unisex
+  - collection: featured
+search:
+  popular: [hoodie, sneakers, puffer]
+  trending:
+    - { name: Tops, filter: { tipo: [tops] }, note: T-shirts and hoodies }
+    - { name: Shoes, filter: { tipo: [shoes] } }
+filters: [genero, tipo, marca, option.Size]

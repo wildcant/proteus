@@ -63,3 +63,12 @@ function swatchKey(value: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 }
+
+/**
+ * The filters the storefront shows: with `order`, the structure file's `filters`, exactly those keys
+ * in that order; without, every filter as it came.
+ */
+export function orderStoreFilters(filters: ProductFilterDTO[], order: string[] | null): ProductFilterDTO[] {
+  if (!order) return filters
+  return order.flatMap((key) => filters.filter((filter) => filter.key === key))
+}

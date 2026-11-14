@@ -11,9 +11,9 @@ export default [
     middlewares: navigationRoutes.GetMiddlewares,
     auth: 'public',
     operationId: 'getStoreNavigation',
-    summary: "Retrieve the store's menu",
+    summary: "Retrieve the store's menu and what search offers",
     description:
-      'The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront.',
+      "The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront. `search` holds the popular search terms and the most-searched models, each with the field values it filters the list by, how many published products this market sells match it and the newest one's photo; a model nothing matches is left out.",
     tags: [Tags.STORE],
     output: navigationRoutes.GetOutput,
   },

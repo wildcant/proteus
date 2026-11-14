@@ -4,7 +4,7 @@ type StoreNavigationTargetType = 'category' | 'collection'
 
 /**
  * A link a menu section names by hand: the entry's own list filtered by field values (`filter`, keyed
- * by clave, values ORed within a clave), or a Category or Collection by handle, labelled by `name` or,
+ * by field key, values ORed within a key), or a Category or Collection by handle, labelled by `name` or,
  * when that is null, by the grouping's own.
  */
 export type StoreNavigationLinkDTO =
@@ -42,6 +42,20 @@ export type StoreNavigationEntryDTO = {
   footer?: StoreNavigationLinkDTO[]
 }
 
+/**
+ * A most-searched model, as the structure file's `search.trending` names it: its label, the list it
+ * leads to filtered by field values (keyed by field key, values ORed within a key), and `note`, a
+ * short line under it, `null` for none.
+ */
+type StoreSearchTrendingDTO = { name: string; filter: Record<string, string[]>; note: string | null }
+
+/**
+ * What search offers before the shopper finds anything, as the structure file's `search` has it:
+ * `popular`, the terms a search chip runs, and `trending`, the most-searched models. Both empty when
+ * the file has no `search`.
+ */
+export type StoreSearchDTO = { popular: string[]; trending: StoreSearchTrendingDTO[] }
+
 export type StoreDTO = {
   id: string
   name: string
@@ -55,6 +69,10 @@ export type StoreDTO = {
   lowStockThreshold: number | null
   /** The store's menu, in order. Written by applying a structure file; a handle may name nothing live. */
   navigation: StoreNavigationEntryDTO[]
+  /** The structure file's `search`. */
+  search: StoreSearchDTO
+  /** The structure file's `filters`, the filter keys in display order; `null` when it has none. */
+  filters: string[] | null
   metadata: string | null
   createdAt: Date
   updatedAt: Date

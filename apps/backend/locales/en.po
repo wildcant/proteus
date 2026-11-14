@@ -629,8 +629,8 @@ msgstr "These options do not fit the product's variants: {reasons}. Remove those
 
 #. js-lingui-explicit-id
 #: src/modules/product/services/product-module-service.ts:1413
-msgid "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
-msgstr "No metafield is defined with the key {keys}. Declare it under campos in the structure file."
+msgid "No metafield is defined with the key {keys}. Declare it under fields in the structure file."
+msgstr "No metafield is defined with the key {keys}. Declare it under fields in the structure file."
 
 #. js-lingui-explicit-id
 #: src/modules/product/services/product-option-service.ts:217

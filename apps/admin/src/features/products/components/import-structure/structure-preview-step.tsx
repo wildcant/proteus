@@ -15,7 +15,7 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
   const { metafields, categories, collections } = plan
 
   const atRoot = t`top level`
-  // The key, whether the campo is the product's brand rather than a metafield, and whether the
+  // The key, whether the field is the product's brand rather than a metafield, and whether the
   // storefront offers it as a filter.
   const metafieldDetail = (row: AdminCatalogStructureMetafieldChange) =>
     [

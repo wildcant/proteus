@@ -36,6 +36,7 @@ async function renderNav(menu: MenuSource) {
 const category = (handle: string, name: string, children: StoreProductCategoryTreeNode[] = []) => ({
   id: `id-${handle}`,
   name,
+  heading: null,
   description: '',
   handle,
   children,

@@ -200,6 +200,8 @@ export type VariantImageInput = {
 
 export type CreateProductCategoryDTO = {
   name: string
+  /** The category page's heading; absent or null shows the name. */
+  heading?: string | null
   /** Generated from the name when absent. */
   handle?: string
   description?: string
@@ -216,6 +218,7 @@ export type CreateProductCategoryDTO = {
 /** Never regenerates the handle. */
 export type UpdateProductCategoryDTO = {
   name?: string
+  heading?: string | null
   handle?: string
   description?: string
   /** Absent keeps the parent; null moves the Category to the root. */

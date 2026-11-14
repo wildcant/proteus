@@ -114,6 +114,7 @@ export function planCatalogStructureChanges(
     }
     const changed =
       live.name !== category.name ||
+      live.heading !== category.heading ||
       !sameRule(live.rule, category.rule) ||
       !live.isActive ||
       live.rank !== category.rank

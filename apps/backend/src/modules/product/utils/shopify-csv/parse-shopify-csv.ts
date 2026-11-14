@@ -207,7 +207,7 @@ function readHeader(
         fail(
           1,
           null,
-          `The column "${raw.trim()}" is the metafield "${key}", which the store does not define. Declare the campo "${key}" in the structure file first.`,
+          `The column "${raw.trim()}" is the metafield "${key}", which the store does not define. Declare the field "${key}" in the structure file first.`,
         )
       } else if (header.metafields.some((metafield) => metafield.key === key)) {
         fail(1, null, `The metafield "${key}" has more than one column.`)

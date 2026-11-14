@@ -115,6 +115,8 @@ export * from './storeProductVariant.ts';
 export * from './storeProductVariantOptionValues.ts';
 export * from './storeSavedMethod.ts';
 export * from './storeSavedMethodListResponse.ts';
+export * from './storeSearch.ts';
+export * from './storeSearchTrendingLink.ts';
 export * from './storeShippingOption.ts';
 export * from './storeShippingOptionData.ts';
 export * from './storeShippingOptionListResponse.ts';

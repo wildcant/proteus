@@ -180,7 +180,7 @@ function FirstProduct({
   product: NonNullable<AdminImportedProduct>
   /** The file's metafield columns, which name each key the product's values are under. */
   metafields: AdminProductImport['summary']['metafields']
-  /** The vendor campo's name, what the store calls the brand. */
+  /** The vendor field's name, what the store calls the brand. */
   brandName: string | null
 }) {
   const { t, i18n } = useLingui()

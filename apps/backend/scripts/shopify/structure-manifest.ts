@@ -22,10 +22,10 @@ import { parseShopifyCsv } from '../../src/modules/product/utils/shopify-csv/par
  * rules read, one automated collection per Category and Collection, the nested main menu and the
  * storefront filters. The `shopify-sync` skill applies it.
  *
- *   pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [estructura.yaml] [catalogo.csv]
+ *   pnpm --filter backend exec tsx scripts/shopify/structure-manifest.ts [catalog-structure.yaml] [catalog.csv]
  *
  * Prints the manifest as JSON; with no path it reads the seed `catalog-structure.yaml`. A menu with a
- * `valores`, grouped `valores` or `opcion` section needs the product CSV: Shopify menus are static, so
+ * `values`, grouped `values` or `option` section needs the product CSV: Shopify menus are static, so
  * the values are read off the CSV's products and written out as menu items.
  */
 
@@ -38,7 +38,7 @@ type ShopifyMetafieldDefinition = {
 }
 
 /**
- * One storefront filter in Search & Discovery, in the structure file's campo order: a product
+ * One storefront filter in Search & Discovery, in the structure file's field order: a product
  * metafield (`custom.genero`), the built-in Vendor, which the app lists as "Brand", or the built-in
  * Product type.
  */
@@ -83,7 +83,7 @@ type ShopifyStructureManifest = {
 /** What a menu section reads of a CSV product. */
 type ManifestProduct = Pick<ImportedProductDTO, 'brand' | 'type' | 'metafields' | 'options'>
 
-/** Which campos are the product's built-in Vendor and Product type, by key. */
+/** Which fields are the product's built-in Vendor and Product type, by key. */
 type BuiltinKeys = { vendorKey: string | undefined; typeKey: string | undefined }
 
 /** One value of a field among the products a rule matches, with how many hold it. */
@@ -98,8 +98,8 @@ const DEFAULT_STRUCTURE_PATH = path.join(import.meta.dirname, '../seed/catalog-s
  * A menu entry with sections gets one child per section, holding that section's links, so the tree
  * stays within Shopify's three levels (Hombre › Marcas › Nike). A grouped section gets one child per
  * group instead (Tenis › Adidas › Samba), the group itself linking the entry filtered by it, and the
- * entry's `pie` links follow its sections. A section's `nota` has no place in a Shopify menu.
- * `products` are the CSV's, which `valores` and `opcion` sections read their values from; it is
+ * entry's `footer` links follow its sections. A section's `note` has no place in a Shopify menu.
+ * `products` are the CSV's, which `values` and `option` sections read their values from; it is
  * required only when the menu has one.
  */
 export function buildStructureManifest(
@@ -134,7 +134,7 @@ export function buildStructureManifest(
     collections.push(toCollection(collection.name, collection.handle, collection.rule, builtins))
   }
 
-  /** Search & Discovery's filter param for a campo, or for an option (`option: Talla`). */
+  /** Search & Discovery's filter param for a field, or for an option (`option: Talla`). */
   const paramOf = (key: string) => {
     if (key === builtins.vendorKey) return 'filter.p.vendor'
     if (key === builtins.typeKey) return 'filter.p.product_type'
@@ -244,7 +244,7 @@ export function buildStructureManifest(
     return [{ title, collectionHandle: entry.handle, url: null, children }]
   })
 
-  // The vendor and type campos are the product's built-in Vendor and Product type, which have no metafield definition.
+  // The vendor and type fields are the product's built-in Vendor and Product type, which have no metafield definition.
   const metafields = structure.metafields.flatMap(({ name, key, source }): ShopifyMetafieldDefinition[] =>
     source === 'metafield' ? [{ name, namespace: 'custom', key, type: 'list.single_line_text_field' }] : [],
   )
@@ -258,7 +258,7 @@ export function buildStructureManifest(
   return { metafields, filters, collections, menu }
 }
 
-/** A product's field values by key: its metafields, its Vendor and its Product type under their campos' keys. */
+/** A product's field values by key: its metafields, its Vendor and its Product type under their fields' keys. */
 function fieldsOf(product: ManifestProduct, { vendorKey, typeKey }: BuiltinKeys): Map<string, Set<string>> {
   const fields = new Map(Object.entries(product.metafields).map(([field, held]) => [field, new Set(held)]))
   if (vendorKey && product.brand) fields.set(vendorKey, new Set([product.brand]))
@@ -303,7 +303,7 @@ function offeredOptionValues(products: ManifestProduct[], title: string): string
 /**
  * A Shopify collection matches all of its conditions or any of them. A rule whose keys each hold one
  * value is the first; a rule of one key with several values is the second. Anything else mixes the two.
- * The vendor campo is the product's Vendor, the "Proveedor" condition, and the type campo its Product
+ * The vendor field is the product's Vendor, the "Proveedor" condition, and the type field its Product
  * type, the "Tipo de producto" condition, rather than metafields.
  */
 function toCollection(

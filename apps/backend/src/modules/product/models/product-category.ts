@@ -16,6 +16,8 @@ export const productCategoryTable = pgTable(
   {
     id: text().primaryKey().default(sql`CONCAT('pcat_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     name: text().notNull(),
+    /** The category page's heading, "Men's shoes" where the menu says "Men"; `null` shows the name. */
+    heading: text(),
     /** Shown under the category page heading. */
     description: text().default('').notNull(),
     handle: text().notNull(),

@@ -1,8 +1,12 @@
 import { BigNumber } from '@core/bignumber.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
+import catalogStructureDefinitions from '../../../admin/catalog-structure/definitions.js'
+import type * as structureRoutes from '../../../admin/catalog-structure/route.js'
 import adminCategoryDefinitions from '../../../admin/product-categories/definitions.js'
 import type * as adminCategoryRoutes from '../../../admin/product-categories/route.js'
+import uploadDefinitions from '../../../admin/uploads/definitions.js'
+import type * as uploadRoutes from '../../../admin/uploads/route.js'
 import productDefinitions from '../../products/definitions.js'
 import type * as productRoutes from '../../products/route.js'
 import productFilterDefinitions from '../definitions.js'
@@ -13,7 +17,13 @@ let api: TestApi
 /** The store's default market: every store product read is priced, and the price factory writes USD. */
 test.beforeEach(async ({ createApi, factories }) => {
   api = await createApi({
-    definitions: [...adminCategoryDefinitions, ...productFilterDefinitions, ...productDefinitions],
+    definitions: [
+      ...adminCategoryDefinitions,
+      ...productFilterDefinitions,
+      ...productDefinitions,
+      ...catalogStructureDefinitions,
+      ...uploadDefinitions,
+    ],
   })
   const region = await factories.create.region({ name: 'United States', currencyCode: 'usd' })
   await factories.create.store({ defaultRegionId: region.id })
@@ -572,3 +582,55 @@ test.describe('Search', () => {
     })
   })
 })
+
+test.describe('Filter order', () => {
+  test('the structure file’s filters decide which facets show, and in what order', async ({ expect, service }) => {
+    await applyStructure(`
+fields:
+  - { name: Género, key: genero, filterable: true }
+  - { name: Tipo, key: tipo, filterable: true }
+filters: [option.Size, genero]
+`)
+    const size = await service.create.productOption(api.container, {
+      title: 'Size',
+      values: ['9', '10'].map((value, rank) => ({ value, rank })),
+    })
+    const product = async (genero: string, sizeValue: string) => {
+      const { product } = await service.create.product(api.container, {
+        status: 'published',
+        metafields: { genero: [genero], tipo: ['shoes'] },
+      })
+      const valueId = size.values.find((value) => value.value === sizeValue)?.id ?? ''
+      await service.update.productOptions(api.container, product.id, {
+        options: [{ optionId: size.id, valueIds: [valueId] }],
+      })
+      const variants = await service.create.productVariants(api.container, product.id, [
+        { optionValues: { [size.id]: valueId } },
+      ])
+      await service.create.variantPrices(
+        api.container,
+        variants.map((variant) => variant.id),
+      )
+    }
+    await product('men', '9')
+    await product('women', '10')
+
+    const response = await api.get<typeof productFilterRoutes.GetOutput>('/store/product-filters')
+    expect(response.status).toBe(200)
+    // The Size option first, then Género; Tipo, though filterable, is not listed, so it is not shown.
+    expect(response.body.filters.map((filter) => [filter.key, filter.values.map(({ value }) => value)])).toEqual([
+      ['option.Size', ['9', '10']],
+      ['genero', ['men', 'women']],
+    ])
+  })
+})
+
+async function applyStructure(text: string) {
+  const upload = await api.request
+    .post('/admin/uploads')
+    .field('access', 'private')
+    .attach('files', Buffer.from(text), { filename: 'catalog-structure.yaml', contentType: 'application/yaml' })
+  const [file] = (upload.body as typeof uploadRoutes.PostOutput._zod.output).files
+  const applied = await api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId: file?.id })
+  if (applied.status !== 200) throw new Error(`The structure was not applied: ${JSON.stringify(applied.body)}`)
+}

@@ -164,7 +164,7 @@ test.describe('parseShopifyCsv', () => {
         line: 1,
         handle: null,
         message:
-          'The column "Género (product.metafields.custom.genero)" is the metafield "genero", which the store does not define. Declare the campo "genero" in the structure file first.',
+          'The column "Género (product.metafields.custom.genero)" is the metafield "genero", which the store does not define. Declare the field "genero" in the structure file first.',
       },
     ])
   })

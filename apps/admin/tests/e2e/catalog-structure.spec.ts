@@ -19,18 +19,18 @@ test('structure import journey: upload, preview the changes and the menu, apply'
   const metafieldName = `E2E Field ${suffix}`
   const metafieldKey = `e2e_${suffix}`
   const yaml = [
-    'campos:',
-    `  - nombre: ${metafieldName}`,
-    `    clave: ${metafieldKey}`,
-    'categorias:',
-    `  - nombre: ${parentName}`,
+    'fields:',
+    `  - name: ${metafieldName}`,
+    `    key: ${metafieldKey}`,
+    'categories:',
+    `  - name: ${parentName}`,
     `    handle: e2e-structure-${suffix}`,
-    `    regla: { ${metafieldKey}: [structure] }`,
-    '    hijos:',
-    `      - nombre: ${childName}`,
+    `    rule: { ${metafieldKey}: [structure] }`,
+    '    children:',
+    `      - name: ${childName}`,
     `        handle: e2e-structure-child-${suffix}`,
     'menu:',
-    `  - categoria: e2e-structure-${suffix}`,
+    `  - category: e2e-structure-${suffix}`,
     '',
   ].join('\n')
 
@@ -42,18 +42,18 @@ test('structure import journey: upload, preview the changes and the menu, apply'
 
   // A broken file stays on upload, every error listed by where it is in the file.
   await modal.locator('input[type="file"]').setInputFiles({
-    name: 'estructura.yaml',
+    name: 'catalog-structure.yaml',
     mimeType: 'application/yaml',
-    buffer: Buffer.from('menu:\n  - categoria: nada\n'),
+    buffer: Buffer.from('menu:\n  - category: nada\n'),
   })
   await modal.getByRole('button', { name: 'Upload file' }).click()
   await expect(modal.getByText('The structure file has errors.', { exact: false })).toBeVisible({ timeout: 15000 })
-  await expect(modal.getByText('menu[0].categoria')).toBeVisible()
+  await expect(modal.getByText('menu[0].category')).toBeVisible()
 
   await modal.getByRole('button', { name: 'Replace file' }).click()
   await modal
     .locator('input[type="file"]')
-    .setInputFiles({ name: 'estructura.yaml', mimeType: 'application/yaml', buffer: Buffer.from(yaml) })
+    .setInputFiles({ name: 'catalog-structure.yaml', mimeType: 'application/yaml', buffer: Buffer.from(yaml) })
   await modal.getByRole('button', { name: 'Upload file' }).click()
 
   // Preview — the metafield and both categories are new, and the menu after holds the parent.

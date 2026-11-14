@@ -9,6 +9,8 @@
 export interface StoreProductCategoryTreeNode {
   id: string;
   name: string;
+  /** @nullable */
+  heading: string | null;
   description: string;
   handle: string;
   children: StoreProductCategoryTreeNode[];

@@ -7,6 +7,8 @@ import { test } from '@tests/setup/test-extend.js'
 import { vi } from 'vitest'
 import storeNavigationDefinitions from '../../../store/navigation/definitions.js'
 import type * as storeNavigationRoutes from '../../../store/navigation/route.js'
+import storeCategoryDefinitions from '../../../store/product-categories/definitions.js'
+import type * as storeCategoryRoutes from '../../../store/product-categories/route.js'
 import collectionDefinitions from '../../collections/definitions.js'
 import type * as collectionRoutes from '../../collections/route.js'
 import productCategoryDefinitions from '../../product-categories/definitions.js'
@@ -19,7 +21,7 @@ import type * as uploadRoutes from '../../uploads/route.js'
 import catalogStructureDefinitions from '../definitions.js'
 import type * as structureRoutes from '../route.js'
 
-/** The development catalogue's structure: four metafield campos and the brand, Men, Women and Unisex with their children and Shoes, three Collections, and a menu whose Men, Women and Shoes open panels. */
+/** The development catalogue's structure: four metafield fields and the brand, Men, Women and Unisex with their children and Shoes, three Collections, and a menu whose Men, Women and Shoes open panels. */
 const FIXTURE = readFileSync(resolve(__dirname, '../../../../../scripts/seed/catalog-structure.yaml'), 'utf8')
 
 type Plan = (typeof structureRoutes.PostOutput)['_zod']['output']['catalogStructure']
@@ -35,6 +37,7 @@ test.beforeEach(async ({ createApi, factories }) => {
       ...productCategoryDefinitions,
       ...collectionDefinitions,
       ...storeNavigationDefinitions,
+      ...storeCategoryDefinitions,
     ],
   })
   // The store menu is read for a market, so the store needs a default one.
@@ -47,7 +50,7 @@ async function upload(text: string): Promise<string> {
   const response = await api.request
     .post('/admin/uploads')
     .field('access', 'private')
-    .attach('files', Buffer.from(text), { filename: 'estructura.yaml', contentType: 'application/yaml' })
+    .attach('files', Buffer.from(text), { filename: 'catalog-structure.yaml', contentType: 'application/yaml' })
   const [file] = (response.body as typeof uploadRoutes.PostOutput._zod.output).files
   if (!file) throw new Error(`Upload failed: ${JSON.stringify(response.body)}`)
   return file.id
@@ -58,6 +61,7 @@ const preview = (fileId: string) =>
 const apply = (fileId: string) => api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId })
 const navigation = async () =>
   (await api.get<typeof storeNavigationRoutes.GetOutput>('/store/navigation')).body.navigation
+const search = async () => (await api.get<typeof storeNavigationRoutes.GetOutput>('/store/navigation')).body.search
 const handles = (rows: { handle: string }[]) => rows.map((row) => row.handle).sort()
 
 test.describe('Structure files', () => {
@@ -224,15 +228,15 @@ test.describe('Structure files', () => {
 
   test('a file with errors previews them by path and is refused on apply', async ({ expect }) => {
     const fileId = await upload(
-      ['categorias:', '  - nombre: Men', '    handle: Men', 'menu:', '  - coleccion: x', ''].join('\n'),
+      ['categories:', '  - name: Men', '    handle: Men', 'menu:', '  - collection: x', ''].join('\n'),
     )
 
     const previewed = await preview(fileId)
     expect(previewed.status).toBe(200)
     expect(previewed.body.catalogStructure.errors).toEqual([
       {
-        path: 'categorias[0].handle',
-        message: 'Must be lowercase letters and digits joined by hyphens, like "hombre-clasicos".',
+        path: 'categories[0].handle',
+        message: 'Must be lowercase letters and digits joined by hyphens, like "men-tops".',
       },
     ])
     expect(previewed.body.catalogStructure.categories.create).toEqual([])
@@ -243,12 +247,46 @@ test.describe('Structure files', () => {
     expect(await navigation()).toEqual([])
   })
 
-  test('when the groupings fail to apply, the menu is put back', async ({ expect }) => {
+  test('when the groupings fail to apply, the menu and search are put back', async ({ expect }) => {
     const productService = api.container.resolve(Modules.PRODUCT)
     vi.spyOn(productService, 'applyCatalogStructure').mockRejectedValue(new Error('groupings failed'))
 
     const applied = await api.post<ApiErrorBody>('/admin/catalog-structure', { fileId: await upload(FIXTURE) })
     expect(applied.status).toBe(500)
     expect(await navigation()).toEqual([])
+    // The fixture offers popular searches; the undone step leaves none.
+    expect(await search()).toEqual({ popular: [], trending: [] })
+  })
+
+  test('a category heading reaches the category page, and changing it is an update', async ({ expect }) => {
+    const file = (heading: string | null) =>
+      [
+        'categories:',
+        '  - name: Men',
+        '    handle: men',
+        ...(heading ? [`    heading: ${heading}`] : []),
+        '  - name: Women',
+        '    handle: women',
+        '',
+      ].join('\n')
+    const tree = async () =>
+      (await api.get<typeof storeCategoryRoutes.GetOutput>('/store/product-categories')).body.productCategories.map(
+        ({ handle, name, heading }) => ({ handle, name, heading }),
+      )
+
+    expect((await apply(await upload(file("Men's clothing")))).status).toBe(200)
+    expect(await tree()).toEqual([
+      { handle: 'men', name: 'Men', heading: "Men's clothing" },
+      // No heading: the page shows the name.
+      { handle: 'women', name: 'Women', heading: null },
+    ])
+
+    const dropped = await preview(await upload(file(null)))
+    expect(dropped.body.catalogStructure.categories.update.map((category) => category.handle)).toEqual(['men'])
+    expect((await apply(await upload(file(null)))).status).toBe(200)
+    expect(await tree()).toEqual([
+      { handle: 'men', name: 'Men', heading: null },
+      { handle: 'women', name: 'Women', heading: null },
+    ])
   })
 })

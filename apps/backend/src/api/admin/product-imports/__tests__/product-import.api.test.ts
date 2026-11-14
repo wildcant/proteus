@@ -132,7 +132,7 @@ test.describe('product CSV import', () => {
         products: { create: 3, update: 0, skip: 0 },
         skus: 4,
         images: 2,
-        // Vendor is read, as the brand; with no vendor campo declared the store has no name for it.
+        // Vendor is read, as the brand; with no vendor field declared the store has no name for it.
         ignoredColumns: [],
         brandName: null,
         firstProduct: {
@@ -239,7 +239,7 @@ test.describe('product CSV import', () => {
     http,
     service,
   }) => {
-    // The structure comes first: its campos define the metafields, its rules read them.
+    // The structure comes first: its fields define the metafields, its rules read them.
     await service.create.metafieldDefinitions(api.container, [
       { key: 'genero', name: 'Género' },
       { key: 'estilo', name: 'Estilo' },
@@ -330,12 +330,12 @@ test.describe('product CSV import', () => {
         line: 1,
         handle: null,
         message:
-          'The column "Talla (product.metafields.custom.talla)" is the metafield "talla", which the store does not define. Declare the campo "talla" in the structure file first.',
+          'The column "Talla (product.metafields.custom.talla)" is the metafield "talla", which the store does not define. Declare the field "talla" in the structure file first.',
       },
     ])
   })
 
-  test('reads Vendor as the brand, which the vendor campo rules on and an overwrite replaces', async ({
+  test('reads Vendor as the brand, which the vendor field rules on and an overwrite replaces', async ({
     expect,
     http,
     service,
@@ -376,7 +376,7 @@ test.describe('product CSV import', () => {
     const [product] = await service.read.products(api.container, { handle: 'loafer' })
     expect(product?.brand).toBe('Adidas')
 
-    // The vendor campo is no metafield: a metafield column for its clave is refused.
+    // The vendor field is no metafield: a metafield column for its key is refused.
     const metafieldColumn = await preview(loafer('Nike', ',Marca (product.metafields.custom.marca)', ',Nike'))
     expect(metafieldColumn.response.body.productImport.errors).toEqual([
       expect.objectContaining({
