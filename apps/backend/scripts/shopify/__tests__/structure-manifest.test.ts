@@ -1,10 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { createReadStream, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { test } from '@tests/setup/test-extend.js'
 import { parseCatalogStructure } from '../../../src/modules/product/utils/catalog-structure/parse-catalog-structure.js'
+import { parseShopifyCsv } from '../../../src/modules/product/utils/shopify-csv/parse-shopify-csv.js'
 import { buildStructureManifest } from '../structure-manifest.js'
 
 const FIXTURE = readFileSync(resolve(__dirname, '../../seed/catalog-structure.yaml'), 'utf8')
+const SEED_CSV = resolve(__dirname, '../../seed/product-import.csv')
 
 const parse = (lines: string[]) => {
   const { structure, errors } = parseCatalogStructure(`${lines.join('\n')}\n`)
@@ -102,8 +104,15 @@ test.describe('buildStructureManifest', () => {
   test('the seed structure maps to Shopify without a flagged rule', async ({ expect }) => {
     const { structure } = parseCatalogStructure(FIXTURE)
     if (!structure) throw new Error('The seed structure no longer parses')
+    // The seed is a pair: its menu's Size sections read their sizes off the seed catalogue, as the
+    // script reads them when given the CSV.
+    const { products } = await parseShopifyCsv(
+      createReadStream(SEED_CSV),
+      { overwrite: false, publish: false, defaultCurrency: null, marketCurrencies: {} },
+      new Set(structure.metafields.map((metafield) => metafield.key)),
+    )
 
-    const manifest = buildStructureManifest(structure)
+    const manifest = buildStructureManifest(structure, products)
 
     expect(manifest.collections.filter((collection) => collection.unsupported)).toEqual([])
     expect(manifest.collections.find((collection) => collection.handle === 'men-tops')).toEqual({
@@ -117,17 +126,29 @@ test.describe('buildStructureManifest', () => {
         ],
       },
     })
-    // The brand is the built-in Vendor: no definition, and the seed does not filter by it.
-    expect(manifest.metafields.map(({ key }) => key)).toEqual(['genero', 'tipo', 'colecciones'])
+    // The brand is the built-in Vendor: a filter, but no definition.
+    expect(manifest.metafields.map(({ key }) => key)).toEqual(['genero', 'tipo', 'colecciones', 'modelo'])
     expect(manifest.filters).toEqual([
       { name: 'Género', source: 'metafield', metafield: 'custom.genero' },
       { name: 'Tipo', source: 'metafield', metafield: 'custom.tipo' },
+      { name: 'Marca', source: 'vendor' },
     ])
-    expect(manifest.collections).toHaveLength(15)
+    expect(manifest.collections).toHaveLength(16)
+    // A panel's sections are the entry's children, a grouped section one child per brand; an entry with
+    // no sections keeps its subcategories.
     expect(manifest.menu.map((item) => [item.title, item.children.map((child) => child.title)])).toEqual([
-      ['Men', ['Tops', 'Bottoms', 'Shoes']],
-      ['Women', ['Tops', 'Bottoms']],
+      ['Men', ['Category', 'Size']],
+      ['Women', ['Category', 'Size']],
+      ['Shoes', ['All shoes', 'Arco', 'Vela', 'Kinetic', 'All brands']],
       ['Unisex', ['Tops', 'Bottoms', 'Shoes', 'Accessories']],
+      ['Featured', []],
+    ])
+    // A Size section lists the sizes the seed catalogue's products offer.
+    expect(manifest.menu[1]?.children[1]?.children.map((child) => child.title)).toEqual([
+      'Large',
+      'Medium',
+      'Small',
+      'X-Large',
     ])
   })
 
