@@ -54,6 +54,7 @@ export function useCreateProductForm(params?: CreateProductFormParams) {
         const payload = {
           ...AdminCreateProduct.omit({ options: true, variants: true }).parse({
             ...value.details,
+            handle: value.details.handle || undefined,
             ...organize,
             typeId: type?.id,
             ...value.attributes,

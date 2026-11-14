@@ -10,12 +10,10 @@ import type {
   StoreNavigationLinkDTO,
   StoreNavigationSectionDTO,
 } from '../../../../core/types/store/common.js'
+import { HANDLE_PATTERN } from '../../../../core/utils/to-handle.js'
 
 /** A structure file is a page of YAML; anything near this is not one. */
 export const MAX_STRUCTURE_FILE_BYTES = 1024 * 1024
-
-/** Lowercase letters and digits in hyphen-separated runs, as `toHandle` writes them. */
-const HANDLE_PATTERN = /^[\p{Ll}\p{Lo}\p{N}]+(?:-[\p{Ll}\p{Lo}\p{N}]+)*$/u
 
 /**
  * A schema's own message for a value of the wrong kind. Every other issue it raises — an unknown key

@@ -31,7 +31,8 @@ export const GET = async (
   const storeService = req.scope.resolve(Modules.STORE)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
-  const [product] = await productService.listProducts({ handle: req.params.handle })
+  // Published only, as the list is: a handle is readable from the title, so a draft would be one guess away.
+  const [product] = await productService.listProducts({ handle: req.params.handle, status: 'published' })
   if (!product) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
@@ -106,8 +107,8 @@ export const GET = async (
   if (variants.length > 0 && variantsForResponse.length === 0) {
     throw new AppError({
       type: ErrorTypes.NOT_FOUND,
-      message: i18n.t('Product with id "{id}" has no price in {currencyCode}'),
-      values: { id: product.id, currencyCode: req.pricingContext.currencyCode },
+      message: i18n.t('Product with handle "{handle}" has no price in {currencyCode}'),
+      values: { handle: req.params.handle, currencyCode: req.pricingContext.currencyCode },
     })
   }
 

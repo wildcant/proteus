@@ -97,6 +97,7 @@ test.describe('parseShopifyCsv', () => {
       ',hoodie,,,,,,H-2,,S,,,10,,,,,,,,',
       'Mug,,,,,,,,,,,,,,,,,,,,',
       'Cap,cap,,,,,,C-1,,,,,10,,,,,,apps/backend/seed-images/cap.jpg,1,',
+      'Bag,Big Bag,,,,,,B-1,,,,,10,,,,,,,,',
     ])
 
     expect(errors).toEqual([
@@ -104,6 +105,12 @@ test.describe('parseShopifyCsv', () => {
       { line: 3, handle: 'hoodie', message: 'The option combination "S" appears more than once.' },
       { line: 4, handle: null, message: 'The row has no URL handle.' },
       { line: 5, handle: 'cap', message: 'The image URL "apps/backend/seed-images/cap.jpg" is not an http(s) URL.' },
+      // The handle becomes the product's storefront URL, so one that isn't a clean path segment is refused.
+      {
+        line: 6,
+        handle: 'Big Bag',
+        message: 'The URL handle "Big Bag" must be lowercase letters and digits joined by hyphens.',
+      },
     ])
   })
 

@@ -1240,14 +1240,14 @@ msgid "Not authenticated"
 msgstr "Not authenticated"
 
 #. js-lingui-explicit-id
-#: src/api/store/products/[handle]/route.ts:38
+#: src/api/store/products/[handle]/route.ts:39
 msgid "Product with handle \"{handle}\" not found"
 msgstr "Product with handle \"{handle}\" not found"
 
 #. js-lingui-explicit-id
-#: src/api/store/products/[handle]/route.ts:109
-msgid "Product with id \"{id}\" has no price in {currencyCode}"
-msgstr "Product with id \"{id}\" has no price in {currencyCode}"
+#: src/api/store/products/[handle]/route.ts:110
+msgid "Product with handle \"{handle}\" has no price in {currencyCode}"
+msgstr "Product with handle \"{handle}\" has no price in {currencyCode}"
 
 #. js-lingui-explicit-id
 #: src/api/store/orders/[id]/route.ts:28

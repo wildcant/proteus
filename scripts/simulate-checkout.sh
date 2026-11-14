@@ -102,16 +102,17 @@ step "Browse products"
 request GET /store/products
 
 PRODUCTS=$(api -H "$STORE_AUTH_HEADER" "${BASE_URL}/store/products")
-PRODUCT_ID=$(echo "$PRODUCTS" | jq -r '.products[0].id')
+PRODUCT_HANDLE=$(echo "$PRODUCTS" | jq -r '.products[0].handle')
 PRODUCT_TITLE=$(echo "$PRODUCTS" | jq -r '.products[0].title')
 PRODUCT_COUNT=$(echo "$PRODUCTS" | jq '.products | length')
-response "Found ${PRODUCT_COUNT} products. Picking: ${PRODUCT_TITLE} (${PRODUCT_ID})"
+response "Found ${PRODUCT_COUNT} products. Picking: ${PRODUCT_TITLE} (${PRODUCT_HANDLE})"
 
 # ──────────────────────────────────────────
 step "View product details + variants"
-request GET "/store/products/${PRODUCT_ID}"
+request GET "/store/products/${PRODUCT_HANDLE}"
 
-PRODUCT=$(api -H "$STORE_AUTH_HEADER" "${BASE_URL}/store/products/${PRODUCT_ID}")
+PRODUCT=$(api -H "$STORE_AUTH_HEADER" "${BASE_URL}/store/products/${PRODUCT_HANDLE}")
+PRODUCT_ID=$(echo "$PRODUCT" | jq -r '.product.id')
 VARIANT_ID=$(echo "$PRODUCT" | jq -r '.product.variants[0].id')
 VARIANT_SKU=$(echo "$PRODUCT" | jq -r '.product.variants[0].sku')
 VARIANT_TITLE=$(echo "$PRODUCT" | jq -r '.product.variants[0].title')

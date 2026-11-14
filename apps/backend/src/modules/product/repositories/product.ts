@@ -37,15 +37,6 @@ const tagPivot = {
 }
 
 export class ProductRepository extends BaseRepository(productTable) {
-  async findByHandle(handle: string, context?: Context) {
-    const client = this.getClient(context)
-    const rows = await client
-      .select()
-      .from(this.table)
-      .where(and(eq(this.table.handle, handle), isNull(this.table.deletedAt)))
-    return rows[0] ?? null
-  }
-
   /**
    * The distinct live Tag values on the products `filters` match, sorted. The product filters are the
    * list's own `WHERE`, so the values follow every scope the list does.

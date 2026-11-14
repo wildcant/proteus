@@ -7,6 +7,9 @@ export const detailsSchema = AdminCreateProduct.pick({
   subtitle: true,
   handle: true,
   description: true,
+}).extend({
+  /** Blank is how the field says "derive it from the title"; the submit sends it as absent. */
+  handle: AdminCreateProduct.shape.handle.unwrap().or(z.literal('')),
 })
 
 /**

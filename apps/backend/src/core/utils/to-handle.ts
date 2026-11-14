@@ -1,3 +1,9 @@
+/**
+ * What `toHandle` writes: lowercase letters and digits in hyphen-separated runs. A handle is a
+ * storefront path segment, so anything that matches this is safe to put in a URL as is.
+ */
+export const HANDLE_PATTERN = /^[\p{Ll}\p{Lo}\p{N}]+(?:-[\p{Ll}\p{Lo}\p{N}]+)*$/u
+
 export const toHandle = (value: string): string => {
   let handle = value
     .toLowerCase()

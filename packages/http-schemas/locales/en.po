@@ -19,7 +19,12 @@ msgid "Use {maximum} characters or fewer"
 msgstr "Use {maximum} characters or fewer"
 
 #. js-lingui-explicit-id
-#: src/bounded.ts:108
+#: src/bounded.ts:78
+msgid "Use lowercase letters and digits joined by hyphens, like \"white-sneakers\""
+msgstr "Use lowercase letters and digits joined by hyphens, like \"white-sneakers\""
+
+#. js-lingui-explicit-id
+#: src/bounded.ts:118
 msgid "Invalid amount"
 msgstr "Invalid amount"
 

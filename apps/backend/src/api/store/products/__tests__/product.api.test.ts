@@ -45,6 +45,7 @@ test.describe('GET /store/products/:handle', () => {
    */
   const createProductWithVariantImages = async (service: Services) => {
     const { product, images } = await service.create.product(api.container, {
+      status: 'published',
       images: [{ url: 'https://cdn.test/a.png' }, { url: 'https://cdn.test/b.png' }],
     })
     const [first, second] = images
@@ -96,7 +97,7 @@ test.describe('GET /store/products/:handle', () => {
   })
 
   test('returns no variants for a product that has none', async ({ expect, service }) => {
-    const { product } = await service.create.product(api.container)
+    const { product } = await service.create.product(api.container, { status: 'published' })
     const response = await api.get<typeof productByHandleRoutes.GetOutput>(`/store/products/${product.handle}`)
 
     expect(response.status).toBe(200)
@@ -110,7 +111,7 @@ test.describe('GET /store/products/:handle options', () => {
    * response carries a complete combination for each.
    */
   const createProductWithOptions = async (service: Services) => {
-    const { product } = await service.create.product(api.container)
+    const { product } = await service.create.product(api.container, { status: 'published' })
     const size = await service.create.productOption(api.container, {
       title: `Size-${product.id}`,
       renderAs: 'text',
@@ -195,7 +196,7 @@ test.describe('GET /store/products/:handle options', () => {
   test('marks a value unreachable when no purchasable variant carries it', async ({ expect, service }) => {
     // The M variant exists but is never priced, so the response drops it — and the picker must not
     // offer a size the shopper cannot actually buy.
-    const { product } = await service.create.product(api.container)
+    const { product } = await service.create.product(api.container, { status: 'published' })
     const size = await service.create.productOption(api.container, {
       title: `Size-${product.id}`,
       renderAs: 'text',
@@ -228,6 +229,7 @@ test.describe('GET /store/products/:handle options', () => {
     // Selection-independent, so the API resolves it once instead of the storefront scanning the
     // variants and joining against the product's images on every render.
     const { product, images } = await service.create.product(api.container, {
+      status: 'published',
       images: [{ url: 'https://cdn.test/red.png' }],
     })
     const [image] = images
@@ -254,7 +256,7 @@ test.describe('GET /store/products/:handle options', () => {
   })
 
   test('leaves the swatch image null when no variant carrying the value has one', async ({ expect, service }) => {
-    const { product } = await service.create.product(api.container)
+    const { product } = await service.create.product(api.container, { status: 'published' })
     const colour = await service.create.productOption(api.container, {
       title: `Colour-${product.id}`,
       renderAs: 'swatch',
@@ -280,7 +282,7 @@ test.describe('GET /store/products/:handle options', () => {
     expect,
     service,
   }) => {
-    const { product } = await service.create.product(api.container)
+    const { product } = await service.create.product(api.container, { status: 'published' })
     const [variant] = await service.create.productVariants(api.container, product.id)
     if (!variant) throw new Error('Expected a variant to exist')
     await service.create.variantPrices(api.container, [variant.id])
@@ -652,6 +654,28 @@ test.describe('GET /store/products/:handle across markets', () => {
     expect(unpriced.status).toBe(unknown.status)
     expect(unpriced.body.type).toBe(unknown.body.type)
     expect(unpriced.body.code).toBe(unknown.body.code)
+  })
+
+  test('answers a product that is not published exactly as it answers an unknown handle', async ({
+    expect,
+    factories,
+  }) => {
+    const published = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
+    const draft = await factories.create.productWithPricing({
+      product: { status: 'draft' },
+      prices: [{ amount: '100', currencyCode: 'usd' }],
+    })
+
+    const shown = await api.get<typeof productByHandleRoutes.GetOutput>(
+      `/store/products/${published.handle}?countryCode=us`,
+    )
+    const hidden = await api.get<ApiErrorBody>(`/store/products/${draft.handle}?countryCode=us`)
+    const unknown = await api.get<ApiErrorBody>('/store/products/no-such-product?countryCode=us')
+
+    // The published twin is what keeps this from passing against a route that answers 404 to everything.
+    expect(shown.status).toBe(200)
+    expect(hidden.status).toBe(404)
+    expect(hidden.body.code).toBe(unknown.body.code)
   })
 
   test('returns the same product in the market it is priced in', async ({ expect, factories }) => {
