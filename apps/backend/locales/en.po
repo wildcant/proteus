@@ -14,12 +14,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/container.ts:140
+#: src/container.ts:144
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 
 #. js-lingui-explicit-id
-#: src/container.ts:172
+#: src/container.ts:176
 msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 

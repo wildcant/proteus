@@ -1,5 +1,6 @@
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { noopLogger } from '../../core/logger/noop-logger.js'
+import type { ConfigModule } from '../../core/types/config.js'
 import type { Database } from '../../schema.type.js'
 import { seedProviders } from './loaders/providers.js'
 import { accountHolderTable } from './models/account-holder.js'
@@ -26,7 +27,10 @@ const cascadeGraph = buildCascadeGraph({
 })
 
 /** Syncs configured payment providers to the database. Used out-of-band for workerd deployments. */
-export async function syncPaymentProviders(getDb: () => Database) {
+export async function syncPaymentProviders(
+  getDb: () => Database,
+  providers: ConfigModule['projectConfig']['providers'],
+) {
   const paymentProviderRepository = new PaymentProviderRepository({ getDb, cascadeGraph })
   // Safe: this runs outside the DI container (standalone script). upsert only touches the repository, never resolves providers.
   const providerService = new PaymentProviderService({
@@ -34,5 +38,5 @@ export async function syncPaymentProviders(getDb: () => Database) {
     paymentProviderRepository,
     logger: noopLogger,
   })
-  await seedProviders(providerService, paymentProviderDeclarations.providers)
+  await seedProviders(providerService, paymentProviderDeclarations(providers).providers)
 }

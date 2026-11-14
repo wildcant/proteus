@@ -28,6 +28,16 @@ export const appConfigInput: InputConfig = {
         customer: [{ entityType: 'email', authProvider: 'emailpass' }],
       },
     },
+
+    /**
+     * The optional integrations this store turns on. Each one needs its keys in `.env` (see
+     * `src/env.ts`), and the backend refuses to start when an enabled one has none. Remove one to
+     * run without it: a store that takes no card payments drops `stripe` and needs no Stripe keys.
+     */
+    providers: {
+      payment: ['stripe'],
+      notification: ['resend'],
+    },
   },
 }
 

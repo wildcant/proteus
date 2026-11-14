@@ -1,5 +1,6 @@
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { noopLogger } from '../../core/logger/noop-logger.js'
+import type { ConfigModule } from '../../core/types/config.js'
 import type { Database } from '../../schema.type.js'
 import { seedProviders } from './loaders/providers.js'
 import { notificationTable } from './models/notification.js'
@@ -14,12 +15,15 @@ const cascadeGraph = buildCascadeGraph({
 })
 
 /** Syncs configured notification providers to the database. Used out-of-band for workerd deployments. */
-export async function syncNotificationProviders(getDb: () => Database) {
+export async function syncNotificationProviders(
+  getDb: () => Database,
+  providers: ConfigModule['projectConfig']['providers'],
+) {
   const notificationProviderRepository = new NotificationProviderRepository({ getDb, cascadeGraph })
   const providerService = new NotificationProviderService({
     container: undefined as never,
     notificationProviderRepository,
     logger: noopLogger,
   })
-  await seedProviders(providerService, notificationProviderDeclarations.providers)
+  await seedProviders(providerService, notificationProviderDeclarations(providers).providers)
 }

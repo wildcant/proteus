@@ -18,8 +18,9 @@
     "check:standards:test": "ast-grep test --config sgconfig.yml",
     "check:unused": "./scripts/checks/unused.sh",
     "sync-secrets:backend": "./scripts/sync-secrets.sh proteus-backend",
-    "sync-secrets:store": "./scripts/sync-secrets.sh proteus",
-    "pull-keys": "./scripts/pull-keys.sh"
+    "pull-keys": "./scripts/pull-keys.sh",
+    "push-keys": "./scripts/push-keys.sh",
+    "cloudflare:create": "./scripts/create-cloudflare-resources.sh"
   },
   "devDependencies": {
     "@ast-grep/cli": "^0.45.3",

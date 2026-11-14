@@ -25,6 +25,7 @@ import type { AccessControlModuleService } from '../src/modules/access-control/s
 import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
 import { SOURCE_LOCALE } from '../src/workflows/admin/utils/admin-locales.js'
 import { importProductWorkflow } from '../src/workflows/product/import-product.js'
+import { seedAdmin } from './seed/admin.js'
 import { MARKETS, seedMarkets } from './seed/markets.js'
 import { SEED_IMAGE_DIR, seedImageFile } from './seed/seed-images.js'
 
@@ -141,92 +142,23 @@ if (existingUsers.length === 0) {
   console.info(`Skipped users (${existingUsers.length} already exist)`)
 }
 
-// --- Dev admin user (registered + linked, ready for admin auth) ---
+// --- Dev admin user (registered + linked + super admin, ready for admin auth) ---
 const DEV_ADMIN_ID = 'usr_91b8c8f5875146199cba4ea388f31163'
 const DEV_ADMIN_EMAIL = 'admin@example.com'
 const DEV_ADMIN_PASSWORD = '123'
 
-const existingAdminIdentities = await authService.listProviderIdentities({
-  entityId: DEV_ADMIN_EMAIL,
-  provider: 'emailpass',
-})
-if (existingAdminIdentities.length === 0) {
-  const registrationResult = await authService.register('emailpass', {
-    body: { email: DEV_ADMIN_EMAIL, password: DEV_ADMIN_PASSWORD },
-  })
-  if (!registrationResult.success || !registrationResult.authIdentity) {
-    throw new Error(`Failed to register dev admin: ${registrationResult.error}`)
-  }
-  console.info(`Seeded dev admin: ${DEV_ADMIN_EMAIL} / ${DEV_ADMIN_PASSWORD}`)
-} else {
-  console.info(`Skipped dev admin (${DEV_ADMIN_EMAIL} already exists)`)
-}
+await seedAdmin(
+  { authService, userService, accessControlService },
+  { id: DEV_ADMIN_ID, name: 'Dev Admin', email: DEV_ADMIN_EMAIL, password: DEV_ADMIN_PASSWORD },
+)
 
-// Ensure admin user entity exists and is linked to auth identity
-const adminIdentity = (
-  await authService.listProviderIdentities({
-    entityId: DEV_ADMIN_EMAIL,
-    provider: 'emailpass',
-  })
-)[0]
-if (adminIdentity) {
-  const adminAuthIdentity = await authService.retrieveAuthIdentity(adminIdentity.authIdentityId)
-  const hasUserId =
-    adminAuthIdentity.appMetadata &&
-    typeof adminAuthIdentity.appMetadata === 'object' &&
-    'userId' in adminAuthIdentity.appMetadata
-
-  if (!hasUserId) {
-    const existingAdminUsers = await userService.listUsers({ email: DEV_ADMIN_EMAIL })
-    let userId: string
-    if (existingAdminUsers.length > 0 && existingAdminUsers[0]) {
-      userId = existingAdminUsers[0].id
-    } else {
-      const [created] = await userService.createUsers([
-        { id: DEV_ADMIN_ID, name: 'Dev Admin', email: DEV_ADMIN_EMAIL, locale: SOURCE_LOCALE },
-      ])
-      if (!created) throw new Error('Failed to create dev admin user entity')
-      userId = created.id
-    }
-    await authService.updateAuthIdentities([adminIdentity.authIdentityId], {
-      appMetadata: { ...((adminAuthIdentity.appMetadata as Record<string, unknown>) ?? {}), userId },
-    })
-    console.info(`Linked dev admin user ${userId} to auth identity`)
-  } else {
-    console.info('Skipped admin user linking (already linked)')
-  }
-}
-
-// --- RBAC: super admin role + catalogue editor role + assignment ---
+// --- RBAC: catalogue editor role ---
 const existingRoles = await accessControlService.listRoles()
-if (existingRoles.length === 0) {
-  const superAdminRole = await accessControlService.createRole({
-    name: 'Super Admin',
-    features: [],
-  })
-
-  // createRole validates features (rejects '*' for non-super-admin roles) and updateRole
-  // blocks super-admin modifications, so we set all privileged fields via the repository.
-  type UpdatableRepo = { update(id: string, data: Record<string, unknown>): Promise<unknown> }
-  // biome-ignore lint/suspicious/noExplicitAny: seed-only cast to reach private repository
-  const roleRepo = (accessControlService as any).roleRepository as UpdatableRepo
-  await roleRepo.update(superAdminRole.id, { isSuperAdmin: true, protected: true, featuresJson: ['*'] })
-
-  const adminUsers = await userService.listUsers({ email: DEV_ADMIN_EMAIL })
-  const adminUser = adminUsers[0]
-  if (adminUser) {
-    await accessControlService.assignRolesToUser(adminUser.id, [superAdminRole.id])
-    console.info(`Assigned super admin role to ${DEV_ADMIN_EMAIL}`)
-  }
-
-  await accessControlService.createRole({
-    name: 'Catalogue Editor',
-    features: ['product.*'],
-  })
-
-  console.info('Seeded super admin + catalogue editor roles')
+if (existingRoles.some((role) => role.name === 'Catalogue Editor')) {
+  console.info('Skipped catalogue editor role (already exists)')
 } else {
-  console.info(`Skipped RBAC roles (${existingRoles.length} already exist)`)
+  await accessControlService.createRole({ name: 'Catalogue Editor', features: ['product.*'] })
+  console.info('Seeded catalogue editor role')
 }
 
 // --- Dev customer (registered + email-verified, ready for store auth) ---

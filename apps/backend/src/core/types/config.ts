@@ -40,10 +40,27 @@ type EventBusConfig = {
   adapter?: EventBusAdapterName
 }
 
+/** The payment gateways a store can turn on. Each one needs its keys in the environment once on. */
+type PaymentProviderName = 'stripe'
+
+/** The email services a store can turn on. Each one needs its keys in the environment once on. */
+type NotificationProviderName = 'resend'
+
+/**
+ * The optional integrations this store uses. A store that sells without card payments or sends no
+ * email leaves them out, and then needs none of their keys. The built-in providers (the system
+ * payment provider, the in-app notification feed, manual fulfillment) are always on.
+ */
+type ProvidersConfig = {
+  payment: PaymentProviderName[]
+  notification: NotificationProviderName[]
+}
+
 type ProjectConfig = {
   http: HttpConfig
   workflows: WorkflowsConfig
   eventBus: EventBusConfig
+  providers: ProvidersConfig
 }
 
 export type ConfigModule = {
@@ -56,6 +73,7 @@ export type InputConfig = {
     http?: Partial<HttpConfig>
     workflows?: Partial<WorkflowsConfig>
     eventBus?: Partial<EventBusConfig>
+    providers?: Partial<ProvidersConfig>
   }
   featureFlags?: Record<string, boolean | string | Record<string, boolean>>
 }

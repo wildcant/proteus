@@ -32,6 +32,11 @@ export class ConfigManager {
         workflows: { engine: input.projectConfig?.workflows?.engine },
         // Same rule, same reason — see `resolveEventBusAdapterName`.
         eventBus: { adapter: input.projectConfig?.eventBus?.adapter },
+        // Off unless named: an integration is something a store opts into, with its keys.
+        providers: {
+          payment: input.projectConfig?.providers?.payment ?? [],
+          notification: input.projectConfig?.providers?.notification ?? [],
+        },
       },
       featureFlags: input.featureFlags ?? {},
     }

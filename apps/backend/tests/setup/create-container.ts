@@ -102,6 +102,17 @@ function withPinnedAdapters(config: InputConfig | undefined): InputConfig {
       ...base.projectConfig,
       workflows: { engine: base.projectConfig?.workflows?.engine ?? pinnedTestWorkflowEngine() },
       eventBus: { adapter: base.projectConfig?.eventBus?.adapter ?? pinnedTestEventBusAdapter() },
+      providers: config?.projectConfig?.providers ?? EVERY_PROVIDER,
     },
   }
 }
+
+/**
+ * Every optional integration the codebase ships, whatever `src/config.ts` turns on. The suite tests
+ * the code, not one store's choice: a store that drops Stripe still ships the Stripe adapter, and
+ * its tests still have to pass. `.env.test` carries placeholder keys for each.
+ */
+const EVERY_PROVIDER = {
+  payment: ['stripe'],
+  notification: ['resend'],
+} satisfies NonNullable<InputConfig['projectConfig']>['providers']
