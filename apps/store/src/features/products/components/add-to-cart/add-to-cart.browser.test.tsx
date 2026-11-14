@@ -81,6 +81,7 @@ const product: StoreProductResponseProduct = {
     [medium.id]: { [smallValue.id]: null, [mediumValue.id]: medium.id, [largeValue.id]: large.id },
     [large.id]: { [smallValue.id]: null, [mediumValue.id]: medium.id, [largeValue.id]: large.id },
   },
+  fields: [],
 }
 
 /**

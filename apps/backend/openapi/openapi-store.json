@@ -2661,13 +2661,20 @@
                         ]
                       }
                     }
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/StoreProductField"
+                    }
                   }
                 },
                 "required": [
                   "images",
                   "options",
                   "variants",
-                  "pickerTargets"
+                  "pickerTargets",
+                  "fields"
                 ]
               }
             ]
@@ -2900,6 +2907,28 @@
               "state"
             ]
           }
+        ]
+      },
+      "StoreProductField": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "values"
         ]
       }
     },
