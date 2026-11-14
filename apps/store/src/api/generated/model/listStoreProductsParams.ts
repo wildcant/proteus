@@ -5,6 +5,7 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
+import type { StoreProductSort } from './storeProductSort.ts';
 
 export type ListStoreProductsParams = {
 /**
@@ -17,7 +18,7 @@ offset?: number | null;
  * @maximum 100
  */
 limit?: number;
-order?: string;
+order?: StoreProductSort;
 q?: string;
 exact?: boolean | string;
 /**

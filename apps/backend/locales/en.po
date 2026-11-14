@@ -332,7 +332,7 @@ msgid "Customer with id \"{customerId}\" not found"
 msgstr "Customer with id \"{customerId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:36
+#: src/api/store/middlewares.ts:31
 #: src/workflows/cart/update-cart.ts:139
 msgid "No region sells to country \"{countryCode}\""
 msgstr "No region sells to country \"{countryCode}\""
@@ -1225,7 +1225,7 @@ msgid "Verification token TTL must be a positive integer"
 msgstr "Verification token TTL must be a positive integer"
 
 #. js-lingui-explicit-id
-#: src/api/store/middlewares.ts:56
+#: src/api/store/middlewares.ts:51
 msgid "Cannot price this request: no countryCode was given and the store has no default region"
 msgstr "Cannot price this request: no countryCode was given and the store has no default region"
 
@@ -1234,7 +1234,7 @@ msgstr "Cannot price this request: no countryCode was given and the store has no
 #: src/api/store/customers/me/addresses/route.ts:17
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
-#: src/api/store/middlewares.ts:160
+#: src/api/store/middlewares.ts:106
 #: src/api/store/orders/route.ts:16
 msgid "Not authenticated"
 msgstr "Not authenticated"

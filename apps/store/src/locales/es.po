@@ -80,10 +80,6 @@ msgstr "<0>Vencida</0>: agrégala de nuevo para usarla"
 msgid "<0>Items in your cart aren't reserved.</0> Check out soon to make sure you don't miss out."
 msgstr "<0>Los productos de tu carrito no están reservados.</0> Finaliza tu compra pronto para no quedarte sin ellos."
 
-#: src/features/products/api/products.ts:46
-msgid "A–Z"
-msgstr "A–Z"
-
 #: src/components/store/footer/footer.tsx:56
 #: src/components/store/header/header.tsx:79
 #: src/components/store/side-menu/side-menu.tsx:110
@@ -643,7 +639,7 @@ msgstr "Nombre"
 msgid "New password"
 msgstr "Nueva contraseña"
 
-#: src/features/products/api/products.ts:45
+#: src/features/products/api/products.ts:40
 msgid "Newest"
 msgstr "Más recientes"
 
@@ -819,6 +815,14 @@ msgstr "Precio: {0} – {1}"
 msgid "Price: from {0}"
 msgstr "Precio: desde {0}"
 
+#: src/features/products/api/products.ts:42
+msgid "Price: high to low"
+msgstr "Precio: de mayor a menor"
+
+#: src/features/products/api/products.ts:41
+msgid "Price: low to high"
+msgstr "Precio: de menor a mayor"
+
 #. placeholder {0}: format(maxPrice)
 #: src/features/products/components/price-menu/price-menu.tsx:39
 msgid "Price: up to {0}"
@@ -844,6 +848,10 @@ msgstr "Ref."
 #: src/features/auth/api/auth.ts:46
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
+
+#: src/features/products/api/products.ts:39
+msgid "Relevance"
+msgstr "Relevancia"
 
 #: src/entities/payment-method/ui/saved-card-remove-confirm/saved-card-remove-confirm.tsx:79
 #: src/features/address/components/delete-address-button/delete-address-button.tsx:32
@@ -1302,7 +1310,3 @@ msgstr "Restableciste tu contraseña. Inicia sesión con tu nueva contraseña pa
 #: src/features/checkout/components/return-failure/return-failure.tsx:26
 msgid "Your payment did not finish"
 msgstr "Tu pago no se completó"
-
-#: src/features/products/api/products.ts:47
-msgid "Z–A"
-msgstr "Z–A"
