@@ -49,6 +49,9 @@ export const productTable = pgTable(
     liveIndex('idx_product_type_id').on(table.typeId),
     // Brand selections and facets match case-insensitively.
     liveIndex('idx_product_brand').on(sql`lower(${table.brand})`),
+    // The storefront search is `ILIKE '%word%'` on both, which only a trigram index can serve.
+    liveIndex('idx_product_title_trgm', undefined, 'gin').on(table.title.op('gin_trgm_ops')),
+    liveIndex('idx_product_brand_trgm', undefined, 'gin').on(table.brand.op('gin_trgm_ops')),
   ],
 )
 
