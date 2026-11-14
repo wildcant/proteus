@@ -1,0 +1,12 @@
+id: store-route-lists-every-variant
+language: typescript
+severity: error
+message: 'A store route reads every variant in the catalogue. Filter, sort, page and count in SQL instead.'
+note: 'Ask `linkService.repo(''storeCatalogListing'')` for the page — it joins product, pricing and inventory and pages in Postgres — or pass `listProductVariants` a filter scoped to what the response draws (`{ productId }`, the page''s variant ids). Loading the whole catalogue to filter or page it in memory is what ADR 0035 retired. standards/rules/backend/api/__docs__/routes.md'
+files:
+  - "**/src/api/store/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+# No argument at all is the shape: every scoped read names what it scopes to.
+rule:
+  pattern: $SERVICE.listProductVariants()

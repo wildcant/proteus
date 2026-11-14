@@ -1,0 +1,18 @@
+id: store-route-lists-every-variant
+valid:
+  # The product page reads one product's variants.
+  - |
+    const variants = await productService.listProductVariants({ productId: product.id })
+  # A page's variants, by id.
+  - |
+    const variants = await productService.listProductVariants({ id: pageVariantIds }, { select: ['id'] })
+  # Another method with no argument is not this rule's business.
+  - |
+    const products = await productService.listProducts()
+invalid:
+  # What `listSellableProducts` did on every list request.
+  - |
+    const variants = await productService.listProductVariants()
+  # Whatever the service variable is called.
+  - |
+    const all = await req.scope.resolve(Modules.PRODUCT).listProductVariants()

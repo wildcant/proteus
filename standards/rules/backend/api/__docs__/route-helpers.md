@@ -36,7 +36,7 @@ module boundary is not by itself a reason to leave the handler — mutating acro
 It qualifies only if it names no service, no `container` and no `req`, and awaits nothing. Pass the
 narrowed value rather than the request: a helper reading `req.body.data` is request-shaped, one
 taking `data` is pure. File it under the domain whose data it shapes, not the route that happens to
-call it — `build-starting-prices.ts` sits in `workflows/product/utils/` and is called from a route
+call it — `build-variant-prices.ts` sits in `workflows/product/utils/` and is called from a route
 handler and a workflow step alike.
 
 ### Several reads, even across modules → inline them
@@ -52,7 +52,7 @@ opened in — three reads across two modules, and the part worth extracting is t
 explaining why the address wins, not the code.
 
 The exception is the pure half. Once the reads are done, shaping the rows into the response is a
-util (above) — `buildStartingPrices` takes variants, links and prices already fetched by the caller.
+util (above) — `buildVariantPrices` takes links and prices already fetched by the caller.
 Extract the shaping, leave the fetching.
 
 ### Mutations that must not half-happen → one transaction, then a workflow
