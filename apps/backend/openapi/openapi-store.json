@@ -1370,10 +1370,14 @@
             "items": {
               "$ref": "#/components/schemas/StoreNavigationEntry"
             }
+          },
+          "search": {
+            "$ref": "#/components/schemas/StoreSearch"
           }
         },
         "required": [
-          "navigation"
+          "navigation",
+          "search"
         ]
       },
       "StoreNavigationEntry": {
@@ -1525,6 +1529,63 @@
           "type",
           "handle",
           "filters"
+        ]
+      },
+      "StoreSearch": {
+        "type": "object",
+        "properties": {
+          "popular": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trending": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreSearchTrendingLink"
+            }
+          }
+        },
+        "required": [
+          "popular",
+          "trending"
+        ]
+      },
+      "StoreSearchTrendingLink": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreNavigationFilter"
+            }
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "count": {
+            "type": "integer"
+          },
+          "thumbnail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "label",
+          "filters",
+          "note",
+          "count",
+          "thumbnail"
         ]
       },
       "StoreOrderListResponse": {
@@ -2145,6 +2206,12 @@
           "name": {
             "type": "string"
           },
+          "heading": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "description": {
             "type": "string"
           },
@@ -2161,6 +2228,7 @@
         "required": [
           "id",
           "name",
+          "heading",
           "description",
           "handle",
           "children"
@@ -4163,8 +4231,8 @@
     "/store/navigation": {
       "get": {
         "operationId": "getStoreNavigation",
-        "summary": "Retrieve the store's menu",
-        "description": "The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront.",
+        "summary": "Retrieve the store's menu and what search offers",
+        "description": "The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront. `search` holds the popular search terms and the most-searched models, each with the field values it filters the list by, how many published products this market sells match it and the newest one's photo; a model nothing matches is left out.",
         "tags": [
           "Store"
         ],

@@ -15,8 +15,8 @@ import { fetcher } from '../../fetcher.ts';
 
 
   /**
- * The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront.
- * @summary Retrieve the store's menu
+ * The menu entries in order, each a Category or a Collection by handle. An entry without sections is a Category shown with its children; one with sections opens a panel of them, each link a list by handle and the field values it filters by, read for the market. A handle naming no visible grouping is skipped by the storefront. `search` holds the popular search terms and the most-searched models, each with the field values it filters the list by, how many published products this market sells match it and the newest one's photo; a model nothing matches is left out.
+ * @summary Retrieve the store's menu and what search offers
  */
 export const getStoreNavigation = (
     params?: GetStoreNavigationParams,

@@ -6,7 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreNavigationEntry } from './storeNavigationEntry.ts';
+import type { StoreSearch } from './storeSearch.ts';
 
 export interface StoreNavigationResponse {
   navigation: StoreNavigationEntry[];
+  search: StoreSearch;
 }

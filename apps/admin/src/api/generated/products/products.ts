@@ -29,7 +29,7 @@ import type { BodyType } from '../../fetcher.ts';
 
 
   /**
- * Reads an uploaded structure file (`estructura.yaml`: categorias, colecciones, menu) and answers with the Categories and Collections it would create, update, move and delete, and the menu before and after. Every error carries its path in the file. Writes nothing.
+ * Reads an uploaded structure file (fields, categories, collections, menu, search and filters) and answers with the Categories and Collections it would create, update, move and delete, and the menu before and after. Every error carries its path in the file. Writes nothing.
  * @summary Preview a structure file
  */
 export const previewCatalogStructure = (
