@@ -2667,6 +2667,12 @@
                     "items": {
                       "$ref": "#/components/schemas/StoreProductField"
                     }
+                  },
+                  "subline": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
                   }
                 },
                 "required": [
@@ -2674,7 +2680,8 @@
                   "options",
                   "variants",
                   "pickerTargets",
-                  "fields"
+                  "fields",
+                  "subline"
                 ]
               }
             ]

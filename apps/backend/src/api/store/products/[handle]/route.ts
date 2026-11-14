@@ -4,6 +4,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StorePricingContextParams, StoreProductHandleParams, StoreProductResponse } from '@proteus/http-schemas/store'
 import { i18n } from '@proteus/utils'
+import { buildListingSublines } from '@workflows/product/utils/build-listing-subline.js'
 import { buildOptionSwatches } from '@workflows/product/utils/build-option-swatches.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import {
@@ -41,12 +42,16 @@ export const GET = async (
     })
   }
 
-  const [variants, images, options, definitions, fieldValuesByProductId] = await Promise.all([
+  const [variants, images, options, definitions, fieldValuesByProductId, store] = await Promise.all([
     productService.listProductVariants({ productId: product.id }),
     productService.listProductImages({ productId: product.id }, { order: { rank: 'ASC' } }),
     productService.listProductOptionsForProduct(product.id),
     productService.listMetafieldDefinitions(),
     productService.listFieldValuesOfProducts([product.id]),
+    // The threshold that decides `low` is store-wide and nullable, and a deployment with no store
+    // row yet has no threshold — which reads the same way an unset one does: no variant is low.
+    // The card's subline template is the store's too.
+    storeService.resolveStore(),
   ])
   // The definitions come in the structure file's order; a field the product holds nothing under is left out.
   const fieldValues = fieldValuesByProductId[product.id] ?? {}
@@ -56,15 +61,30 @@ export const GET = async (
   })
 
   const variantIds = variants.map((variant) => variant.id)
-  const [links, variantImages, optionValuesByVariantId, inventoryLinks] = await Promise.all([
-    linkService.repo('productVariantPriceSet').findByVariantIds(variantIds),
-    // An empty filter array would reach the query builder as `inArray(column, [])`.
-    variantIds.length > 0 ? productService.listProductVariantImages({ variantId: variantIds }) : [],
-    // The lean id map rather than `enrichVariants`: the picker only compares ids, and the labels
-    // already ship once on `product.options`.
-    productService.listVariantOptionMaps(variantIds),
-    linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds),
-  ])
+  const card = store?.card ?? { subline: null, listSeparator: ', ' }
+  const [links, variantImages, optionValuesByVariantId, inventoryLinks, groupingsByProductId, categories] =
+    await Promise.all([
+      linkService.repo('productVariantPriceSet').findByVariantIds(variantIds),
+      // An empty filter array would reach the query builder as `inArray(column, [])`.
+      variantIds.length > 0 ? productService.listProductVariantImages({ variantId: variantIds }) : [],
+      // The lean id map rather than `enrichVariants`: the picker only compares ids, and the labels
+      // already ship once on `product.options`.
+      productService.listVariantOptionMaps(variantIds),
+      linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds),
+      // The subline's `{type}` and the Category labels of its fields, only when the store has a subline at all.
+      card.subline ? productService.listProductGroupings([product.id]) : undefined,
+      card.subline ? productService.listCategories() : [],
+    ])
+
+  // The line under the title, the list card's own: one template, so the card and the page say the same.
+  const type = groupingsByProductId?.[product.id]?.type
+  const subline =
+    buildListingSublines([product], {
+      card,
+      typeByProductId: new Map(type ? [[product.id, type.value]] : []),
+      fieldValuesByProductId,
+      categories,
+    }).get(product.id) ?? null
 
   const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
   const calculatedPrices = await pricingService.calculatePrices(priceSetIds, req.pricingContext)
@@ -74,15 +94,10 @@ export const GET = async (
   const linkedImages = new Set(variantImages.map((variantImage) => `${variantImage.variantId}:${variantImage.imageId}`))
 
   const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  const [levels, store] = await Promise.all([
-    // Every item's levels in one read, the way the cart workflows read them — asking the module
-    // per item would be one `SELECT` per variant. An empty filter array would reach the query
-    // builder as `inArray(column, [])`.
-    itemIds.length > 0 ? inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : [],
-    // The threshold that decides `low` is store-wide and nullable, and a deployment with no store
-    // row yet has no threshold — which reads the same way an unset one does: no variant is low.
-    storeService.resolveStore(),
-  ])
+  // Every item's levels in one read, the way the cart workflows read them — asking the module
+  // per item would be one `SELECT` per variant. An empty filter array would reach the query
+  // builder as `inArray(column, [])`.
+  const levels = itemIds.length > 0 ? await inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : []
   const stockOf = variantStockProjection(
     inventoryLinks,
     buildAvailableQuantities(levels),
@@ -151,6 +166,7 @@ export const GET = async (
         variants: variantsForResponse,
         pickerTargets,
         fields,
+        subline,
       },
     },
   }

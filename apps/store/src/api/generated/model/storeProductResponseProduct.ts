@@ -12,10 +12,12 @@ import type { StoreProductResponseProductPickerTargets } from './storeProductRes
 import type { StoreProductScopedOption } from './storeProductScopedOption.ts';
 import type { StoreProductVariant } from './storeProductVariant.ts';
 
-export type StoreProductResponseProduct = StoreProduct & {
+export type StoreProductResponseProduct = StoreProduct & ({
   images: StoreProductImage[];
   options: StoreProductScopedOption[];
   variants: StoreProductVariant[];
   pickerTargets: StoreProductResponseProductPickerTargets;
   fields: StoreProductField[];
-};
+  /** @nullable */
+  subline: string | null;
+});
