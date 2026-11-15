@@ -736,6 +736,33 @@ describe('components', () => {
     )
   })
 
+  it('carries a state whose prefix holds a selector down to the parts, as one group variant', () => {
+    // The field shows its clear button once it holds text: the state is `has-[input:not(:placeholder-shown)]` on the
+    // root, so the button follows it through the root's group, colons inside the brackets and all.
+    const field = (position: 'default' | 'filled'): Layer => ({
+      ...frame(`position=${position}`, 'horizontal'),
+      type: 'COMPONENT',
+      visible: true,
+      children: [{ ...frame('clear', 'horizontal'), visible: position === 'filled' }],
+    })
+    const search: ComponentSet = {
+      name: 'Search',
+      page: 'components/ui',
+      properties: [variantProperty('position', ['default', 'filled'])],
+      variants: [field('default'), field('filled')],
+    }
+    const { files } = buildComponents([search], {
+      ...context,
+      config: {
+        ...componentsConfig,
+        interactionPrefixes: { Search: { filled: 'has-[input:not(:placeholder-shown)]' } },
+      },
+    })
+    expect(files.get('/shop/src/components/ui/search/search.variants.ts')).toContain(
+      "export const searchClear = cva('hidden group-has-[input:not(:placeholder-shown)]/search:flex')",
+    )
+  })
+
   it('maps the open interaction state to aria-expanded, the attribute a trigger carries while its popup is open', () => {
     // Only the quiet tone is drawn open (a menu trigger); the solid one has no open state of its own.
     const trigger = (tone: 'solid' | 'quiet', state: 'rest' | 'open'): Layer => ({
