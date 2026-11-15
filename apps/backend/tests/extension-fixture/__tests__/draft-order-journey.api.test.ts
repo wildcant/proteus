@@ -301,7 +301,7 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     expect(thirdOrder.totals).toMatchObject({ orderTotal: '60000', paidTotal: '20000' })
   })
 
-  test('refuses an unsellable line by name, at sending and at converting', async ({
+  test('refuses an unsellable line by name, at sending and at converting, and converts unpaid once it is back', async ({
     factories,
     service,
     http,
@@ -347,6 +347,18 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     const stillDraft = (await api.get<AdminOrderResponse>(`/admin/orders/${draft.body.orderId}`)).body.order
     expect(stillDraft).toMatchObject({ status: 'draft', paymentCollections: [] })
     expect(await service.read.reservationItems(api.container, {})).toEqual([])
+
+    // Back in stock, and the shop confirms without a deposit: the stock is held and the Order
+    // gets its one collection, with nothing received.
+    await stockAt(sneaker, 5)
+    const unpaid = await api.post<AdminOrderActionResponse>(
+      `/admin/draft-orders/${draft.body.orderId}/convert-to-order`,
+    )
+    expect(unpaid.status).toBe(200)
+    const confirmed = (await api.get<AdminOrderResponse>(`/admin/orders/${draft.body.orderId}`)).body.order
+    expect(confirmed).toMatchObject({ status: 'pending', paymentStatus: 'not_paid', totals: { paidTotal: '0' } })
+    expect(confirmed.paymentCollections).toHaveLength(1)
+    expect(await service.read.reservationItems(api.container, {})).toHaveLength(1)
   })
 
   test('deletes a draft, and only a draft', async ({ service, expect }) => {
