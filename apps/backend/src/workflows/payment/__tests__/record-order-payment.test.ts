@@ -5,6 +5,7 @@ import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
+import { vi } from 'vitest'
 import { addOrderTransactionsStep } from '../../order/steps/add-order-transactions.js'
 import { recordOrderPaymentWorkflow } from '../record-order-payment.js'
 import { refundPaymentWorkflow } from '../refund-payment.js'
@@ -90,6 +91,47 @@ test.describe('record-order-payment', () => {
       capturedAmount: new BigNumber(30),
       status: 'partially_captured',
     })
+  })
+
+  /** Two admins recording the first payment at once: each reads "no collection yet" before either writes. */
+  test('two first payments at once share one collection and never capture above the total', async ({
+    service,
+    expect,
+  }) => {
+    const { orderId, paymentCollectionId } = await orderForAHundred(service)
+    await container.resolve(ContainerRegistrationKeys.LINK).dismissLinks({ paymentCollectionId: [paymentCollectionId] })
+
+    // Holds each run at the collection's creation until both have got there, so both have read
+    // "no collection yet": the interleaving that otherwise depends on timing.
+    const paymentService = container.resolve(Modules.PAYMENT)
+    const createPaymentCollection = paymentService.createPaymentCollection.bind(paymentService)
+    let arrived = 0
+    let releaseBoth: () => void = () => undefined
+    const bothArrived = new Promise<void>((resolve) => {
+      releaseBoth = resolve
+    })
+    vi.spyOn(paymentService, 'createPaymentCollection').mockImplementation(async (...args) => {
+      arrived += 1
+      if (arrived === 2) releaseBoth()
+      await bothArrived
+      return createPaymentCollection(...args)
+    })
+
+    const results = await Promise.allSettled([
+      recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(60) }),
+      recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(60) }),
+    ])
+
+    expect(results.map((result) => result.status).sort()).toEqual(['fulfilled', 'rejected'])
+    const [recorded] = results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []))
+    assertDefined(recorded)
+    const link = await service.read.linkRepo(container, 'orderPaymentCollection').findByOrderId(orderId)
+    expect(link?.paymentCollectionId).toBe(recorded.paymentCollectionId)
+    expect((await service.read.paymentCollection(container, recorded.paymentCollectionId)).capturedAmount).toEqual(
+      new BigNumber(60),
+    )
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed())).toEqual(['60'])
   })
 
   /** The workflow is idempotent, so a retryable refusal would have Temporal ask again for an id that is not there. */

@@ -11,7 +11,12 @@ export const orderPaymentCollectionTable = pgTable(
     paymentCollectionId: text().notNull(),
     ...timestamps,
   },
-  (table) => [liveUniqueIndex('idx_order_payment_collection').on(table.orderId, table.paymentCollectionId)],
+  (table) => [
+    /** One payment collection per Order, every recorded payment a capture of part of it. Enforced
+     *  here because two first payments recorded at once each read "no collection yet" before
+     *  either writes; only the database can decide which one the Order keeps. */
+    liveUniqueIndex('idx_order_payment_collection_order_id').on(table.orderId),
+  ],
 )
 
 export type OrderPaymentCollection = typeof orderPaymentCollectionTable.$inferSelect
