@@ -413,5 +413,21 @@ test.describe('the cart line’s stock', () => {
         [kept.body.lineItem.id, 1],
       ]),
     )
+
+    // A completed cart is the record behind an order, so its lines are frozen — even where the shelf
+    // could cover the change.
+    const ordered = await service.create.checkoutReadyCart(api.container, {
+      lineItem: { quantity: 1 },
+      inventory: { level: { stockedQuantity: 5 } },
+    })
+    expect((await api.post<StoreCompleteCartResponse>(`/store/carts/${ordered.cart.id}/complete`)).status).toBe(200)
+    const orderedLineUrl = `/store/carts/${ordered.cart.id}/line-items/${ordered.lineItem.id}`
+    const frozenUpdate = await api.post<ApiErrorBody>(orderedLineUrl, { quantity: 2 })
+    expect([frozenUpdate.status, frozenUpdate.body.type]).toEqual([400, 'not_allowed'])
+    const frozenRemoval = await api.delete<ApiErrorBody>(orderedLineUrl)
+    expect([frozenRemoval.status, frozenRemoval.body.type]).toEqual([400, 'not_allowed'])
+    expect(await service.read.cartLineItems(api.container, { cartId: ordered.cart.id })).toMatchObject([
+      { id: ordered.lineItem.id, quantity: 1 },
+    ])
   })
 })
