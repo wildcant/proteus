@@ -18,6 +18,7 @@ export default [
     method: 'POST',
     matcher: '/admin/shipping-options',
     handler: shippingOptionRoutes.POST,
+    throws: shippingOptionRoutes.PostThrows,
     input: shippingOptionRoutes.PostInput,
     permissions: ['fulfillment.create'],
     operationId: 'createAdminShippingOption',

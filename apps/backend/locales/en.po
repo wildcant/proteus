@@ -14,12 +14,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/container.ts:167
+#: src/container.ts:174
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 
 #. js-lingui-explicit-id
-#: src/container.ts:201
+#: src/container.ts:208
 msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
@@ -76,10 +76,11 @@ msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its s
 msgstr "Variant \"{variantId}\" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:63
+#: src/workflows/cart/add-shipping-method-to-cart.ts:43
+#: src/workflows/cart/add-to-cart.ts:64
 #: src/workflows/cart/complete-cart.ts:296
-#: src/workflows/cart/update-cart.ts:161
-#: src/workflows/cart/update-line-item.ts:51
+#: src/workflows/cart/update-cart.ts:155
+#: src/workflows/cart/update-line-item.ts:52
 #: src/workflows/payment/create-payment-collection-for-cart.ts:30
 #: src/workflows/payment/reprice-payment-session.ts:57
 msgid "Cart \"{cartId}\" is already completed"
@@ -203,27 +204,32 @@ msgid "No customer data available for auth identity \"{authIdentityId}\". Expect
 msgstr "No customer data available for auth identity \"{authIdentityId}\". Expected either input.customerData or appMetadata.pending."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:53
+#: src/workflows/cart/add-shipping-method-to-cart.ts:62
+msgid "Shipping option \"{shippingOptionId}\" is not available"
+msgstr "Shipping option \"{shippingOptionId}\" is not available"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-to-cart.ts:54
 msgid "No items to add to the cart"
 msgstr "No items to add to the cart"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:92
+#: src/workflows/cart/add-to-cart.ts:93
 msgid "Variant(s) not found: {missing}"
 msgstr "Variant(s) not found: {missing}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:145
+#: src/workflows/cart/add-to-cart.ts:146
 msgid "Variant \"{variantId}\" has no product"
 msgstr "Variant \"{variantId}\" has no product"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:155
+#: src/workflows/cart/add-to-cart.ts:156
 msgid "Product \"{productId}\" is not available for sale"
 msgstr "Product \"{productId}\" is not available for sale"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:164
+#: src/workflows/cart/add-to-cart.ts:165
 msgid "Variant \"{variantId}\" has no price in {currencyCode}"
 msgstr "Variant \"{variantId}\" has no price in {currencyCode}"
 
@@ -329,12 +335,12 @@ msgstr "Customer with id \"{customerId}\" not found"
 
 #. js-lingui-explicit-id
 #: src/api/store/middlewares.ts:31
-#: src/workflows/cart/update-cart.ts:139
+#: src/workflows/cart/update-cart.ts:133
 msgid "No region sells to country \"{countryCode}\""
 msgstr "No region sells to country \"{countryCode}\""
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/update-cart.ts:211
+#: src/workflows/cart/update-cart.ts:205
 msgid "\"{name}\" does not ship to \"{enteredCountry}\""
 msgstr "\"{name}\" does not ship to \"{enteredCountry}\""
 
@@ -344,8 +350,8 @@ msgid "\"{title}\" is not sold in {currencyCode}"
 msgstr "\"{title}\" is not sold in {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:244
-#: src/workflows/cart/update-line-item.ts:43
+#: src/modules/cart/services/cart-module-service.ts:245
+#: src/workflows/cart/update-line-item.ts:44
 msgid "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
 msgstr "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
 
@@ -798,28 +804,33 @@ msgid "Inventory level with id \"{id}\" not found"
 msgstr "Inventory level with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:244
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:271
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:252
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:279
 msgid "serviceZoneId is required when creating geo zones directly"
 msgstr "serviceZoneId is required when creating geo zones directly"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:549
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:567
+msgid "Fulfillment provider \"{providerId}\" cannot calculate shipping prices"
+msgstr "Fulfillment provider \"{providerId}\" cannot calculate shipping prices"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:672
 msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
 msgstr "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:557
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:680
 msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
 msgstr "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-provider-service.ts:42
+#: src/modules/fulfillment/services/fulfillment-provider-service.ts:45
 msgid "Fulfillment provider \"{providerId}\" is not registered."
 msgstr "Fulfillment provider \"{providerId}\" is not registered."
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/providers/manual.ts:44
+#: src/modules/fulfillment/providers/manual.ts:43
 msgid "Manual provider does not support calculated prices"
 msgstr "Manual provider does not support calculated prices"
 
@@ -855,12 +866,12 @@ msgid "The configured file provider does not support presigned upload URLs."
 msgstr "The configured file provider does not support presigned upload URLs."
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:312
+#: src/modules/cart/services/cart-module-service.ts:319
 msgid "Shipping method not returned after create"
 msgstr "Shipping method not returned after create"
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:392
+#: src/modules/cart/services/cart-module-service.ts:410
 msgid "Cart {id} is already completed"
 msgstr "Cart {id} is already completed"
 
@@ -1275,11 +1286,6 @@ msgstr "Order with id \"{id}\" not found"
 #: src/api/store/customers/middlewares.ts:28
 msgid "Address with id \"{id}\" not found"
 msgstr "Address with id \"{id}\" not found"
-
-#. js-lingui-explicit-id
-#: src/api/store/carts/[id]/shipping-methods/route.ts:23
-msgid "Shipping option \"{shippingOptionId}\" is not available"
-msgstr "Shipping option \"{shippingOptionId}\" is not available"
 
 #. js-lingui-explicit-id
 #: src/api/store/carts/[id]/line-items/route.ts:19

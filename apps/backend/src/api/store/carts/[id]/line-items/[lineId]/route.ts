@@ -7,6 +7,7 @@ import {
   StoreUpdateCartLineItemResponse,
   UpdateLineItem,
 } from '@proteus/http-schemas/store'
+import { deleteLineItemWorkflow } from '@workflows/cart/delete-line-item.js'
 import { updateLineItemWorkflow } from '@workflows/cart/update-line-item.js'
 import { attachLineItemStock } from '../../../middlewares.js'
 
@@ -33,13 +34,12 @@ export const POST = async (
 export const DeleteInput = { params: LineIdParams }
 export const DeleteOutput = DeleteResponse
 // removeLineItem throws NOT_FOUND (no such cart, or a line the cart does not hold) and NOT_ALLOWED
-// (a completed cart) from the cart module
+// (a completed cart) from the cart module, inside the workflow
 // ast-grep-ignore: route-declares-unthrown-error
-export const DeleteThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED] as const
+export const DeleteThrows = [...deleteLineItemWorkflow.throws, ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED] as const
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
-  const cartService = req.scope.resolve(Modules.CART)
-  await cartService.removeLineItem(req.params.id, req.params.lineId)
+  await deleteLineItemWorkflow.run({ cartId: req.params.id, lineItemId: req.params.lineId })
 
   return { status: 200, json: { id: req.params.lineId, deleted: true } }
 }

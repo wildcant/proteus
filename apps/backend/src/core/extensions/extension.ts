@@ -26,3 +26,13 @@ export function defineExtension<const TManifest extends ExtensionManifest>(manif
  * root, so a step may read files.
  */
 export type ExtensionSeedStep = (context: { container: AppContainer; logger: Logger }) => Promise<void>
+
+/**
+ * What an extension's fulfillment provider is constructed with: the shared container's `resolve`,
+ * so it reaches its own extension's modules by their keys (`resolve(PisosDjModules.SHIPPING)`) and
+ * core's by their public services, and never a module's private repositories.
+ *
+ * The provider is built the first time it is resolved, after every module has registered, so its
+ * constructor may resolve straight away.
+ */
+export type ExtensionProviderDependencies = Pick<AppContainer, 'resolve'>

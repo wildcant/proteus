@@ -21,6 +21,7 @@ import type {
   CreateCartDTO,
   CreateLineItemDTO,
   CreateShippingMethodDTO,
+  ShippingMethodRefreshDTO,
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
@@ -250,6 +251,12 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
+  async restoreLineItems(lineItemIds: string[], context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await this.cartLineItemRepository.restore(lineItemIds, ctx)
+    })
+  }
+
   async listShippingMethods(
     filters?: FilterableCartShippingMethodProps,
     config?: FindConfig<CartShippingMethodDTO>,
@@ -320,6 +327,17 @@ export class CartModuleService implements ICartModuleService {
   async restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.cartShippingMethodRepository.restore(shippingMethodIds, ctx)
+    })
+  }
+
+  async applyShippingMethodRefresh({ update, remove }: ShippingMethodRefreshDTO, context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      await Promise.all(
+        update.map(({ id, amount, isTaxInclusive }) =>
+          this.cartShippingMethodRepository.update(id, { amount, isTaxInclusive }, ctx),
+        ),
+      )
+      if (remove.length > 0) await this.cartShippingMethodRepository.softDelete(remove, ctx)
     })
   }
 

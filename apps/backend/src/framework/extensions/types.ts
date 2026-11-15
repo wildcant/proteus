@@ -1,6 +1,7 @@
 import type { Messages } from '@lingui/core'
 import type { ExtensionSeedStep } from '../../core/extensions/extension.js'
 import type { ModuleDefinition } from '../../core/utils/module.js'
+import type { ModuleProviderExports } from '../../core/utils/module-provider.js'
 import type { HookHandlerDefinition } from '../../core/workflows/hook-handler.js'
 import type { RouteDefinition } from '../http/types.js'
 
@@ -23,6 +24,12 @@ export type ExtensionRegistry = {
   hookHandlers: HookHandlerDefinition[]
   /** Each extension's compiled catalogs, language → messages, merged after core's. */
   catalogs: { extension: string; messages: Record<string, Messages> }[]
+  /**
+   * Each extension's fulfillment providers, one per file in its `providers/fulfillment/`. The
+   * fulfillment module registers each class as `fp_<identifier>_default`, built from the shared
+   * container, and the provider sync writes their rows.
+   */
+  fulfillmentProviders: { extension: string; resolve: ModuleProviderExports }[]
 }
 
 /** One dev seed step, as `seeds.gen.ts` lists it: run in extension-name, then file-name, order. */

@@ -41,8 +41,10 @@ const LAYER_GRAPH = {
   extensionSchemas: ['core'],
   // Compiled message catalogs, which import nothing.
   extensionLocales: [],
-  // No `providers`: an extension module bringing a provider is deferred.
   extensionModules: ['core', 'extensionVocabulary', 'extensionTypes'],
+  // A fulfillment provider: core's port, and its own extension's module keys and contracts, which it
+  // resolves from the shared container. Payment and notification providers are still deferred.
+  extensionProviders: ['core', 'extensionVocabulary', 'extensionTypes'],
   extensionWorkflows: ['core', 'extensionVocabulary', 'extensionTypes'],
   // A handler imports the hook it handles, which is defined beside the core workflow that runs it.
   extensionHooks: ['core', 'workflows', 'extensionVocabulary', 'extensionTypes'],
@@ -66,7 +68,14 @@ const LAYER_GRAPH = {
   subscriberList: ['core', 'subscribers', 'extensionSubscribers'],
   subscriberRegistry: ['core', 'subscriberList'],
   jobRegistry: ['core', 'jobs', 'extensionJobs'],
-  extensionRegistry: ['framework', 'extensionModules', 'extensionApi', 'extensionHooks', 'extensionLocales'],
+  extensionRegistry: [
+    'framework',
+    'extensionModules',
+    'extensionApi',
+    'extensionHooks',
+    'extensionLocales',
+    'extensionProviders',
+  ],
   // The fixture's test registry also lists its subscribers, for the test container's in-process bus.
   fixtureRegistry: [
     'core',
@@ -76,6 +85,7 @@ const LAYER_GRAPH = {
     'extensionHooks',
     'extensionLocales',
     'extensionSubscribers',
+    'extensionProviders',
   ],
   // Imported by scripts/seed-dev.ts only; no row here lists it. See seed-registry-only-from-the-dev-seed.
   extensionSeedRegistry: ['framework', 'extensionSeeds'],
@@ -108,6 +118,7 @@ const EXTENSION_LAYERS = {
   extensionJobs: `${EXTENSION}jobs/`,
   extensionApi: `${EXTENSION}api/`,
   extensionSeeds: `${EXTENSION}seeds/`,
+  extensionProviders: `${EXTENSION}providers/fulfillment/`,
 }
 
 /**
@@ -563,7 +574,8 @@ module.exports = {
       comment:
         "An extension mirrors core's folders, every one optional: extension.ts (its manifest), " +
         'keys.ts (module keys), events.ts, config.ts (typed settings), and modules/, api/, ' +
-        'workflows/, hooks/ (hook handlers), subscribers/, jobs/, seeds/, schemas/, locales/, types/ ' +
+        'workflows/, hooks/ (hook handlers), subscribers/, jobs/, seeds/, schemas/, locales/, types/, ' +
+        'providers/fulfillment/ ' +
         'and __tests__/. extensions:generate reads these by name, so anything else is invisible to ' +
         'it and becomes a private convention. A pure helper belongs to the layer that uses it — a ' +
         "module's utils/, say. See src/extensions/AGENTS.md.",
@@ -572,7 +584,8 @@ module.exports = {
         path:
           `${EXTENSION}` +
           '(?!(?:extension|keys|events|config)\\.ts$)' +
-          '(?!(?:modules|api|workflows|hooks|subscribers|jobs|seeds|schemas|locales|types|__tests__)/)',
+          '(?!(?:modules|api|workflows|hooks|subscribers|jobs|seeds|schemas|locales|types|__tests__)/)' +
+          '(?!providers/fulfillment/)',
       },
       to: { path: '(?!)' },
     },

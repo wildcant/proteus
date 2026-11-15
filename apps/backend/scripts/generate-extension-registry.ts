@@ -1,6 +1,7 @@
 /**
  * Writes the extension registries: `src/extensions/registry.gen.ts`, what the runtime roots read
- * (modules, store and webhook routes, hook handlers, compiled catalogs, manifests), and
+ * (modules, store and webhook routes, hook handlers, compiled catalogs, fulfillment providers,
+ * manifests), and
  * `src/extensions/seeds.gen.ts`, the dev seed's steps, which only `scripts/seed-dev.ts` imports.
  *
  * Static imports rather than a directory scan, for the reasons the workflow, subscriber and job
@@ -21,6 +22,8 @@
  *   method, same pattern whatever the parameter names), and a static path in front of a core
  *   parameter route that `RoutesSorter` would let shadow it, all fail;
  * - a second handler for one hook fails;
+ * - a fulfillment provider's `static identifier` carries the snake prefix (`pisos_dj_…`), since it
+ *   becomes a `fulfillment_provider` row id, and is not core's (`manual`) or another extension's;
  * - two catalogs translating one message differently fail (`extension-catalogs.ts`).
  *
  * Workflows, subscribers and jobs are not here: their own generators scan extension folders too.
@@ -37,7 +40,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
 import * as ts from 'typescript'
 import { catalogConflicts, httpSchemasLocales, readCoreCatalog, readExtensionCatalogs } from './extension-catalogs.js'
-import { camelPrefix, hasPrefix, isExtensionName, pascalPrefix, runtimePrefix } from './extension-names.js'
+import {
+  camelPrefix,
+  databasePrefix,
+  hasPrefix,
+  isExtensionName,
+  pascalPrefix,
+  runtimePrefix,
+} from './extension-names.js'
 import {
   BACKEND,
   DIM,
@@ -70,6 +80,9 @@ type HookHandlerFile = ImportedFile & { hook: string; location: string }
 
 type CatalogFile = ImportedFile & { language: string }
 
+/** A file in `providers/fulfillment/`, and the `static identifier` of each provider class it declares. */
+type FulfillmentProviderFile = ImportedFile & { identifiers: Named[] }
+
 export type DiscoveredExtension = {
   name: string
   /** Absolute folder. */
@@ -87,6 +100,7 @@ export type DiscoveredExtension = {
   hookHandlers: HookHandlerFile[]
   seeds: (ImportedFile & { seed: string })[]
   subscribers: ImportedFile[]
+  fulfillmentProviders: FulfillmentProviderFile[]
   /** Its HTTP schemas' catalog (`packages/http-schemas/src/extensions/<ext>/locales/`), then its own (`locales/`), the order the translator merges them. */
   catalogs: { directory: string; files: CatalogFile[] }[]
 }
@@ -98,6 +112,8 @@ export type CoreNames = {
   operationIds: Set<string>
   componentNames: Set<string>
   routes: Route[]
+  /** The `static identifier` of every fulfillment provider core ships (`manual`). */
+  fulfillmentProviderIdentifiers: Set<string>
 }
 
 export type GenerateOptions = {
@@ -197,6 +213,19 @@ function exportedNames(source: ts.SourceFile): Named[] {
   return source.statements.flatMap((statement) =>
     namesExportedBy(statement).map((name) => ({ name: name.text, location: lineOf(source, name) })),
   )
+}
+
+/** The string literal of each `static identifier = '…'` a class in the file declares. */
+function staticIdentifiers(source: ts.SourceFile): Named[] {
+  const identifiers: Named[] = []
+  forEachNode(source, (node) => {
+    if (!ts.isPropertyDeclaration(node) || node.name.getText(source) !== 'identifier') return
+    if (!ts.getModifiers(node)?.some((modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword)) return
+    if (node.initializer && ts.isStringLiteralLike(node.initializer)) {
+      identifiers.push({ name: node.initializer.text, location: lineOf(source, node) })
+    }
+  })
+  return identifiers
 }
 
 /** Unwraps `[…] satisfies T` and `[…] as const`. */
@@ -455,6 +484,41 @@ function readSubscribers(folder: ExtensionFolder): ImportedFile[] {
     .map((file) => ({ alias: aliasOf(folder.name, basename(file.path, '.ts'), 'subscriber'), file: file.path }))
 }
 
+/**
+ * `providers/fulfillment/<name>.ts`: a default export of `ModuleProvider(Modules.FULFILLMENT, {
+ * services: [TheProvider] })`, with the provider class declared in the same file, so its
+ * `static identifier` is a literal this generator can read and check.
+ */
+function readFulfillmentProviders(folder: ExtensionFolder): FulfillmentProviderFile[] {
+  return filesIn(pathIn(folder, 'providers', 'fulfillment'), folder.repoRoot).flatMap((file) => {
+    const source = parse(file)
+    if (!defaultExport(source)) {
+      folder.problems.push({
+        location: file.path,
+        message: 'a fulfillment provider file with no default export',
+        remedy: 'export default ModuleProvider(Modules.FULFILLMENT, { services: [YourProvider] })',
+      })
+      return []
+    }
+    const identifiers = staticIdentifiers(source)
+    if (identifiers.length === 0) {
+      folder.problems.push({
+        location: file.path,
+        message: 'a fulfillment provider file declaring no class with a string-literal `static identifier`',
+        remedy: `declare the provider class in this file with \`static identifier = '${databasePrefix(folder.name)}…'\``,
+      })
+      return []
+    }
+    return [
+      {
+        alias: aliasOf(folder.name, basename(file.path, '.ts'), 'fulfillment provider'),
+        file: file.path,
+        identifiers,
+      },
+    ]
+  })
+}
+
 function readCatalogFiles(folder: ExtensionFolder): DiscoveredExtension['catalogs'] {
   const directories = [
     { directory: httpSchemasLocales(folder.name), label: 'schema messages' },
@@ -487,6 +551,7 @@ function discoverExtension(name: string, options: GenerateOptions, problems: Pro
     hookHandlers: readHookHandlers(folder),
     seeds: readSeeds(folder),
     subscribers: options.subscribers ? readSubscribers(folder) : [],
+    fulfillmentProviders: readFulfillmentProviders(folder),
     catalogs: readCatalogFiles(folder),
   }
 }
@@ -542,7 +607,13 @@ export function readCoreNames(backend: string): CoreNames {
     }
   }
 
-  return { moduleKeys, events, operationIds, componentNames, routes }
+  const fulfillmentProviderIdentifiers = new Set(
+    collect(join(backend, 'src/modules/fulfillment/providers'), repoRoot).flatMap((file) =>
+      staticIdentifiers(parse(file)).map((identifier) => identifier.name),
+    ),
+  )
+
+  return { moduleKeys, events, operationIds, componentNames, routes, fulfillmentProviderIdentifiers }
 }
 
 // ---- Checks ----------------------------------------------------------------------------------
@@ -661,6 +732,11 @@ function prefixProblems(extension: DiscoveredExtension): Problem[] {
       prefix: camelPrefix(extension.name),
     },
     { kind: 'OpenAPI component', names: extension.componentNames, prefix: pascalPrefix(extension.name) },
+    {
+      kind: 'fulfillment provider identifier',
+      names: extension.fulfillmentProviders.flatMap((file) => file.identifiers),
+      prefix: databasePrefix(extension.name),
+    },
     // A model file exports values in camel case and types in Pascal case: `pisosDjNoteTable`, `PisosDjNote`.
     {
       kind: 'exported model identifier',
@@ -697,6 +773,11 @@ function duplicateProblems(extensions: DiscoveredExtension[], core: CoreNames): 
         ),
     },
     { kind: 'OpenAPI component', core: core.componentNames, names: (extension) => extension.componentNames },
+    {
+      kind: 'fulfillment provider identifier',
+      core: core.fulfillmentProviderIdentifiers,
+      names: (extension) => extension.fulfillmentProviders.flatMap((file) => file.identifiers),
+    },
   ]
 
   const problems: Problem[] = []
@@ -839,6 +920,9 @@ function renderRegistry(extensions: DiscoveredExtension[], options: GenerateOpti
     for (const subscriber of extension.subscribers) {
       imports.push(`import { config as ${subscriber.alias} } from '${specifier(subscriber.file)}'`)
     }
+    for (const provider of extension.fulfillmentProviders) {
+      imports.push(`import ${provider.alias} from '${specifier(provider.file)}'`)
+    }
   }
 
   const list = (items: string[], indent: string) =>
@@ -868,10 +952,10 @@ export const extensionSubscribers: SubscriberDefinition[] = ${list(
 
   return `// GENERATED by \`${options.command}\`. Do not edit — your change will be overwritten.
 //
-// Every extension's modules, store and webhook routes, hook handlers and compiled catalogs, as static
-// imports, so workerd and the Temporal Worker have them without a file system. The container
-// bootstrap, route preparation and the translator take this registry as a dependency. \`pnpm verify\`
-// fails when this file drifts from the extension folders.
+// Every extension's modules, store and webhook routes, hook handlers, compiled catalogs and
+// fulfillment providers, as static imports, so workerd and the Temporal Worker have them without a
+// file system. The container bootstrap, route preparation and the translator take this registry as a
+// dependency. \`pnpm verify\` fails when this file drifts from the extension folders.
 
 ${imports.join('\n')}
 
@@ -895,6 +979,14 @@ export const extensionRegistry: ExtensionRegistry = {
     '  ',
   )},
   catalogs: ${list(catalogs, '  ')},
+  fulfillmentProviders: ${list(
+    extensions.flatMap((extension) =>
+      extension.fulfillmentProviders.map(
+        (provider) => `{ extension: '${extension.name}', resolve: ${provider.alias} }`,
+      ),
+    ),
+    '  ',
+  )},
 }
 ${subscriberBlock}`
 }

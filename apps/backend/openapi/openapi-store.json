@@ -869,11 +869,18 @@
           "name": {
             "type": "string"
           },
-          "amount": {
-            "type": [
-              "number",
-              "null"
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "calculated"
             ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "isTaxInclusive": {
+            "type": "boolean"
           },
           "serviceZoneId": {
             "type": "string"
@@ -901,7 +908,9 @@
         "required": [
           "id",
           "name",
+          "priceType",
           "amount",
+          "isTaxInclusive",
           "serviceZoneId",
           "shippingProfileId",
           "shippingOptionTypeId",

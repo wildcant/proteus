@@ -6,9 +6,11 @@
 
 import type { WorkflowDefinition } from '../../../core/workflows/types.js'
 import { requestPasswordResetWorkflow } from '../../../workflows/auth/request-password-reset.js'
+import { addShippingMethodToCartWorkflow } from '../../../workflows/cart/add-shipping-method-to-cart.js'
 import { addToCartWorkflow } from '../../../workflows/cart/add-to-cart.js'
 import { completeCartWorkflow } from '../../../workflows/cart/complete-cart.js'
 import { confirmInventoryWorkflow } from '../../../workflows/cart/confirm-inventory-workflow.js'
+import { deleteLineItemWorkflow } from '../../../workflows/cart/delete-line-item.js'
 import { transferCartCustomerWorkflow } from '../../../workflows/cart/transfer-cart-customer.js'
 import { updateCartWorkflow } from '../../../workflows/cart/update-cart.js'
 import { updateLineItemWorkflow } from '../../../workflows/cart/update-line-item.js'
@@ -42,9 +44,11 @@ import { resendInviteWorkflow } from '../../../workflows/user/resend-invite.js'
 
 export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
   requestPasswordResetWorkflow,
+  addShippingMethodToCartWorkflow,
   addToCartWorkflow,
   completeCartWorkflow,
   confirmInventoryWorkflow,
+  deleteLineItemWorkflow,
   transferCartCustomerWorkflow,
   updateCartWorkflow,
   updateLineItemWorkflow,
