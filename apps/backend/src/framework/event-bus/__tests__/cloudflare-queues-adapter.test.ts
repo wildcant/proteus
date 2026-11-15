@@ -2,6 +2,7 @@ import type { Logger } from '@core/types/logger.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { defineSubscriber, type SubscriberDefinition } from '../../../core/event-bus/types.js'
+import { defineEvent } from '../../../core/extensions/define-event.js'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
 import {
@@ -492,5 +493,27 @@ test.describe('the Cloudflare Queues consumer', () => {
 
     expect(delivered.retried()).toEqual(['moved'])
     expect(delivered.acked()).toEqual([])
+  })
+
+  /** The message carries only the event's name, so the consumer finds the key on the subscriber. */
+  test('derives an extension event’s identity from its declared key', async ({ expect }) => {
+    const rateChanged = defineEvent<{ cityId: string; version: number }>({
+      name: 'pisos-dj.rate_changed',
+      key: (data) => `${data.cityId}:${data.version}`,
+    })
+    const received: string[] = []
+    const { consume } = makeConsumer([
+      defineSubscriber({
+        name: 'pisos-dj.sync',
+        event: rateChanged,
+        handler: async ({ event }) => {
+          received.push(event.dispatchId)
+        },
+      }),
+    ])
+
+    await consume(fakeBatch([message('pisos-dj.rate_changed', { cityId: 'bog', version: 2 }, 'pisos-dj.sync')]).batch)
+
+    expect(received).toEqual(['pisos-dj.rate_changed:bog:2:pisos-dj.sync'])
   })
 })

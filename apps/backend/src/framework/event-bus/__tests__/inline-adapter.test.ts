@@ -2,6 +2,7 @@ import type { Logger } from '@core/types/logger.js'
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
 import { defineSubscriber, type SubscriberDefinition } from '../../../core/event-bus/types.js'
+import { defineEvent } from '../../../core/extensions/define-event.js'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
 import { createInlineEventBus } from '../inline-adapter.js'
@@ -215,5 +216,26 @@ test.describe('the subscriber registry', () => {
       ])
 
     expect(duplicate).toThrow('Two subscribers are registered as "twice"')
+  })
+
+  test('delivers an extension event to its subscriber, keyed the way the event declared', async ({ expect }) => {
+    const rateChanged = defineEvent<{ cityId: string; version: number }>({
+      name: 'pisos-dj.rate_changed',
+      key: (data) => `${data.cityId}:${data.version}`,
+    })
+    const received: { dispatchId: string; cityId: string }[] = []
+    const bus = makeBus([
+      defineSubscriber({
+        name: 'pisos-dj.sync',
+        event: rateChanged,
+        handler: async ({ event }) => {
+          received.push({ dispatchId: event.dispatchId, cityId: event.data.cityId })
+        },
+      }),
+    ])
+
+    await bus.emit(rateChanged, { cityId: 'bog', version: 2 })
+
+    expect(received).toEqual([{ dispatchId: 'pisos-dj.rate_changed:bog:2:pisos-dj.sync', cityId: 'bog' }])
   })
 })

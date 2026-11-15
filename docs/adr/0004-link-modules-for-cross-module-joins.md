@@ -1,6 +1,6 @@
 # 4. Link Modules for Cross-Module Joins
 
-**Status:** Accepted (revised — added LinkService registry pattern)
+**Status:** Accepted (revised — added LinkService registry pattern). Amended by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): an extension module points at a core row by its id, with no link.
 
 ## Context
 

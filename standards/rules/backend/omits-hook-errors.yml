@@ -1,0 +1,119 @@
+id: omits-hook-errors
+language: typescript
+severity: error
+message: This runs $HOOK but the workflow or route running it never spreads `...$HOOK.throws`, so the errors its handler may raise reach the client undocumented.
+note: 'Spread the hook into the `throws` of the workflow or route that runs it — `throws: [...orderChargesHook.throws]`. A handler error the hook does not declare is reported as an unexpected-state error, so the list is the whole contract a handler gets. standards/rules/backend/workflows/__docs__/hooks.md'
+files:
+  - "**/src/api/**/route.ts"
+  - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+# A spread anywhere in the file is not enough: it has to sit in the list of the thing that runs the
+# hook. For a workflow that is the `throws` of the `createWorkflow` config whose handler holds the
+# `hookStep`. For a route it is the `<Method>Throws` beside the handler holding the `runHook` —
+# ast-grep cannot derive `PostThrows` from `POST`, so the five methods are spelled out. A hook run
+# anywhere else has no list to carry its errors, and is reported.
+rule:
+  any:
+    - pattern: hookStep($CTX, $HOOK, $$$)
+    - pattern: runHook($CONTAINER, $HOOK, $$$)
+  not:
+    any:
+      - inside:
+          stopBy: end
+          kind: call_expression
+          all:
+            # `field: function` rather than the pattern `createWorkflow($$$)`, which misses
+            # `createWorkflow<Input, Output>(…)` — see standards/utils/backend/workflows/outside-a-step.yml.
+            - has:
+                field: function
+                regex: '^createWorkflow$'
+            - has:
+                field: arguments
+                has:
+                  kind: object
+                  has:
+                    kind: pair
+                    all:
+                      - has:
+                          field: key
+                          regex: '^throws$'
+                      - has:
+                          field: value
+                          kind: array
+                          has:
+                            kind: spread_element
+                            has:
+                              pattern: $HOOK.throws
+      - all:
+          - inside:
+              stopBy: end
+              pattern: export const GET = $HANDLER
+          - inside:
+              stopBy: end
+              kind: program
+              has:
+                pattern: export const GetThrows = [$$$] as const
+                has:
+                  stopBy: end
+                  kind: spread_element
+                  has:
+                    pattern: $HOOK.throws
+      - all:
+          - inside:
+              stopBy: end
+              pattern: export const POST = $HANDLER
+          - inside:
+              stopBy: end
+              kind: program
+              has:
+                pattern: export const PostThrows = [$$$] as const
+                has:
+                  stopBy: end
+                  kind: spread_element
+                  has:
+                    pattern: $HOOK.throws
+      - all:
+          - inside:
+              stopBy: end
+              pattern: export const PUT = $HANDLER
+          - inside:
+              stopBy: end
+              kind: program
+              has:
+                pattern: export const PutThrows = [$$$] as const
+                has:
+                  stopBy: end
+                  kind: spread_element
+                  has:
+                    pattern: $HOOK.throws
+      - all:
+          - inside:
+              stopBy: end
+              pattern: export const PATCH = $HANDLER
+          - inside:
+              stopBy: end
+              kind: program
+              has:
+                pattern: export const PatchThrows = [$$$] as const
+                has:
+                  stopBy: end
+                  kind: spread_element
+                  has:
+                    pattern: $HOOK.throws
+      - all:
+          - inside:
+              stopBy: end
+              pattern: export const DELETE = $HANDLER
+          - inside:
+              stopBy: end
+              kind: program
+              has:
+                pattern: export const DeleteThrows = [$$$] as const
+                has:
+                  stopBy: end
+                  kind: spread_element
+                  has:
+                    pattern: $HOOK.throws

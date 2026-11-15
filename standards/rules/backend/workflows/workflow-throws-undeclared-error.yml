@@ -5,6 +5,7 @@ message: This workflow raises $TYPE but does not declare it, so every route that
 note: 'Add it to the `createWorkflow` config: `{ name: ..., throws: [ErrorTypes.$TYPE] }`. A step in its own file exports its own `…Throws` for the workflow to spread. standards/rules/backend/workflows/__docs__/workflows.md'
 files:
   - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
 ignores:
   - "**/__tests__/**"
 rule:

@@ -13,9 +13,9 @@
 //
 // Invoked by run.sh; see there for the surrounding flow.
 
-import { execFileSync, spawn } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { spawn } from 'node:child_process'
+import { readdirSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from '@playwright/test'
 
@@ -54,25 +54,68 @@ const GRID = [
   [['auth'], ['user', 'customer'], ['notification']],
 ]
 
-/** Which module owns each table, read from the source rather than hardcoded. */
+/** The `.ts` files directly inside `directory`, or none when it does not exist. */
+const modelFiles = (directory) => {
+  try {
+    return readdirSync(directory)
+      .filter((name) => name.endsWith('.ts'))
+      .map((name) => join(directory, name))
+  } catch {
+    return []
+  }
+}
+
+/** The folders directly inside `directory`, or none when it does not exist (no extensions upstream). */
+const folders = (directory) => {
+  try {
+    return readdirSync(directory, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Which module owns each table, read from the source rather than hardcoded. An extension module's
+ * area is named `<extension>/<module>`.
+ */
 const ownership = () => {
-  const files = execFileSync(
-    'sh',
-    ['-c', `ls ${BACKEND}/src/modules/*/models/*.ts ${BACKEND}/src/link-modules/definitions/*.ts`],
-    { encoding: 'utf8' },
-  )
-    .trim()
-    .split('\n')
+  const sources = [
+    ...folders(join(BACKEND, 'src/modules')).map((module) => ({
+      module,
+      files: modelFiles(join(BACKEND, 'src/modules', module, 'models')),
+    })),
+    { module: 'link', files: modelFiles(join(BACKEND, 'src/link-modules/definitions')) },
+    ...folders(join(BACKEND, 'src/extensions')).flatMap((extension) =>
+      folders(join(BACKEND, 'src/extensions', extension, 'modules')).map((module) => ({
+        module: `${extension}/${module}`,
+        files: modelFiles(join(BACKEND, 'src/extensions', extension, 'modules', module, 'models')),
+      })),
+    ),
+  ]
 
   const owners = {}
-  for (const file of files) {
-    const module = file.includes('/link-modules/') ? 'link' : file.match(/modules\/([^/]+)\//)?.[1]
-    if (!module) continue
-    for (const [, table] of readFileSync(file, 'utf8').matchAll(/pgTable\(\s*'([a-z_]+)'/g)) {
-      owners[table] = module
+  for (const { module, files } of sources) {
+    for (const file of files) {
+      for (const [, table] of readFileSync(file, 'utf8').matchAll(/pgTable\(\s*'([a-z0-9_]+)'/g)) {
+        owners[table] = module
+      }
     }
   }
   return owners
+}
+
+/** Extension areas go in rows of three below core's grid, in name order. */
+const gridWith = (owners) => {
+  const extensionModules = [...new Set(Object.values(owners))].filter((module) => module.includes('/')).sort()
+  const rows = []
+  for (let i = 0; i < extensionModules.length; i += 3) {
+    const row = extensionModules.slice(i, i + 3).map((module) => [module])
+    while (row.length < 3) row.push([])
+    rows.push(row)
+  }
+  return [...GRID, ...rows]
 }
 
 const main = async () => {
@@ -122,7 +165,7 @@ const main = async () => {
   const report = await page.evaluate(applyLayout, {
     owners,
     colors: COLORS,
-    grid: GRID,
+    grid: gridWith(owners),
     metrics: { FIELD_ROW, VISIBLE_FIELD_CAP, TABLE_CHROME, TABLE_WIDTH },
   })
 

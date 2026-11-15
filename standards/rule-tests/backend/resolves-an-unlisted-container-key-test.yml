@@ -5,6 +5,9 @@ valid:
     const orderService = container.resolve<IOrderModuleService>(Modules.ORDER)
   - |
     const bus = req.scope.resolve<EventBus>(ContainerRegistrationKeys.EVENT_BUS)
+  # An extension's keys object, from its keys.ts.
+  - |
+    const notes = container.resolve(FixtureModules.NOTES)
   # Neither of these is a container read.
   - |
     const target = path.resolve(baseDir, fileKey)
@@ -24,3 +27,6 @@ invalid:
   # A member of something that is neither enum reads no better than the literal.
   - |
     const logger = container.resolve<Logger>(Keys.LOGGER)
+  # Named like a keys object but read through a lowercase alias, which is a second spelling again.
+  - |
+    const notes = container.resolve(fixtureModules.notes)

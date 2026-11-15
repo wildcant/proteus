@@ -1,6 +1,6 @@
 # 5. Central Types Package
 
-**Status:** Accepted — superseded in part by [ADR-0028](0028-barrels-only-at-a-published-boundary.md). The contracts still live in `core/types/<domain>/`; the `index.ts` barrels this ADR describes are gone, and consumers import the concrete file.
+**Status:** Accepted — superseded in part by [ADR-0028](0028-barrels-only-at-a-published-boundary.md). The contracts still live in `core/types/<domain>/`; the `index.ts` barrels this ADR describes are gone, and consumers import the concrete file. Amended by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): an extension's contracts live in the extension's own `types/`, and its module key carries its service type.
 
 ## Context
 

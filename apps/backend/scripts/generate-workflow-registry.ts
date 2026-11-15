@@ -15,21 +15,33 @@
  * artifact is committed, so every environment runs the identical file, and `--check` fails the
  * verify gate when it drifts from the source tree.
  *
+ * It reads core's `src/workflows/` and each extension's `workflows/` folder (`runtime-sources.ts`), and
+ * an extension's workflow names must start with its runtime prefix (`<ext>.`).
+ *
  * Reading a workflow file lives in `workflow-source.ts`; turning source text into a tree lives in
  * `ts-source.ts`, which owns the `typescript` import and explains why the repo is pinned to 6.x.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { collect, parse } from './ts-source.js'
+import { join } from 'node:path'
+import {
+  BACKEND,
+  byOwnerThenModule,
+  collectRuntimeSources,
+  DIM,
+  GREEN,
+  heading,
+  isEntryPoint,
+  moduleSpecifier,
+  type Problem,
+  RED,
+  RESET,
+  report,
+  unprefixedName,
+  YELLOW,
+} from './runtime-sources.js'
+import { parse } from './ts-source.js'
 import { exportedBindingOf, findCreateWorkflowCalls, workflowNameOf } from './workflow-source.js'
-
-const RED = '\x1b[0;31m'
-const GREEN = '\x1b[0;32m'
-const YELLOW = '\x1b[0;33m'
-const DIM = '\x1b[2m'
-const BOLD = '\x1b[1m'
-const RESET = '\x1b[0m'
 
 type Discovered = {
   /** The `export const` the definition is bound to, i.e. what the generated file imports. */
@@ -40,20 +52,19 @@ type Discovered = {
   module: string
   /** `file:line`, so a rejection prints a clickable location. */
   location: string
+  /** The extension the workflow belongs to; `undefined` for core. */
+  extension: string | undefined
 }
 
-type Problem = { location: string; message: string; remedy: string }
+export function outputOf(backend: string): string {
+  return join(backend, 'src/framework/workflows/temporal/registry.gen.ts')
+}
 
-/** Repo root, because `collect` yields repo-relative paths and the module specifiers derive from them. */
-const root = fileURLToPath(new URL('../../../', import.meta.url))
-const WORKFLOWS_DIR = `${root}apps/backend/src/workflows`
-const OUTPUT = `${root}apps/backend/src/framework/workflows/temporal/registry.gen.ts`
-
-function discover(): { workflows: Discovered[]; problems: Problem[] } {
+function discover(backend: string): { workflows: Discovered[]; problems: Problem[] } {
   const workflows: Discovered[] = []
   const problems: Problem[] = []
 
-  for (const file of collect(WORKFLOWS_DIR, root)) {
+  for (const file of collectRuntimeSources(backend, 'workflows')) {
     const source = parse(file)
 
     for (const call of findCreateWorkflowCalls(source)) {
@@ -79,32 +90,47 @@ function discover(): { workflows: Discovered[]; problems: Problem[] } {
         continue
       }
 
-      // `file.path` is repo-relative (`apps/backend/src/workflows/cart/add-to-cart.ts`); the generated
-      // file sits in `src/framework/workflows/temporal/`, three directories down from `src/`.
-      const module = file.path.replace('apps/backend/src/workflows/', '../../../workflows/').replace(/\.ts$/, '.js')
-      workflows.push({ binding, name, module, location })
+      const module = moduleSpecifier(backend, outputOf(backend), file.path)
+      workflows.push({ binding, name, module, location, extension: file.extension })
     }
   }
 
-  return { workflows: workflows.sort((a, b) => a.module.localeCompare(b.module)), problems }
+  return { workflows: workflows.sort(byOwnerThenModule), problems }
 }
 
-/** Two workflows answering to one name is a lookup that silently resolves to whichever was registered last. */
+/**
+ * Two workflows answering to one name is a lookup that silently resolves to whichever was registered
+ * last. Two sharing a binding is only an invalid generated file, but core and an extension can pick
+ * the same one without either seeing the other.
+ */
 function duplicates(workflows: Discovered[]): Problem[] {
-  const seen = new Map<string, Discovered>()
+  const byName = new Map<string, Discovered>()
+  const byBinding = new Map<string, Discovered>()
   const problems: Problem[] = []
 
   for (const workflow of workflows) {
-    const first = seen.get(workflow.name)
-    if (first) {
+    const sameName = byName.get(workflow.name)
+    if (sameName) {
       problems.push({
         location: workflow.location,
-        message: `two workflows are named "${workflow.name}" — also at ${first.location}`,
+        message: `two workflows are named "${workflow.name}" — also at ${sameName.location}`,
         remedy: 'rename one; the driver looks workflows up by this name and cannot tell them apart',
       })
       continue
     }
-    seen.set(workflow.name, workflow)
+
+    const sameBinding = byBinding.get(workflow.binding)
+    if (sameBinding) {
+      problems.push({
+        location: workflow.location,
+        message: `two workflows are exported as \`${workflow.binding}\` — also at ${sameBinding.location}`,
+        remedy: 'rename one export; the generated registry imports both by that name',
+      })
+      continue
+    }
+
+    byName.set(workflow.name, workflow)
+    byBinding.set(workflow.binding, workflow)
   }
 
   return problems
@@ -129,66 +155,63 @@ ${entries}
 `
 }
 
-function heading(title: string): void {
-  console.info('')
-  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
-  console.info('')
-}
-
-function report(problems: Problem[]): void {
-  heading('workflow-registry')
-  for (const problem of problems) {
-    console.info(`  ${DIM}${problem.location}${RESET}`)
-    console.info(`    ${problem.message}`)
-    console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
-    console.info('')
+/** The registry `backend`'s sources produce, or what is wrong with them. Exported for the tests. */
+export function generateWorkflowRegistry(backend: string): { rendered: string; count: number; problems: Problem[] } {
+  const { workflows, problems } = discover(backend)
+  const prefixes = workflows.flatMap((workflow) => unprefixedName('workflow', workflow) ?? [])
+  return {
+    rendered: render(workflows),
+    count: workflows.length,
+    problems: [...problems, ...prefixes, ...duplicates(workflows)],
   }
 }
 
-const checking = process.argv.includes('--check')
-const { workflows, problems } = discover()
-const allProblems = [...problems, ...duplicates(workflows)]
-
-if (allProblems.length > 0) {
-  report(allProblems)
-  process.exit(1)
-}
-
 /** Absent on the first run, and an empty string then differs from any render, which is the right answer. */
-function existingOutput(): string {
+function existingOutput(output: string): string {
   try {
-    return readFileSync(OUTPUT, 'utf8')
+    return readFileSync(output, 'utf8')
   } catch {
     return ''
   }
 }
 
-const rendered = render(workflows)
-const existing = existingOutput()
+function main(): void {
+  const checking = process.argv.includes('--check')
+  const output = outputOf(BACKEND)
+  const { rendered, count, problems } = generateWorkflowRegistry(BACKEND)
 
-if (checking) {
-  if (existing !== rendered) {
-    heading('workflow-registry')
-    console.info(
-      `  ${RED}✖${RESET} src/framework/workflows/temporal/registry.gen.ts is out of date with src/workflows/.`,
-    )
-    console.info(`    ${DIM}${workflows.length} workflows found in the source tree.${RESET}`)
-    console.info(`    ${YELLOW}→${RESET} run \`pnpm --filter backend run workflows:generate\` and commit the result`)
-    console.info('')
+  if (problems.length > 0) {
+    report('workflow-registry', problems)
     process.exit(1)
   }
-  console.info(
-    `${GREEN}✔${RESET} workflow-registry — registry.gen.ts matches src/workflows/. ${DIM}${workflows.length} workflows.${RESET}`,
-  )
-} else {
+
+  const existing = existingOutput(output)
+
+  if (checking) {
+    if (existing !== rendered) {
+      heading('workflow-registry')
+      console.info(
+        `  ${RED}✖${RESET} src/framework/workflows/temporal/registry.gen.ts is out of date with the workflow sources.`,
+      )
+      console.info(`    ${DIM}${count} workflows found in the source tree.${RESET}`)
+      console.info(`    ${YELLOW}→${RESET} run \`pnpm --filter backend run workflows:generate\` and commit the result`)
+      console.info('')
+      process.exit(1)
+    }
+    console.info(
+      `${GREEN}✔${RESET} workflow-registry — registry.gen.ts matches the workflow sources. ${DIM}${count} workflows.${RESET}`,
+    )
+    return
+  }
+
   // Only write on a real change: an unconditional write bumps the mtime and re-triggers every watcher
   // pointed at this file, which on the dev Worker means a second restart for nothing.
   if (existing === rendered) {
-    console.info(`${GREEN}✔${RESET} workflow-registry — already current. ${DIM}${workflows.length} workflows.${RESET}`)
-  } else {
-    writeFileSync(OUTPUT, rendered)
-    console.info(
-      `${GREEN}✔${RESET} workflow-registry — wrote registry.gen.ts. ${DIM}${workflows.length} workflows.${RESET}`,
-    )
+    console.info(`${GREEN}✔${RESET} workflow-registry — already current. ${DIM}${count} workflows.${RESET}`)
+    return
   }
+  writeFileSync(output, rendered)
+  console.info(`${GREEN}✔${RESET} workflow-registry — wrote registry.gen.ts. ${DIM}${count} workflows.${RESET}`)
 }
+
+if (isEntryPoint(import.meta.url)) main()

@@ -20,8 +20,10 @@ import { bootstrapModule } from './framework/bootstrap/index.js'
 import { defineAppConfig } from './framework/config/index.js'
 import { resolveEventBusAdapterName } from './framework/event-bus/adapter-selection.js'
 import { createInlineEventBus } from './framework/event-bus/inline-adapter.js'
-import { subscriberRegistry } from './framework/event-bus/registry.js'
+import { type SubscriberRegistry, subscriberRegistry } from './framework/event-bus/registry.js'
+import type { ExtensionRegistry } from './framework/extensions/types.js'
 import { resolveWorkflowEngineName } from './framework/workflows/engine-selection.js'
+import { registerHookHandlers } from './framework/workflows/hook-handlers.js'
 import { createSimpleWorkflowEngine } from './framework/workflows/simple-adapter.js'
 import { registerLinkService } from './link-modules/index.js'
 import accessControlModule from './modules/access-control/index.js'
@@ -79,6 +81,20 @@ export type BootstrapContainerDeps = {
    * function has finished registering the modules a subscriber resolves from.
    */
   createEventBusAdapter?: (container: AppContainer) => EventBus
+  /**
+   * The extensions this container runs: their modules, bootstrapped after core's, and their hook
+   * handlers. A dependency rather than an import of `src/extensions/registry.gen.ts`, so the test
+   * suite passes the fixture extension's registry instead, or one with its own `hookHandlers`; every
+   * runtime root passes the generated one.
+   */
+  extensions: ExtensionRegistry
+  /**
+   * The subscribers the in-process bus dispatches to, in place of the generated list. Not part of
+   * `extensions`: an extension's subscribers already ship in `src/subscribers/registry.gen.ts` beside
+   * core's, which the runtime roots hand to their transports. Only the test suite passes this, to
+   * add the fixture extension's, which live outside `src/` and so outside that generated list.
+   */
+  subscribers?: SubscriberRegistry
 }
 
 export async function bootstrapContainer(deps: BootstrapContainerDeps) {
@@ -115,7 +131,14 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, userModule)
   await bootstrapModule(container, accessControlModule)
 
+  // After core's, so an extension module's loaders see every core service registered. A key that
+  // collides with core's fails `extensions:generate` before it could overwrite one here.
+  for (const extensionModule of deps.extensions.modules) {
+    await bootstrapModule(container, extensionModule)
+  }
+
   registerLinkService(container)
+  registerHookHandlers(container, deps.extensions.hookHandlers)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)
 
   // The bus is a container registration rather than a module global like the workflow engine,
@@ -167,7 +190,9 @@ function selectEventBus(
   logger: Logger,
 ): EventBus {
   const adapter = resolveEventBusAdapterName({ configured, runtime: env.RUNTIME })
-  if (adapter === 'inline') return createInlineEventBus({ registry: subscriberRegistry, container, logger })
+  if (adapter === 'inline') {
+    return createInlineEventBus({ registry: deps.subscribers ?? subscriberRegistry, container, logger })
+  }
 
   const createAdapter = deps.createEventBusAdapter
   if (!createAdapter) {

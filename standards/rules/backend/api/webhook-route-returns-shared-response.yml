@@ -5,6 +5,7 @@ message: 'This webhook answers with `$OUT` rather than the shared `WebhookReceiv
 note: 'Use `WebhookReceivedResponse` — `{ received: true }` — from `@proteus/http-schemas/store`. A gateway reads the body only to decide whether to redeliver, so a per-provider shape is a schema in the OpenAPI document and a generated model that nothing consumes, and a provider-specific field in it is the start of a per-provider contract this route exists to avoid. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/hooks/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/hooks/**/route.ts"
 ignores:
   - "**/__tests__/**"
 rule:

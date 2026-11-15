@@ -23,24 +23,38 @@
  * The artifact is committed, so every environment runs the identical file, and `--check` fails the
  * verify gate when it drifts from the source tree.
  *
+ * It reads core's `src/jobs/` and each extension's `jobs/` folder (`runtime-sources.ts`), and an
+ * extension's job names must start with its runtime prefix (`<ext>.`). The same jobs are the
+ * workerd cron triggers, which `generate-workerd-crons.ts` writes into `wrangler.jsonc`.
+ *
  * Parsing is `ts-source.ts`, shared with the workflow and subscriber tooling. What is here is what a
  * *job* file means: one `export const config`, carrying a name the generator can read without
  * running it.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 import * as ts from 'typescript'
-import { collect, parse } from './ts-source.js'
+import {
+  BACKEND,
+  byOwnerThenModule,
+  collectRuntimeSources,
+  DIM,
+  GREEN,
+  heading,
+  isEntryPoint,
+  moduleSpecifier,
+  type Problem,
+  RED,
+  RESET,
+  repoRootOf,
+  report,
+  unprefixedName,
+  YELLOW,
+} from './runtime-sources.js'
+import { parse } from './ts-source.js'
 
-const RED = '\x1b[0;31m'
-const GREEN = '\x1b[0;32m'
-const YELLOW = '\x1b[0;33m'
-const DIM = '\x1b[2m'
-const BOLD = '\x1b[1m'
-const RESET = '\x1b[0m'
-
-type Discovered = {
+export type DiscoveredJob = {
   /** What the generated file imports `config` as. Derived from `name`, which is already unique. */
   alias: string
   /** The runtime name, which is also the suffix of the Schedule id `cron_${name}`. */
@@ -49,15 +63,15 @@ type Discovered = {
   module: string
   /** `file:line`, so a rejection prints a clickable location. */
   location: string
+  /** The extension it belongs to; `undefined` for core. */
+  extension: string | undefined
+  /** The `config` object as written, for `generate-workerd-crons.ts` to read the schedule from. */
+  config: ts.ObjectLiteralExpression
 }
 
-type Problem = { location: string; message: string; remedy: string }
-
-/** Repo root, because `collect` yields repo-relative paths and the module specifiers derive from them. */
-const root = fileURLToPath(new URL('../../../', import.meta.url))
-const JOBS_DIR = `${root}apps/backend/src/jobs`
-const OUTPUT = `${root}apps/backend/src/jobs/registry.gen.ts`
-const OUTPUT_PATH = 'apps/backend/src/jobs/registry.gen.ts'
+export function outputOf(backend: string): string {
+  return join(backend, 'src/jobs/registry.gen.ts')
+}
 
 /** The `export const config = { … }` statement, or `undefined` if the file has no such export. */
 function exportedConfig(source: ts.SourceFile): ts.ObjectLiteralExpression | undefined {
@@ -94,12 +108,15 @@ function aliasOf(name: string): string {
   return [first, ...rest.map((word) => word[0]?.toUpperCase() + word.slice(1))].join('')
 }
 
-function discover(): { jobs: Discovered[]; problems: Problem[] } {
-  const jobs: Discovered[] = []
+/** Every job core and the extensions define, in registry order. */
+export function discover(backend: string): { jobs: DiscoveredJob[]; problems: Problem[] } {
+  const jobs: DiscoveredJob[] = []
   const problems: Problem[] = []
+  const output = outputOf(backend)
+  const outputPath = relative(repoRootOf(backend), output)
 
-  for (const file of collect(JOBS_DIR, root)) {
-    if (file.path === OUTPUT_PATH) continue
+  for (const file of collectRuntimeSources(backend, 'jobs')) {
+    if (file.path === outputPath) continue
 
     const source = parse(file)
     const config = exportedConfig(source)
@@ -113,7 +130,7 @@ function discover(): { jobs: Discovered[]; problems: Problem[] } {
         message: 'no `export const config` object',
         remedy:
           'export the job as `export const config: JobDefinition = { name, schedule, handler }`, ' +
-          'or move this file out of src/jobs/',
+          'or move this file out of the jobs folder',
       })
       continue
     }
@@ -130,11 +147,11 @@ function discover(): { jobs: Discovered[]; problems: Problem[] } {
       continue
     }
 
-    const module = file.path.replace('apps/backend/src/jobs/', './').replace(/\.ts$/, '.js')
-    jobs.push({ alias: aliasOf(name), name, module, location })
+    const module = moduleSpecifier(backend, output, file.path)
+    jobs.push({ alias: aliasOf(name), name, module, location, extension: file.extension, config })
   }
 
-  return { jobs: jobs.sort((a, b) => a.module.localeCompare(b.module)), problems }
+  return { jobs: jobs.sort(byOwnerThenModule), problems }
 }
 
 /**
@@ -143,9 +160,9 @@ function discover(): { jobs: Discovered[]; problems: Problem[] } {
  * shared alias is only an invalid generated file, but it comes from the same place and is worth
  * naming as itself.
  */
-function collisions(jobs: Discovered[]): Problem[] {
-  const byName = new Map<string, Discovered>()
-  const byAlias = new Map<string, Discovered>()
+function collisions(jobs: DiscoveredJob[]): Problem[] {
+  const byName = new Map<string, DiscoveredJob>()
+  const byAlias = new Map<string, DiscoveredJob>()
   const problems: Problem[] = []
 
   for (const job of jobs) {
@@ -176,7 +193,7 @@ function collisions(jobs: Discovered[]): Problem[] {
   return problems
 }
 
-function render(jobs: Discovered[]): string {
+function render(jobs: DiscoveredJob[]): string {
   const imports = jobs.map((job) => `import { config as ${job.alias} } from '${job.module}'`).join('\n')
   const entries = jobs.map((job) => `  ${job.alias},`).join('\n')
 
@@ -199,60 +216,57 @@ ${entries}
 `
 }
 
-function heading(title: string): void {
-  console.info('')
-  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
-  console.info('')
-}
-
-function report(problems: Problem[]): void {
-  heading('job-registry')
-  for (const problem of problems) {
-    console.info(`  ${DIM}${problem.location}${RESET}`)
-    console.info(`    ${problem.message}`)
-    console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
-    console.info('')
-  }
-}
-
-const checking = process.argv.includes('--check')
-const { jobs, problems } = discover()
-const allProblems = [...problems, ...collisions(jobs)]
-
-if (allProblems.length > 0) {
-  report(allProblems)
-  process.exit(1)
+/** The registry `backend`'s sources produce, or what is wrong with them. Exported for the tests. */
+export function generateJobRegistry(backend: string): { rendered: string; count: number; problems: Problem[] } {
+  const { jobs, problems } = discover(backend)
+  const prefixes = jobs.flatMap((entry) => unprefixedName('job', entry) ?? [])
+  return { rendered: render(jobs), count: jobs.length, problems: [...problems, ...prefixes, ...collisions(jobs)] }
 }
 
 /** Absent on the first run, and an empty string then differs from any render, which is the right answer. */
-function existingOutput(): string {
+function existingOutput(output: string): string {
   try {
-    return readFileSync(OUTPUT, 'utf8')
+    return readFileSync(output, 'utf8')
   } catch {
     return ''
   }
 }
 
-const rendered = render(jobs)
-const existing = existingOutput()
+function main(): void {
+  const checking = process.argv.includes('--check')
+  const output = outputOf(BACKEND)
+  const { rendered, count, problems } = generateJobRegistry(BACKEND)
 
-if (checking) {
-  if (existing !== rendered) {
-    heading('job-registry')
-    console.info(`  ${RED}✖${RESET} src/jobs/registry.gen.ts is out of date with src/jobs/.`)
-    console.info(`    ${DIM}${jobs.length} jobs found in the source tree.${RESET}`)
-    console.info(`    ${YELLOW}→${RESET} run \`pnpm --filter backend run jobs:generate\` and commit the result`)
-    console.info('')
+  if (problems.length > 0) {
+    report('job-registry', problems)
     process.exit(1)
   }
-  console.info(`${GREEN}✔${RESET} job-registry — registry.gen.ts matches src/jobs/. ${DIM}${jobs.length} jobs.${RESET}`)
-} else {
+
+  const existing = existingOutput(output)
+
+  if (checking) {
+    if (existing !== rendered) {
+      heading('job-registry')
+      console.info(`  ${RED}✖${RESET} src/jobs/registry.gen.ts is out of date with the job sources.`)
+      console.info(`    ${DIM}${count} jobs found in the source tree.${RESET}`)
+      console.info(`    ${YELLOW}→${RESET} run \`pnpm --filter backend run jobs:generate\` and commit the result`)
+      console.info('')
+      process.exit(1)
+    }
+    console.info(
+      `${GREEN}✔${RESET} job-registry — registry.gen.ts matches the job sources. ${DIM}${count} jobs.${RESET}`,
+    )
+    return
+  }
+
   // Only write on a real change: an unconditional write bumps the mtime and re-triggers every watcher
   // pointed at this file, which on a dev worker means a second restart for nothing.
   if (existing === rendered) {
-    console.info(`${GREEN}✔${RESET} job-registry — already current. ${DIM}${jobs.length} jobs.${RESET}`)
-  } else {
-    writeFileSync(OUTPUT, rendered)
-    console.info(`${GREEN}✔${RESET} job-registry — wrote registry.gen.ts. ${DIM}${jobs.length} jobs.${RESET}`)
+    console.info(`${GREEN}✔${RESET} job-registry — already current. ${DIM}${count} jobs.${RESET}`)
+    return
   }
+  writeFileSync(output, rendered)
+  console.info(`${GREEN}✔${RESET} job-registry — wrote registry.gen.ts. ${DIM}${count} jobs.${RESET}`)
 }
+
+if (isEntryPoint(import.meta.url)) main()

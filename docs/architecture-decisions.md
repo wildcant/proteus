@@ -40,6 +40,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0034](adr/0034-store-entities-layer-replaces-the-feature-graph.md) | Code two store features share lives in an entity | `src/entities/<entity>/` sits between shared code and features; entities import only shared code; supersedes 0020 |
 | [0036](adr/0036-the-structure-file-has-english-keys.md) | The structure file has English keys | Keys are English (`fields`, `categories`, `rule`), values stay in the shop's language; no Spanish aliases |
 | [0037](adr/0037-option-roles-buckets-and-collection-badges.md) | Option roles, filter buckets and collection badges | An option's `listingRole` (`grouping` / `availability`) drives the list card; buckets assigned at write time (a value in every bucket its words name) group filter values; Collections carry badges |
+| [0038](adr/0038-extensions-are-a-forks-backend-code-beside-proteus.md) | Extensions are a fork's backend code beside Proteus | `src/extensions/<ext>/` holds a store's own modules, routes, workflows and more, wired in through a generated registry; prefixed names, add never replace; hooks are the only way into core behaviour |
 
 ---
 

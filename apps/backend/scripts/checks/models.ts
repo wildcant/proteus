@@ -1,17 +1,17 @@
 import type { Dirent } from 'node:fs'
 import { readdirSync, readFileSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { dirname, join, relative } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { is } from 'drizzle-orm'
 import { PgTable } from 'drizzle-orm/pg-core'
 import * as ts from 'typescript'
+import { EXTENSIONS_ROOT, extensionModules, FIXTURE_EXTENSIONS_ROOT } from '../extension-modules.js'
+import { BACKEND } from '../runtime-sources.js'
 import { parse } from '../ts-source.js'
 import type { Model } from './types.js'
 
-export const BACKEND_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-
-const MODULES_DIR = join(BACKEND_ROOT, 'src/modules')
-const LINK_DEFINITIONS_DIR = join(BACKEND_ROOT, 'src/link-modules/definitions')
+const MODULES_DIR = join(BACKEND, 'src/modules')
+const LINK_DEFINITIONS_DIR = join(BACKEND, 'src/link-modules/definitions')
 const LINK_MODULES = 'link-modules'
 
 function typescriptFiles(directory: string): string[] {
@@ -31,7 +31,7 @@ function typescriptFiles(directory: string): string[] {
 
 /** The path a violation should name, relative to `apps/backend`. */
 export function displayPath(file: string): string {
-  return relative(BACKEND_ROOT, file)
+  return relative(BACKEND, file)
 }
 
 /** One list of tables a cascade graph is built from, and where it is written. */
@@ -62,7 +62,8 @@ export type CascadeList = {
 export async function collectCascadeLists(): Promise<CascadeList[]> {
   const lists: CascadeList[] = []
 
-  for (const file of typescriptFiles(join(BACKEND_ROOT, 'src'))) {
+  // The fixture extension's module definitions live under tests/, outside the src/ walk.
+  for (const file of [...typescriptFiles(join(BACKEND, 'src')), ...typescriptFiles(FIXTURE_EXTENSIONS_ROOT)]) {
     for (const found of cascadeListsIn(file)) {
       const tables = new Set<PgTable>()
 
@@ -174,12 +175,22 @@ function cascadeListsIn(sourcePath: string): { line: number; files: string[] }[]
   })
 }
 
-function modelDirectories(): { module: string; directory: string }[] {
+function modelDirectories(): { module: string; extension?: string; directory: string }[] {
   const modules = readdirSync(MODULES_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => ({ module: entry.name, directory: join(MODULES_DIR, entry.name, 'models') }))
 
-  return [...modules, { module: LINK_MODULES, directory: LINK_DEFINITIONS_DIR }]
+  // The fixture is checked beside a fork's own extensions, so the extension checks have a real
+  // extension to hold to account upstream, where src/extensions/ is empty.
+  const extensions = [...extensionModules(EXTENSIONS_ROOT), ...extensionModules(FIXTURE_EXTENSIONS_ROOT)].map(
+    ({ extension, module, directory }) => ({
+      module: `${extension}/${module}`,
+      extension,
+      directory: join(directory, 'models'),
+    }),
+  )
+
+  return [...modules, { module: LINK_MODULES, directory: LINK_DEFINITIONS_DIR }, ...extensions]
 }
 
 /**
@@ -191,13 +202,13 @@ export async function collectModels(): Promise<Model[]> {
   const models: Model[] = []
   const seen = new Set<PgTable>()
 
-  for (const { module, directory } of modelDirectories()) {
+  for (const { module, extension, directory } of modelDirectories()) {
     for (const file of typescriptFiles(directory)) {
       const exports: Record<string, unknown> = await import(pathToFileURL(file).href)
       for (const value of Object.values(exports)) {
         if (!is(value, PgTable) || seen.has(value)) continue
         seen.add(value)
-        models.push({ module, file: relative(BACKEND_ROOT, file), table: value })
+        models.push({ module, extension, file: relative(BACKEND, file), table: value })
       }
     }
   }

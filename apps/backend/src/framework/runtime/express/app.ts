@@ -9,7 +9,7 @@ import { isMultipart } from '../../http/content-type.js'
 import { corsHeaders } from '../../http/cors.js'
 import { extractMultipart } from '../../http/multipart.js'
 import { createDefaultLanguage, loadDefaultMarketLocale } from '../../i18n/default-language.js'
-import { createLinguiTranslator, LOCALE_HEADER } from '../../i18n/lingui-translator.js'
+import { type Catalogs, createLinguiTranslator, LOCALE_HEADER } from '../../i18n/lingui-translator.js'
 
 type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
@@ -18,6 +18,8 @@ type CreateExpressAppOptions = {
   container: AppContainer
   logger: Logger
   corsOrigins: string[]
+  /** `mergeCatalogs` of the registry the routes came from. */
+  catalogs: Catalogs
 }
 
 async function toWebRequest(req: express.Request): Promise<Request> {
@@ -46,7 +48,7 @@ async function toWebRequest(req: express.Request): Promise<Request> {
   })
 }
 
-export function createExpressApp({ routes, container, logger, corsOrigins }: CreateExpressAppOptions) {
+export function createExpressApp({ routes, container, logger, corsOrigins, catalogs }: CreateExpressAppOptions) {
   const app = express()
 
   // `verify` is the only place the untouched bytes are still in hand — by the time the handler
@@ -108,7 +110,7 @@ export function createExpressApp({ routes, container, logger, corsOrigins }: Cre
         res.status(result.status).json(result.json)
       } catch (error) {
         // Built here, per request, and never registered in the container: only the response translates.
-        const translator = await createLinguiTranslator(req.get(LOCALE_HEADER), defaultLanguage.get)
+        const translator = await createLinguiTranslator(catalogs, req.get(LOCALE_HEADER), defaultLanguage.get)
         const { status, json } = errorHandler(error, logger, translator)
         res.status(status).json(json)
       }

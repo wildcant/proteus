@@ -2,8 +2,10 @@ import type { PgTable } from 'drizzle-orm/pg-core'
 
 /** A drizzle table found in a module's `models/` directory, with the file that declares it. */
 export type Model = {
-  /** Module the model belongs to — `product`, `link-modules`, and so on. */
+  /** Module the model belongs to — `product`, `link-modules`, `pisos-dj/shipping` for an extension's. */
   module: string
+  /** The extension that declares the model, absent for core's. */
+  extension?: string | undefined
   /** Path relative to `apps/backend`, so violations print as clickable `file:line`. */
   file: string
   table: PgTable

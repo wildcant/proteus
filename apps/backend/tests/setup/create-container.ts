@@ -10,8 +10,13 @@ import type { Logger } from '@core/types/logger.js'
 import { appConfigInput } from '../../src/config.js'
 import { bootstrapContainer } from '../../src/container.js'
 import type { AppContainer } from '../../src/core/types/container.js'
+import { createSubscriberRegistry } from '../../src/framework/event-bus/registry.js'
+import type { ExtensionRegistry } from '../../src/framework/extensions/types.js'
 import type { Database } from '../../src/schema.type.js'
+import { GENERATED_SUBSCRIBERS } from '../../src/subscribers/registry.gen.js'
+import { extensionSubscribers as fixtureSubscribers } from '../extension-fixture/registry.gen.js'
 import { pinnedTestEventBusAdapter } from './event-bus-adapter.js'
+import { testExtensions } from './test-extensions.js'
 import { pinnedTestWorkflowEngine } from './workflow-engine.js'
 
 /**
@@ -25,6 +30,12 @@ function attachToTemporal() {
   return import('./temporal-parity.js').then((module) => module.createParityWorkflowEngine())
 }
 
+/**
+ * Core's subscribers and the fixture extension's, which the in-process bus dispatches to. Built once:
+ * a registry refuses two subscribers under one name, so every container shares this one.
+ */
+const testSubscribers = createSubscriberRegistry([...GENERATED_SUBSCRIBERS, ...fixtureSubscribers])
+
 /** What tests annotate with, so no test file imports awilix to name the thing it was handed. */
 export type TestContainer = AppContainer
 
@@ -34,6 +45,10 @@ export type CreateContainerOptions = {
   /** Runs after the container is built — the place to register a fake provider or override a
    *  registration for this test. A throw here disposes the container rather than leaking it. */
   register?: (container: TestContainer) => void | Promise<void>
+  /** The extensions this container runs, in place of `testExtensions`. A hook test passes
+   *  `{ ...testExtensions, hookHandlers: [...] }`, or `[]` for every hook's fallback; the workflow
+   *  engine runs on the last container built, so build that one last. */
+  extensions?: ExtensionRegistry
 }
 
 export type CreatedContainer = {
@@ -63,6 +78,8 @@ export async function createTestContainer(
     logger,
     dbProvider,
     config,
+    extensions: options.extensions ?? testExtensions,
+    subscribers: testSubscribers,
     ...(parity ? { createTemporalWorkflowEngine: () => parity.engine } : {}),
   })
 

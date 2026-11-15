@@ -3,8 +3,10 @@ import { createWorkersDbProvider } from './core/db/workers-provider.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { env } from './env.js'
+import { extensionRegistry } from './extensions/registry.gen.js'
 import { createCloudflareQueuesConsumer } from './framework/event-bus/cloudflare-queues-adapter.js'
 import { subscriberRegistry } from './framework/event-bus/registry.js'
+import { mergeCatalogs } from './framework/i18n/lingui-translator.js'
 import { createWorkerdContainer } from './framework/runtime/container.workerd.js'
 import { createHonoApp } from './framework/runtime/hono/app.js'
 import { Cron } from './framework/scheduler/kuron/cron.js'
@@ -21,13 +23,14 @@ const dbProvider = createWorkersDbProvider(() => bindings.HYPERDRIVE.connectionS
 const container = await createWorkerdContainer({ events: bindings.EVENTS, dbProvider })
 
 const logger: Logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-const routes = prepareRoutes(logger)
+const routes = prepareRoutes(logger, extensionRegistry)
 
 const app = createHonoApp({
   routes,
   container,
   logger,
   corsOrigins: env.CORS_ORIGIN,
+  catalogs: mergeCatalogs(extensionRegistry.catalogs),
 })
 
 const cron = new Cron()

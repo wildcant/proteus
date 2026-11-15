@@ -199,6 +199,9 @@ standards/
                       reads wherever a class has two names for one call
       subscribers/    no rules yet — the documents arrived first
         __docs__/     README.md → events.md, subscribers.md
+      extensions/     no rules of its own — the generators, check:schema and
+                      check:structure hold what is checked
+        __docs__/     README.md → extensions.md
     http-schemas/     the shared Zod schemas
         __docs__/     README.md → schemas.md, datetimes.md
                       `packages/http-schemas` has no README of its own: its prose was
@@ -423,6 +426,8 @@ Verdict per check, so question not re-litigated:
 | `destroy-only-children` | **Runtime.** The question is about the *parent* — whether the table on the other end of the foreign key is soft-deletable — which is in another file. |
 | `guard-outside-its-closure` | **Runtime.** Transitive reachability over the whole module's cascade graph. Not a property of any file. |
 | `model-reaches-cascade-graph` | **Cross-file, and a rule file cannot see two files at once.** A dependency-cruiser reachability rule from `index.ts` would catch the common case — a model file the module definition never imports. It would *not* catch a table imported for a repository and then left out of the `models` object, which is precisely the case the cascade graph silently loses. Converting would trade the rule for a weaker one, so it stays. |
+| `extension-database-names` | **Runtime.** Most database names an extension creates are never written in source: drizzle derives a foreign key's, a primary key's and an inline unique's name from the table and columns, and an enum's lives in another declaration. The migrations-table half reads `database.config.ts` syntax and sits here so one check owns every extension database name. |
+| `extension-foreign-keys` | **Runtime.** `references(() => other.id)` resolves through a thunk to a table in another file; whether that table belongs to the same extension is known only once both are built. |
 | `models.ts`, `metadata.ts`, `run.ts`, `types.ts` | Harness, not rules. |
 
 ### Checks that read what no rule engine reads

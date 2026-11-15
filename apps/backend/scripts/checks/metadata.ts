@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import type { SQL } from 'drizzle-orm'
 import { PgDialect } from 'drizzle-orm/pg-core'
 import { NOT_SOFT_DELETED } from '../../src/core/db/utils.js'
-import { BACKEND_ROOT } from './models.js'
+import { BACKEND } from '../runtime-sources.js'
 
 const dialect = new PgDialect()
 
@@ -33,12 +33,12 @@ export function columnName(indexed: unknown): string | null {
 
 /** A model file's source, for the rules that are about how a declaration is written. */
 export function sourceOf(file: string): string {
-  return readFileSync(join(BACKEND_ROOT, file), 'utf8')
+  return readFileSync(join(BACKEND, file), 'utf8')
 }
 
 /** Best-effort `file:line` for a declaration, located by the name the author gave it. */
 export function locate(file: string, declaration: string): string {
-  const lines = readFileSync(join(BACKEND_ROOT, file), 'utf8').split('\n')
+  const lines = readFileSync(join(BACKEND, file), 'utf8').split('\n')
   const line = lines.findIndex((text) => text.includes(declaration))
   return line === -1 ? file : `${file}:${line + 1}`
 }

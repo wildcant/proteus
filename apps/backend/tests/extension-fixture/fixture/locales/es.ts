@@ -1,0 +1,1 @@
+/*eslint-disable*/import type{Messages}from"@lingui/core";export const messages=JSON.parse("{\"A fixture note needs a title of at least three characters\":[\"Una nota de prueba necesita un título de al menos tres caracteres\"],\"Fixture note \\\"{id}\\\" was not found\":[\"No se encontró la nota de prueba \\\"\",[\"id\"],\"\\\"\"]}")as Messages;

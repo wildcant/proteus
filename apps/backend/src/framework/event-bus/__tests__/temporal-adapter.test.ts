@@ -2,6 +2,7 @@ import type { Logger } from '@core/types/logger.js'
 import { ActivityExecutionAlreadyStartedError, type Client } from '@temporalio/client'
 import { test } from '@tests/setup/test-extend.js'
 import { defineSubscriber } from '../../../core/event-bus/types.js'
+import { defineEvent } from '../../../core/extensions/define-event.js'
 import { noopLogger } from '../../../core/logger/noop-logger.js'
 import type { TemporalClientHandle } from '../../temporal/client.js'
 import { createSubscriberRegistry } from '../registry.js'
@@ -69,6 +70,25 @@ test.describe('the temporal event bus', () => {
       'bus.probe:probe_1:second-probe',
     ])
     expect(started.every((options) => options.taskQueue === 'proteus-events')).toBe(true)
+  })
+
+  test('keys an extension event’s activity on the identity the event declared', async ({ expect }) => {
+    const rateChanged = defineEvent<{ cityId: string; version: number }>({
+      name: 'pisos-dj.rate_changed',
+      key: (data) => `${data.cityId}:${data.version}`,
+    })
+    const started: Started[] = []
+    const bus = createTemporalEventBus({
+      registry: createSubscriberRegistry([
+        defineSubscriber({ name: 'pisos-dj.sync', event: rateChanged, handler: async () => undefined }),
+      ]),
+      logger: noopLogger,
+      connect: async () => recordingClient(started),
+    })
+
+    await bus.emit(rateChanged, { cityId: 'bog', version: 2 })
+
+    expect(started.map((options) => options.id)).toEqual(['pisos-dj.rate_changed:bog:2:pisos-dj.sync'])
   })
 
   test('resolves, and logs, when the transport refuses the start', async ({ expect }) => {

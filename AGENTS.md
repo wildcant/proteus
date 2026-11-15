@@ -84,6 +84,7 @@ for pointer to detailed standard.
 - **Workflows** (`src/workflows/`) — cross-module mutation with compensation.
 - **Subscribers** (`src/subscribers/`) — async side-effect, idempotent, publish from workflow final step.
 - **Endpoints** = `route.ts` (handler + schema) + `definitions.ts` (auth, matcher, OpenAPI).
+- **Extensions** (`src/extensions/<ext>/`) — fork's own backend code, never in Proteus file. Upstream Proteus ship none. Read `src/extensions/README.md`.
 
 ## Frontend Apps
 

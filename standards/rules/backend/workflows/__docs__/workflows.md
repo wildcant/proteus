@@ -5,7 +5,7 @@ three kinds of file that live under `src/workflows/` — the workflow, the steps
 pure utils either may call — and when each one is the right answer.
 
 The engine underneath, its two adapters and the replay rules they impose are mechanism, and live in
-[`src/core/workflows/README.md`](../../../../../apps/backend/src/core/workflows/README.md). The route
+[`src/framework/workflows/README.md`](../../../../../apps/backend/src/framework/workflows/README.md). The route
 that decides to call a workflow in the first place is in
 [route helpers](../../api/__docs__/route-helpers.md).
 
@@ -271,3 +271,25 @@ and `src/workflows/**/*.ts`. Its Enforcement row is in
 
 Which mutations justify a workflow at all is the last row of the table in
 [route helpers](../../api/__docs__/route-helpers.md).
+
+## In an extension
+
+A fork's workflow lives at `src/extensions/<ext>/workflows/`, with the same shape and the same rules.
+What changes:
+
+- **The name carries the dot prefix**: `createWorkflow({ name: 'pisos-dj.quote-shipping' }, …)`.
+  `workflows:generate` reads the extension folders beside `src/workflows/`, and fails on an
+  unprefixed name or one core already has.
+- **Its contracts** (input, output, the services it resolves) come from the extension's own `types/`
+  and `keys.ts`, and an extension module resolves through its key:
+  `container.resolve(PisosDjModules.SHIPPING)`.
+- **Its events are the extension's** (`defineEvent` in `events.ts`), emitted from the final step like
+  core's. See [events](../../subscribers/__docs__/events.md#in-an-extension).
+- **It may call core services, never replace a core workflow.** To change what a core workflow
+  computes, handle the hook core exposes at that point: [hooks](./hooks.md).
+- **After a change, restart the Temporal Worker.** It imports workflows when it starts. `worker:dev`
+  restarts on a change under `src/extensions/`.
+
+Then run `pnpm --filter backend run workflows:generate` and commit the registry. The full extension
+checklist is in [extensions](../../extensions/__docs__/extensions.md#a-workflow). The fixture's
+`tests/extension-fixture/fixture/workflows/create-note.ts` is a worked example.

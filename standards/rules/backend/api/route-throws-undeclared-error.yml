@@ -5,6 +5,7 @@ message: This handler raises $TYPE, but no `<Method>Throws` in the file declares
 note: 'Add it to the method`s `Throws` export, beside the handler: `export const PostThrows = [ErrorTypes.$TYPE] as const`. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
 # Scope is the file, not the method: nothing correlates `PostThrows` with the `POST` handler for
 # ast-grep, so a type declared on one method satisfies a throw in another. The narrowing is the
 # same one the workflow rules take, and the OpenAPI diff catches what it lets through.

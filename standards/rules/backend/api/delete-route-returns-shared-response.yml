@@ -5,6 +5,7 @@ message: 'This DELETE answers with `$OUT` rather than the shared `DeleteResponse
 note: 'Use `DeleteResponse` — `{ id, deleted }` — from `@proteus/http-schemas`. A per-resource variant becomes its own schema in the OpenAPI document and its own generated model, so a client that handles deletions cannot handle them uniformly. If the resource genuinely needs to say more, that is a decision to take deliberately and suppress here by id with the reason. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
 ignores:
   - "**/__tests__/**"
 rule:

@@ -4,6 +4,7 @@ import { bootstrapContainer } from '../../container.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
 import type { EventBusAdapterName, WorkflowEngineName } from '../../core/types/config.js'
 import { env } from '../../env.js'
+import { extensionRegistry } from '../../extensions/registry.gen.js'
 import { subscriberRegistry } from '../event-bus/registry.js'
 import { createTemporalEventBus, type TemporalEventBus } from '../event-bus/temporal-adapter.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
@@ -51,6 +52,7 @@ export async function createWorkerContainer(options: { engine?: WorkflowEngineNa
   let temporalEventBus: TemporalEventBus | undefined
 
   const container = await bootstrapContainer({
+    extensions: extensionRegistry,
     logger,
     dbProvider,
     config: {

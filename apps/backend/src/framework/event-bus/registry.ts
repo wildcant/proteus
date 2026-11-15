@@ -1,6 +1,5 @@
 import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
-import type { EventName } from '../../core/event-bus/events.js'
 import type { SubscriberDefinition } from '../../core/event-bus/types.js'
 import { GENERATED_SUBSCRIBERS } from '../../subscribers/registry.gen.js'
 
@@ -25,7 +24,7 @@ import { GENERATED_SUBSCRIBERS } from '../../subscribers/registry.gen.js'
  * reach a deploy.
  */
 export type SubscriberRegistry = {
-  forEvent(name: EventName): SubscriberDefinition[]
+  forEvent(name: string): SubscriberDefinition[]
   names(): string[]
 }
 
@@ -35,7 +34,7 @@ export type SubscriberRegistry = {
  * through — including the duplicate-name refusal above, which the generated list cannot produce.
  */
 export function createSubscriberRegistry(definitions: SubscriberDefinition[]): SubscriberRegistry {
-  const byEvent = new Map<EventName, SubscriberDefinition[]>()
+  const byEvent = new Map<string, SubscriberDefinition[]>()
   const seen = new Set<string>()
 
   for (const definition of definitions) {

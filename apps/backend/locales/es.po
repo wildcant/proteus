@@ -14,17 +14,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/container.ts:144
+#: src/container.ts:167
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "Se seleccionó el motor de flujos de trabajo temporal, pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createTemporalWorkflowEngine`, o fijar `projectConfig.workflows.engine` en \"simple\"."
 
 #. js-lingui-explicit-id
-#: src/container.ts:176
+#: src/container.ts:201
 msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:143
+#: src/routes.ts:159
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
@@ -1056,47 +1056,47 @@ msgid "Unauthorized: invalid token purpose"
 msgstr "No autorizado: propósito del token no válido"
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/cloudflare-queues-adapter.ts:137
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:138
 msgid "[event-bus] The \"EVENTS\" queue binding is missing. Declare it under `queues.producers` in this Worker's wrangler.jsonc, or pin `projectConfig.eventBus.adapter` to something that does not need one."
 msgstr "[event-bus] Falta el binding de cola \"EVENTS\". Decláralo en `queues.producers` en el wrangler.jsonc de este Worker, o fija `projectConfig.eventBus.adapter` en un adaptador que no lo necesite."
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/cloudflare-queues-adapter.ts:170
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:171
 msgid "[event-bus] The payload for \"{name}\" is {bytes} bytes for subscriber \"{subscriber}\", over the {maxBytes} byte queue message limit. Publish an id and let the subscriber read the rest."
 msgstr "[event-bus] La carga de \"{name}\" pesa {bytes} bytes para el suscriptor \"{subscriber}\", por encima del límite de {maxBytes} bytes por mensaje de la cola. Publica un id y deja que el suscriptor lea el resto."
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/cloudflare-queues-adapter.ts:182
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:183
 msgid "[event-bus] \"{name}\" fans out to {count} subscribers and {bytes} bytes, over the {maxMessages} message / {maxBytes} byte queue batch limit."
 msgstr "[event-bus] \"{name}\" se reparte a {count} suscriptores y {bytes} bytes, por encima del límite de lote de la cola de {maxMessages} mensajes / {maxBytes} bytes."
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/cloudflare-queues-adapter.ts:255
+#: src/framework/event-bus/cloudflare-queues-adapter.ts:256
 msgid "[event-bus] No subscriber named \"{subscriber}\" is registered for \"{name}\""
 msgstr "[event-bus] No hay ningún suscriptor llamado \"{subscriber}\" registrado para \"{name}\""
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/registry.ts:47
+#: src/framework/event-bus/registry.ts:46
 msgid "[event-bus] Two subscribers are registered as \"{name}\""
 msgstr "[event-bus] Hay dos suscriptores registrados como \"{name}\""
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/temporal-adapter.ts:238
+#: src/framework/event-bus/temporal-adapter.ts:243
 msgid "[event-bus] The dispatch identity for \"{name}\" is {length} characters, over the {maxIdLength} Temporal allows for an activityId, so this event cannot be delivered. Give the event a shorter key through EVENT_KEYS in events.ts — truncating it here would defeat dedup silently. Identity: \"{dispatchId}\""
 msgstr "[event-bus] La identidad de despacho de \"{name}\" tiene {length} caracteres, por encima de los {maxIdLength} que Temporal permite para un activityId, así que este evento no se puede entregar. Dale al evento una clave más corta con EVENT_KEYS en events.ts — truncarla aquí anularía la deduplicación sin avisar. Identidad: \"{dispatchId}\""
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/temporal-adapter.ts:248
+#: src/framework/event-bus/temporal-adapter.ts:253
 msgid "[event-bus] The event name \"{name}\" is {bytes} bytes, over the {maxBytes} Temporal allows for a fairness key. Rename the event in events.ts."
 msgstr "[event-bus] El nombre del evento \"{name}\" pesa {bytes} bytes, por encima de los {maxBytes} que Temporal permite para una clave de equidad. Cambia el nombre del evento en events.ts."
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/temporal-adapter.ts:274
+#: src/framework/event-bus/temporal-adapter.ts:279
 msgid "createTemporalEventBus: retry needs an explicit maximumAttempts of 1 or more. Temporal reads {attempts} as unlimited, and a subscriber that sends email retrying forever is a mail loop."
 msgstr "createTemporalEventBus: retry necesita un maximumAttempts explícito de 1 o más. Temporal interpreta {attempts} como ilimitado, y un suscriptor que envía correos y se reintenta para siempre es un bucle de correo."
 
 #. js-lingui-explicit-id
-#: src/framework/event-bus/temporal-adapter.ts:291
+#: src/framework/event-bus/temporal-adapter.ts:296
 msgid "createTemporalEventBus: priority[\"{event}\"] must be an integer of 1 or more — 1 is the highest priority and the server's default lowest is 5. Got {key}."
 msgstr "createTemporalEventBus: priority[\"{event}\"] debe ser un entero de 1 o más — 1 es la prioridad más alta y la más baja predeterminada del servidor es 5. Se recibió {key}."
 
@@ -1104,6 +1104,11 @@ msgstr "createTemporalEventBus: priority[\"{event}\"] debe ser un entero de 1 o 
 #: src/framework/event-bus/temporal/preflight.ts:82
 msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
 msgstr "[events-worker] El namespace de Temporal \"{namespace}\" tiene desactivadas las actividades independientes, así que cada evento que publique este despliegue se descartaría con solo una línea de log — incluida la confirmación de pedido que espera un comprador. Define `activity.enableStandalone: true` en la configuración dinámica del servidor (temporal/dynamicconfig/development-sql.yaml es la copia de este repo) y reinicia este Worker. El servidor respondió: \"{answer}\"."
+
+#. js-lingui-explicit-id
+#: src/core/workflows/hooks.ts:198
+msgid "The handler for hook \"{hook}\" from extension \"{extension}\" failed: {reason}"
+msgstr "Falló el handler del hook \"{hook}\" de la extensión \"{extension}\": {reason}"
 
 #. js-lingui-explicit-id
 #: src/core/workflows/types.ts:81

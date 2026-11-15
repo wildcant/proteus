@@ -6,6 +6,8 @@ note: 'Spread the callee rather than restating it — `[...$WF.throws, ErrorType
 files:
   - "**/src/api/**/route.ts"
   - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
 ignores:
   - "**/__tests__/**"
 rule:

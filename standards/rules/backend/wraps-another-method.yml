@@ -5,6 +5,7 @@ message: This method's whole body forwards its arguments to another method of th
 note: 'A method that only re-emits a call under a second name adds a second thing to keep in step and a second name for readers to reconcile — `listGrantedPermissionKeys` forwarding to `resolveEffectiveFeatures` is what made a middleware hand-write a type for a service it could have named. Rename the inner method if the outer name is the better one. Forwarding that *binds* an argument does work: `listUserRoles(userId, context)` calling `this.listActorRoles(''user'', userId, context)` is the actor-type-is-user decision, which is why this matches only a body whose arguments are the bare identifiers it was handed. docs/service-contracts.md'
 files:
   - "apps/backend/src/**/*.ts"
+  - "apps/backend/tests/extension-fixture/**/*.ts"
 ignores:
   # A fake in a test forwards to its own recorder by design.
   - "**/__tests__/**"

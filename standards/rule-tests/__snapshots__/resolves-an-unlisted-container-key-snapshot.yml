@@ -43,6 +43,25 @@ snapshots:
       start: 15
       end: 32
   ? |
+    const notes = container.resolve(fixtureModules.notes)
+  : labels:
+    - source: container.resolve(fixtureModules.notes)
+      style: primary
+      start: 14
+      end: 53
+    - source: resolve
+      style: secondary
+      start: 24
+      end: 31
+    - source: container
+      style: secondary
+      start: 14
+      end: 23
+    - source: container.resolve
+      style: secondary
+      start: 14
+      end: 31
+  ? |
     const resolver = req.scope.resolve<IAccessControlModuleService>('access-control')
   : labels:
     - source: req.scope.resolve<IAccessControlModuleService>('access-control')

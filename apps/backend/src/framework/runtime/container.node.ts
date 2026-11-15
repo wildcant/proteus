@@ -4,6 +4,7 @@ import { env } from '@env'
 import postgres from 'postgres'
 import { bootstrapContainer } from '../../container.js'
 import { createNodeDbProvider } from '../../core/db/node-provider.js'
+import { extensionRegistry } from '../../extensions/registry.gen.js'
 import { subscriberRegistry } from '../event-bus/registry.js'
 import { createTemporalEventBus, type TemporalEventBus } from '../event-bus/temporal-adapter.js'
 import { WinstonLogger } from '../logger/winston-logger.js'
@@ -30,6 +31,7 @@ let temporalEventBus: TemporalEventBus | undefined
  * `eventBus: 'inline'` pin that stood in for a transport that did not exist yet is gone.
  */
 export const container = await bootstrapContainer({
+  extensions: extensionRegistry,
   logger,
   dbProvider,
   /**

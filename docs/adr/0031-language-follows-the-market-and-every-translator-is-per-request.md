@@ -1,5 +1,7 @@
 # 31. Language Follows the Market, and Every Translator Is Per Request
 
+**Status:** Accepted. Amended by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): each extension has its own catalog, merged after core's, and validation issues are translated against the merged catalog.
+
 The store, the backend and the shared HTTP schemas are translated with Lingui, one catalog per workspace (`en`, `es`, source `en`). A Market carries exactly one Locale, and that Locale's language subtag picks the Message Catalog — `es-CO` reads `es`, `en-US` reads `en`. There is no language picker, no persisted language preference and no `Accept-Language` negotiation: the market's URL segment is the only input. The full Locale tag, not the catalog key, goes into `<html lang>`, `hreflang`, the `x-proteus-locale` request header and every `Intl` call, because the country is what formats money and dates (`es` alone writes European numbers; `es-CO` writes pesos).
 
 ## Considered Options

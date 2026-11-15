@@ -1,4 +1,4 @@
-import type { EventName, EventPayloads } from './events.js'
+import type { EventPayload, EventRef } from './events.js'
 
 /**
  * The publish surface — the whole of what a caller sees.
@@ -28,5 +28,6 @@ import type { EventName, EventPayloads } from './events.js'
  * no outcome for a caller to branch on, so there is none to hand back.
  */
 export type EventBus = {
-  emit<N extends EventName>(name: N, data: EventPayloads[N]): Promise<void>
+  /** `event` is a core event's name or an extension's event value (`defineEvent`). */
+  emit<R extends EventRef>(event: R, data: EventPayload<R>): Promise<void>
 }

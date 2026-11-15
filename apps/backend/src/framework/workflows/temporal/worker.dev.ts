@@ -7,6 +7,10 @@
  * makes a *brand new* file restart the Worker at all: the watcher otherwise only follows modules
  * already in the graph, and a file nothing imports yet is by definition not in it.
  *
+ * The extension registry is regenerated first, as every backend dev process does, because the
+ * Worker's container bootstraps extension modules and hook handlers from it; `--include
+ * 'src/extensions/**'` makes an extension's workflow or module file restart the Worker the same way.
+ *
  * The generator runs as a child process rather than an import so the Worker never carries a parser
  * into its own module graph — `tsx --watch` would then reload on every file the generator touches,
  * which is every workflow twice over.
@@ -21,6 +25,7 @@ import { fileURLToPath } from 'node:url'
 
 const workspace = fileURLToPath(new URL('../../../../', import.meta.url))
 
+execFileSync('pnpm', ['--silent', 'run', 'extensions:generate'], { cwd: workspace, stdio: 'inherit' })
 execFileSync('pnpm', ['--silent', 'run', 'workflows:generate'], { cwd: workspace, stdio: 'inherit' })
 
 await import('./worker.js')

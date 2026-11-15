@@ -5,6 +5,7 @@ message: 'This handler answers `$S`. A `GET`, `PATCH` or `DELETE` answers 200 â€
 note: 'Return `{ status: 200, json: â€¦ }`. The uniformity is what a generated client leans on, and `registerOpenApiRoute` declares 200 for every route regardless, so a handler sending anything else here is a status the specification does not describe. `POST` is left out on purpose: create (201) and update (200) are the same syntax, and only the service call underneath says which this is. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
 ignores:
   - "**/__tests__/**"
 # Two return patterns rather than one: `$$$REST` after a comma does not match the empty tail, so

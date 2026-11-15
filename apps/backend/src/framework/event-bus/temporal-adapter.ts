@@ -2,8 +2,9 @@ import { i18n, type Msgid } from '@proteus/utils'
 import { ActivityExecutionAlreadyStartedError, type Client } from '@temporalio/client'
 import type { Duration, Priority, RetryPolicy } from '@temporalio/common'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
-import { buildEvent, type EventName, type EventPayloads } from '../../core/event-bus/events.js'
+import { buildDelivery, type EventName, eventNameOf } from '../../core/event-bus/events.js'
 import type { EventBus } from '../../core/event-bus/ports.js'
+import type { SubscriberDefinition } from '../../core/event-bus/types.js'
 import type { Logger } from '../../core/types/logger.js'
 import { createTemporalClient, type TemporalClientHandle } from '../temporal/client.js'
 import type { SubscriberRegistry } from './registry.js'
@@ -142,8 +143,9 @@ export function createTemporalEventBus(options: TemporalEventBusOptions): Tempor
     return (await handle).client
   }
 
-  async function dispatch<N extends EventName>(name: N, data: EventPayloads[N], subscriber: string): Promise<void> {
-    const event = buildEvent(name, data, subscriber)
+  async function dispatch(name: string, data: unknown, definition: SubscriberDefinition): Promise<void> {
+    const subscriber = definition.name
+    const event = buildDelivery(name, data, definition)
     const rejected = describeIdentityProblem(event.dispatchId, name, maxActivityIdLength)
 
     // Checked here rather than left to the server, which answers `Failed to start activity` with
@@ -175,11 +177,12 @@ export function createTemporalEventBus(options: TemporalEventBusOptions): Tempor
   }
 
   return {
-    async emit(name, data) {
+    async emit(declared, data) {
+      const name = eventNameOf(declared)
       await Promise.all(
         registry.forEvent(name).map(async (subscriber) => {
           try {
-            await dispatch(name, data, subscriber.name)
+            await dispatch(name, data, subscriber)
           } catch (error) {
             // Dedup working is not a failure. `ALLOW_DUPLICATE_FAILED_ONLY` refuses a repeat of a
             // delivery that already succeeded, and that refusal is the feature — a webhook Stripe
@@ -216,8 +219,10 @@ export function createTemporalEventBus(options: TemporalEventBusOptions): Tempor
  * `order.placed` behind them — which is the property that makes a second queue per event
  * unnecessary.
  */
-function priorityFor(name: EventName, configured: TemporalEventBusOptions['priority']): Priority {
-  return { priorityKey: configured?.[name] ?? DEFAULT_PRIORITY_KEY, fairnessKey: name }
+function priorityFor(name: string, configured: TemporalEventBusOptions['priority']): Priority {
+  // Read by any name: an extension event has no entry in the closed map, and gets the default.
+  const priorities: Partial<Record<string, number>> | undefined = configured
+  return { priorityKey: priorities?.[name] ?? DEFAULT_PRIORITY_KEY, fairnessKey: name }
 }
 
 /**
@@ -230,7 +235,7 @@ function priorityFor(name: EventName, configured: TemporalEventBusOptions['prior
  */
 function describeIdentityProblem(
   dispatchId: string,
-  name: EventName,
+  name: string,
   maxIdLength: number,
 ): { message: Msgid; values: Record<string, unknown> } | undefined {
   if (dispatchId.length > maxIdLength) {

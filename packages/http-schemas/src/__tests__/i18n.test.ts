@@ -1,5 +1,5 @@
 import { type I18n, setupI18n } from '@lingui/core'
-import { i18n as marker } from '@proteus/utils'
+import { type Msgid, i18n as marker } from '@proteus/utils'
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { messages as en } from '../../locales/en.js'
@@ -45,6 +45,23 @@ describe('translateIssue', () => {
 
     expect(messagesIn('en', issues, value)).toEqual([issues[0]?.message])
     expect(messagesIn('es', issues, value)).toEqual(['Entrada inválida: se esperaba número, recibido texto'])
+  })
+
+  it("translates a message from the catalog it is given, an extension's merged beside the package's", () => {
+    // Cast, not `i18n.t()`: the message stands for one in an extension's catalog, not the package's.
+    const extensionMessage = 'Name the shipping city' as Msgid
+    const merged = { ...es, [extensionMessage]: ['Nombra la ciudad de envío'] }
+    const i18n = setupI18n({ locale: 'es', messages: { es: merged } })
+    const translate = (id: Msgid, values?: Record<string, unknown>) => i18n._(id, values)
+    const issues = issuesOf(z.object({ city: shortText.min(1, extensionMessage) }), { city: '' })
+
+    expect(issues.map((issue) => translateIssue(issue, translate, zodLocaleFor('es'), undefined, merged))).toEqual([
+      'Nombra la ciudad de envío',
+    ])
+    // Without it, the message is not the package's, so Zod's own default is rendered instead.
+    expect(issues.map((issue) => translateIssue(issue, translate, zodLocaleFor('es')))).not.toEqual([
+      'Nombra la ciudad de envío',
+    ])
   })
 
   it('falls back to English for a language Zod ships no locale for', () => {

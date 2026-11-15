@@ -12,8 +12,11 @@
 #   - a message extracted but never translated — `--strict` fails the compile on a blank `msgstr`.
 #
 # A workspace is found by its config file rather than listed here, so a new catalog is gated the
-# day it is added. Only its `locales` directories are snapshotted: that is where every config in
-# this repo writes, and a catalog path elsewhere would be missed rather than corrupted.
+# day it is added. The backend's and the HTTP schemas' configs declare one catalog per extension
+# beside core's (and the backend's one for the test fixture extension), so an extension's catalog is
+# gated like core's with nothing listed here either. Only `locales` directories are snapshotted:
+# that is where every config in this repo writes, and a catalog path elsewhere would be missed
+# rather than corrupted.
 #
 # Writes in place, so it must not run alongside anything that reads the catalogs — verify.sh runs it
 # alone, before the parallel batch. Prints one line per finding and exits 1 if there was any.

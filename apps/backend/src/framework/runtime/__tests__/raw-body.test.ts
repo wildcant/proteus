@@ -1,6 +1,7 @@
 import type { PreparedRoute, RouteHandler } from '@framework/http/ports.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
+import { testCatalogs } from '@tests/setup/test-extensions.js'
 import request from 'supertest'
 import { createExpressApp } from '../express/app.js'
 import { createHonoApp } from '../hono/app.js'
@@ -57,7 +58,7 @@ test.describe('raw request bytes', () => {
   })
 
   test('express hands the handler the transmitted bytes, unmodified', async ({ logger, expect }) => {
-    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [] })
+    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [], catalogs: testCatalogs })
 
     // The string, not the Buffer: supertest serialises a Buffer sent as `application/json` into
     // `{"type":"Buffer","data":[…]}`, which would be the test's own re-encoding rather than the
@@ -71,7 +72,7 @@ test.describe('raw request bytes', () => {
   })
 
   test('hono hands the handler the transmitted bytes, unmodified', async ({ logger, expect }) => {
-    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [] })
+    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [], catalogs: testCatalogs })
 
     const response = await app.fetch(
       new Request('http://localhost/echo', {
@@ -87,7 +88,7 @@ test.describe('raw request bytes', () => {
   })
 
   test('express leaves a multipart upload out of the raw bytes', async ({ logger, expect }) => {
-    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [] })
+    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [], catalogs: testCatalogs })
     const multipart = multipartRequest()
 
     const response = await request(app)
@@ -101,7 +102,7 @@ test.describe('raw request bytes', () => {
   })
 
   test('hono leaves a multipart upload out of the raw bytes', async ({ logger, expect }) => {
-    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [] })
+    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [], catalogs: testCatalogs })
 
     const response = await app.fetch(multipartRequest())
 

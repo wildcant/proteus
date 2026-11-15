@@ -2,8 +2,10 @@ import type { AwilixContainer } from 'awilix'
 import type { Database } from '../../schema.type.js'
 import type { DbProvider } from '../db/ports.js'
 import type { EventBus } from '../event-bus/ports.js'
+import type { ModuleKey } from '../extensions/module-key.js'
 import { ContainerRegistrationKeys } from '../utils/container.js'
 import { Modules } from '../utils/modules-definition.js'
+import type { HookHandlers } from '../workflows/hook-handler.js'
 import type { IAccessControlModuleService } from './access-control/service.js'
 import type { IAuthModuleService } from './auth/service.js'
 import type { ICartModuleService } from './cart/service.js'
@@ -54,6 +56,7 @@ type CoreRegistrationContracts = {
   [ContainerRegistrationKeys.DB_PROVIDER]: DbProvider
   [ContainerRegistrationKeys.EVENT_BUS]: EventBus
   [ContainerRegistrationKeys.GET_DB]: () => Database
+  [ContainerRegistrationKeys.HOOK_HANDLERS]: HookHandlers
   [ContainerRegistrationKeys.LINK]: ILinkService
   [ContainerRegistrationKeys.LOGGER]: Logger
 }
@@ -65,9 +68,13 @@ type ContainerContracts = ModuleServiceContracts & CoreRegistrationContracts
  * or `ContainerRegistrationKeys` member is enough to get the type back, so no call site restates
  * it — and naming a type by hand is an error rather than an override, because a type argument has
  * to be a key: `resolve<IOrderModuleService>(Modules.PRODUCT)` does not compile.
+ *
+ * An extension module's key (`defineModuleKey`) carries its service type itself, so the second
+ * signature returns it without the closed lists above ever naming an extension.
  */
 export type AppContainer = Omit<AwilixContainer, 'resolve' | 'createScope'> & {
   resolve<TKey extends keyof ContainerContracts>(key: TKey): ContainerContracts[TKey]
+  resolve<TService>(key: ModuleKey<TService>): TService
   createScope(): AppContainer
 }
 
@@ -79,6 +86,7 @@ export type AppContainer = Omit<AwilixContainer, 'resolve' | 'createScope'> & {
  */
 export type ModuleContainer = Omit<AppContainer, 'resolve' | 'createScope'> & {
   resolve<TKey extends keyof ContainerContracts>(key: TKey): ContainerContracts[TKey]
+  resolve<TService>(key: ModuleKey<TService>): TService
   resolve<TRegistration>(key: string): TRegistration
   createScope(): ModuleContainer
 }
