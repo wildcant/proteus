@@ -3,14 +3,17 @@ export type CreateCustomerDTO = {
   hasAccount?: boolean
   firstName?: string | null
   lastName?: string | null
-  email: string
+  email?: string | null
+  /** Normalised to its digits when written. */
+  phone?: string | null
   addresses?: Omit<CreateCustomerAddressDTO, 'customerId'>[]
 }
 
 export type UpdateCustomerDTO = {
   firstName?: string | undefined | null
   lastName?: string | undefined | null
-  email?: string | undefined
+  email?: string | null | undefined
+  phone?: string | null | undefined
 }
 
 /** Whether a write should also claim the customer's default slot for the address it touches. */

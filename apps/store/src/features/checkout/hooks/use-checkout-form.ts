@@ -1,7 +1,7 @@
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
-import type { CartAddressInputBody, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
+import type { CheckoutAddressInputBody, StoreCompleteCartResponse } from '@proteus/http-schemas/store'
 import { formOptions } from '@tanstack/react-form'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -36,7 +36,7 @@ const checkoutSchema = z.object({
   paymentProviderId: z.string().min(1, msg`Select a payment method`.id),
 })
 
-const EMPTY_ADDRESS: CartAddressInputBody = {
+const EMPTY_ADDRESS: CheckoutAddressInputBody = {
   firstName: '',
   lastName: '',
   address1: '',

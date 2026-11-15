@@ -43,6 +43,9 @@ export const useCustomers = (query?: ListCustomersParams, options?: CustomersLis
 
 export const useSuspenseCustomer = (id: string) => useSuspenseQuery(customerQueryOptions(id))
 
+/** The Customer an Order or a draft is linked to, when it has one. */
+export const useCustomer = (id: string | null) => useQuery({ ...customerQueryOptions(id ?? ''), enabled: id !== null })
+
 // --- Mutation hooks ---
 
 export const useUpdateCustomer = (

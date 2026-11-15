@@ -1,22 +1,28 @@
 import type { CustomerDTO } from '@core/types/customer/common.js'
 import type { ICustomerModuleService } from '@core/types/customer/service.js'
 import { Modules } from '@core/utils/modules-definition.js'
+import { toPhoneDigits } from '@core/utils/phone-digits.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
 
 export type FindOrCreateCustomerInput = {
   customerId?: string | null
-  email?: string
+  email?: string | null
+  /** Matched by its digits, for a guest who gave no email. */
+  phone?: string | null
   firstName?: string | null
   lastName?: string | null
 }
 
+/** What a guest's update overwrote, so compensation can put it back. */
+type PreviousGuestDetails = Pick<CustomerDTO, 'firstName' | 'lastName' | 'email' | 'phone'>
+
 export type FoundOrCreatedCustomer = {
   customer: CustomerDTO | null
   created: boolean
-  previousName: { firstName: string | null; lastName: string | null } | null
+  previous: PreviousGuestDetails | null
 }
 
-const NOT_FOUND: FoundOrCreatedCustomer = { customer: null, created: false, previousName: null }
+const NOT_FOUND: FoundOrCreatedCustomer = { customer: null, created: false, previous: null }
 
 /**
  * Registered customers own their identity — we must never create a duplicate guest
@@ -38,39 +44,54 @@ async function findRegisteredCustomer(
   return customer ?? null
 }
 
+/** The guest the shopper already is: by email first, then by phone, digits compared. */
+async function findGuest(
+  customerService: ICustomerModuleService,
+  email: string | null,
+  phone: string | null,
+): Promise<CustomerDTO | null> {
+  if (email) {
+    const [byEmail] = await customerService.listCustomers({ email, hasAccount: false })
+    if (byEmail) return byEmail
+  }
+  if (!phone) return null
+  const [byPhone] = await customerService.listCustomers({ phone, hasAccount: false })
+  return byPhone ?? null
+}
+
 /**
- * Guest customers are ephemeral — one per email, reused across carts. If a returning
- * guest corrects their name (e.g. typo fix between checkout attempts), we update in place
- * and snapshot the old name so compensation can restore it if the workflow fails.
+ * Guest customers are ephemeral — one per email or phone, reused across carts and draft orders. A
+ * returning guest's details are brought up to date in place: a corrected name, and the email or the
+ * phone they hadn't given before. What changed is snapshotted so compensation can restore it.
  */
 async function findOrCreateGuest(
   customerService: ICustomerModuleService,
-  input: FindOrCreateCustomerInput & { email: string },
+  input: FindOrCreateCustomerInput & { email: string | null; phone: string | null },
 ): Promise<FoundOrCreatedCustomer> {
-  const [existingGuest] = await customerService.listCustomers({ email: input.email, hasAccount: false })
+  const existingGuest = await findGuest(customerService, input.email, input.phone)
 
   if (existingGuest) {
-    const nameChanged =
-      (input.firstName !== undefined && input.firstName !== existingGuest.firstName) ||
-      (input.lastName !== undefined && input.lastName !== existingGuest.lastName)
+    const update = {
+      ...(input.firstName != null && input.firstName !== existingGuest.firstName ? { firstName: input.firstName } : {}),
+      ...(input.lastName != null && input.lastName !== existingGuest.lastName ? { lastName: input.lastName } : {}),
+      ...(input.email && !existingGuest.email ? { email: input.email } : {}),
+      ...(input.phone && !existingGuest.phone ? { phone: input.phone } : {}),
+    }
+    if (Object.keys(update).length === 0) return { customer: existingGuest, created: false, previous: null }
 
-    if (!nameChanged) return { customer: existingGuest, created: false, previousName: null }
-
-    const previousName = { firstName: existingGuest.firstName, lastName: existingGuest.lastName }
-    const updated = await customerService.updateCustomer(existingGuest.id, {
-      ...(input.firstName != null ? { firstName: input.firstName } : {}),
-      ...(input.lastName != null ? { lastName: input.lastName } : {}),
-    })
-    return { customer: updated, created: false, previousName }
+    const { firstName, lastName, email, phone } = existingGuest
+    const updated = await customerService.updateCustomer(existingGuest.id, update)
+    return { customer: updated, created: false, previous: { firstName, lastName, email, phone } }
   }
 
   const guest = await customerService.createCustomer({
     email: input.email,
+    phone: input.phone,
     hasAccount: false,
     firstName: input.firstName ?? undefined,
     lastName: input.lastName ?? undefined,
   })
-  return { customer: guest, created: true, previousName: null }
+  return { customer: guest, created: true, previous: null }
 }
 
 /**
@@ -86,16 +107,17 @@ export async function findOrCreateCustomerStep(
   return ctx.step<FoundOrCreatedCustomer>(
     'find-or-create-customer',
     async ({ container }) => {
-      if (!input.customerId && !input.email) return NOT_FOUND
+      const phone = toPhoneDigits(input.phone)
+      if (!input.customerId && !input.email && !phone) return NOT_FOUND
 
       const customerService = container.resolve(Modules.CUSTOMER)
 
       const registered = await findRegisteredCustomer(customerService, input)
-      if (registered) return { customer: registered, created: false, previousName: null }
+      if (registered) return { customer: registered, created: false, previous: null }
 
-      if (!input.email) return NOT_FOUND
+      if (!input.email && !phone) return NOT_FOUND
 
-      return findOrCreateGuest(customerService, { ...input, email: input.email })
+      return findOrCreateGuest(customerService, { ...input, email: input.email ?? null, phone })
     },
     async (result, { container }) => {
       if (!result.customer) return
@@ -103,8 +125,8 @@ export async function findOrCreateCustomerStep(
 
       if (result.created) {
         await customerService.softDeleteCustomers([result.customer.id])
-      } else if (result.previousName) {
-        await customerService.updateCustomer(result.customer.id, result.previousName)
+      } else if (result.previous) {
+        await customerService.updateCustomer(result.customer.id, result.previous)
       }
     },
   )

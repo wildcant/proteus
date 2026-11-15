@@ -18,7 +18,10 @@ offset?: number | null;
  */
 limit?: number;
 order?: string;
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 id?: string | string[];
 to?: string | string[];
 channel?: 'email' | 'sms' | 'feed' | ('email' | 'sms' | 'feed')[];

@@ -13,7 +13,10 @@ export interface Customer {
   firstName: string | null;
   /** @nullable */
   lastName: string | null;
-  email: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  phone: string | null;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

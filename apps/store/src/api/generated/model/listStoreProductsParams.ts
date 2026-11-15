@@ -19,7 +19,10 @@ offset?: number | null;
  */
 limit?: number;
 order?: StoreProductSort;
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 exact?: boolean | string;
 /**
  * @minLength 1

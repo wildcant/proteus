@@ -7,7 +7,8 @@ export const Customer = z
     hasAccount: z.boolean(),
     firstName: z.string().nullable(),
     lastName: z.string().nullable(),
-    email: z.string(),
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
     ...timestamps.shape,
   })
   .openapi('Customer')

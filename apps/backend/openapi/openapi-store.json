@@ -1155,7 +1155,16 @@
             ]
           },
           "email": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -1179,6 +1188,7 @@
           "firstName",
           "lastName",
           "email",
+          "phone",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -3655,8 +3665,10 @@
                         "maxLength": 255
                       },
                       "address1": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "maxLength": 255
                       },
                       "address2": {
@@ -3674,12 +3686,17 @@
                         "maxLength": 255
                       },
                       "city": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "maxLength": 255
                       },
                       "countryCode": {
-                        "type": "string",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "minLength": 2,
                         "maxLength": 2
                       },
@@ -3691,8 +3708,10 @@
                         "maxLength": 255
                       },
                       "postalCode": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "maxLength": 32
                       },
                       "phone": {
@@ -3703,14 +3722,7 @@
                         "maxLength": 32
                       }
                     },
-                    "required": [
-                      "firstName",
-                      "lastName",
-                      "address1",
-                      "city",
-                      "countryCode",
-                      "postalCode"
-                    ]
+                    "additionalProperties": false
                   },
                   "billingAddress": {
                     "type": "object",
@@ -3730,8 +3742,10 @@
                         "maxLength": 255
                       },
                       "address1": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "maxLength": 255
                       },
                       "address2": {
@@ -3749,12 +3763,17 @@
                         "maxLength": 255
                       },
                       "city": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "maxLength": 255
                       },
                       "countryCode": {
-                        "type": "string",
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "minLength": 2,
                         "maxLength": 2
                       },
@@ -3766,8 +3785,10 @@
                         "maxLength": 255
                       },
                       "postalCode": {
-                        "type": "string",
-                        "minLength": 1,
+                        "type": [
+                          "string",
+                          "null"
+                        ],
                         "maxLength": 32
                       },
                       "phone": {
@@ -3778,14 +3799,7 @@
                         "maxLength": 32
                       }
                     },
-                    "required": [
-                      "firstName",
-                      "lastName",
-                      "address1",
-                      "city",
-                      "countryCode",
-                      "postalCode"
-                    ]
+                    "additionalProperties": false
                   }
                 }
               }
@@ -5226,7 +5240,10 @@
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -5381,7 +5398,10 @@
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -5489,7 +5509,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",

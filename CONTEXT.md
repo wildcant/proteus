@@ -171,11 +171,12 @@ calls it the **bag** ("Your Bag"); the code, the API and this glossary say Cart.
 _Avoid_: bag (in code and docs — Store Copy only), basket, checkout (for the thing itself), session
 
 **Customer**:
-The person a Cart and an Order belong to, identified by an email. A Customer exists for every
-shopper who has given an email, registered or not: `hasAccount` says whether they can sign in, and
-at most one Customer with an account and one without may hold the same email. A guest checkout
-writes a Customer without an account; registering, or signing in and claiming a guest Cart, is what
-ties a Cart to a Customer with an account.
+The person a Cart and an Order belong to, identified by an email or a phone. `hasAccount` says
+whether they can sign in, and a Customer with an account always has an email. At most one Customer
+with an account and one without may hold the same email, and at most one without an account the
+same phone, kept as digits only. A guest checkout writes a Customer without an account, and so does
+converting a Draft Order that has an email or a phone; registering, or signing in and claiming a
+guest Cart, is what ties a Cart to a Customer with an account.
 _Avoid_: user (reserved for admin staff), account (for the person), shopper (in code), member, client
 
 **Address**:
@@ -185,6 +186,7 @@ country and phone. It takes three forms, and they are three different records: a
 a Cart's address, its own copy per type, shipping and billing; and an Order's address, copied from
 the Cart when it is placed and never touched by the address book again. Picking a saved address at
 checkout copies it onto the Cart, so editing the saved address later changes neither Cart nor Order.
+Converting a Draft Order copies the other way, once: its shipping address is saved on its Customer.
 _Avoid_: location (reserved for Stock Location), destination, contact
 
 **Order**:
@@ -207,8 +209,9 @@ _Avoid_: purchase, receipt (for the record), transaction (for the Order itself),
 An Order the shop hasn't confirmed: its status is draft. It reserves no stock and holds no payment
 collection, so an abandoned one costs nothing. A shopper creates one by sending a Cart to the shop,
 which closes the Cart; sending the same Cart again returns the same draft. The admin edits its
-items, address and shipping, then converts it to a pending Order — reserving stock and creating its
-payment collection, usually while recording the deposit — or cancels it. Kept out of the admin's
+items, address and shipping, then converts it to a pending Order — reserving stock, creating its
+payment collection, usually while recording the deposit, and linking it to the guest Customer its
+email or phone finds or makes — or cancels it. Kept out of the admin's
 orders list, a Customer's order history and order counts; the admin lists drafts on their own.
 _Avoid_: quote, pending order, saved cart, order request
 

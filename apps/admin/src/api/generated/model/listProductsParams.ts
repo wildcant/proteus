@@ -18,7 +18,10 @@ offset?: number | null;
  */
 limit?: number;
 order?: string;
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 status?: 'draft' | 'proposed' | 'published' | 'rejected' | ('draft' | 'proposed' | 'published' | 'rejected')[];
 createdAt?: {
   /** @nullable */

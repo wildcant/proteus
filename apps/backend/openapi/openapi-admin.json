@@ -650,7 +650,16 @@
             ]
           },
           "email": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -674,6 +683,7 @@
           "firstName",
           "lastName",
           "email",
+          "phone",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -715,12 +725,15 @@
           "email": {
             "type": "string",
             "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32
           }
         },
         "required": [
           "firstName",
-          "lastName",
-          "email"
+          "lastName"
         ]
       },
       "AdminCustomerResponse": {
@@ -765,8 +778,18 @@
             "maxLength": 255
           },
           "email": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "email"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
           }
         }
       },
@@ -8784,7 +8807,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -8866,7 +8892,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -8896,6 +8925,14 @@
             },
             "required": false,
             "name": "email",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "phone",
             "in": "query"
           },
           {
@@ -9684,7 +9721,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -9940,7 +9980,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -10558,7 +10601,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -12005,7 +12051,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -12600,7 +12649,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -12865,7 +12917,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -13125,7 +13180,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -13202,7 +13260,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -13464,7 +13525,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -13726,7 +13790,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -14373,7 +14440,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",
@@ -15513,7 +15583,10 @@
           },
           {
             "schema": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "required": false,
             "name": "q",

@@ -1,3 +1,4 @@
+import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminConvertDraftOrder, AdminOrderActionResponse, IdParams } from '@proteus/http-schemas/admin'
 import { convertDraftOrderWorkflow } from '@workflows/draft-order/convert-draft-order.js'
@@ -12,7 +13,12 @@ export const PostThrows = [...convertDraftOrderWorkflow.throws] as const
  * the same action. The Order then leaves the drafts list for the orders list.
  */
 export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResult<typeof PostOutput>> => {
-  const order = await convertDraftOrderWorkflow.run({ orderId: req.params.id, paymentAmount: req.body.paymentAmount })
+  const { store } = req.scope.resolve(ContainerRegistrationKeys.CONFIG_MODULE).projectConfig
+  const order = await convertDraftOrderWorkflow.run({
+    orderId: req.params.id,
+    paymentAmount: req.body.paymentAmount,
+    requireContact: store.draftOrderConvertRequiresContact,
+  })
 
   return {
     status: 200,

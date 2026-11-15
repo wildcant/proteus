@@ -62,3 +62,34 @@ test.describe('GET /admin/customers', () => {
     expect(createdRecently.body.count).toBe(2)
   })
 })
+
+/**
+ * A shopper who buys through a chat may give only a phone. The admin records them as a guest with
+ * either contact, keeps the phone as digits whatever way it was typed, and finds them by it.
+ */
+test.describe('a guest Customer with a phone', () => {
+  test('is created with a phone alone, stored as digits, found by it, and refused with no contact', async ({
+    expect,
+  }) => {
+    const digits = `300${Math.floor(Math.random() * 1e7)
+      .toString()
+      .padStart(7, '0')}`
+    const typed = `+57 ${digits.slice(0, 3)} ${digits.slice(3)}`
+
+    const created = await api.post<typeof customerRoutes.PostOutput>('/admin/customers', [
+      { firstName: 'Camila', lastName: 'Restrepo', phone: typed },
+    ])
+    expect(created.status).toBe(201)
+    expect(created.body.customers).toMatchObject([{ email: null, phone: `57${digits}`, hasAccount: false }])
+
+    const found = await listCustomers({ q: digits })
+    expect(found.body.customers.map((customer) => customer.phone)).toEqual([`57${digits}`])
+
+    // The same number typed another way is the same guest, so a second one is refused.
+    const twice = await api.post('/admin/customers', [{ firstName: 'Camila', lastName: 'R', phone: `57${digits}` }])
+    expect(twice.status).toBe(422)
+
+    const noContact = await api.post('/admin/customers', [{ firstName: 'Nadie', lastName: 'Contacto' }])
+    expect(noContact.status).toBe(400)
+  })
+})

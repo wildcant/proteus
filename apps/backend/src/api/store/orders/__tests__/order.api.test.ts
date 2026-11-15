@@ -9,6 +9,7 @@ import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { authHeader } from '@tests/utils/auth-header.js'
+import { orderReference } from '@workflows/order/utils/order-reference.js'
 import orderDefinitions from '../definitions.js'
 
 let api: TestApi
@@ -62,7 +63,7 @@ test.describe('GET /store/orders/:id', () => {
     assertDefined(read)
     expect(read).toMatchObject({
       id: order.id,
-      reference: String(order.displayId),
+      reference: orderReference(order.displayId),
       status: 'pending',
       fulfillmentStatus: 'unfulfilled',
       lineItems: [{ variantOptions: [option] }],
@@ -90,7 +91,7 @@ test.describe('GET /store/orders/:id', () => {
     const { status, body } = await retrieve(draft.id)
 
     expect(status).toBe(200)
-    expect(body).toMatchObject({ order: { id: draft.id, status: 'draft', reference: String(draft.displayId) } })
+    expect(body).toMatchObject({ order: { id: draft.id, status: 'draft', reference: orderReference(draft.displayId) } })
   })
 
   test('returns a null address when the checkout never set one', async ({ service, expect }) => {
@@ -206,7 +207,7 @@ test.describe('GET /store/orders', () => {
     const { status, body } = await list(authHeader('customer', customer.id))
 
     expect(status).toBe(200)
-    expect(body).toMatchObject({ count: 1, orders: [{ id: mine.id, reference: String(mine.displayId) }] })
+    expect(body).toMatchObject({ count: 1, orders: [{ id: mine.id, reference: orderReference(mine.displayId) }] })
   })
 
   test('summarises each order with the items it contains', async ({ service, expect }) => {

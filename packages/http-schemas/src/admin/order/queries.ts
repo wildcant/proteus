@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { createDateOperatorMap, createFindParams, type FindParams } from '../../common.js'
+import { createDateOperatorMap, createFindParams, type FindParams, searchTerm } from '../../common.js'
 import { OrderStatus } from './entities.js'
 
 export const AdminOrderListParams = createFindParams().extend({
-  q: z.string().optional(),
+  q: searchTerm,
   status: z.union([OrderStatus, OrderStatus.array()]).optional(),
   customerId: z.union([z.string(), z.array(z.string())]).optional(),
   createdAt: createDateOperatorMap().optional(),
@@ -18,7 +18,7 @@ export const OrderFulfillmentIdParams = z.object({
 export type OrderFulfillmentIdParams = z.infer<typeof OrderFulfillmentIdParams>
 
 export const AdminDraftOrderListParams = createFindParams().extend({
-  q: z.string().optional(),
+  q: searchTerm,
   createdAt: createDateOperatorMap().optional(),
 })
 

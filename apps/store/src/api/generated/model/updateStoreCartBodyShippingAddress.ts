@@ -11,17 +11,17 @@ export type UpdateStoreCartBodyShippingAddress = {
      * @maxLength 255
      * @nullable
      */
-  firstName: string | null;
+  firstName?: string | null;
   /**
      * @maxLength 255
      * @nullable
      */
-  lastName: string | null;
+  lastName?: string | null;
   /**
-     * @minLength 1
      * @maxLength 255
+     * @nullable
      */
-  address1: string;
+  address1?: string | null;
   /**
      * @maxLength 255
      * @nullable
@@ -33,25 +33,26 @@ export type UpdateStoreCartBodyShippingAddress = {
      */
   company?: string | null;
   /**
-     * @minLength 1
      * @maxLength 255
+     * @nullable
      */
-  city: string;
+  city?: string | null;
   /**
      * @minLength 2
      * @maxLength 2
+     * @nullable
      */
-  countryCode: string;
+  countryCode?: string | null;
   /**
      * @maxLength 255
      * @nullable
      */
   province?: string | null;
   /**
-     * @minLength 1
      * @maxLength 32
+     * @nullable
      */
-  postalCode: string;
+  postalCode?: string | null;
   /**
      * @maxLength 32
      * @nullable

@@ -1,4 +1,4 @@
-import { CartAddressInput } from '@proteus/http-schemas/store'
+import { CheckoutAddressInput } from '@proteus/http-schemas/store'
 import { z } from 'zod'
 import type { Customer, StoreCustomerAddress } from '#/api/generated/model'
 
@@ -7,7 +7,7 @@ import type { Customer, StoreCustomerAddress } from '#/api/generated/model'
  * matches a value held in form state back to the live object after the address book rebuilds it.
  * An address typed by hand has none.
  */
-export const CheckoutAddress = CartAddressInput.extend({ id: z.string().optional() })
+export const CheckoutAddress = CheckoutAddressInput.extend({ id: z.string().optional() })
 export type CheckoutAddress = z.infer<typeof CheckoutAddress>
 
 export function toCartAddressInput(address: StoreCustomerAddress, customer: Customer): CheckoutAddress {

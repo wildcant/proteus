@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { createDateOperatorMap, createFindParams, type FindParams } from '../../common.js'
+import { createDateOperatorMap, createFindParams, type FindParams, searchTerm } from '../../common.js'
 import { NotificationChannel } from './entities.js'
 
 export const AdminNotificationListParams = createFindParams({ limit: 50 }).extend({
-  q: z.string().optional(),
+  q: searchTerm,
   id: z.union([z.string(), z.array(z.string())]).optional(),
   to: z.union([z.string(), z.array(z.string())]).optional(),
   channel: z.union([NotificationChannel, z.array(NotificationChannel)]).optional(),

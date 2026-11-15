@@ -18,9 +18,13 @@ offset?: number | null;
  */
 limit?: number;
 order?: string;
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 id?: string | string[];
 email?: string;
+phone?: string;
 hasAccount?: boolean;
 createdAt?: {
   /** @nullable */

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/react/macro'
-import { CartAddressInput } from '@proteus/http-schemas/store'
+import { CheckoutAddressInput } from '@proteus/http-schemas/store'
 import { cn } from '@proteus/ui-core'
 import { useSelector } from '@tanstack/react-form'
 import type { AddStoreCartShippingMethodBody } from '#/api/generated/model'
@@ -31,7 +31,7 @@ export const ShippingMethodForm = withForm({
   render: function ShippingMethodForm({ form, cart, isAddressesLoading, className }) {
     const { formatPrice } = useFormatters()
     const shippingAddress = useSelector(form.store, (state) => state.values.shippingAddress)
-    const { success: isValidShippingAddress } = CartAddressInput.safeParse(shippingAddress)
+    const { success: isValidShippingAddress } = CheckoutAddressInput.safeParse(shippingAddress)
 
     const { mutate: selectMethod } = useSelectShippingMethod()
     const selectPaymentMethod = (payload: AddStoreCartShippingMethodBody) =>

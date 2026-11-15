@@ -84,6 +84,12 @@ export function createDateOperatorMap() {
 
 const defaultPagination = { offset: 0, limit: 20 }
 
+/**
+ * A list's free-text search. Coerced, because a router reading it back from the URL parses a
+ * digits-only term (an order number, a phone) as a number, and the search is still that text.
+ */
+export const searchTerm = z.coerce.string().optional()
+
 export function createFindParams(defaults?: { limit?: number; offset?: number }) {
   return z.object({
     offset: z.coerce

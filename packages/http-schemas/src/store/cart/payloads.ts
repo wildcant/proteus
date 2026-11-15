@@ -19,7 +19,30 @@ export const CreateCart = z.object({
 })
 export type CreateCartBody = z.infer<typeof CreateCart>
 
-export const CartAddressInput = z.object({
+/**
+ * A Cart address as the API takes it: every field optional, as in Medusa's `AddressPayload`. A Cart
+ * collects its address bit by bit (a city to quote shipping, the rest later), and each write merges
+ * into the row, so an absent field keeps its value and `null` clears it. A checkout form that needs a
+ * whole address validates with {@link CheckoutAddressInput} before sending.
+ */
+export const CartAddressInput = z
+  .object({
+    firstName: shortText.nullish(),
+    lastName: shortText.nullish(),
+    address1: shortText.nullish(),
+    address2: shortText.nullish(),
+    company: shortText.nullish(),
+    city: shortText.nullish(),
+    countryCode: countryCode.length(2, i18n.t('Country is required')).nullish(),
+    province: shortText.nullish(),
+    postalCode: postalCode.nullish(),
+    phone: phone.nullish(),
+  })
+  .strict()
+export type CartAddressInputBody = z.infer<typeof CartAddressInput>
+
+/** The whole address a checkout needs before it completes the Cart, with a message for each missing field. */
+export const CheckoutAddressInput = z.object({
   firstName: shortText.nullable(),
   lastName: shortText.nullable(),
   address1: shortText.min(1, i18n.t('Address is required')),
@@ -31,7 +54,7 @@ export const CartAddressInput = z.object({
   postalCode: postalCode.min(1, i18n.t('Postal code is required')),
   phone: phone.optional().nullable(),
 })
-export type CartAddressInputBody = z.infer<typeof CartAddressInput>
+export type CheckoutAddressInputBody = z.infer<typeof CheckoutAddressInput>
 
 export const UpdateCart = z.object({
   /**

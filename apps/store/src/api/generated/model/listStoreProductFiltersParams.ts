@@ -7,7 +7,10 @@
  */
 
 export type ListStoreProductFiltersParams = {
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 exact?: boolean | string;
 /**
  * @minLength 1

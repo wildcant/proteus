@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { createDateOperatorMap, createFindParams, type FindParams } from '../../common.js'
+import { createDateOperatorMap, createFindParams, type FindParams, searchTerm } from '../../common.js'
 import { ProductStatus } from './entities.js'
 
 export const AdminProductListParams = createFindParams().extend({
-  q: z.string().optional(),
+  q: searchTerm,
   status: z.union([ProductStatus, ProductStatus.array()]).optional(),
   createdAt: createDateOperatorMap().optional(),
   /** Direct members of the Category only — a product in one of its children is not listed. */

@@ -26,7 +26,8 @@ CREATE TABLE "customer" (
 	"has_account" boolean DEFAULT false NOT NULL,
 	"first_name" text,
 	"last_name" text,
-	"email" text NOT NULL,
+	"email" text,
+	"phone" text,
 	"status" "customer_status" DEFAULT 'active' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -38,4 +39,5 @@ CREATE INDEX "idx_customer_address_customer_id" ON "customer_address" USING btre
 CREATE UNIQUE INDEX "idx_customer_address_unique_customer_billing" ON "customer_address" USING btree ("customer_id") WHERE is_default_billing = true AND deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_customer_address_unique_customer_shipping" ON "customer_address" USING btree ("customer_id") WHERE is_default_shipping = true AND deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_customer_unique_email_has_account_true" ON "customer" USING btree ("email") WHERE has_account = true AND deleted_at IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_customer_unique_email_has_account_false" ON "customer" USING btree ("email") WHERE has_account = false AND deleted_at IS NULL;
+CREATE UNIQUE INDEX "idx_customer_unique_email_has_account_false" ON "customer" USING btree ("email") WHERE has_account = false AND deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_customer_unique_phone_has_account_false" ON "customer" USING btree ("phone") WHERE has_account = false AND deleted_at IS NULL;

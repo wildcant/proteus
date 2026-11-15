@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import type { CartAddressInputBody } from '@proteus/http-schemas/store'
+import type { CheckoutAddressInputBody } from '@proteus/http-schemas/store'
 import { useCallback } from 'react'
 import { useUpdateCart } from '../api/checkout'
 import type { ConfirmOutcome } from '../types/payment'
@@ -30,8 +30,8 @@ import { useOpenPaymentSession } from './use-payment-session'
 type PlaceOrderValues = {
   paymentProviderId: string
   email: string
-  shippingAddress: CartAddressInputBody
-  billingAddress: CartAddressInputBody
+  shippingAddress: CheckoutAddressInputBody
+  billingAddress: CheckoutAddressInputBody
 }
 
 export type PlaceOrderArgs = {

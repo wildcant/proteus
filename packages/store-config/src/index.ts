@@ -51,3 +51,6 @@ export const ORDER_REFERENCE_PREFIX: string | undefined = undefined
 
 /** Whether the storefront may turn a Cart into a Draft Order, for a store that confirms orders in a chat. */
 export const STORE_DRAFT_ORDERS_ENABLED: boolean = false
+
+/** Converting a Draft Order needs the shopper's email or phone, so their guest Customer exists before stock is held. */
+export const DRAFT_ORDER_CONVERT_REQUIRES_CONTACT: boolean = false

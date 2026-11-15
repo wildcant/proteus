@@ -1021,7 +1021,7 @@ msgstr "Show password"
 msgid "Sign in"
 msgstr "Sign in"
 
-#: src/features/account/components/account-detail/account-detail.tsx:80
+#: src/features/account/components/account-detail/account-detail.tsx:81
 #: src/features/checkout/components/checkout-account-menu/checkout-account-menu.tsx:43
 msgid "Sign out"
 msgstr "Sign out"

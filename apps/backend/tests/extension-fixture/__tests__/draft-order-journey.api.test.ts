@@ -388,7 +388,8 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
 })
 
 test('the store route is not there when the store takes no draft orders', async ({ createApi, service, expect }) => {
-  api = await createApi({ definitions })
+  // Off by name, whatever the store's own settings say.
+  api = await createApi({ definitions, config: { projectConfig: { store: { draftOrders: false } } } })
   const cart = await service.create.cart(api.container)
 
   const refused = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/draft-order`)

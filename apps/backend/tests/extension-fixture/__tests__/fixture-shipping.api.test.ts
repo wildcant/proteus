@@ -152,8 +152,9 @@ test('an extensionâ€™s fulfillment provider is registered and synced like coreâ€
   const providerIds = async () =>
     (await db.execute<{ id: string }>(sql`SELECT id FROM fulfillment_provider ORDER BY id`)).map((row) => row.id)
 
-  // The container's loader wrote its row beside the manual provider's.
-  expect(await providerIds()).toEqual([CITY_RATES_PROVIDER, 'fp_manual_default'])
+  // The container's loader wrote its row beside the manual provider's (and beside any a fork's own
+  // extension brings, which the test container carries too).
+  expect(await providerIds()).toEqual(expect.arrayContaining([CITY_RATES_PROVIDER, 'fp_manual_default']))
 
   // workerd skips the loader's write, so its rows come from the sync script, which reads the registry.
   await db.execute(sql`DELETE FROM fulfillment_provider`)

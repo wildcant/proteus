@@ -23,7 +23,8 @@ export const useCustomerTable = () => {
     columns: (col) => [
       // AdminCustomer holds the two halves separately, so there is no accessor to sort on here.
       col.display('name', { header: t`Name`, cell: ({ row }) => customerName(row) || '—' }),
-      col.accessor('email', { header: t`Email`, sortable: true }),
+      col.accessor('email', { header: t`Email`, sortable: true, cell: ({ value }) => value ?? '—' }),
+      col.accessor('phone', { header: t`Phone`, cell: ({ value }) => value ?? '—' }),
       col.accessor('hasAccount', {
         header: t`Account`,
         cell: ({ value }) => (value ? t`Registered` : t`Guest`),

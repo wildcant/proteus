@@ -34,6 +34,9 @@ export async function createCustomer(overrides?: Partial<CreateCustomer>) {
   const result = await db.insert(customerTable).values(customerData).returning()
   const customer = result[0]
   if (!customer) throw new Error('Customer insert returned no rows')
+  // A registered customer signs in with an email, so the auth rows below need one.
+  const { email } = customer
+  if (!email) throw new Error('A registered test customer needs an email')
 
   const authResult = await db
     .insert(authIdentityTable)
@@ -44,14 +47,14 @@ export async function createCustomer(overrides?: Partial<CreateCustomer>) {
 
   await db.insert(providerIdentityTable).values({
     authIdentityId: authIdentity.id,
-    entityId: customer.email,
+    entityId: email,
     provider: 'emailpass',
     providerMetadata: { password: hashedPassword },
   })
 
   await db.insert(authVerificationTable).values({
     authIdentityId: authIdentity.id,
-    entityId: customer.email,
+    entityId: email,
     entityType: 'email',
     codeProvider: 'emailpass',
     requestedAt: new Date(),
@@ -60,6 +63,7 @@ export async function createCustomer(overrides?: Partial<CreateCustomer>) {
 
   return {
     ...customer,
+    email,
     password,
     [Symbol.asyncDispose]: async () => {
       await deleteCustomerById(customer.id)
