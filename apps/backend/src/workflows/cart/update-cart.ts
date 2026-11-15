@@ -11,6 +11,7 @@ import type { UpdateCartBody } from '@proteus/http-schemas/store'
 import { i18n } from '@proteus/utils'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { findOrCreateCustomerStep } from './steps/find-or-create-customer.js'
+import { refreshCartShippingMethodsStep } from './steps/refresh-cart-shipping-methods.js'
 import { isShopperEnteredAddress } from './utils/shipping-address-country.js'
 
 type UpdateCartInput = UpdateCartBody & {
@@ -26,13 +27,6 @@ type RegionChange = {
   regionId: string
   /** The region's currency. Every line item, shipping method and payment is settled in it. */
   currencyCode: string
-  /**
-   * Which country the refreshed shipping methods are quoted for, resolved the way
-   * `GET /store/carts/:id/shipping-options` resolves it: the shopper's own address wins, and a
-   * cart that has not reached the address step falls back to the region's first country by code.
-   * Null when the new region sells to no country at all, which offers nothing.
-   */
-  shippingCountryCode: string | null
   /**
    * The country the change writes onto the cart's shipping address, set only when the new region
    * covers exactly one country and the cart names none. With one country there is nothing to
@@ -221,7 +215,6 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
       return {
         regionId: region.id,
         currencyCode: region.currencyCode,
-        shippingCountryCode: enteredCountry ?? adoptedCountryCode ?? firstCountryCode ?? null,
         adoptedCountryCode,
         staleShippingAddressId: !adoptedCountryCode && adoptedCountryIsStale ? (adoptedAddress?.id ?? null) : null,
       }
@@ -307,6 +300,13 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
         )
       },
     )
+
+    /**
+     * A new shipping address can move the cart into another zone or another courier's rate, so its
+     * methods are re-priced, or dropped when their option no longer serves it. A market switch
+     * refreshes after the switch instead, once the cart is in the currency and country it quotes for.
+     */
+    await refreshCartShippingMethodsStep(ctx, { cartId: input.cartId, deferred: regionChange !== null })
 
     if (!regionChange) return cartUpdate.cart
 
@@ -447,44 +447,14 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
     )
 
     /**
-     * Drops the shipping methods the new market does not offer.
+     * Re-prices the shipping methods for the new market, and drops the ones it does not offer.
      *
      * A method is a quote for a rate in a zone, so one whose option the new country is outside of is
      * not a cheaper or dearer quote — it is a delivery nobody is offering. It is removed rather than
-     * repriced, which leaves the shopper to choose again from the options the new market does list.
+     * kept, which leaves the shopper to choose again from the options the new market does list. One
+     * that is still offered is quoted again, its calculated price now in the new currency.
      */
-    await ctx.step<string[]>(
-      'refresh-shipping-methods',
-      async ({ container }) => {
-        const cartService = container.resolve(Modules.CART)
-        const fulfillmentService = container.resolve(Modules.FULFILLMENT)
-
-        const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
-        if (shippingMethods.length === 0) return []
-
-        const offered = regionChange.shippingCountryCode
-          ? await fulfillmentService.listShippingOptionsForContext({ countryCode: regionChange.shippingCountryCode })
-          : []
-        const offeredIds = new Set(offered.map((option) => option.id))
-
-        // A method with no option behind it cannot be shown to still apply, so it goes with the
-        // rest — the cart is left offering only deliveries the new market answers for.
-        const stale = shippingMethods.filter(
-          (method) => !method.shippingOptionId || !offeredIds.has(method.shippingOptionId),
-        )
-        if (stale.length === 0) return []
-
-        const staleIds = stale.map((method) => method.id)
-        await cartService.softDeleteShippingMethods(staleIds)
-
-        return staleIds
-      },
-      async (staleIds, { container }) => {
-        if (staleIds.length === 0) return
-        const cartService = container.resolve(Modules.CART)
-        await cartService.restoreShippingMethods(staleIds)
-      },
-    )
+    await refreshCartShippingMethodsStep(ctx, { cartId: input.cartId }, 'refresh-shipping-methods')
 
     /**
      * Restates the amount to authorise in the money the cart now quotes.

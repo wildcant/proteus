@@ -114,7 +114,14 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   await bootstrapModule(container, cartModule)
   await bootstrapModule(container, customerModule)
   await bootstrapModule(container, fileModule, fileProviderDeclarations)
-  await bootstrapModule(container, fulfillmentModule, fulfillmentProviderDeclarations)
+  await bootstrapModule(
+    container,
+    fulfillmentModule,
+    fulfillmentProviderDeclarations(
+      deps.extensions.fulfillmentProviders.map((declaration) => declaration.resolve),
+      container,
+    ),
+  )
   await bootstrapModule(container, inventoryModule)
   await bootstrapModule(container, pricingModule)
   await bootstrapModule(container, productModule)

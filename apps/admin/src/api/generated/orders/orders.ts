@@ -6,11 +6,23 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminAddDraftOrderItems,
+  AdminCancelOrder,
+  AdminConvertDraftOrder,
   AdminCreateOrderFulfillment,
   AdminCreateOrderShipment,
+  AdminDraftOrderListResponse,
+  AdminDraftOrderResponse,
   AdminOrderActionResponse,
   AdminOrderListResponse,
   AdminOrderResponse,
+  AdminPaymentCollectionResponse,
+  AdminRecordOrderPayment,
+  AdminSetDraftOrderShippingMethod,
+  AdminUpdateDraftOrder,
+  AdminUpdateDraftOrderItem,
+  DeleteResponse,
+  ListDraftOrdersParams,
   ListOrdersParams
 } from '../model';
 
@@ -58,9 +70,26 @@ export const completeOrder = (
  */
 export const cancelOrder = (
     id: string,
+    adminCancelOrder?: BodyType<AdminCancelOrder>,
  ) => {
       return fetcher<AdminOrderActionResponse>(
-      {url: `/admin/orders/${id}/cancel`, method: 'POST'
+      {url: `/admin/orders/${id}/cancel`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCancelOrder
+    },
+      );
+    }
+  /**
+ * @summary Record a payment on an order
+ */
+export const recordOrderPayment = (
+    id: string,
+    adminRecordOrderPayment?: BodyType<AdminRecordOrderPayment>,
+ ) => {
+      return fetcher<AdminPaymentCollectionResponse>(
+      {url: `/admin/orders/${id}/payments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminRecordOrderPayment
     },
       );
     }
@@ -116,11 +145,138 @@ export const markOrderAsDelivered = (
     },
       );
     }
+  /**
+ * @summary List draft orders
+ */
+export const listDraftOrders = (
+    params?: ListDraftOrdersParams,
+ ) => {
+      return fetcher<AdminDraftOrderListResponse>(
+      {url: `/admin/draft-orders`, method: 'GET',
+        params
+    },
+      );
+    }
+  /**
+ * @summary Retrieve a draft order
+ */
+export const getDraftOrder = (
+    id: string,
+ ) => {
+      return fetcher<AdminDraftOrderResponse>(
+      {url: `/admin/draft-orders/${id}`, method: 'GET'
+    },
+      );
+    }
+  /**
+ * @summary Update a draft order's email and shipping address
+ */
+export const updateDraftOrder = (
+    id: string,
+    adminUpdateDraftOrder?: BodyType<AdminUpdateDraftOrder>,
+ ) => {
+      return fetcher<AdminDraftOrderResponse>(
+      {url: `/admin/draft-orders/${id}`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminUpdateDraftOrder
+    },
+      );
+    }
+  /**
+ * @summary Delete a draft order
+ */
+export const deleteDraftOrder = (
+    id: string,
+ ) => {
+      return fetcher<DeleteResponse>(
+      {url: `/admin/draft-orders/${id}`, method: 'DELETE'
+    },
+      );
+    }
+  /**
+ * @summary Add items to a draft order
+ */
+export const addDraftOrderItems = (
+    id: string,
+    adminAddDraftOrderItems?: BodyType<AdminAddDraftOrderItems>,
+ ) => {
+      return fetcher<AdminDraftOrderResponse>(
+      {url: `/admin/draft-orders/${id}/edit/items`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminAddDraftOrderItems
+    },
+      );
+    }
+  /**
+ * @summary Change a draft order item's quantity
+ */
+export const updateDraftOrderItem = (
+    id: string,
+    itemId: string,
+    adminUpdateDraftOrderItem?: BodyType<AdminUpdateDraftOrderItem>,
+ ) => {
+      return fetcher<AdminDraftOrderResponse>(
+      {url: `/admin/draft-orders/${id}/edit/items/item/${itemId}`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminUpdateDraftOrderItem
+    },
+      );
+    }
+  /**
+ * @summary Remove an item from a draft order
+ */
+export const removeDraftOrderItem = (
+    id: string,
+    itemId: string,
+ ) => {
+      return fetcher<DeleteResponse>(
+      {url: `/admin/draft-orders/${id}/edit/items/item/${itemId}`, method: 'DELETE'
+    },
+      );
+    }
+  /**
+ * @summary Set a draft order's shipping method, optionally at a custom amount
+ */
+export const setDraftOrderShippingMethod = (
+    id: string,
+    adminSetDraftOrderShippingMethod?: BodyType<AdminSetDraftOrderShippingMethod>,
+ ) => {
+      return fetcher<AdminDraftOrderResponse>(
+      {url: `/admin/draft-orders/${id}/edit/shipping-methods`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminSetDraftOrderShippingMethod
+    },
+      );
+    }
+  /**
+ * @summary Convert a draft order to an order, optionally recording its deposit
+ */
+export const convertDraftOrder = (
+    id: string,
+    adminConvertDraftOrder?: BodyType<AdminConvertDraftOrder>,
+ ) => {
+      return fetcher<AdminOrderActionResponse>(
+      {url: `/admin/draft-orders/${id}/convert-to-order`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminConvertDraftOrder
+    },
+      );
+    }
   export type ListOrdersResult = NonNullable<Awaited<ReturnType<typeof listOrders>>>
 export type GetOrderResult = NonNullable<Awaited<ReturnType<typeof getOrder>>>
 export type CompleteOrderResult = NonNullable<Awaited<ReturnType<typeof completeOrder>>>
 export type CancelOrderResult = NonNullable<Awaited<ReturnType<typeof cancelOrder>>>
+export type RecordOrderPaymentResult = NonNullable<Awaited<ReturnType<typeof recordOrderPayment>>>
 export type ArchiveOrderResult = NonNullable<Awaited<ReturnType<typeof archiveOrder>>>
 export type CreateOrderFulfillmentResult = NonNullable<Awaited<ReturnType<typeof createOrderFulfillment>>>
 export type CreateOrderShipmentResult = NonNullable<Awaited<ReturnType<typeof createOrderShipment>>>
 export type MarkOrderAsDeliveredResult = NonNullable<Awaited<ReturnType<typeof markOrderAsDelivered>>>
+export type ListDraftOrdersResult = NonNullable<Awaited<ReturnType<typeof listDraftOrders>>>
+export type GetDraftOrderResult = NonNullable<Awaited<ReturnType<typeof getDraftOrder>>>
+export type UpdateDraftOrderResult = NonNullable<Awaited<ReturnType<typeof updateDraftOrder>>>
+export type DeleteDraftOrderResult = NonNullable<Awaited<ReturnType<typeof deleteDraftOrder>>>
+export type AddDraftOrderItemsResult = NonNullable<Awaited<ReturnType<typeof addDraftOrderItems>>>
+export type UpdateDraftOrderItemResult = NonNullable<Awaited<ReturnType<typeof updateDraftOrderItem>>>
+export type RemoveDraftOrderItemResult = NonNullable<Awaited<ReturnType<typeof removeDraftOrderItem>>>
+export type SetDraftOrderShippingMethodResult = NonNullable<Awaited<ReturnType<typeof setDraftOrderShippingMethod>>>
+export type ConvertDraftOrderResult = NonNullable<Awaited<ReturnType<typeof convertDraftOrder>>>

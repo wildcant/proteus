@@ -3,7 +3,7 @@ import type { OrderAllowedActions, OrderDTO, OrderFulfillmentStatus } from '@cor
 export function computeAllowedActions(order: OrderDTO, fulfillmentStatus: OrderFulfillmentStatus): OrderAllowedActions {
   return {
     canComplete: order.status === 'pending',
-    canCancel: order.status === 'pending' && fulfillmentStatus === 'unfulfilled',
+    canCancel: (order.status === 'pending' || order.status === 'draft') && fulfillmentStatus === 'unfulfilled',
     canArchive: order.status === 'completed',
     canFulfill: order.status === 'pending' && fulfillmentStatus === 'unfulfilled',
     canShip: order.status !== 'canceled' && fulfillmentStatus === 'fulfilled',

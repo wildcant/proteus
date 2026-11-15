@@ -5,6 +5,7 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminOrderLineItemOption } from './adminOrderLineItemOption.ts';
 
 export interface AdminOrderLineItem {
   id: string;
@@ -46,6 +47,7 @@ export interface AdminOrderLineItem {
   variantTitle: string | null;
   /** @nullable */
   variantOptionValues: string | null;
+  variantOptions: AdminOrderLineItemOption[];
   requiresShipping: boolean;
   createdAt: string;
   updatedAt: string;

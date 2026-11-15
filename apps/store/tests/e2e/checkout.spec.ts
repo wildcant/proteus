@@ -68,7 +68,8 @@ test.describe('Checkout', () => {
     // 9. Order confirmation page
     await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 15000 })
     await expect(page.getByText('Your order was placed successfully.')).toBeVisible()
-    await expect(page.getByText(guestEmail).first()).toBeVisible()
+    // A guest's order link is public, so it carries no email to print back.
+    await expect(page.getByText('We have sent the order confirmation details to your email.')).toBeVisible()
   })
 
   test('guest to authenticated: cart transfer and checkout', async ({ page, navigate, factories, cleanup }) => {

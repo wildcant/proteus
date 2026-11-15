@@ -17,6 +17,7 @@ export default Module(Modules.ORDER, {
   features: [
     { id: 'order.read', title: 'View orders' },
     { id: 'order.complete', title: 'Complete orders' },
+    { id: 'order.edit', title: 'Edit and delete draft orders' },
     { id: 'order.cancel', title: 'Cancel orders' },
     { id: 'order.archive', title: 'Archive orders' },
     { id: 'order.fulfill', title: 'Fulfill orders' },

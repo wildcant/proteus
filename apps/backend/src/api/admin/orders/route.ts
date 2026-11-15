@@ -3,6 +3,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminOrderListParams, AdminOrderListResponse } from '@proteus/http-schemas/admin'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
+import { orderReference } from '@workflows/order/utils/order-reference.js'
 
 export const GetInput = { query: AdminOrderListParams }
 export const GetOutput = AdminOrderListResponse
@@ -13,7 +14,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
 
   const { pagination, filters } = req.validatedQuery
-  const [orders, count] = await orderService.listAndCountOrders(filters, pagination)
+  // Drafts have a list of their own (`/admin/draft-orders`); a canceled draft stays out of this one too.
+  const [orders, count] = await orderService.listAndCountOrders({ ...filters, isDraftOrder: false }, pagination)
   const { offset, limit } = pagination
 
   const orderIds = orders.map((order) => order.id)
@@ -28,7 +30,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const enrichedOrders = orders.map((order) => {
     const fulfillment = fulfillmentByOrderId.get(order.id)
     const fulfillmentStatus = computeFulfillmentStatus(fulfillment ? [fulfillment] : [])
-    return { ...order, fulfillmentStatus }
+    return { ...order, reference: orderReference(order.displayId), fulfillmentStatus }
   })
 
   return { status: 200, json: { orders: enrichedOrders, count, offset, limit } }

@@ -41,6 +41,7 @@ msgid "Name is required"
 msgstr "Ingresa tu nombre"
 
 #. js-lingui-explicit-id
+#: src/admin/draft-order/payloads.ts:22
 #: src/auth/payloads.ts:33
 #: src/store/auth/payloads.ts:7
 #: src/store/auth/payloads.ts:19
@@ -57,6 +58,11 @@ msgstr "Ingresa un correo electrónico válido"
 #: src/store/product/queries.ts:6
 msgid "Write a filter as key:value"
 msgstr "Escribe un filtro como clave:valor"
+
+#. js-lingui-explicit-id
+#: src/store/order/payloads.ts:10
+msgid "Enter the last 4 digits of your phone"
+msgstr "Introduce los últimos 4 dígitos de tu teléfono"
 
 #. js-lingui-explicit-id
 #: src/store/customer/payloads.ts:7

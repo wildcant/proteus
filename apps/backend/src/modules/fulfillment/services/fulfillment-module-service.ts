@@ -21,6 +21,7 @@ import type {
   ShippingOptionTypeDTO,
   ShippingProfileDTO,
 } from '../../../core/types/fulfillment/common.js'
+import { FulfillmentErrorCodes, isCannotCalculateShippingPrice } from '../../../core/types/fulfillment/errors.js'
 import type {
   CreateFulfillmentDTO,
   CreateFulfillmentSetDTO,
@@ -37,7 +38,13 @@ import type {
   UpdateShippingOptionTypeDTO,
   UpdateShippingProfileDTO,
 } from '../../../core/types/fulfillment/mutations.js'
-import type { IFulfillmentModuleService, ShippingAddressContext } from '../../../core/types/fulfillment/service.js'
+import type { CalculateShippingPriceContext } from '../../../core/types/fulfillment/provider.js'
+import type {
+  IFulfillmentModuleService,
+  PricedShippingOptionDTO,
+  ShippingAddressContext,
+  ShippingOptionToPrice,
+} from '../../../core/types/fulfillment/service.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { FulfillmentRepository } from '../repositories/fulfillment.js'
@@ -49,6 +56,7 @@ import type { ServiceZoneRepository } from '../repositories/service-zone.js'
 import type { ShippingOptionRepository } from '../repositories/shipping-option.js'
 import type { ShippingOptionTypeRepository } from '../repositories/shipping-option-type.js'
 import type { ShippingProfileRepository } from '../repositories/shipping-profile.js'
+import { serviceZonesServingAddress } from '../utils/geo-zone-match.js'
 import type { FulfillmentProviderService } from './fulfillment-provider-service.js'
 
 type InjectedDependencies = {
@@ -383,6 +391,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createShippingOptions(data: CreateShippingOptionDTO[], context?: Context): Promise<ShippingOptionDTO[]> {
     this.logger.debug(`Creating ${data.length} shipping option(s)`)
+    await Promise.all(data.map((option) => this.assertProviderPricesOption(option)))
     return this.shippingOptionRepository.createMany(data, context) as Promise<ShippingOptionDTO[]>
   }
 
@@ -420,6 +429,63 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     return options as ShippingOptionDTO[]
   }
 
+  async listPricedShippingOptionsForContext(
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<PricedShippingOptionDTO[]> {
+    const options = await this.listShippingOptionsForContext(pricingContext.shippingAddress, context)
+    return this.priceOptions(
+      options.map((option) => ({ option, data: {} })),
+      pricingContext,
+    )
+  }
+
+  async priceShippingOptionsForContext(
+    options: ShippingOptionToPrice[],
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<PricedShippingOptionDTO[]> {
+    if (options.length === 0) return []
+
+    const rows = (await this.shippingOptionRepository.find(
+      { id: options.map((option) => option.id), isEnabled: true },
+      undefined,
+      context,
+    )) as ShippingOptionDTO[]
+    const geoZones = await this.geoZoneRepository.findByServiceZoneIds(
+      [...new Set(rows.map((row) => row.serviceZoneId))],
+      context,
+    )
+    const serving = serviceZonesServingAddress(
+      geoZones.map((zone) => ({ ...zone, type: zone.type as GeoZoneDTO['type'] })),
+      pricingContext.shippingAddress,
+    )
+    const rowById = new Map(rows.filter((row) => serving.has(row.serviceZoneId)).map((row) => [row.id, row]))
+
+    return this.priceOptions(
+      options.flatMap(({ id, data }) => {
+        const option = rowById.get(id)
+        return option ? [{ option, data: data ?? {} }] : []
+      }),
+      pricingContext,
+    )
+  }
+
+  async validateShippingOptionFulfillmentData(
+    shippingOptionId: string,
+    data: Record<string, unknown>,
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<Record<string, unknown>> {
+    const option = await this.shippingOptionRepository.findByIdOrFail(shippingOptionId, undefined, context)
+    return this.fulfillmentProviderService.validateFulfillmentData(
+      option.providerId,
+      option.data ?? {},
+      data,
+      pricingContext,
+    )
+  }
+
   async updateShippingOptions(
     ids: string[],
     data: UpdateShippingOptionDTO,
@@ -431,6 +497,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
   }
 
   async createShippingOption(data: CreateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO> {
+    await this.assertProviderPricesOption(data)
     return this.shippingOptionRepository.create(data, context) as Promise<ShippingOptionDTO>
   }
 
@@ -443,6 +510,62 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
   async softDeleteShippingOptions(ids: string[], context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await this.shippingOptionRepository.softDelete(ids, ctx)
+    })
+  }
+
+  /**
+   * A flat option costs its own amount; a calculated one what its provider answers for the context.
+   * A provider that cannot price the context drops the option — `cannotCalculateShippingPrice` —
+   * while any other error from it fails the call, because a courier being down is not the same
+   * answer as a courier that does not deliver there.
+   */
+  private async priceOptions(
+    options: { option: ShippingOptionDTO; data: Record<string, unknown> }[],
+    pricingContext: CalculateShippingPriceContext,
+  ): Promise<PricedShippingOptionDTO[]> {
+    const priced = await Promise.all(
+      options.map(async ({ option, data }): Promise<PricedShippingOptionDTO | null> => {
+        if (option.priceType !== 'calculated') {
+          return {
+            ...option,
+            calculatedPrice: { calculatedAmount: option.amount ?? 0, isCalculatedPriceTaxInclusive: false },
+          }
+        }
+
+        try {
+          const calculatedPrice = await this.fulfillmentProviderService.calculatePrice(
+            option.providerId,
+            option.data ?? {},
+            data,
+            pricingContext,
+          )
+          return { ...option, calculatedPrice }
+        } catch (error) {
+          if (isCannotCalculateShippingPrice(error)) return null
+          throw error
+        }
+      }),
+    )
+
+    return priced.filter((option): option is PricedShippingOptionDTO => option !== null)
+  }
+
+  /**
+   * Medusa refuses a calculated option whose provider cannot calculate, at creation rather than at
+   * the first cart that lists it: such an option would never be offered, and nothing would say why.
+   * An unregistered provider fails here too, as `retrieveProvider`'s not-found.
+   */
+  private async assertProviderPricesOption(option: CreateShippingOptionDTO): Promise<void> {
+    if (option.priceType !== 'calculated') return
+
+    const canCalculate = await this.fulfillmentProviderService.canCalculate(option.providerId, option.data ?? {})
+    if (canCalculate) return
+
+    throw new AppError({
+      type: ErrorTypes.INVALID_DATA,
+      code: FulfillmentErrorCodes.CANNOT_CALCULATE,
+      message: i18n.t('Fulfillment provider "{providerId}" cannot calculate shipping prices'),
+      values: { providerId: option.providerId },
     })
   }
 

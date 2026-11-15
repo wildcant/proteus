@@ -1,5 +1,6 @@
 import { env } from '@env'
-import { asValue } from 'awilix'
+import { asFunction, asValue } from 'awilix'
+import type { ExtensionProviderDependencies } from '../../../core/extensions/extension.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
 import type { AbstractFulfillmentProvider } from '../../../core/utils/abstract-fulfillment-provider.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
@@ -7,7 +8,7 @@ import type { ModuleProviderExports } from '../../../core/utils/module-provider.
 import { ManualFulfillmentProvider } from '../providers/manual.js'
 import { FulfillmentProviderService } from '../services/fulfillment-provider-service.js'
 
-export type FulfillmentProviderConfig = {
+type FulfillmentProviderConfig = {
   resolve: ModuleProviderExports
   id: string
   options?: Record<string, unknown>
@@ -15,6 +16,17 @@ export type FulfillmentProviderConfig = {
 
 export type FulfillmentModuleOptions = {
   providers?: FulfillmentProviderConfig[]
+  /**
+   * The extensions' providers, from the extension registry. Each is registered as
+   * `fp_<identifier>_default` — one instance per provider class, since an extension's settings are
+   * constants in its own code rather than options passed here.
+   */
+  extensionProviders?: ModuleProviderExports[]
+  /**
+   * What an extension provider is constructed with: the shared container's resolver, so it can
+   * depend on its extension's modules. Core's providers keep the module's own container.
+   */
+  sharedContainer?: ExtensionProviderDependencies
 }
 
 // biome-ignore lint/suspicious/noExplicitAny: provider constructors accept varied dependency shapes
@@ -22,27 +34,34 @@ type ProviderConstructor = (new (...args: any[]) => AbstractFulfillmentProvider)
 
 const MANUAL_PROVIDER_KEY = 'manual_default'
 
-function computeProviderKeys(configs?: FulfillmentProviderConfig[]): string[] {
-  const keys = [MANUAL_PROVIDER_KEY]
-  if (configs) {
-    for (const config of configs) {
-      for (const ServiceClass of config.resolve.services) {
-        const Klass = ServiceClass as ProviderConstructor
-        if (!Klass.identifier) {
-          throw new Error(`Provider class ${Klass.name} is missing static "identifier" property.`)
-        }
-        keys.push(`${Klass.identifier}_${config.id}`)
-      }
-    }
+/** The id every extension provider is registered under, after its identifier. */
+const EXTENSION_PROVIDER_ID = 'default'
+
+function identifierOf(ServiceClass: unknown): string {
+  const Klass = ServiceClass as ProviderConstructor
+  if (!Klass.identifier) {
+    throw new Error(`Provider class ${Klass.name} is missing static "identifier" property.`)
   }
-  return keys
+  return Klass.identifier
+}
+
+function computeProviderKeys(options?: FulfillmentModuleOptions): string[] {
+  return [
+    MANUAL_PROVIDER_KEY,
+    ...(options?.providers ?? []).flatMap((config) =>
+      config.resolve.services.map((ServiceClass) => `${identifierOf(ServiceClass)}_${config.id}`),
+    ),
+    ...(options?.extensionProviders ?? []).flatMap((exports) =>
+      exports.services.map((ServiceClass) => `${identifierOf(ServiceClass)}_${EXTENSION_PROVIDER_ID}`),
+    ),
+  ]
 }
 
 export function seedProviders(
   providerService: { upsert: (data: { id: string; isEnabled: boolean }[]) => Promise<unknown> },
-  configs?: FulfillmentProviderConfig[],
+  options?: FulfillmentModuleOptions,
 ) {
-  const keys = computeProviderKeys(configs)
+  const keys = computeProviderKeys(options)
   return providerService.upsert(keys.map((key) => ({ id: `fp_${key}`, isEnabled: true })))
 }
 
@@ -72,7 +91,22 @@ export async function loadProviders({
     }
   }
 
-  // 3. Register FulfillmentProviderService itself
+  // 3. Register the extensions' providers, built on first resolve: the fulfillment module boots
+  // before the extension modules a provider depends on, and by the first request every one of them
+  // is on the shared container.
+  const sharedContainer = opts?.sharedContainer
+  if (sharedContainer) {
+    for (const ServiceClass of (opts?.extensionProviders ?? []).flatMap((exports) => exports.services)) {
+      const Klass = ServiceClass as ProviderConstructor
+      container.register({
+        [`fp_${identifierOf(Klass)}_${EXTENSION_PROVIDER_ID}`]: asFunction(
+          () => new Klass(sharedContainer),
+        ).singleton(),
+      })
+    }
+  }
+
+  // 4. Register FulfillmentProviderService itself
   const providerService = new FulfillmentProviderService({
     container,
     fulfillmentProviderRepository: container.resolve('fulfillmentProviderRepository'),
@@ -80,8 +114,8 @@ export async function loadProviders({
   })
   container.register({ fulfillmentProviderService: asValue(providerService) })
 
-  // 4. Upsert provider keys to fulfillment_provider table (skip on workerd)
+  // 5. Upsert provider keys to fulfillment_provider table (skip on workerd)
   if (env.RUNTIME !== 'workerd') {
-    await seedProviders(providerService, opts?.providers)
+    await seedProviders(providerService, opts)
   }
 }

@@ -6,12 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StoreShippingOptionData } from './storeShippingOptionData.ts';
+import type { StoreShippingOptionPriceType } from './storeShippingOptionPriceType.ts';
 
 export interface StoreShippingOption {
   id: string;
   name: string;
-  /** @nullable */
-  amount: number | null;
+  priceType: StoreShippingOptionPriceType;
+  amount: number;
+  isTaxInclusive: boolean;
   serviceZoneId: string;
   shippingProfileId: string;
   /** @nullable */

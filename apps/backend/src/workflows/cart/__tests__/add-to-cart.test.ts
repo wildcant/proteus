@@ -1,9 +1,12 @@
 import { BigNumber } from '@core/bignumber.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import type { Fixtures } from '@tests/setup/test-extend.js'
 import { test } from '@tests/setup/test-extend.js'
+import { vi } from 'vitest'
 import { addToCartWorkflow } from '../add-to-cart.js'
+import { updateLineItemWorkflow } from '../update-line-item.js'
 
 type Services = Fixtures['service']
 
@@ -144,6 +147,48 @@ test.describe('addToCartWorkflow', () => {
     const lineItems = await service.read.cartLineItems(container, { cartId: cart.id })
     expect(lineItems).toHaveLength(1)
     expect(lineItems[0]).toMatchObject({ variantId: variant.id, quantity: 5 })
+  })
+
+  /**
+   * The line writes are no longer last: the shipping refresh after them re-prices the cart's
+   * method, and when it fails the cart must not keep lines its shipping was never priced for.
+   */
+  test('puts the lines back when the shipping refresh after them fails', async ({ service, expect }) => {
+    const cart = await usdCart(service)
+    const { variant } = await service.create.sellableVariant(container, {
+      inventory: { level: { stockedQuantity: 10 } },
+    })
+    const { variant: other } = await service.create.sellableVariant(container, {
+      inventory: { level: { stockedQuantity: 10 } },
+    })
+    const [line] = await addToCartWorkflow.run({ cartId: cart.id, items: [{ variantId: variant.id, quantity: 2 }] })
+    await service.create.shippingMethod(container, cart.id)
+    const refresh = vi.spyOn(container.resolve(Modules.CART), 'applyShippingMethodRefresh')
+
+    refresh.mockRejectedValueOnce(new Error('Shipping refresh failed'))
+    await expect(
+      addToCartWorkflow.run({
+        cartId: cart.id,
+        items: [
+          { variantId: variant.id, quantity: 3 },
+          { variantId: other.id, quantity: 1 },
+        ],
+      }),
+    ).rejects.toThrow('Shipping refresh failed')
+
+    // The raised line is back at two and the started one is gone.
+    const afterAdd = await service.read.cartLineItems(container, { cartId: cart.id })
+    expect(afterAdd.map(({ variantId, quantity }) => ({ variantId, quantity }))).toEqual([
+      { variantId: variant.id, quantity: 2 },
+    ])
+
+    refresh.mockRejectedValueOnce(new Error('Shipping refresh failed'))
+    await expect(
+      updateLineItemWorkflow.run({ cartId: cart.id, lineItemId: line?.id ?? '', quantity: 7 }),
+    ).rejects.toThrow('Shipping refresh failed')
+
+    const afterUpdate = await service.read.cartLineItems(container, { cartId: cart.id })
+    expect(afterUpdate.map(({ quantity }) => quantity)).toEqual([2])
   })
 
   test('folds repeats of one variant inside a single call', async ({ service, expect }) => {

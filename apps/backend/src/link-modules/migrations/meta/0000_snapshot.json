@@ -1,5 +1,5 @@
 {
-  "id": "c608a2ee-62d9-4b95-97db-50fe247dc5d6",
+  "id": "d5a4e925-5de3-4911-91cc-3cfc82e6fd80",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -397,17 +397,11 @@
         }
       },
       "indexes": {
-        "idx_order_payment_collection": {
-          "name": "idx_order_payment_collection",
+        "idx_order_payment_collection_order_id": {
+          "name": "idx_order_payment_collection_order_id",
           "columns": [
             {
               "expression": "order_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "payment_collection_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

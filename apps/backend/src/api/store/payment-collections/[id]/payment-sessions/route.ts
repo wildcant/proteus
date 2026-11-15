@@ -21,8 +21,8 @@ export const PostThrows = [ErrorTypes.CONFLICT] as const
  * `replacePaymentSession`, not `createPaymentSession`: every Place order press comes through
  * here, so a shopper who is declined and reaches for a second card is retrying rather than paying
  * twice. The previous attempt is abandoned and cancelled at the gateway before this one opens.
- * `markPaymentCollectionAsPaid` keeps the additive operation — its session is not a retry of
- * anything.
+ * `capturePaymentCollection` keeps the additive operation — the manual session it opens for an
+ * admin's recorded payment is not a retry of anything.
  *
  * The account holder is attached here rather than sent by the browser, and the browser's own
  * `context` is discarded. Both matter: a client that could name an account holder could charge a

@@ -63,6 +63,8 @@ const unauthenticatedOperations = {
     // The Tag chips above every product list: values from the catalogue, like the list itself.
     'listStoreProductTagValues',
     'listStoreProducts',
+    // A guest who lost an order's link finds it by its number and phone, with no account to sign in to.
+    'lookupStoreOrder',
     'storeAuthLogin',
     'storeAuthSignup',
   ],
@@ -86,6 +88,7 @@ const operationsWithoutUnauthorized = {
     'listStoreProductFilters',
     'listStoreProductTagValues',
     'listStoreProducts',
+    'lookupStoreOrder',
   ],
 }
 

@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
-import { liveIndex } from '../../../core/db/indexes.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { paymentTable } from './payment.js'
 import { refundReasonTable } from './refund-reason.js'
 
@@ -12,6 +12,8 @@ export const refundTable = pgTable(
     id: text().primaryKey().default(sql`CONCAT('ref_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     amount: bignum().notNull(),
     createdBy: text(),
+    /** The caller's name for this refund, so a workflow step that runs twice returns the money once. */
+    idempotencyKey: text(),
     metadata: jsonb().$type<Record<string, unknown> | null>(),
     note: text(),
     paymentId: text()
@@ -21,7 +23,10 @@ export const refundTable = pgTable(
 
     ...timestamps,
   },
-  (table) => [liveIndex('idx_refund_payment_id').on(table.paymentId)],
+  (table) => [
+    liveIndex('idx_refund_payment_id').on(table.paymentId),
+    liveUniqueIndex('idx_refund_idempotency_key', sql`idempotency_key IS NOT NULL`).on(table.idempotencyKey),
+  ],
 )
 
 export type Refund = typeof refundTable.$inferSelect

@@ -1,6 +1,7 @@
 import { i18n } from '@proteus/utils'
-import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import { cannotCalculateShippingPrice } from '../../../core/types/fulfillment/errors.js'
 import type {
+  CalculatedShippingPrice,
   CalculateShippingPriceContext,
   CreateProviderFulfillmentInput,
   FulfillmentOption,
@@ -18,12 +19,13 @@ export class ManualFulfillmentProvider extends AbstractFulfillmentProvider {
     return [{ id: 'manual-fulfillment' }]
   }
 
+  /** Accepts what the shopper sent as it is, as Medusa's manual provider does: it is what the method stores. */
   async validateFulfillmentData(
     _optionData: Record<string, unknown>,
-    _data: Record<string, unknown>,
-    _context: Record<string, unknown>,
+    data: Record<string, unknown>,
+    _context: CalculateShippingPriceContext,
   ): Promise<Record<string, unknown>> {
-    return {}
+    return data
   }
 
   async validateOption(_data: Record<string, unknown>): Promise<boolean> {
@@ -38,11 +40,8 @@ export class ManualFulfillmentProvider extends AbstractFulfillmentProvider {
     _optionData: Record<string, unknown>,
     _data: Record<string, unknown>,
     _context: CalculateShippingPriceContext,
-  ): Promise<{ amount: number }> {
-    throw new AppError({
-      type: ErrorTypes.NOT_ALLOWED,
-      message: i18n.t('Manual provider does not support calculated prices'),
-    })
+  ): Promise<CalculatedShippingPrice> {
+    throw cannotCalculateShippingPrice(i18n.t('Manual provider does not support calculated prices'))
   }
 
   async createFulfillment(_input: CreateProviderFulfillmentInput): Promise<{ data: Record<string, unknown> }> {

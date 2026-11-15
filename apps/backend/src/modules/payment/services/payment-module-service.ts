@@ -21,6 +21,8 @@ import type {
 } from '../../../core/types/payment/common.js'
 import { PaymentErrorCodes } from '../../../core/types/payment/errors.js'
 import type {
+  CancelPaymentDTO,
+  CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
   CreatePaymentCollectionDTO,
@@ -45,6 +47,7 @@ import type { RefundRepository } from '../repositories/refund.js'
 import type { RefundReasonRepository } from '../repositories/refund-reason.js'
 import { idempotencyKeyFor } from '../utils/idempotency-keys.js'
 import { MANUAL_PROVIDER_ID } from '../utils/provider-ids.js'
+import { remainingToCapture } from '../utils/remaining-to-capture.js'
 import { orderSavedMethods } from '../utils/saved-methods.js'
 import type { PaymentProviderService } from './payment-provider-service.js'
 
@@ -498,66 +501,84 @@ export class PaymentModuleService implements IPaymentModuleService {
   // ---------------------------------------------------------------------------
 
   /**
-   * Takes the whole authorization. A capture is all-or-nothing: no gateway adapter here can take
-   * part of one — Stripe's capture call carries no `amount_to_capture` and charges the entire
-   * intent — so a partial capture would write a Capture row for less than the shopper was
-   * actually charged and leave the ledger disagreeing with the money. Refunds are the partial
-   * operation; see *Partial capture* in the spec's Out of Scope.
+   * Takes some or all of what a payment's authorization still holds, under the collection's row
+   * lock so a concurrent capture cannot take the same money.
+   *
+   * Partial only where the provider says it can (`canCapturePartially`): the manual provider takes
+   * a deposit and later the rest, while Stripe's adapter captures the entire intent whatever it is
+   * asked, so a partial amount against it is refused rather than recorded as less than was charged.
    */
   async capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO> {
-    this.logger.debug(`Capturing payment "${data.paymentId}"`)
+    this.logger.debug(`Capturing payment "${data.paymentId}"${data.amount ? ` for amount ${data.amount}` : ''}`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(data.paymentId, undefined, ctx)
+      await this.paymentCollectionRepository.lockForUpdate(payment.paymentCollectionId, ctx)
 
-      if (payment.canceledAt) {
+      await this.capture_(payment.id, data, ctx)
+
+      return this.retrievePayment(payment.id, ctx)
+    })
+  }
+
+  /**
+   * Records a payment of `amount` against a collection: what an admin does when a deposit, or the
+   * cash-on-delivery rest, arrives for an Order.
+   *
+   * Medusa's model. The first payment recorded opens a session on the manual provider and
+   * authorizes everything the collection still has outstanding; every payment then captures part
+   * of that authorization, so the collection reads `partially_captured` until the last one makes it
+   * `completed`. A collection that already holds a live authorization — a shopper who chose manual
+   * payment at checkout — is captured against that one instead of opening a second.
+   *
+   * One transaction, opened by taking the collection's row lock, so the reads that decide what is
+   * outstanding cannot be overtaken by a second admin recording a payment at the same moment: the
+   * second waits, then sees the first's capture, and is refused if the two would exceed the total.
+   * The manual provider is in-process, so holding the transaction across its calls holds no
+   * network round trip open.
+   */
+  async capturePaymentCollection(
+    paymentCollectionId: string,
+    data: CapturePaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentDTO> {
+    this.logger.debug(`Recording a payment of ${data.amount.toFixed()} on collection "${paymentCollectionId}"`)
+    return this.withTransaction(context, async (ctx) => {
+      await this.paymentCollectionRepository.lockForUpdate(paymentCollectionId, ctx)
+
+      const recorded = await this.findCaptureByKey_(data.idempotencyKey, ctx)
+      if (recorded) return this.retrievePayment(recorded.paymentId, ctx)
+
+      const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, ctx)
+      const payments = collection.payments ?? []
+
+      // Net of refunds, the Order's own definition: Outstanding Amount is the total less the Paid
+      // Total, and a refund takes money back out of the Paid Total. After paying 100 and refunding
+      // 25, 25 is outstanding again. The authorization was fully captured, so no open payment holds
+      // it and a new manual one is authorized below — Medusa's way of collecting again, a new session.
+      // An open authorization holding less than the amount asked is not topped up: `capture_`
+      // refuses it with what it still holds, and the admin records that first.
+      const captured = payments
+        .flatMap((payment) => payment.captures ?? [])
+        .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
+      const refunded = payments
+        .flatMap((payment) => payment.refunds ?? [])
+        .reduce((sum, refund) => sum.plus(refund.amount), new BigNumber(0))
+      const outstanding = collection.amount.minus(captured.minus(refunded))
+
+      if (data.amount.isGreaterThan(outstanding)) {
         throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: i18n.t('Payment "{id}" has been canceled and cannot be captured.'),
-          values: { id: payment.id },
+          type: ErrorTypes.INVALID_DATA,
+          message: i18n.t(
+            'Payment amount {amount} exceeds the {outstanding} outstanding on payment collection "{id}".',
+          ),
+          values: { amount: data.amount.toFixed(), outstanding: outstanding.toFixed(), id: collection.id },
         })
       }
 
-      // Read from the capture rows rather than `capturedAt`, because the rows are the ledger: they
-      // decide both what is taken and whether there is anything left to take.
-      const existingCaptures = await this.captureRepository.find({ paymentId: payment.id }, undefined, ctx)
-      const alreadyCaptured = existingCaptures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
-      const captureAmount = payment.amount.minus(alreadyCaptured)
+      const open = payments.find((payment) => !payment.canceledAt && remainingToCapture(payment).isGreaterThan(0))
+      const payment = open ?? (await this.authorizeManualPayment_(collection, outstanding, ctx))
 
-      // Nothing outstanding means the money is already taken. A gateway redelivering its own
-      // completed-charge event lands here, so this has to be a refusal the caller can recognise
-      // rather than a second charge.
-      if (captureAmount.isLessThanOrEqualTo(0)) {
-        throw new AppError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: i18n.t('Payment "{id}" has already been fully captured.'),
-          values: { id: payment.id },
-        })
-      }
-
-      // The outstanding-amount check above is what stops a second charge here; the key is not.
-      // This row is created inside the transaction, so a crash between the insert and the
-      // gateway's acknowledgement rolls it back and the retry keys off a *different* row id. That
-      // is survivable only because a capture takes the whole authorization: the check refuses the
-      // retry when the first attempt landed, and Stripe refuses a second capture on an intent it
-      // has already captured. A refund has neither backstop — see `refundPayment`.
-      const capture = await this.captureRepository.create(
-        {
-          paymentId: payment.id,
-          amount: captureAmount,
-          createdBy: data.capturedBy ?? null,
-        },
-        ctx,
-      )
-
-      await this.paymentProviderService.capturePayment(payment.providerId, {
-        data: payment.data ?? undefined,
-        context: { idempotencyKey: idempotencyKeyFor('capture', capture.id) },
-      })
-
-      // The capture took everything outstanding, so this is the first and only one.
-      await this.paymentRepository.update(payment.id, { capturedAt: new Date() }, ctx)
-
-      await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
+      await this.capture_(payment.id, data, ctx)
 
       return this.retrievePayment(payment.id, ctx)
     })
@@ -567,6 +588,13 @@ export class PaymentModuleService implements IPaymentModuleService {
     this.logger.debug(`Refunding payment "${data.paymentId}"${data.amount ? ` for amount ${data.amount}` : ''}`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(data.paymentId, undefined, ctx)
+      // The same lock captures take, so two refunds at once cannot together return more than was received.
+      await this.paymentCollectionRepository.lockForUpdate(payment.paymentCollectionId, ctx)
+
+      if (data.idempotencyKey) {
+        const recorded = await this.refundRepository.findOne({ idempotencyKey: data.idempotencyKey }, undefined, ctx)
+        if (recorded) return this.retrievePayment(recorded.paymentId, ctx)
+      }
 
       // Can only refund what was captured minus what was already refunded
       const existingCaptures = await this.captureRepository.find({ paymentId: payment.id }, undefined, ctx)
@@ -601,6 +629,10 @@ export class PaymentModuleService implements IPaymentModuleService {
       // values that a rollback cannot change — which payment, how much was already refunded
       // before this one, and how much this one is for. Two genuine partial refunds of the same
       // amount still differ, because the second sees the first in `alreadyRefunded`.
+      //
+      // Not the caller's `idempotencyKey`, even when there is one: that names one workflow run, and
+      // an admin pressing Refund again after a gateway failure is a second run with a second key.
+      // A run retrying a refund that committed never reaches here — the row lookup above answers it.
       const refundKey = idempotencyKeyFor('refund', payment.id, alreadyRefunded.toFixed(), refundAmount.toFixed())
 
       await this.refundRepository.create(
@@ -610,6 +642,7 @@ export class PaymentModuleService implements IPaymentModuleService {
           refundReasonId: data.refundReasonId ?? null,
           note: data.note ?? null,
           createdBy: data.createdBy ?? null,
+          idempotencyKey: data.idempotencyKey ?? null,
         },
         ctx,
       )
@@ -632,13 +665,36 @@ export class PaymentModuleService implements IPaymentModuleService {
     })
   }
 
-  async cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO> {
+  /**
+   * Voids what the authorization still holds, under the collection's row lock so a capture cannot
+   * land on it halfway. With `capturedAmount`, refused when the collection's captures no longer add
+   * up to what the caller saw: the caller planned around that figure (cancel-order's refund), and a
+   * capture recorded since would otherwise stay on a canceled Order, neither refunded nor voided.
+   */
+  async cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO> {
     this.logger.debug(`Canceling payment "${paymentId}"`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, ctx)
+      await this.paymentCollectionRepository.lockForUpdate(payment.paymentCollectionId, ctx)
 
       if (payment.canceledAt) {
         return this.retrievePayment(payment.id, ctx)
+      }
+
+      if (options?.capturedAmount) {
+        const collection = await this.retrievePaymentCollection(payment.paymentCollectionId, undefined, ctx)
+        const captured = (collection.payments ?? [])
+          .flatMap((row) => row.captures ?? [])
+          .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
+        if (!captured.isEqualTo(options.capturedAmount)) {
+          throw new AppError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: i18n.t(
+              'Payment "{id}" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile.',
+            ),
+            values: { id: payment.id, amount: captured.minus(options.capturedAmount).toFixed() },
+          })
+        }
       }
 
       await this.paymentProviderService.cancelPayment(payment.providerId, {
@@ -651,50 +707,6 @@ export class PaymentModuleService implements IPaymentModuleService {
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
       return this.retrievePayment(payment.id, ctx)
-    })
-  }
-
-  /**
-   * Records money taken outside Proteus: an admin has been paid by transfer, cash or a terminal
-   * and is settling the collection by hand.
-   *
-   * Three mutations — open a session, authorize it, capture it — and none of them may stand
-   * without the others. A collection left holding an authorized payment nobody captured reads as
-   * unpaid on the order while the money is gone, and there is no gateway event coming to resolve
-   * it, because nothing was ever charged. So they share one transaction and Postgres unwinds all
-   * three, rather than each step carrying a compensation that could itself fail.
-   *
-   * The provider is pinned here rather than taken from the caller, and that is what makes the
-   * transaction safe as much as it is what makes the operation meaningful: the system provider is
-   * in-process, so the three calls this wraps hold no network round-trip open against an idle
-   * Postgres transaction. A real gateway belongs to the checkout flow, which authorizes outside a
-   * transaction for exactly that reason.
-   */
-  async markPaymentCollectionAsPaid(id: string, context?: Context): Promise<PaymentCollectionDTO> {
-    this.logger.debug(`Marking payment collection "${id}" as paid`)
-    return this.withTransaction(context, async (ctx) => {
-      const collection = await this.retrievePaymentCollection(id, undefined, ctx)
-
-      const session = await this.createPaymentSession(
-        collection.id,
-        {
-          providerId: MANUAL_PROVIDER_ID,
-          amount: collection.amount,
-          currencyCode: collection.currencyCode,
-        },
-        ctx,
-      )
-
-      const authorization = await this.authorizePaymentSession(session.id, ctx)
-
-      // The system provider authorizes unconditionally, so the other outcomes are unreachable
-      // from here. Guarded rather than asserted because the alternative is reading `payment` off
-      // an outcome that does not carry one.
-      if (authorization.outcome === 'authorized') {
-        await this.capturePayment({ paymentId: authorization.payment.id }, ctx)
-      }
-
-      return this.retrievePaymentCollection(collection.id, undefined, ctx)
     })
   }
 
@@ -977,6 +989,124 @@ export class PaymentModuleService implements IPaymentModuleService {
   // Private helpers
   // ---------------------------------------------------------------------------
 
+  /**
+   * The capture itself, for a caller already holding the collection's lock. Re-reads the payment
+   * and its captures under that lock, which is what makes the remaining-amount check hold.
+   */
+  private async capture_(paymentId: string, data: Omit<CreateCaptureDTO, 'paymentId'>, ctx: Context): Promise<void> {
+    // The step that recorded it is running again; the money was taken the first time.
+    if (await this.findCaptureByKey_(data.idempotencyKey, ctx)) return
+
+    const payment = await this.retrievePayment(paymentId, ctx)
+
+    if (payment.canceledAt) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t('Payment "{id}" has been canceled and cannot be captured.'),
+        values: { id: payment.id },
+      })
+    }
+
+    // Read from the capture rows rather than `capturedAt`, because the rows are the ledger: they
+    // decide both what is taken and whether there is anything left to take.
+    const remaining = remainingToCapture(payment)
+
+    // Nothing outstanding means the money is already taken. A gateway redelivering its own
+    // completed-charge event lands here, so this has to be a refusal the caller can recognise
+    // rather than a second charge.
+    if (remaining.isLessThanOrEqualTo(0)) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t('Payment "{id}" has already been fully captured.'),
+        values: { id: payment.id },
+      })
+    }
+
+    const amount = data.amount ?? remaining
+
+    if (amount.isLessThanOrEqualTo(0)) {
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: i18n.t('Capture amount must be greater than zero.'),
+      })
+    }
+
+    if (amount.isGreaterThan(remaining)) {
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: i18n.t('Capture amount {amount} exceeds the {remaining} still authorized on payment "{id}".'),
+        values: { amount: amount.toFixed(), remaining: remaining.toFixed(), id: payment.id },
+      })
+    }
+
+    if (amount.isLessThan(remaining) && !this.paymentProviderService.canCapturePartially(payment.providerId)) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t(
+          'Payment "{id}" can only be captured in full: its provider cannot take part of an authorization.',
+        ),
+        values: { id: payment.id },
+      })
+    }
+
+    const capture = await this.captureRepository.create(
+      {
+        paymentId: payment.id,
+        amount,
+        createdBy: data.capturedBy ?? null,
+        idempotencyKey: data.idempotencyKey ?? null,
+      },
+      ctx,
+    )
+
+    // Keyed by the caller's key when there is one, because it survives a rollback and the row id
+    // does not: a crash between the insert and the gateway's acknowledgement rolls the row back,
+    // and its retry inserts a different one. Without a key, the remaining-amount check and the
+    // gateway's own refusal of a second full capture are what stop a second charge.
+    await this.paymentProviderService.capturePayment(payment.providerId, {
+      amount,
+      currencyCode: payment.currencyCode,
+      data: payment.data ?? undefined,
+      context: { idempotencyKey: idempotencyKeyFor('capture', data.idempotencyKey ?? capture.id) },
+    })
+
+    if (amount.isEqualTo(remaining)) {
+      await this.paymentRepository.update(payment.id, { capturedAt: new Date() }, ctx)
+    }
+
+    await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
+  }
+
+  private async findCaptureByKey_(idempotencyKey: string | undefined, ctx: Context) {
+    if (!idempotencyKey) return null
+    return this.captureRepository.findOne({ idempotencyKey }, undefined, ctx)
+  }
+
+  /** Opens and authorizes a manual session for `amount`: the authorization recorded payments capture against. */
+  private async authorizeManualPayment_(
+    collection: PaymentCollectionDTO,
+    amount: BigNumber,
+    ctx: Context,
+  ): Promise<PaymentDTO> {
+    const session = await this.createPaymentSession(
+      collection.id,
+      { providerId: MANUAL_PROVIDER_ID, amount, currencyCode: collection.currencyCode },
+      ctx,
+    )
+    const authorization = await this.authorizePaymentSession(session.id, ctx)
+
+    // The manual provider authorizes unconditionally, so the other outcomes are unreachable.
+    // Refused rather than asserted, because reading `payment` off them would be reading nothing.
+    if (authorization.outcome !== 'authorized') {
+      throw new AppError({
+        type: ErrorTypes.UNEXPECTED_STATE,
+        message: i18n.t('The manual payment for collection "{id}" was not authorized.'),
+        values: { id: collection.id },
+      })
+    }
+    return authorization.payment
+  }
+
   private async maybeUpdatePaymentCollection_(collectionId: string, context?: Context): Promise<void> {
     const collection = await this.paymentCollectionRepository.findByIdOrFail(collectionId, undefined, context)
 
@@ -992,23 +1122,30 @@ export class PaymentModuleService implements IPaymentModuleService {
           ])
         : [[], []]
 
+    // A voided payment's session still reads `authorized`; its money is no longer held.
+    const canceledSessionIds = new Set(payments.filter((p) => p.canceledAt).map((p) => p.paymentSessionId))
     const authorizedAmount = sessions
-      .filter((s) => s.status === 'authorized')
+      .filter((s) => s.status === 'authorized' && !canceledSessionIds.has(s.id))
       .reduce((sum, s) => sum.plus(s.amount), new BigNumber(0))
     const capturedAmount = captures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
     const refundedAmount = refunds.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0))
 
-    // Derive status (check most advanced status first)
+    // Derive status (check most advanced status first). A refund does not move it: the Order's
+    // payment status reads `refundedAmount` beside it, as Medusa's aggregation does.
     let status: PaymentCollectionStatus = 'not_paid'
     let completedAt: Date | null = collection.completedAt
 
     if (capturedAmount.isGreaterThanOrEqualTo(collection.amount)) {
       status = 'completed'
       completedAt = completedAt ?? new Date()
+    } else if (capturedAmount.isGreaterThan(0)) {
+      status = 'partially_captured'
     } else if (authorizedAmount.isGreaterThanOrEqualTo(collection.amount)) {
       status = 'authorized'
     } else if (authorizedAmount.isGreaterThan(0)) {
       status = 'partially_authorized'
+    } else if (payments.length > 0 && payments.every((p) => p.canceledAt)) {
+      status = 'canceled'
     } else if (sessions.length > 0) {
       status = 'awaiting'
     }

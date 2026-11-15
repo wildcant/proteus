@@ -10,6 +10,7 @@ export type StoreOrderStatus = typeof StoreOrderStatus[keyof typeof StoreOrderSt
 
 
 export const StoreOrderStatus = {
+  draft: 'draft',
   pending: 'pending',
   completed: 'completed',
   canceled: 'canceled',

@@ -10,6 +10,7 @@ import { useLingui } from '@lingui/react'
 const SIDEBAR_LABELS: Record<string, MessageDescriptor> = {
   Store: msg`Store`,
   Orders: msg`Orders`,
+  'Draft orders': msg`Draft orders`,
   Products: msg`Products`,
   Categories: msg`Categories`,
   Collections: msg`Collections`,

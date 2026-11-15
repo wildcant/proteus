@@ -11,6 +11,16 @@ export const AdminRefundPayment = z
   .openapi('AdminRefundPayment')
 export type AdminRefundPaymentBody = z.infer<typeof AdminRefundPayment>
 
+export const AdminCapturePayment = z
+  .object({
+    /** Omitted, the capture takes everything the authorization still holds. */
+    amount: amountToBigNumber.optional(),
+  })
+  // A capture of the whole authorization sends no body at all.
+  .default({})
+  .openapi('AdminCapturePayment')
+export type AdminCapturePaymentBody = z.infer<typeof AdminCapturePayment>
+
 export const AdminCreateRefundReason = z
   .object({
     label: shortText.min(1),

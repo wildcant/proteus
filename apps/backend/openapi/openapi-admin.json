@@ -1185,14 +1185,21 @@
           "displayId": {
             "type": "number"
           },
+          "reference": {
+            "type": "string"
+          },
           "status": {
             "type": "string",
             "enum": [
+              "draft",
               "pending",
               "completed",
               "canceled",
               "archived"
             ]
+          },
+          "isDraftOrder": {
+            "type": "boolean"
           },
           "fulfillmentStatus": {
             "type": "string",
@@ -1210,6 +1217,18 @@
             ]
           },
           "customerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "regionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "salesChannelId": {
             "type": [
               "string",
               "null"
@@ -1244,10 +1263,14 @@
         "required": [
           "id",
           "displayId",
+          "reference",
           "status",
+          "isDraftOrder",
           "fulfillmentStatus",
           "email",
           "customerId",
+          "regionId",
+          "salesChannelId",
           "currencyCode",
           "canceledAt",
           "createdAt",
@@ -1288,12 +1311,7 @@
                     "$ref": "#/components/schemas/AdminOrderTotals"
                   },
                   "paymentStatus": {
-                    "type": "string",
-                    "enum": [
-                      "awaiting",
-                      "authorized",
-                      "captured"
-                    ]
+                    "$ref": "#/components/schemas/OrderPaymentStatus"
                   },
                   "allowedActions": {
                     "$ref": "#/components/schemas/AdminOrderAllowedActions"
@@ -1306,6 +1324,12 @@
                     "items": {
                       "$ref": "#/components/schemas/AdminOrderFulfillment"
                     }
+                  },
+                  "paymentCollections": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminPaymentCollection"
+                    }
                   }
                 },
                 "required": [
@@ -1316,7 +1340,8 @@
                   "paymentStatus",
                   "allowedActions",
                   "shippingAddress",
-                  "fulfillments"
+                  "fulfillments",
+                  "paymentCollections"
                 ]
               }
             ]
@@ -1434,6 +1459,12 @@
               "null"
             ]
           },
+          "variantOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderLineItemOption"
+            }
+          },
           "requiresShipping": {
             "type": "boolean"
           },
@@ -1474,10 +1505,34 @@
           "variantBarcode",
           "variantTitle",
           "variantOptionValues",
+          "variantOptions",
           "requiresShipping",
           "createdAt",
           "updatedAt",
           "deletedAt"
+        ]
+      },
+      "AdminOrderLineItemOption": {
+        "type": "object",
+        "properties": {
+          "optionTitle": {
+            "type": "string"
+          },
+          "renderAs": {
+            "type": "string",
+            "enum": [
+              "text",
+              "swatch"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionTitle",
+          "renderAs",
+          "value"
         ]
       },
       "AdminOrderShippingMethod": {
@@ -1515,6 +1570,9 @@
             ],
             "additionalProperties": {}
           },
+          "isCustomAmount": {
+            "type": "boolean"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -1539,6 +1597,7 @@
           "amount",
           "shippingOptionId",
           "data",
+          "isCustomAmount",
           "createdAt",
           "updatedAt",
           "deletedAt"
@@ -1630,6 +1689,21 @@
           "orderTotal",
           "paidTotal",
           "outstandingTotal"
+        ]
+      },
+      "OrderPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "not_paid",
+          "awaiting",
+          "authorized",
+          "partially_authorized",
+          "partially_captured",
+          "captured",
+          "partially_refunded",
+          "refunded",
+          "canceled",
+          "requires_action"
         ]
       },
       "AdminOrderAllowedActions": {
@@ -1811,6 +1885,388 @@
           "deletedAt"
         ]
       },
+      "AdminPaymentCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "authorizedAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "capturedAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "refundedAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_paid",
+              "awaiting",
+              "authorized",
+              "partially_authorized",
+              "partially_captured",
+              "completed",
+              "canceled"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "paymentSessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPaymentSession"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPayment"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "currencyCode",
+          "amount",
+          "authorizedAmount",
+          "capturedAmount",
+          "refundedAmount",
+          "completedAt",
+          "status",
+          "metadata",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminPaymentSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentCollectionId": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "authorized",
+              "captured",
+              "requires_more",
+              "error",
+              "canceled",
+              "pending_authorization"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "context": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "authorizedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "payment": {
+            "$ref": "#/components/schemas/AdminPayment"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentCollectionId",
+          "providerId",
+          "currencyCode",
+          "amount",
+          "status",
+          "data",
+          "context",
+          "authorizedAt",
+          "metadata",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminPayment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentCollectionId": {
+            "type": "string"
+          },
+          "paymentSessionId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "data": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "capturedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "canceledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "captures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCapture"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRefund"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentCollectionId",
+          "paymentSessionId",
+          "amount",
+          "currencyCode",
+          "providerId",
+          "data",
+          "metadata",
+          "capturedAt",
+          "canceledAt",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminCapture": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentId",
+          "amount",
+          "createdBy",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "AdminRefund": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "refundReasonId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentId",
+          "refundReasonId",
+          "amount",
+          "note",
+          "createdBy",
+          "metadata",
+          "createdAt"
+        ]
+      },
       "AdminOrderActionResponse": {
         "type": "object",
         "properties": {
@@ -1820,6 +2276,41 @@
         },
         "required": [
           "order"
+        ]
+      },
+      "AdminCancelOrder": {
+        "type": "object",
+        "properties": {
+          "refundAmount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "default": {}
+      },
+      "AdminPaymentCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "paymentCollection": {
+            "$ref": "#/components/schemas/AdminPaymentCollection"
+          }
+        },
+        "required": [
+          "paymentCollection"
+        ]
+      },
+      "AdminRecordOrderPayment": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "required": [
+          "amount"
         ]
       },
       "AdminCreateOrderFulfillment": {
@@ -1954,6 +2445,331 @@
             "maxLength": 2048
           }
         }
+      },
+      "AdminDraftOrderListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "draftOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminDraftOrder"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "draftOrders"
+        ]
+      },
+      "AdminDraftOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayId": {
+            "type": "number"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending",
+              "completed",
+              "canceled",
+              "archived"
+            ]
+          },
+          "isDraftOrder": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "customerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "regionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "salesChannelId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "canceledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "displayId",
+          "reference",
+          "status",
+          "isDraftOrder",
+          "email",
+          "customerId",
+          "regionId",
+          "salesChannelId",
+          "currencyCode",
+          "canceledAt",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminDraftOrderResponse": {
+        "type": "object",
+        "properties": {
+          "draftOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdminDraftOrder"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "lineItems": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminOrderLineItem"
+                    }
+                  },
+                  "shippingMethods": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminOrderShippingMethod"
+                    }
+                  },
+                  "shippingAddress": {
+                    "$ref": "#/components/schemas/AdminOrderAddress"
+                  },
+                  "totals": {
+                    "$ref": "#/components/schemas/AdminOrderTotals"
+                  }
+                },
+                "required": [
+                  "lineItems",
+                  "shippingMethods",
+                  "shippingAddress",
+                  "totals"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "draftOrder"
+        ]
+      },
+      "AdminUpdateDraftOrder": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email"
+          },
+          "shippingAddress": {
+            "type": "object",
+            "properties": {
+              "company": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "firstName": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "lastName": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "address1": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "address2": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "city": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "countryCode": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 2
+              },
+              "province": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 255
+              },
+              "postalCode": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              },
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 32
+              }
+            }
+          }
+        }
+      },
+      "AdminAddDraftOrderItems": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "variantId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "variantId",
+                "quantity"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AdminUpdateDraftOrderItem": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "quantity"
+        ]
+      },
+      "AdminSetDraftOrderShippingMethod": {
+        "type": "object",
+        "properties": {
+          "shippingOptionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "customAmount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "shippingOptionId"
+        ]
+      },
+      "AdminConvertDraftOrder": {
+        "type": "object",
+        "properties": {
+          "paymentAmount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "default": {}
       },
       "AdminFulfillmentSetListResponse": {
         "type": "object",
@@ -2376,397 +3192,6 @@
           "countryCode"
         ]
       },
-      "AdminPaymentCollectionResponse": {
-        "type": "object",
-        "properties": {
-          "paymentCollection": {
-            "$ref": "#/components/schemas/AdminPaymentCollection"
-          }
-        },
-        "required": [
-          "paymentCollection"
-        ]
-      },
-      "AdminPaymentCollection": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "authorizedAmount": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "capturedAmount": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "refundedAmount": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "completedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "not_paid",
-              "awaiting",
-              "authorized",
-              "partially_authorized",
-              "completed"
-            ]
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "paymentSessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminPaymentSession"
-            }
-          },
-          "payments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminPayment"
-            }
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "currencyCode",
-          "amount",
-          "authorizedAmount",
-          "capturedAmount",
-          "refundedAmount",
-          "completedAt",
-          "status",
-          "metadata",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
-      },
-      "AdminPaymentSession": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentCollectionId": {
-            "type": "string"
-          },
-          "providerId": {
-            "type": "string"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "pending",
-              "authorized",
-              "captured",
-              "requires_more",
-              "error",
-              "canceled",
-              "pending_authorization"
-            ]
-          },
-          "data": {
-            "type": "object",
-            "additionalProperties": {}
-          },
-          "context": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "authorizedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "payment": {
-            "$ref": "#/components/schemas/AdminPayment"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentCollectionId",
-          "providerId",
-          "currencyCode",
-          "amount",
-          "status",
-          "data",
-          "context",
-          "authorizedAt",
-          "metadata",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
-      },
-      "AdminPayment": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentCollectionId": {
-            "type": "string"
-          },
-          "paymentSessionId": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "providerId": {
-            "type": "string"
-          },
-          "data": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "capturedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "canceledAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "captures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminCapture"
-            }
-          },
-          "refunds": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminRefund"
-            }
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentCollectionId",
-          "paymentSessionId",
-          "amount",
-          "currencyCode",
-          "providerId",
-          "data",
-          "metadata",
-          "capturedAt",
-          "canceledAt",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
-      },
-      "AdminCapture": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentId": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "createdBy": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentId",
-          "amount",
-          "createdBy",
-          "metadata",
-          "createdAt"
-        ]
-      },
-      "AdminRefund": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentId": {
-            "type": "string"
-          },
-          "refundReasonId": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "note": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "createdBy": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentId",
-          "refundReasonId",
-          "amount",
-          "note",
-          "createdBy",
-          "metadata",
-          "createdAt"
-        ]
-      },
       "AdminPaymentResponse": {
         "type": "object",
         "properties": {
@@ -2806,6 +3231,17 @@
           "id",
           "isEnabled"
         ]
+      },
+      "AdminCapturePayment": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "default": {}
       },
       "AdminRefundPayment": {
         "type": "object",
@@ -9512,6 +9948,7 @@
                 {
                   "type": "string",
                   "enum": [
+                    "draft",
                     "pending",
                     "completed",
                     "canceled",
@@ -9523,6 +9960,7 @@
                   "items": {
                     "type": "string",
                     "enum": [
+                      "draft",
                       "pending",
                       "completed",
                       "canceled",
@@ -9762,6 +10200,15 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCancelOrder"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -9769,6 +10216,61 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/payments": {
+      "post": {
+        "operationId": "recordOrderPayment",
+        "summary": "Record a payment on an order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecordOrderPayment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPaymentCollectionResponse"
                 }
               }
             }
@@ -10001,6 +10503,586 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders": {
+      "get": {
+        "operationId": "listDraftOrders",
+        "summary": "List draft orders",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "$eq": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$ne": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$gt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$gte": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$lt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$lte": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$in": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                },
+                "$nin": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                }
+              }
+            },
+            "required": false,
+            "name": "createdAt",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders/{id}": {
+      "get": {
+        "operationId": "getDraftOrder",
+        "summary": "Retrieve a draft order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "updateDraftOrder",
+        "summary": "Update a draft order's email and shipping address",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateDraftOrder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteDraftOrder",
+        "summary": "Delete a draft order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders/{id}/edit/items": {
+      "post": {
+        "operationId": "addDraftOrderItems",
+        "summary": "Add items to a draft order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAddDraftOrderItems"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders/{id}/edit/items/item/{itemId}": {
+      "post": {
+        "operationId": "updateDraftOrderItem",
+        "summary": "Change a draft order item's quantity",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "itemId",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateDraftOrderItem"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeDraftOrderItem",
+        "summary": "Remove an item from a draft order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "itemId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders/{id}/edit/shipping-methods": {
+      "post": {
+        "operationId": "setDraftOrderShippingMethod",
+        "summary": "Set a draft order's shipping method, optionally at a custom amount",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetDraftOrderShippingMethod"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders/{id}/convert-to-order": {
+      "post": {
+        "operationId": "convertDraftOrder",
+        "summary": "Convert a draft order to an order, optionally recording its deposit",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminConvertDraftOrder"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -10562,52 +11644,6 @@
         }
       }
     },
-    "/admin/payment-collections/{id}/mark-as-paid": {
-      "post": {
-        "operationId": "markPaymentCollectionAsPaid",
-        "summary": "Mark a payment collection as paid",
-        "tags": [
-          "Payment Collections"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminPaymentCollectionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        }
-      }
-    },
     "/admin/payments/{id}": {
       "get": {
         "operationId": "getPayment",
@@ -10709,6 +11745,15 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCapturePayment"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -14873,6 +15918,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
           }
         }
       }

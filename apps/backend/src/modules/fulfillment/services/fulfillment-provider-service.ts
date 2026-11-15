@@ -9,6 +9,7 @@ import type {
 } from '../../../core/types/fulfillment/common.js'
 import type { CreateFulfillmentProviderDTO } from '../../../core/types/fulfillment/mutations.js'
 import type {
+  CalculatedShippingPrice,
   CalculateShippingPriceContext,
   CreateProviderFulfillmentInput,
   IFulfillmentProvider,
@@ -33,16 +34,19 @@ export class FulfillmentProviderService {
     this.logger = logger
   }
 
+  /**
+   * Asked of the registration rather than caught from `resolve`: an extension's provider is built on
+   * first resolve, and a constructor that throws must surface as itself, not as "not registered".
+   */
   retrieveProvider(providerId: string): IFulfillmentProvider {
-    try {
-      return this.container.resolve<IFulfillmentProvider>(providerId)
-    } catch {
+    if (!this.container.hasRegistration(providerId)) {
       throw new AppError({
         type: ErrorTypes.NOT_FOUND,
         message: i18n.t('Fulfillment provider "{providerId}" is not registered.'),
         values: { providerId },
       })
     }
+    return this.container.resolve<IFulfillmentProvider>(providerId)
   }
 
   // -- Provider table CRUD --
@@ -80,7 +84,7 @@ export class FulfillmentProviderService {
     providerId: string,
     optionData: Record<string, unknown>,
     data: Record<string, unknown>,
-    context: Record<string, unknown>,
+    context: CalculateShippingPriceContext,
   ): Promise<Record<string, unknown>> {
     const provider = this.retrieveProvider(providerId)
     return provider.validateFulfillmentData(optionData, data, context)
@@ -101,7 +105,7 @@ export class FulfillmentProviderService {
     optionData: Record<string, unknown>,
     data: Record<string, unknown>,
     context: CalculateShippingPriceContext,
-  ): Promise<{ amount: number }> {
+  ): Promise<CalculatedShippingPrice> {
     this.logger.debug(`Calculating price via provider "${providerId}"`)
     const provider = this.retrieveProvider(providerId)
     return provider.calculatePrice(optionData, data, context)

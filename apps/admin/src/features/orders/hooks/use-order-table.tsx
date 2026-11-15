@@ -26,10 +26,7 @@ export const useOrderTable = () => {
     },
 
     columns: (col) => [
-      col.accessor('displayId', {
-        header: t`Order`,
-        cell: ({ value }) => `#${value}`,
-      }),
+      col.accessor('reference', { header: t`Order` }),
       col.accessor('email', { header: t`Customer` }),
       col.accessor('status', {
         header: t`Status`,

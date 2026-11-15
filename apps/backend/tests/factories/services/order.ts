@@ -5,13 +5,22 @@ import type {
   FilterableOrderProps,
   OrderAddressDTO,
 } from '../../../src/core/types/order/common.js'
-import type { UpdateOrderDTO } from '../../../src/core/types/order/mutations.js'
+import type {
+  CreateOrderDTO,
+  CreateOrderTransactionDTO,
+  UpdateOrderDTO,
+} from '../../../src/core/types/order/mutations.js'
 import { ContainerRegistrationKeys } from '../../../src/core/utils/container.js'
 import { Modules } from '../../../src/core/utils/modules-definition.js'
 import { completeCartWorkflow } from '../../../src/workflows/cart/complete-cart.js'
 import { createOrderFulfillmentWorkflow } from '../../../src/workflows/order/create-order-fulfillment.js'
 import { createOrderShipmentWorkflow } from '../../../src/workflows/order/create-order-shipment.js'
-import { generateUpdateOrderDTO } from '../order-dto.js'
+import {
+  generateCreateOrderDTO,
+  generateCreateOrderLineItemDTO,
+  generateCreateOrderTransactionDTO,
+  generateUpdateOrderDTO,
+} from '../order-dto.js'
 import { type CreateCheckoutReadyCartOptions, createCheckoutReadyCart } from './checkout.js'
 
 /**
@@ -27,6 +36,30 @@ export async function createOrder(container: AppContainer, options?: CreateCheck
   const order = await completeCartWorkflow.run({ cartId: checkout.cart.id })
 
   return { ...checkout, order }
+}
+
+/**
+ * A Draft Order written straight through the order module, with one line item. No workflow makes
+ * one yet, and a draft reserves nothing and holds no payment collection, so the module row is the
+ * whole of it.
+ */
+export async function createDraftOrder(container: AppContainer, overrides?: Partial<CreateOrderDTO>) {
+  const orderService = container.resolve(Modules.ORDER)
+
+  return orderService.createOrder(
+    generateCreateOrderDTO({ status: 'draft', items: [generateCreateOrderLineItemDTO()], ...overrides }),
+  )
+}
+
+/** Money recorded against an order, as a capture or a refund writes it. */
+export async function addOrderTransaction(
+  container: AppContainer,
+  orderId: string,
+  overrides?: Partial<CreateOrderTransactionDTO>,
+) {
+  const orderService = container.resolve(Modules.ORDER)
+
+  return orderService.addOrderTransaction(generateCreateOrderTransactionDTO({ orderId, ...overrides }))
 }
 
 export async function listOrders(container: AppContainer, filters?: FilterableOrderProps) {

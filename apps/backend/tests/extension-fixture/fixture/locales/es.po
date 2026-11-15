@@ -19,6 +19,11 @@ msgid "A fixture note needs a title of at least three characters"
 msgstr "Una nota de prueba necesita un título de al menos tres caracteres"
 
 #. js-lingui-explicit-id
+#: tests/extension-fixture/fixture/providers/fulfillment/city-rates.ts:78
+msgid "The fixture courier has no rate for \"{city}\""
+msgstr "La transportadora de prueba no tiene tarifa para \"{city}\""
+
+#. js-lingui-explicit-id
 #: tests/extension-fixture/fixture/modules/notes/services/notes-module-service.ts:31
 msgid "Fixture note \"{id}\" was not found"
 msgstr "No se encontró la nota de prueba \"{id}\""

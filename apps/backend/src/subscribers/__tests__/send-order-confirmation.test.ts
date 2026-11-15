@@ -129,6 +129,21 @@ test.describe('the order confirmation subscriber', () => {
   })
 
   /**
+   * Email is optional on an Order: a shopper who ordered through a chat gave none. There is nobody
+   * to send to, and nothing a retry could change, so the delivery completes without a row.
+   */
+  test('sends nothing for an order without an email', async ({ dto, service, expect }) => {
+    const orderService = container.resolve(Modules.ORDER)
+    const order = await orderService.createOrder(
+      dto.generate.createOrder({ email: null, items: [dto.generate.createOrderLineItem()] }),
+    )
+
+    await expect(deliver(order.id)).resolves.toBeUndefined()
+
+    expect(await service.read.notifications(container)).toEqual([])
+  })
+
+  /**
    * Not advice — the contract. The weaker of the two transports is at-least-once with no dedup, so
    * a second delivery of one event is a thing that happens rather than a thing that goes wrong.
    *

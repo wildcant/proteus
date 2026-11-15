@@ -4,7 +4,8 @@ import { NotificationTemplates } from '@core/utils/notification-templates.js'
 import { prepareOrderConfirmationData } from './prepare-order-confirmation-data.js'
 
 export type OrderConfirmationInput = {
-  order: OrderDTO
+  /** An Order with somewhere to send it: one sent from a chat may have no email at all. */
+  order: OrderDTO & { email: string }
   lineItems: EnrichedOrderLineItemDTO[]
   totals: OrderTotals
   shippingAddress: OrderAddressDTO | null

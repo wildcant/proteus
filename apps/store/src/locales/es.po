@@ -44,23 +44,23 @@ msgstr "{count} redes de tarjeta aceptadas"
 msgid "{label} will be removed from your address book. This cannot be undone."
 msgstr "{label} se eliminará de tu libreta de direcciones. Esta acción no se puede deshacer."
 
+#: src/features/orders/components/payment-details/payment-details.tsx:93
+msgid "{outstanding} due"
+msgstr "{outstanding} pendientes"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:92
+msgid "{paid} paid"
+msgstr "{paid} pagados"
+
 #: src/features/products/components/variant-stock/variant-stock.tsx:36
 msgid "{remaining, plural, one {Only # left} other {Only # left}}"
 msgstr "{remaining, plural, one {Solo queda #} other {Solo quedan #}}"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:67
-msgid "{total} due"
-msgstr "{total} pendiente"
-
-#: src/features/orders/components/payment-details/payment-details.tsx:57
-msgid "{total} on {paidAt}"
-msgstr "{total} el {paidAt}"
-
-#: src/features/orders/components/payment-details/payment-details.tsx:64
+#: src/features/orders/components/payment-details/payment-details.tsx:87
 msgid "{total} reserved by your bank, charged when your order ships"
 msgstr "{total} reservado por tu banco; se cobra cuando se envíe tu pedido"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:60
+#: src/features/orders/components/payment-details/payment-details.tsx:82
 msgid "{total} was not charged"
 msgstr "No se cobraron {total}"
 
@@ -154,7 +154,7 @@ msgstr "¿Estás seguro de que quieres salir? Se perderán los cambios que no gu
 msgid "Auto"
 msgstr "Automático"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:67
+#: src/features/orders/components/payment-details/payment-details.tsx:54
 msgid "Awaiting payment"
 msgstr "Pago pendiente"
 
@@ -312,7 +312,7 @@ msgstr "Empresa"
 msgid "Completing your order…"
 msgstr "Completando tu pedido…"
 
-#: src/features/orders/components/delivery-details/delivery-details.tsx:73
+#: src/features/orders/components/delivery-details/delivery-details.tsx:77
 msgid "Confirmation sent to"
 msgstr "Confirmación enviada a"
 
@@ -373,7 +373,7 @@ msgid "Delivered"
 msgstr "Entregado"
 
 #: src/features/checkout/components/delivery/delivery-section.tsx:48
-#: src/features/orders/components/delivery-details/delivery-details.tsx:39
+#: src/features/orders/components/delivery-details/delivery-details.tsx:42
 msgid "Delivery"
 msgstr "Entrega"
 
@@ -647,7 +647,7 @@ msgstr "Más recientes"
 msgid "Next"
 msgstr "Siguiente"
 
-#: src/features/orders/components/delivery-details/delivery-details.tsx:51
+#: src/features/orders/components/delivery-details/delivery-details.tsx:54
 msgid "No address provided"
 msgstr "Sin dirección"
 
@@ -664,7 +664,7 @@ msgstr "No existe ningún carrito"
 msgid "No payment providers available."
 msgstr "No hay métodos de pago disponibles."
 
-#: src/features/orders/components/payment-details/payment-details.tsx:60
+#: src/features/orders/components/payment-details/payment-details.tsx:82
 msgid "No payment taken"
 msgstr "No se realizó ningún cobro"
 
@@ -704,7 +704,7 @@ msgstr "Abrir menú"
 msgid "Open this link in the same browser you signed up with."
 msgstr "Abre este enlace en el mismo navegador con el que te registraste."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:59
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:65
 #: src/features/orders/components/order-content/order-content.tsx:56
 msgid "Order #{displayId}"
 msgstr "Pedido #{displayId}"
@@ -727,6 +727,14 @@ msgstr "Pedidos"
 msgid "Pagination"
 msgstr "Paginación"
 
+#: src/features/orders/components/payment-details/payment-details.tsx:46
+msgid "Partly paid"
+msgstr "Pago parcial"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:50
+msgid "Partly refunded"
+msgstr "Reembolso parcial"
+
 #: src/features/account/components/password-panel/password-panel.tsx:24
 #: src/features/auth/components/login-form/login-form.tsx:47
 #: src/features/auth/components/register-form/register-form.tsx:43
@@ -747,7 +755,7 @@ msgstr "Pagar con {0}"
 msgid "Payment"
 msgstr "Pago"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:63
+#: src/features/orders/components/payment-details/payment-details.tsx:44
 msgid "Payment authorized"
 msgstr "Pago autorizado"
 
@@ -763,9 +771,13 @@ msgstr "Métodos de pago"
 msgid "Payment Methods"
 msgstr "Métodos de pago"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:57
+#: src/features/orders/components/payment-details/payment-details.tsx:48
 msgid "Payment received"
 msgstr "Pago recibido"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:52
+msgid "Payment refunded"
+msgstr "Pago reembolsado"
 
 #: src/features/address/components/address-form/address-form.tsx:146
 #: src/features/checkout/components/shipping-address-form/shipping-address-form.tsx:139
@@ -776,7 +788,7 @@ msgstr "Teléfono"
 msgid "Place order"
 msgstr "Realizar pedido"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:62
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:68
 #: src/features/orders/components/order-content/order-content.tsx:59
 msgid "Placed {placedAt}"
 msgstr "Realizado el {placedAt}"
@@ -1060,7 +1072,7 @@ msgstr "Subtotal"
 msgid "Summary"
 msgstr "Resumen"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:41
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:42
 msgid "Thank you!"
 msgstr "¡Gracias!"
 
@@ -1239,9 +1251,13 @@ msgstr "No pudimos mostrar este producto"
 msgid "We email you a link rather than asking for your current password."
 msgstr "Te enviamos un enlace por correo en lugar de pedirte tu contraseña actual."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:49
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:52
 msgid "We have sent the order confirmation details to <0>{email}</0>."
 msgstr "Enviamos los detalles de confirmación del pedido a <0>{email}</0>."
+
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:56
+msgid "We have sent the order confirmation details to your email."
+msgstr "Enviamos los detalles de confirmación del pedido a tu correo."
 
 #: src/features/auth/components/verify-pending/verify-pending.tsx:24
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
@@ -1299,7 +1315,7 @@ msgstr "Tu tarjeta predeterminada es la que aparece primero en tu próxima compr
 msgid "Your email is confirmed. Sign in to pick up where you left off."
 msgstr "Tu correo está confirmado. Inicia sesión para continuar donde lo dejaste."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:45
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:46
 msgid "Your order was placed successfully."
 msgstr "Tu pedido se realizó con éxito."
 

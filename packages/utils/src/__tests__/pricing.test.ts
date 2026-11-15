@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAmount, formatPrice, getCurrencyName, getCurrencySymbol } from '../pricing.ts'
+import { formatAmount, formatPrice, getCurrencyName, getCurrencyPrecision, getCurrencySymbol } from '../pricing.ts'
 
 /**
  * Two claims, and the first is the one that protects the admin: omitting the locale has to keep
@@ -90,5 +90,13 @@ describe('getCurrencyName', () => {
 
   it('answers a malformed locale the same way, since the locale is the other argument Intl refuses', () => {
     expect(getCurrencyName('usd', 'en_US')).toBe('USD')
+  })
+})
+
+describe('getCurrencyPrecision', () => {
+  it("answers the currency's minor-unit digits, whatever case the code is in", () => {
+    expect(getCurrencyPrecision('usd')).toBe(2)
+    expect(getCurrencyPrecision('JPY')).toBe(0)
+    expect(getCurrencyPrecision('kwd')).toBe(3)
   })
 })
