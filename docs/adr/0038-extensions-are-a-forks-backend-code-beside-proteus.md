@@ -1,7 +1,9 @@
 # 38. Extensions Are a Fork's Backend Code Beside Proteus, and Hooks Are Its Only Way into Core
 
 **Status:** Accepted. Amends ADR-0004, ADR-0005, ADR-0009, ADR-0023, ADR-0027, ADR-0029 and ADR-0031,
-as set out under [Amendments](#amendments).
+as set out under [Amendments](#amendments). Amended by
+[ADR-0039](0039-draft-orders-and-manual-payments.md): an extension may bring a fulfillment provider,
+and draft orders ship with no hook.
 
 ## Context
 
@@ -62,7 +64,8 @@ handler exists. The handler is resolved inside the step, so the step sequence Te
 never depends on which extensions are deployed. The step output records which handler produced
 it, and compensation runs only if that same handler is still registered. Outside a workflow,
 `runHook` runs the handler without compensation. Core adds a hook only together with the workflow
-that needs it. The first, an order's charges, ships with draft orders.
+that needs it. Draft orders need none: shipping is priced by a fulfillment provider, and deposits
+are payments (ADR-0039).
 
 **Extension tables hold no foreign keys to core tables.** They store the core id. Core's cascade is
 derived per module (ADR-0016), so a core row's soft delete leaves extension rows untouched.
@@ -131,8 +134,8 @@ registration, and compensation would have to unwind a chain.
   list, so `extensions:generate` rejects them, and `Module()` rejects `features` on an extension module.
 - Extension OpenAPI tags. Tags are a closed list, so extension routes reuse a core tag.
 - Links between extension modules and core modules.
-- Extension-owned providers. On workerd, provider rows come from a seed script that lists core
-  modules.
+- Extension-owned payment and notification providers, and providers that need secrets. A secret
+  goes through `src/env.ts`, a Proteus file. Fulfillment providers are supported (ADR-0039).
 - Foreign keys from extension tables to core tables.
 - Running extension seeds in the e2e database.
 - Publishing extensions as packages, and extensions reused across stores.

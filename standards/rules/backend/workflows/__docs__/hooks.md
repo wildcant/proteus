@@ -20,8 +20,11 @@ src/extensions/{ext}/hooks/
 
 ## Shape
 
+Core defines no hook yet, so the example is illustrative: a hook on an order's charges, which no
+core workflow runs.
+
 ```ts
-// src/workflows/order/create-draft-order.ts — core owns the name, the types and the fallback
+// src/workflows/order/price-order.ts — core owns the name, the types and the fallback
 export const orderChargesHook = defineHook<OrderChargesInput, OrderCharges>({
   name: 'order-charges',
   throws: [ErrorTypes.INVALID_DATA] as const,
@@ -31,8 +34,8 @@ export const orderChargesHook = defineHook<OrderChargesInput, OrderCharges>({
 
 ```ts
 // the same file: one step, and the hook's errors on the workflow's contract
-export const createDraftOrderWorkflow = createWorkflow<Input, Output>(
-  { name: 'create-draft-order', throws: [...orderChargesHook.throws] },
+export const priceOrderWorkflow = createWorkflow<Input, Output>(
+  { name: 'price-order', throws: [...orderChargesHook.throws] },
   async (ctx, input) => {
     const cart = await ctx.step('load-cart', async ({ container }) => /* … */)
     const charges = await hookStep(ctx, orderChargesHook, { cart })

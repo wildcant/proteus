@@ -95,6 +95,13 @@ Fixes and improvements
     joins break module isolation, ADR 0001). This will recur for any property that moves from stored to computed.
 
 Future features TODOs
+- ARCHIVE STALE DRAFT ORDERS: a Draft Order reserves nothing and holds no payment collection, so an abandoned
+  chat costs no stock, but drafts pile up in the admin's drafts list. A job (ADR 0029) that archives drafts older
+  than a set age. Deferred by ADR 0039.
+- ATTEMPT LIMITING ON THE ORDER LOOKUP: the store lookup by display id and the last 4 phone digits answers the
+  same 404 for every failure, but nothing limits how many digit guesses one display id takes (10,000 at most).
+  Limit attempts per display id and per client before a store with real traffic relies on it. Accepted for the
+  MVP in ADR 0039.
 - ON SALE FROM COMPARE-AT PRICE: a product is on sale when a variant's compare-at price is above its price. Today
   nothing knows that: the CSV import ignores `Compare-at price` (still under "Ignored columns").
   - The import reads and stores compare-at price.

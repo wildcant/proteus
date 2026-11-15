@@ -1,68 +1,56 @@
-# Cash on Delivery (COD) Payment Provider
+# Cash on Delivery (COD)
 
 ## Summary
 
-COD is a payment method where customers pay upon item delivery rather than upfront. This document captures findings for implementing a COD provider in our payment system.
+With cash on delivery, the shopper pays when the order arrives rather than upfront. Proteus needs no
+provider of its own for it: the manual payment provider (`pp_system_default`) is how a shop records
+money received outside a gateway, cash on delivery included. Medusa's community reaches the same
+answer ("manual provider" as the standard COD approach). Why an Order is paid this way is
+[ADR-0039](adr/0039-draft-orders-and-manual-payments.md); how the module does it is the
+[payment module README](../apps/backend/src/modules/payment/README.md).
 
-## Current State
+## Offering it at checkout
 
-- The only customer-facing payment option requires removing the `pp_system_*` filter in `apps/backend/src/api/store/carts/[id]/payment-providers/route.ts`
-- The system provider (`pp_system_default`) auto-authorizes and no-ops on capture — functionally identical to what COD needs
-- For local testing, the system provider works fine as a stand-in
+A Region offers the manual provider at checkout only when the admin links the two. Link it to the
+Regions that take cash on delivery and no others; a card-only store links it nowhere and offers
+nothing new. The storefront lists the providers a Cart's Region links
+(`apps/backend/src/api/store/carts/[id]/payment-providers/route.ts`) and shows each by its label.
 
-## Architecture
+Completing a Cart with the manual provider authorizes the Order's payment collection for its total
+and captures nothing. The Order reads `authorized`, with the whole total outstanding.
 
-Payment providers are code-driven, not config-driven. Each provider needs:
+## Recording the money
 
-1. A class extending `AbstractPaymentProvider` (`apps/backend/src/core/utils/abstract-payment-provider.ts`)
-2. A static `identifier` property (e.g., `'cod'`)
-3. Registration in `apps/backend/src/modules/payment/provider-declarations.ts`
+Capture is the admin recording money the shop received, not a gateway call. The admin records a
+payment of any amount up to the Outstanding Amount, prefilled with it, and each recorded payment
+captures that part of the collection:
 
-The loader (`apps/backend/src/modules/payment/loaders/providers.ts`) auto-registers providers in both the DI container and database at startup. The store API filters out `pp_system_*` providers, so a `pp_cod_default` provider would appear in the storefront automatically.
+- **All on delivery.** One payment for the whole total once the courier reports it collected. The
+  Order goes from `authorized` to `captured`.
+- **A deposit, then the rest.** A store that sells through a chat converts a Draft Order while
+  recording the deposit (prefilled from the store's deposit percentage), so the Order reads
+  `partially_captured`; the rest is recorded on delivery and the Order reads `captured`.
 
-## Implementation Plan
+Each recorded payment writes an Order Transaction, so the Order's Paid Total and Outstanding Amount
+follow what was received. Canceling an Order with money received asks how much of it to refund.
 
-### Backend
+## Later
 
-Create `apps/backend/src/providers/payment-cod/` with a provider class that:
-
-- **`initiatePayment`** — returns a session ID (no external gateway)
-- **`authorizePayment`** — immediately returns `authorized`
-- **`capturePayment`** — no-op (payment collected physically on delivery)
-- **`cancelPayment`** / **`refundPayment`** / **`deletePayment`** — no-ops
-
-This is nearly identical to the system provider (`apps/backend/src/modules/payment/providers/system.ts`). The only difference is the identifier (`'cod'` vs `'system'`).
-
-### Frontend
-
-The payment form (`apps/store/src/features/checkout/components/payment-form.tsx`) currently shows raw provider IDs. Add a display name mapping:
-
-```typescript
-const providerDisplay: Record<string, { label: string }> = {
-  pp_cod_default: { label: 'Cash on Delivery' },
-  pp_stripe_default: { label: 'Credit Card' },
-}
-```
-
-### Admin Capture Flow
-
-In a real COD flow, capture should happen when the delivery driver confirms payment collection — not via a manual admin button. Options:
-
-1. **MVP**: Admin manually captures after delivery service reports collection (current system provider behavior)
-2. **Future**: Integrate with delivery service webhooks to auto-capture on confirmed delivery
+Capturing automatically when a delivery service confirms collection, through its webhooks, is not
+built. Until then the admin records it.
 
 ## References
 
-- [medusa-payment-cash-on-delivery](https://github.com/xGearForce/medusa-payment-cash-on-delivery/blob/master/src/core/cod-base.ts) — Medusa v1 plugin (uses old `AbstractPaymentProcessor` API, not directly compatible)
-- [Medusa discussion #3843](https://github.com/medusajs/medusa/discussions/3843) — Community discussion confirming "manual provider" as the standard COD approach
+- [Medusa discussion #3843](https://github.com/medusajs/medusa/discussions/3843) — community
+  discussion confirming the manual provider as the standard COD approach
+- [medusa-payment-cash-on-delivery](https://github.com/xGearForce/medusa-payment-cash-on-delivery/blob/master/src/core/cod-base.ts)
+  — a Medusa v1 plugin with a dedicated COD provider, which Proteus does not need
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `apps/backend/src/core/utils/abstract-payment-provider.ts` | Base class to extend |
-| `apps/backend/src/modules/payment/providers/system.ts` | Reference implementation (copy and change identifier) |
-| `apps/backend/src/modules/payment/provider-declarations.ts` | Register new provider here |
-| `apps/backend/src/modules/payment/loaders/providers.ts` | Auto-loads and seeds providers |
-| `apps/backend/src/api/store/carts/[id]/payment-providers/route.ts` | Store API (filters `pp_system_*`) |
-| `apps/store/src/features/checkout/components/payment-form.tsx` | Frontend provider display |
+| `apps/backend/src/modules/payment/providers/system.ts` | The manual provider |
+| `apps/backend/src/modules/payment/README.md` | Partial captures, Order Transactions, locking |
+| `apps/backend/src/api/store/carts/[id]/payment-providers/route.ts` | The providers a Cart's Region offers |
+| `packages/store-config/` | The store's deposit percentage |
