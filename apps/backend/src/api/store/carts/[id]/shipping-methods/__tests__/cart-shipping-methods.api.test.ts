@@ -43,6 +43,25 @@ test.describe('POST /store/carts/:id/shipping-methods', () => {
     expect(body.shippingMethod.amount).toBe('1500')
   })
 
+  /** The manual provider answers its `validateFulfillmentData` with what it was given, as Medusa's does. */
+  test('keeps the data the shopper sent with a flat option', async ({ service, factories, expect }) => {
+    const cart = await cartFor(service, factories)
+    const shipping = await factories.create.shippingOptionWithZone({
+      geoZone: { countryCode: 'us' },
+      shippingOption: { name: 'Pickup', amount: 0 },
+    })
+
+    const { status, body } = await api.post<typeof shippingMethodRoutes.PostOutput>(
+      `/store/carts/${cart.id}/shipping-methods`,
+      { shippingOptionId: shipping.id, data: { pickupPoint: 'Locker 12' } },
+    )
+
+    expect(status).toBe(201)
+    expect(body.shippingMethod.data).toEqual({ pickupPoint: 'Locker 12' })
+    const [stored] = await service.read.cartShippingMethods(api.container, { cartId: cart.id })
+    expect(stored?.data).toEqual({ pickupPoint: 'Locker 12' })
+  })
+
   /**
    * The reason the route delegates to `setShippingMethod` rather than adding: the delivery step
    * offers one choice, so a shopper changing their mind must not end up paying two deliveries.
