@@ -75,6 +75,7 @@ export default [
     method: 'DELETE',
     matcher: '/store/carts/:id/line-items/:lineId',
     handler: lineItemByIdRoutes.DELETE,
+    throws: lineItemByIdRoutes.DeleteThrows,
     auth: 'optional',
     input: lineItemByIdRoutes.DeleteInput,
     operationId: 'deleteStoreCartLineItem',

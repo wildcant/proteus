@@ -76,7 +76,7 @@ msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its s
 msgstr "Variant \"{variantId}\" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:62
+#: src/workflows/cart/add-to-cart.ts:63
 #: src/workflows/cart/complete-cart.ts:296
 #: src/workflows/cart/update-cart.ts:161
 #: src/workflows/cart/update-line-item.ts:51
@@ -203,27 +203,27 @@ msgid "No customer data available for auth identity \"{authIdentityId}\". Expect
 msgstr "No customer data available for auth identity \"{authIdentityId}\". Expected either input.customerData or appMetadata.pending."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:52
+#: src/workflows/cart/add-to-cart.ts:53
 msgid "No items to add to the cart"
 msgstr "No items to add to the cart"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:90
+#: src/workflows/cart/add-to-cart.ts:92
 msgid "Variant(s) not found: {missing}"
 msgstr "Variant(s) not found: {missing}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:126
+#: src/workflows/cart/add-to-cart.ts:145
 msgid "Variant \"{variantId}\" has no product"
 msgstr "Variant \"{variantId}\" has no product"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:136
+#: src/workflows/cart/add-to-cart.ts:155
 msgid "Product \"{productId}\" is not available for sale"
 msgstr "Product \"{productId}\" is not available for sale"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:145
+#: src/workflows/cart/add-to-cart.ts:164
 msgid "Variant \"{variantId}\" has no price in {currencyCode}"
 msgstr "Variant \"{variantId}\" has no price in {currencyCode}"
 
@@ -344,6 +344,7 @@ msgid "\"{title}\" is not sold in {currencyCode}"
 msgstr "\"{title}\" is not sold in {currencyCode}"
 
 #. js-lingui-explicit-id
+#: src/modules/cart/services/cart-module-service.ts:244
 #: src/workflows/cart/update-line-item.ts:43
 msgid "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
 msgstr "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
@@ -854,12 +855,12 @@ msgid "The configured file provider does not support presigned upload URLs."
 msgstr "The configured file provider does not support presigned upload URLs."
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:294
+#: src/modules/cart/services/cart-module-service.ts:312
 msgid "Shipping method not returned after create"
 msgstr "Shipping method not returned after create"
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:374
+#: src/modules/cart/services/cart-module-service.ts:392
 msgid "Cart {id} is already completed"
 msgstr "Cart {id} is already completed"
 

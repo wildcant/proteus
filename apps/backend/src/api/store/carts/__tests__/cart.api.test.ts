@@ -397,6 +397,13 @@ test.describe('the cart line’s stock', () => {
       quantity: 1,
     })
     expect(foreign.status).toBe(404)
+    const foreignRemoval = await api.delete<ApiErrorBody>(
+      `/store/carts/${otherCart.id}/line-items/${kept.body.lineItem.id}`,
+    )
+    expect(foreignRemoval.status).toBe(404)
+    // Removing the unavailable line through its own cart is what the page asks the shopper to do.
+    const removal = await api.delete(`/store/carts/${cart.id}/line-items/${gone.body.lineItem.id}`)
+    expect(removal.status).toBe(200)
 
     const lines = await service.read.cartLineItems(api.container, { cartId: cart.id })
     expect(new Map(lines.map((line) => [line.id, line.quantity]))).toEqual(
@@ -404,7 +411,6 @@ test.describe('the cart line’s stock', () => {
         [added.body.lineItem.id, 2],
         [sold.body.lineItem.id, 1],
         [kept.body.lineItem.id, 1],
-        [gone.body.lineItem.id, 1],
       ]),
     )
   })

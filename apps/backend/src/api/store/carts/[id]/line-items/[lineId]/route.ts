@@ -1,3 +1,4 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
@@ -50,10 +51,14 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
 
 export const DeleteInput = { params: LineIdParams }
 export const DeleteOutput = DeleteResponse
+// removeLineItem throws NOT_FOUND (no such cart, or a line the cart does not hold) and NOT_ALLOWED
+// (a completed cart) from the cart module
+// ast-grep-ignore: route-declares-unthrown-error
+export const DeleteThrows = [ErrorTypes.NOT_FOUND, ErrorTypes.NOT_ALLOWED] as const
 
 export const DELETE = async (req: HttpRequest<typeof DeleteInput>): Promise<HttpResult<typeof DeleteOutput>> => {
   const cartService = req.scope.resolve(Modules.CART)
-  await cartService.softDeleteLineItems([req.params.lineId])
+  await cartService.removeLineItem(req.params.id, req.params.lineId)
 
   return { status: 200, json: { id: req.params.lineId, deleted: true } }
 }

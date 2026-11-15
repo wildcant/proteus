@@ -232,6 +232,24 @@ export class CartModuleService implements ICartModuleService {
     })
   }
 
+  async removeLineItem(cartId: string, lineItemId: string, context?: Context): Promise<void> {
+    return this.withTransaction(context, async (ctx) => {
+      const cart = await this.cartRepository.findByIdOrFail(cartId, undefined, ctx)
+      this.assertNotCompleted(cart)
+
+      const [lineItem] = await this.cartLineItemRepository.find({ id: lineItemId, cartId }, undefined, ctx)
+      if (!lineItem) {
+        throw new AppError({
+          type: ErrorTypes.NOT_FOUND,
+          message: i18n.t('Line item "{lineItemId}" not found in cart "{cartId}"'),
+          values: { lineItemId, cartId },
+        })
+      }
+
+      await this.cartLineItemRepository.softDelete([lineItem.id], ctx)
+    })
+  }
+
   async listShippingMethods(
     filters?: FilterableCartShippingMethodProps,
     config?: FindConfig<CartShippingMethodDTO>,
