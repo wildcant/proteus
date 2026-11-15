@@ -41,6 +41,7 @@ msgid "Name is required"
 msgstr "Name is required"
 
 #. js-lingui-explicit-id
+#: src/admin/draft-order/payloads.ts:22
 #: src/auth/payloads.ts:33
 #: src/store/auth/payloads.ts:7
 #: src/store/auth/payloads.ts:19

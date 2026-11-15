@@ -55,6 +55,7 @@ export * from './storeCreateAddress.ts';
 export * from './storeCreateCartLineItemResponse.ts';
 export * from './storeCreateCartResponse.ts';
 export * from './storeCreateCartShippingMethodResponse.ts';
+export * from './storeCreateDraftOrderResponse.ts';
 export * from './storeCreatePaymentCollectionResponse.ts';
 export * from './storeCreatePaymentSessionResponse.ts';
 export * from './storeCustomerAddress.ts';

@@ -275,7 +275,7 @@ msgstr "Archivar"
 msgid "Archive order"
 msgstr "Archivar pedido"
 
-#: src/features/access-control/utils/permission-titles.ts:30
+#: src/features/access-control/utils/permission-titles.ts:31
 msgid "Archive orders"
 msgstr "Archivar pedidos"
 
@@ -447,7 +447,7 @@ msgstr "Cancelar"
 msgid "Cancel order"
 msgstr "Cancelar pedido"
 
-#: src/features/access-control/utils/permission-titles.ts:29
+#: src/features/access-control/utils/permission-titles.ts:30
 msgid "Cancel orders"
 msgstr "Cancelar pedidos"
 
@@ -459,7 +459,7 @@ msgstr "cancelado"
 msgid "Canceled"
 msgstr "Cancelado"
 
-#: src/features/access-control/utils/permission-titles.ts:35
+#: src/features/access-control/utils/permission-titles.ts:36
 msgid "Capture payments"
 msgstr "Capturar pagos"
 
@@ -674,7 +674,7 @@ msgstr "Crear clientes"
 msgid "Create fulfillments"
 msgstr "Crear preparaciones"
 
-#: src/features/access-control/utils/permission-titles.ts:51
+#: src/features/access-control/utils/permission-titles.ts:52
 msgid "Create invites"
 msgstr "Crear invitaciones"
 
@@ -687,7 +687,7 @@ msgstr "Crear opción"
 msgid "Create Product"
 msgstr "Crear producto"
 
-#: src/features/access-control/utils/permission-titles.ts:38
+#: src/features/access-control/utils/permission-titles.ts:39
 msgid "Create products"
 msgstr "Crear productos"
 
@@ -695,7 +695,7 @@ msgstr "Crear productos"
 msgid "Create Region"
 msgstr "Crear región"
 
-#: src/features/access-control/utils/permission-titles.ts:42
+#: src/features/access-control/utils/permission-titles.ts:43
 msgid "Create regions"
 msgstr "Crear regiones"
 
@@ -711,7 +711,7 @@ msgstr "Crear etiqueta"
 msgid "Create Type"
 msgstr "Crear tipo"
 
-#: src/features/access-control/utils/permission-titles.ts:47
+#: src/features/access-control/utils/permission-titles.ts:48
 msgid "Create users"
 msgstr "Crear usuarios"
 
@@ -849,7 +849,7 @@ msgstr "Eliminar preparaciones"
 msgid "Delete invite"
 msgstr "Eliminar invitación"
 
-#: src/features/access-control/utils/permission-titles.ts:52
+#: src/features/access-control/utils/permission-titles.ts:53
 msgid "Delete invites"
 msgstr "Eliminar invitaciones"
 
@@ -866,7 +866,7 @@ msgstr "Eliminar opción"
 msgid "Delete product"
 msgstr "Eliminar producto"
 
-#: src/features/access-control/utils/permission-titles.ts:40
+#: src/features/access-control/utils/permission-titles.ts:41
 msgid "Delete products"
 msgstr "Eliminar productos"
 
@@ -886,11 +886,11 @@ msgstr "Eliminar tipo"
 msgid "Delete uploads"
 msgstr "Eliminar archivos subidos"
 
-#: src/features/access-control/utils/permission-titles.ts:49
+#: src/features/access-control/utils/permission-titles.ts:50
 msgid "Delete users"
 msgstr "Eliminar usuarios"
 
-#: src/features/access-control/utils/permission-titles.ts:33
+#: src/features/access-control/utils/permission-titles.ts:34
 msgid "Deliver orders"
 msgstr "Entregar pedidos"
 
@@ -1038,6 +1038,10 @@ msgstr "La configuración regional de cada país es el segmento de URL de su tie
 msgid "Edit"
 msgstr "Editar"
 
+#: src/features/access-control/utils/permission-titles.ts:29
+msgid "Edit and delete draft orders"
+msgstr "Editar y eliminar borradores de pedido"
+
 #: src/features/categories/components/edit-category-form.tsx:22
 msgid "Edit Category"
 msgstr "Editar categoría"
@@ -1087,7 +1091,7 @@ msgstr "Editar producto"
 msgid "Edit Product Option"
 msgstr "Editar opción de producto"
 
-#: src/features/access-control/utils/permission-titles.ts:39
+#: src/features/access-control/utils/permission-titles.ts:40
 #: src/features/products/components/product-group-section.tsx:40
 msgid "Edit products"
 msgstr "Editar productos"
@@ -1096,7 +1100,7 @@ msgstr "Editar productos"
 msgid "Edit Region"
 msgstr "Editar región"
 
-#: src/features/access-control/utils/permission-titles.ts:43
+#: src/features/access-control/utils/permission-titles.ts:44
 msgid "Edit regions"
 msgstr "Editar regiones"
 
@@ -1109,7 +1113,7 @@ msgstr "Editar stock"
 msgid "Edit Store"
 msgstr "Editar tienda"
 
-#: src/features/access-control/utils/permission-titles.ts:45
+#: src/features/access-control/utils/permission-titles.ts:46
 msgid "Edit store settings"
 msgstr "Editar la configuración de la tienda"
 
@@ -1121,7 +1125,7 @@ msgstr "Editar etiqueta"
 msgid "Edit Type"
 msgstr "Editar tipo"
 
-#: src/features/access-control/utils/permission-titles.ts:48
+#: src/features/access-control/utils/permission-titles.ts:49
 msgid "Edit users"
 msgstr "Editar usuarios"
 
@@ -1455,7 +1459,7 @@ msgstr "Preparar"
 msgid "Fulfill order"
 msgstr "Preparar pedido"
 
-#: src/features/access-control/utils/permission-titles.ts:31
+#: src/features/access-control/utils/permission-titles.ts:32
 msgid "Fulfill orders"
 msgstr "Preparar pedidos"
 
@@ -2451,7 +2455,7 @@ msgstr "publicado"
 msgid "Published"
 msgstr "Publicado"
 
-#: src/features/access-control/utils/permission-titles.ts:36
+#: src/features/access-control/utils/permission-titles.ts:37
 msgid "Refund payments"
 msgstr "Reembolsar pagos"
 
@@ -2544,7 +2548,7 @@ msgstr "Reemplazar archivo"
 msgid "Resend invite"
 msgstr "Reenviar invitación"
 
-#: src/features/access-control/utils/permission-titles.ts:53
+#: src/features/access-control/utils/permission-titles.ts:54
 msgid "Resend invites"
 msgstr "Reenviar invitaciones"
 
@@ -2743,7 +2747,7 @@ msgstr "Configuración"
 msgid "Ship"
 msgstr "Enviar"
 
-#: src/features/access-control/utils/permission-titles.ts:32
+#: src/features/access-control/utils/permission-titles.ts:33
 msgid "Ship orders"
 msgstr "Enviar pedidos"
 
@@ -3174,7 +3178,7 @@ msgstr "Ver preparaciones"
 msgid "View inventory"
 msgstr "Ver inventario"
 
-#: src/features/access-control/utils/permission-titles.ts:50
+#: src/features/access-control/utils/permission-titles.ts:51
 msgid "View invites"
 msgstr "Ver invitaciones"
 
@@ -3186,15 +3190,15 @@ msgstr "Ver notificaciones"
 msgid "View orders"
 msgstr "Ver pedidos"
 
-#: src/features/access-control/utils/permission-titles.ts:34
+#: src/features/access-control/utils/permission-titles.ts:35
 msgid "View payments"
 msgstr "Ver pagos"
 
-#: src/features/access-control/utils/permission-titles.ts:37
+#: src/features/access-control/utils/permission-titles.ts:38
 msgid "View products"
 msgstr "Ver productos"
 
-#: src/features/access-control/utils/permission-titles.ts:41
+#: src/features/access-control/utils/permission-titles.ts:42
 msgid "View regions"
 msgstr "Ver regiones"
 
@@ -3206,7 +3210,7 @@ msgstr "Ver asignaciones de roles"
 msgid "View roles"
 msgstr "Ver roles"
 
-#: src/features/access-control/utils/permission-titles.ts:44
+#: src/features/access-control/utils/permission-titles.ts:45
 msgid "View store settings"
 msgstr "Ver la configuración de la tienda"
 
@@ -3214,7 +3218,7 @@ msgstr "Ver la configuración de la tienda"
 msgid "View uploads"
 msgstr "Ver archivos subidos"
 
-#: src/features/access-control/utils/permission-titles.ts:46
+#: src/features/access-control/utils/permission-titles.ts:47
 msgid "View users"
 msgstr "Ver usuarios"
 

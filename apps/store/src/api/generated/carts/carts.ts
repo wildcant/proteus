@@ -18,6 +18,7 @@ import type {
   StoreCreateCartLineItemResponse,
   StoreCreateCartResponse,
   StoreCreateCartShippingMethodResponse,
+  StoreCreateDraftOrderResponse,
   StoreShippingOptionListResponse,
   StoreUpdateCartLineItemResponse,
   StoreUpdateCartResponse,
@@ -150,6 +151,17 @@ export const completeStoreCart = (
       );
     }
   /**
+ * @summary Send a cart to the shop as a draft order (closes the cart)
+ */
+export const createStoreCartDraftOrder = (
+    id: string,
+ ) => {
+      return fetcher<StoreCreateDraftOrderResponse>(
+      {url: `/store/carts/${id}/draft-order`, method: 'POST'
+    },
+      );
+    }
+  /**
  * @summary Transfer a cart to the authenticated customer
  */
 export const transferStoreCartCustomer = (
@@ -169,4 +181,5 @@ export type DeleteStoreCartLineItemResult = NonNullable<Awaited<ReturnType<typeo
 export type ListStoreCartShippingOptionsResult = NonNullable<Awaited<ReturnType<typeof listStoreCartShippingOptions>>>
 export type AddStoreCartShippingMethodResult = NonNullable<Awaited<ReturnType<typeof addStoreCartShippingMethod>>>
 export type CompleteStoreCartResult = NonNullable<Awaited<ReturnType<typeof completeStoreCart>>>
+export type CreateStoreCartDraftOrderResult = NonNullable<Awaited<ReturnType<typeof createStoreCartDraftOrder>>>
 export type TransferStoreCartCustomerResult = NonNullable<Awaited<ReturnType<typeof transferStoreCartCustomer>>>

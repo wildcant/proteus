@@ -85,7 +85,20 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
       }
 
       const orderService = container.resolve(Modules.ORDER)
-      return orderService.retrieveOrder(orderCartLink.orderId)
+      const order = await orderService.retrieveOrder(orderCartLink.orderId)
+
+      /** A Cart sent to the shop as a Draft Order is closed without being paid for, and the shop,
+       *  not the shopper, decides when it becomes an Order. Answering with the draft here would
+       *  read to the storefront as a checkout that went through. */
+      if (order.isDraftOrder) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t('Cart "{cartId}" was sent to the shop as a draft order, so it cannot be checked out'),
+          values: { cartId: input.cartId },
+        })
+      }
+
+      return order
     })
 
     if (existingOrder) return existingOrder
