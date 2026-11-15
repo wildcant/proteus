@@ -519,6 +519,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     context?: Context,
   ): Promise<ShippingOptionDTO[]> {
     return this.withTransaction(context, async (ctx) => {
+      await this.assertProviderPricesUpdatedOptions(ids, data, ctx)
       return this.shippingOptionRepository.updateMany(ids, data, ctx) as Promise<ShippingOptionDTO[]>
     })
   }
@@ -530,6 +531,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async updateShippingOption(id: string, data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO> {
     return this.withTransaction(context, async (ctx) => {
+      await this.assertProviderPricesUpdatedOptions([id], data, ctx)
       return this.shippingOptionRepository.update(id, data, ctx) as Promise<ShippingOptionDTO>
     })
   }
@@ -582,7 +584,9 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
    * the first cart that lists it: such an option would never be offered, and nothing would say why.
    * An unregistered provider fails here too, as `retrieveProvider`'s not-found.
    */
-  private async assertProviderPricesOption(option: CreateShippingOptionDTO): Promise<void> {
+  private async assertProviderPricesOption(
+    option: Pick<CreateShippingOptionDTO, 'priceType' | 'providerId' | 'data'>,
+  ): Promise<void> {
     if (option.priceType !== 'calculated') return
 
     const canCalculate = await this.fulfillmentProviderService.canCalculate(option.providerId, option.data ?? {})
@@ -594,6 +598,29 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
       message: i18n.t('Fulfillment provider "{providerId}" cannot calculate shipping prices'),
       values: { providerId: option.providerId },
     })
+  }
+
+  /**
+   * An update can't change an option's price type or provider, but it can change the data its
+   * provider's `canCalculate` reads, so a calculated option is checked again with the data it will
+   * hold.
+   */
+  private async assertProviderPricesUpdatedOptions(
+    ids: string[],
+    data: UpdateShippingOptionDTO,
+    context: Context,
+  ): Promise<void> {
+    if (data.data === undefined) return
+    const options = await this.shippingOptionRepository.find({ id: ids }, undefined, context)
+    await Promise.all(
+      options.map((option) =>
+        this.assertProviderPricesOption({
+          ...option,
+          priceType: option.priceType as ShippingOptionDTO['priceType'],
+          data: data.data,
+        }),
+      ),
+    )
   }
 
   // -- FulfillmentProvider --
