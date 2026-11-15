@@ -6,6 +6,8 @@ import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
+import { SystemPaymentProvider } from '../../../modules/payment/providers/system.js'
+import { convertDraftOrderWorkflow } from '../../draft-order/convert-draft-order.js'
 import { addOrderTransactionsStep } from '../../order/steps/add-order-transactions.js'
 import { recordOrderPaymentWorkflow } from '../record-order-payment.js'
 import { refundPaymentWorkflow } from '../refund-payment.js'
@@ -227,5 +229,34 @@ test.describe('record-order-payment', () => {
     )
     expect(await service.read.orderTransactions(container, orderId)).toHaveLength(1)
     expect((await service.read.paymentCollection(container, paymentCollectionId)).refundedAmount).toBeNull()
+  })
+
+  /**
+   * Converting a draft with its deposit reserves the stock and converts before it captures, so a
+   * capture the provider refuses has to unwind all of it: the stock back on the shelf, the draft a
+   * draft again, and no collection or transaction left on it.
+   */
+  test('a deposit the provider refuses unwinds the draft conversion', async ({ service, expect }) => {
+    const { variant, inventoryItem } = await service.create.sellableVariant(container, {
+      inventory: { level: { stockedQuantity: 1 } },
+    })
+    assertDefined(inventoryItem)
+    const draft = await service.create.draftOrder(container, {
+      items: [{ title: variant.title, variantId: variant.id, quantity: 1, unitPrice: new BigNumber(100) }],
+    })
+
+    vi.spyOn(SystemPaymentProvider.prototype, 'capturePayment').mockRejectedValueOnce(new Error('capture refused'))
+
+    await expect(
+      convertDraftOrderWorkflow.run({ orderId: draft.id, paymentAmount: new BigNumber(30) }),
+    ).rejects.toThrow('capture refused')
+
+    expect(await service.read.order(container, draft.id)).toMatchObject({ status: 'draft', isDraftOrder: true })
+    const [lineItem] = await service.read.orderLineItems(container, draft.id)
+    assertDefined(lineItem)
+    expect(await service.read.reservationItems(container, { lineItemId: lineItem.id })).toEqual([])
+    expect(await service.read.availableQuantity(container, inventoryItem.id)).toBe(1)
+    expect(await service.read.linkRepo(container, 'orderPaymentCollection').findByOrderId(draft.id)).toBeNull()
+    expect(await service.read.orderTransactions(container, draft.id)).toEqual([])
   })
 })
