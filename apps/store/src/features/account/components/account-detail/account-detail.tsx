@@ -59,13 +59,14 @@ export function AccountDetail({ links }: { links: AccountLinks }) {
             render={<Link {...links.paymentMethods} />}
             className={accountDetailPaymentMethods()}
           />
+          {/* A signed-in Customer has an account, and an account always has an email. */}
           <DetailsPanel
             firstName={customer.firstName}
             lastName={customer.lastName}
-            email={customer.email}
+            email={customer.email ?? ''}
             className={accountDetailDetails()}
           />
-          <PasswordPanel email={customer.email} className={accountDetailPassword()} />
+          <PasswordPanel email={customer.email ?? ''} className={accountDetailPassword()} />
         </div>
       </div>
 

@@ -14,11 +14,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/admin/customer/payloads.ts:13
-msgid "A customer needs an email or a phone"
-msgstr "A customer needs an email or a phone"
-
-#. js-lingui-explicit-id
 #: src/bounded.ts:63
 msgid "Use {maximum} characters or fewer"
 msgstr "Use {maximum} characters or fewer"
@@ -164,3 +159,8 @@ msgstr "Must hold at least one condition."
 #: src/admin/product-metafield/entities.ts:21
 msgid "Must hold no more than 20 conditions."
 msgstr "Must hold no more than 20 conditions."
+
+#. js-lingui-explicit-id
+#: src/admin/customer/payloads.ts:13
+msgid "A customer needs an email or a phone"
+msgstr "A customer needs an email or a phone"

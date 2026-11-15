@@ -14,11 +14,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/workflows/draft-order/steps/draft-customer.ts:34
-msgid "Draft order \"{orderId}\" needs an email or a phone before it converts"
-msgstr "El borrador de pedido \"{orderId}\" necesita un correo o un teléfono antes de convertirse"
-
-#. js-lingui-explicit-id
 #: src/container.ts:174
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "Se seleccionó el motor de flujos de trabajo temporal, pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createTemporalWorkflowEngine`, o fijar `projectConfig.workflows.engine` en \"simple\"."
@@ -272,6 +267,11 @@ msgstr "El carrito \"{cartId}\" no tiene productos"
 #: src/workflows/draft-order/set-draft-order-shipping-method.ts:70
 msgid "Shipping option \"{shippingOptionId}\" is not available"
 msgstr "La opción de envío \"{shippingOptionId}\" no está disponible"
+
+#. js-lingui-explicit-id
+#: src/workflows/draft-order/steps/draft-customer.ts:34
+msgid "Draft order \"{orderId}\" needs an email or a phone before it converts"
+msgstr "El borrador de pedido \"{orderId}\" necesita un correo o un teléfono antes de convertirse"
 
 #. js-lingui-explicit-id
 #: src/core/auth/utils/validate-verification.ts:42
