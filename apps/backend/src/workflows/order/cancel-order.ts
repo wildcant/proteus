@@ -85,7 +85,7 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
       return { refunds, orderId: input.orderId }
     })
 
-    /** Validate and mark the order as canceled — rejects non-pending orders. */
+    /** Validate and mark the order as canceled — rejects anything but a draft or a pending order. */
     const canceled = await ctx.step(
       'cancel-order',
       async ({ container }) => {
@@ -94,7 +94,8 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
       },
       async (order, { container }) => {
         const orderService = container.resolve(Modules.ORDER)
-        await orderService.updateOrder(order.id, { status: 'pending', canceledAt: null })
+        // A canceled draft keeps its draft flag, which is the one record of the status it left.
+        await orderService.updateOrder(order.id, { status: order.isDraftOrder ? 'draft' : 'pending', canceledAt: null })
       },
     )
 
