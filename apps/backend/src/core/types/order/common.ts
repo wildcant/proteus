@@ -111,6 +111,8 @@ export type OrderShippingMethodDTO = {
   amount: BigNumber
   shippingOptionId: string | null
   data: Record<string, unknown> | null
+  /** The shop set this amount by hand, so re-pricing leaves it alone. */
+  isCustomAmount: boolean
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -171,6 +173,14 @@ export type PaymentStatus =
   | 'requires_action'
 
 export type EnrichedOrderLineItemDTO = OrderLineItemDTO & { lineTotal: BigNumber }
+
+/** A Draft Order with what the shop reads to confirm it: its lines, shipping, address and totals. */
+export type DraftOrderDetailDTO = OrderDTO & {
+  lineItems: EnrichedOrderLineItemDTO[]
+  shippingMethods: OrderShippingMethodDTO[]
+  shippingAddress: OrderAddressDTO | null
+  totals: OrderTotals
+}
 
 export type OrderAllowedActions = {
   canComplete: boolean

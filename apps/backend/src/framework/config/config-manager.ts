@@ -37,6 +37,8 @@ export class ConfigManager {
           payment: input.projectConfig?.providers?.payment ?? [],
           notification: input.projectConfig?.providers?.notification ?? [],
         },
+        // Off unless the store opts in, like the integrations above.
+        store: { draftOrders: input.projectConfig?.store?.draftOrders ?? false },
       },
       featureFlags: input.featureFlags ?? {},
     }

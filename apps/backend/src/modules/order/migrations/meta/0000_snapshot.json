@@ -1,5 +1,5 @@
 {
-  "id": "b0a5cd4c-f356-484f-86f2-f86f4f40bd44",
+  "id": "3feacb01-b671-4ee6-ba6f-10b0442bc605",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -579,6 +579,13 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "is_custom_amount": {
+          "name": "is_custom_amount",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "created_at": {
           "name": "created_at",

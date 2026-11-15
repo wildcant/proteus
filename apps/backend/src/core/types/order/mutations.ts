@@ -1,5 +1,5 @@
 import type { BigNumber } from '../../bignumber.js'
-import type { OrderLineItemOptionDTO, OrderStatus } from './common.js'
+import type { OrderLineItemDTO, OrderLineItemOptionDTO, OrderShippingMethodDTO, OrderStatus } from './common.js'
 
 export type CreateOrderAddressDTO = {
   company?: string | null | undefined
@@ -42,6 +42,7 @@ export type CreateOrderShippingMethodDTO = {
   amount: BigNumber
   shippingOptionId?: string | null | undefined
   data?: Record<string, unknown> | null | undefined
+  isCustomAmount?: boolean | undefined
 }
 
 export type CreateOrderTransactionDTO = {
@@ -75,4 +76,35 @@ export type UpdateOrderDTO = {
   email?: string | null | undefined
   customerId?: string | null | undefined
   canceledAt?: Date | null | undefined
+}
+
+/** The fields an admin edits on a Draft Order beside its items and shipping. */
+export type UpdateDraftOrderDTO = {
+  email?: string | null | undefined
+  /** Merged into the draft's shipping address, which is created when the Cart had none. */
+  shippingAddress?: CreateOrderAddressDTO | undefined
+}
+
+/** What adding items to a draft wrote: the lines it started, and the ones it raised from a quantity. */
+export type DraftOrderLineItemsAddition = {
+  lineItems: OrderLineItemDTO[]
+  createdIds: string[]
+  previousQuantities: OrderLineItemQuantityDTO[]
+}
+
+export type OrderLineItemQuantityDTO = { id: string; quantity: number }
+
+/** What setting a draft's shipping method wrote, and the methods it replaced. */
+export type DraftOrderShippingMethodReplacement = {
+  shippingMethod: OrderShippingMethodDTO
+  replacedIds: string[]
+}
+
+/** A shipping method's amount as a refresh re-states it. */
+export type OrderShippingMethodPriceUpdateDTO = { id: string; amount: BigNumber }
+
+/** What a draft's shipping refresh writes: the methods re-priced, and the ones no longer available. */
+export type OrderShippingMethodRefreshDTO = {
+  update: OrderShippingMethodPriceUpdateDTO[]
+  remove: string[]
 }
