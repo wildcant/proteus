@@ -268,6 +268,43 @@ test.describe('GET /store/carts/:id', () => {
 })
 
 /**
+ * A Cart's address is collected bit by bit, as Medusa's cart takes it: a city to quote shipping first,
+ * the street later. Each write merges into the row, and `null` clears a field.
+ */
+test.describe('POST /store/carts/:id — the shipping address', () => {
+  test('takes a city alone, merges later fields into it, and clears a field set to null', async ({
+    service,
+    expect,
+  }) => {
+    const { cart } = await service.create.checkoutReadyCart(api.container)
+    const readAddress = async () =>
+      (await api.get<StoreCartDetailResponse>(`/store/carts/${cart.id}`)).body.cart.shippingAddress
+
+    const cityOnly = await api.post(`/store/carts/${cart.id}`, {
+      shippingAddress: { city: 'Medellín', province: 'Antioquia' },
+    })
+    expect(cityOnly.status).toBe(200)
+    expect(await readAddress()).toMatchObject({ city: 'Medellín', province: 'Antioquia', address1: null })
+
+    await api.post(`/store/carts/${cart.id}`, {
+      shippingAddress: { address1: 'Calle 10 # 20-30', phone: '3001234567' },
+    })
+    expect(await readAddress()).toMatchObject({
+      city: 'Medellín',
+      province: 'Antioquia',
+      address1: 'Calle 10 # 20-30',
+      phone: '3001234567',
+    })
+
+    await api.post(`/store/carts/${cart.id}`, { shippingAddress: { city: null, province: null } })
+    expect(await readAddress()).toMatchObject({ city: null, province: null, address1: 'Calle 10 # 20-30' })
+
+    const unknownField = await api.post(`/store/carts/${cart.id}`, { shippingAddress: { street: 'Calle 10' } })
+    expect(unknownField.status).toBe(400)
+  })
+})
+
+/**
  * The line item is the shop's record of a sale, so the payload names the pick and nothing else.
  * Everything printed on the line — its title, its option values, above all its price — is read
  * off the catalogue by `add-to-cart`.

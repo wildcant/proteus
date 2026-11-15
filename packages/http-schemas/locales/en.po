@@ -46,7 +46,7 @@ msgstr "Name is required"
 #: src/store/auth/payloads.ts:7
 #: src/store/auth/payloads.ts:19
 #: src/store/cart/payloads.ts:17
-#: src/store/cart/payloads.ts:53
+#: src/store/cart/payloads.ts:76
 #: src/store/customer/payloads.ts:9
 #: src/store/customer/payloads.ts:21
 #: src/store/user/payloads.ts:8
@@ -77,28 +77,29 @@ msgid "Last name is required"
 msgstr "Last name is required"
 
 #. js-lingui-explicit-id
-#: src/store/cart/payloads.ts:25
+#: src/store/cart/payloads.ts:48
 #: src/store/customer/payloads.ts:46
 #: src/store/customer/payloads.ts:59
 msgid "Address is required"
 msgstr "Address is required"
 
 #. js-lingui-explicit-id
-#: src/store/cart/payloads.ts:28
+#: src/store/cart/payloads.ts:51
 #: src/store/customer/payloads.ts:47
 #: src/store/customer/payloads.ts:60
 msgid "City is required"
 msgstr "City is required"
 
 #. js-lingui-explicit-id
-#: src/store/cart/payloads.ts:29
+#: src/store/cart/payloads.ts:36
+#: src/store/cart/payloads.ts:52
 #: src/store/customer/payloads.ts:48
 #: src/store/customer/payloads.ts:61
 msgid "Country is required"
 msgstr "Country is required"
 
 #. js-lingui-explicit-id
-#: src/store/cart/payloads.ts:31
+#: src/store/cart/payloads.ts:54
 #: src/store/customer/payloads.ts:49
 #: src/store/customer/payloads.ts:62
 msgid "Postal code is required"
