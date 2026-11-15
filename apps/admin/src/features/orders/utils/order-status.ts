@@ -5,6 +5,7 @@ import type { AdminOrderFulfillmentStatus, AdminOrderStatus } from '#/api/genera
 type StatusColor = 'green' | 'red' | 'blue' | 'orange' | 'grey' | 'purple'
 
 export const orderStatusColors: Record<AdminOrderStatus, StatusColor> = {
+  draft: 'grey',
   pending: 'orange',
   completed: 'green',
   canceled: 'red',
@@ -20,6 +21,7 @@ export const fulfillmentStatusColors: Record<AdminOrderFulfillmentStatus, Status
 
 // Badges render the raw value capitalised by CSS, so the English label is the value itself.
 export const orderStatusLabels: Record<AdminOrderStatus, MessageDescriptor> = {
+  draft: msg`draft`,
   pending: msg`pending`,
   completed: msg`completed`,
   canceled: msg`canceled`,

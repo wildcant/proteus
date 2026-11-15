@@ -30,7 +30,8 @@ import { useFormatters } from '#/hooks/use-formatters'
 export function OrderConfirmedContent({ orderId }: { orderId: string }) {
   const { order } = useSuspenseOrder(orderId)
   const { formatDate } = useFormatters()
-  const { displayId, email } = order
+  const { displayId } = order
+  const email = order.owner?.email
   const placedAt = formatDate(order.createdAt)
 
   return (
@@ -45,10 +46,15 @@ export function OrderConfirmedContent({ orderId }: { orderId: string }) {
               <Trans>Your order was placed successfully.</Trans>
             </p>
             {/* The address is ink inside the muted line: rich text the drawing keeps on one style. */}
+            {/* A guest's order link carries no email, so only a signed-in customer reads it back. */}
             <p className={orderConfirmedContentSentMessage()}>
-              <Trans>
-                We have sent the order confirmation details to <span className="text-ink">{email}</span>.
-              </Trans>
+              {email ? (
+                <Trans>
+                  We have sent the order confirmation details to <span className="text-ink">{email}</span>.
+                </Trans>
+              ) : (
+                <Trans>We have sent the order confirmation details to your email.</Trans>
+              )}
             </p>
           </div>
         </div>

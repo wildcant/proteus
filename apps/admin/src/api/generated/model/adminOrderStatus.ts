@@ -10,6 +10,7 @@ export type AdminOrderStatus = typeof AdminOrderStatus[keyof typeof AdminOrderSt
 
 
 export const AdminOrderStatus = {
+  draft: 'draft',
   pending: 'pending',
   completed: 'completed',
   canceled: 'canceled',

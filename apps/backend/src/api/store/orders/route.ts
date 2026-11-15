@@ -5,6 +5,7 @@ import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreOrderListParams, StoreOrderListResponse } from '@proteus/http-schemas/store'
 import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
+import { orderReference } from '@workflows/order/utils/order-reference.js'
 
 export const GetInput = { query: StoreOrderListParams }
 export const GetOutput = StoreOrderListResponse
@@ -20,7 +21,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
   const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
   const { pagination } = req.validatedQuery
-  const [orders, count] = await orderService.listAndCountOrders({ customerId }, pagination)
+  // A draft is not an order the shop has confirmed, so it is not part of the customer's history.
+  const [orders, count] = await orderService.listAndCountOrders({ customerId, isDraftOrder: false }, pagination)
   const { offset, limit } = pagination
 
   const orderIds = orders.map((order) => order.id)
@@ -43,7 +45,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     const totals = orderService.computeOrderTotals({ lineItems: items, shippingMethods, transactions: [] })
     const fulfillment = fulfillmentByOrderId.get(order.id)
     const fulfillmentStatus = computeFulfillmentStatus(fulfillment ? [fulfillment] : [])
-    return { ...order, fulfillmentStatus, items, total: totals.orderTotal }
+    return { ...order, reference: orderReference(order.displayId), fulfillmentStatus, items, total: totals.orderTotal }
   })
 
   return { status: 200, json: { orders: enrichedOrders, count, offset, limit } }

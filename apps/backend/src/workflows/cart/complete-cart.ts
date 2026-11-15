@@ -380,6 +380,7 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
           variantBarcode: item.variantBarcode,
           variantTitle: item.variantTitle,
           variantOptionValues: item.variantOptionValues,
+          variantOptions: item.variantOptions,
           requiresShipping: item.requiresShipping,
         }))
 
@@ -395,6 +396,8 @@ export const completeCartWorkflow = createWorkflow<CompleteCartInput, OrderDTO>(
         const createdOrder = await orderService.createOrder({
           email,
           customerId: cart.customerId,
+          regionId: cart.regionId,
+          salesChannelId: cart.salesChannelId,
           currencyCode: cart.currencyCode,
           shippingAddress: snapshotAddress(cartAddresses.find((address) => address.type === 'shipping')),
           billingAddress: snapshotAddress(cartAddresses.find((address) => address.type === 'billing')),

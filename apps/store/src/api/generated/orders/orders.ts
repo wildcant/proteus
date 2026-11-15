@@ -7,11 +7,14 @@
  */
 import type {
   ListStoreOrdersParams,
+  LookupStoreOrderBody,
   StoreOrderListResponse,
+  StoreOrderLookupResponse,
   StoreOrderResponse
 } from '../model';
 
 import { fetcher } from '../../fetcher.ts';
+import type { BodyType } from '../../fetcher.ts';
 
 
 
@@ -28,7 +31,7 @@ export const listStoreOrders = (
       );
     }
   /**
- * @summary Retrieve a customer order
+ * @summary Retrieve an order by its id
  */
 export const getStoreOrder = (
     id: string,
@@ -38,5 +41,19 @@ export const getStoreOrder = (
     },
       );
     }
+  /**
+ * @summary Find an order by its number and phone digits
+ */
+export const lookupStoreOrder = (
+    lookupStoreOrderBody?: BodyType<LookupStoreOrderBody>,
+ ) => {
+      return fetcher<StoreOrderLookupResponse>(
+      {url: `/store/orders/lookup`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: lookupStoreOrderBody
+    },
+      );
+    }
   export type ListStoreOrdersResult = NonNullable<Awaited<ReturnType<typeof listStoreOrders>>>
 export type GetStoreOrderResult = NonNullable<Awaited<ReturnType<typeof getStoreOrder>>>
+export type LookupStoreOrderResult = NonNullable<Awaited<ReturnType<typeof lookupStoreOrder>>>

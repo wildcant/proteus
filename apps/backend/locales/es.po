@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:159
+#: src/routes.ts:161
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Las rutas con auth: 'required' deben declarar permisos. Faltan en:\n"
@@ -308,12 +308,12 @@ msgid "Cart \"{cartId}\" has no email — an email is required to complete check
 msgstr "El carrito \"{cartId}\" no tiene correo — necesitas un correo para finalizar la compra"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:481
+#: src/workflows/cart/complete-cart.ts:484
 msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
 msgstr "La variante \"{variantId}\" controla inventario, pero su artículo de inventario \"{inventoryItemId}\" no tiene stock en ninguna ubicación"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:575
+#: src/workflows/cart/complete-cart.ts:578
 msgid "Payment for session \"{sessionId}\" has not been authorized yet"
 msgstr "El pago de la sesión \"{sessionId}\" aún no se ha autorizado"
 
@@ -375,7 +375,7 @@ msgid "Payment session \"{sessionId}\" is still settling, so the \"{action}\" th
 msgstr "La sesión de pago \"{sessionId}\" aún se está liquidando, así que todavía no se puede registrar el \"{action}\" que informó el proveedor"
 
 #. js-lingui-explicit-id
-#: src/subscribers/send-order-confirmation.ts:73
+#: src/subscribers/send-order-confirmation.ts:81
 msgid "The order confirmation for order \"{orderId}\" was not sent — provider \"{providerId}\" refused it"
 msgstr "La confirmación del pedido \"{orderId}\" no se envió — el proveedor \"{providerId}\" la rechazó"
 
@@ -736,17 +736,17 @@ msgid "Method not implemented."
 msgstr "Método no implementado."
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:301
+#: src/modules/order/services/order-module-service.ts:312
 msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 msgstr "No se puede completar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:317
-msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
-msgstr "No se puede cancelar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
+#: src/modules/order/services/order-module-service.ts:328
+msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
+msgstr "No se puede cancelar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\" o \"draft\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:333
+#: src/modules/order/services/order-module-service.ts:344
 msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 msgstr "No se puede archivar el pedido {id}: el estado es \"{status}\", se esperaba \"completed\""
 
@@ -1247,7 +1247,7 @@ msgstr "No se puede calcular el precio: no se indicó countryCode y la tienda no
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
 #: src/api/store/middlewares.ts:106
-#: src/api/store/orders/route.ts:16
+#: src/api/store/orders/route.ts:17
 msgid "Not authenticated"
 msgstr "No has iniciado sesión"
 
@@ -1262,7 +1262,12 @@ msgid "Product with handle \"{handle}\" has no price in {currencyCode}"
 msgstr "El producto con identificador \"{handle}\" no tiene precio en {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/api/store/orders/[id]/route.ts:28
+#: src/api/store/orders/lookup/route.ts:22
+msgid "No order matches that number and phone"
+msgstr "Ningún pedido coincide con ese número y teléfono"
+
+#. js-lingui-explicit-id
+#: src/api/store/orders/[id]/route.ts:30
 msgid "Order with id \"{id}\" not found"
 msgstr "No se encontró el pedido con id \"{id}\""
 

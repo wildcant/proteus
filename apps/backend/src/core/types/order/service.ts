@@ -38,6 +38,14 @@ export type IOrderModuleService = {
   createOrders(data: CreateOrderDTO[], context?: Context): Promise<OrderDTO[]>
   updateOrder(id: string, data: UpdateOrderDTO, context?: Context): Promise<OrderDTO>
   updateOrders(ids: string[], data: UpdateOrderDTO, context?: Context): Promise<OrderDTO[]>
+  /** The id of the Order with this display id whose shipping address phone ends in these digits,
+   *  compared after stripping everything but numbers. One query, so a wrong number, wrong digits and
+   *  an Order without a phone all answer the same `null`. */
+  findOrderIdByDisplayIdAndPhoneDigits(
+    displayId: number,
+    phoneLastDigits: string,
+    context?: Context,
+  ): Promise<string | null>
   softDeleteOrders(ids: string[], context?: Context): Promise<void>
   restoreOrders(ids: string[], context?: Context): Promise<void>
 

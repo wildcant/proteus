@@ -19,7 +19,7 @@ offset?: number | null;
 limit?: number;
 order?: string;
 q?: string;
-status?: 'pending' | 'completed' | 'canceled' | 'archived' | ('pending' | 'completed' | 'canceled' | 'archived')[];
+status?: 'draft' | 'pending' | 'completed' | 'canceled' | 'archived' | ('draft' | 'pending' | 'completed' | 'canceled' | 'archived')[];
 customerId?: string | string[];
 createdAt?: {
   /** @nullable */

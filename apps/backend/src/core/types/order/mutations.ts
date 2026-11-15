@@ -1,5 +1,5 @@
 import type { BigNumber } from '../../bignumber.js'
-import type { OrderStatus } from './common.js'
+import type { OrderLineItemOptionDTO, OrderStatus } from './common.js'
 
 export type CreateOrderAddressDTO = {
   company?: string | null | undefined
@@ -32,6 +32,7 @@ export type CreateOrderLineItemDTO = {
   variantBarcode?: string | null | undefined
   variantTitle?: string | null | undefined
   variantOptionValues?: string | null | undefined
+  variantOptions?: OrderLineItemOptionDTO[] | undefined
   requiresShipping?: boolean | undefined
 }
 
@@ -54,8 +55,12 @@ export type CreateOrderTransactionDTO = {
 /** Addresses are nested rather than referenced: an order owns its addresses, so it has to exist
  *  before they can. `createOrder` writes the order and its addresses in one transaction. */
 export type CreateOrderDTO = {
-  email: string
+  /** Omitted, the Order is `pending`. A `draft` is created as a Draft Order (`isDraftOrder`). */
+  status?: OrderStatus | undefined
+  email?: string | null | undefined
   customerId?: string | null | undefined
+  regionId?: string | null | undefined
+  salesChannelId?: string | null | undefined
   currencyCode: string
   shippingAddress?: CreateOrderAddressDTO | undefined
   billingAddress?: CreateOrderAddressDTO | undefined
@@ -65,7 +70,9 @@ export type CreateOrderDTO = {
 
 export type UpdateOrderDTO = {
   status?: OrderStatus | undefined
-  email?: string | undefined
+  /** Cleared when a draft is converted; a canceled draft keeps it. */
+  isDraftOrder?: boolean | undefined
+  email?: string | null | undefined
   customerId?: string | null | undefined
   canceledAt?: Date | null | undefined
 }

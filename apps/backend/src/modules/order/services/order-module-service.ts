@@ -103,7 +103,7 @@ export class OrderModuleService implements IOrderModuleService {
   async createOrder(data: CreateOrderDTO, context?: Context): Promise<OrderDTO> {
     this.logger.debug('Creating order')
     return this.withTransaction(context, async (ctx) => {
-      const order = await this.orderRepository.create(data, ctx)
+      const order = await this.orderRepository.create(this.toOrderInput(data), ctx)
 
       const addressInputs = this.toAddressInputs(order.id, data)
       if (addressInputs.length) {
@@ -127,7 +127,10 @@ export class OrderModuleService implements IOrderModuleService {
   async createOrders(data: CreateOrderDTO[], context?: Context): Promise<OrderDTO[]> {
     this.logger.debug(`Creating ${data.length} order(s)`)
     return this.withTransaction(context, async (ctx) => {
-      const orders = await this.orderRepository.createMany(data, ctx)
+      const orders = await this.orderRepository.createMany(
+        data.map((order) => this.toOrderInput(order)),
+        ctx,
+      )
 
       const addressInputs = orders.flatMap((order, i) => this.toAddressInputs(order.id, data[i]))
       if (addressInputs.length) {
@@ -162,6 +165,14 @@ export class OrderModuleService implements IOrderModuleService {
     return this.withTransaction(context, async (ctx) => {
       return this.orderRepository.updateMany(ids, data, ctx)
     })
+  }
+
+  async findOrderIdByDisplayIdAndPhoneDigits(
+    displayId: number,
+    phoneLastDigits: string,
+    context?: Context,
+  ): Promise<string | null> {
+    return this.orderRepository.findIdByDisplayIdAndPhoneDigits(displayId, phoneLastDigits, context)
   }
 
   async softDeleteOrders(ids: string[], context?: Context): Promise<void> {
@@ -311,10 +322,10 @@ export class OrderModuleService implements IOrderModuleService {
     return this.withTransaction(context, async (ctx) => {
       const order = await this.orderRepository.findByIdOrFail(id, undefined, ctx)
 
-      if (order.status !== 'pending') {
+      if (order.status !== 'pending' && order.status !== 'draft') {
         throw new AppError({
           type: ErrorTypes.NOT_ALLOWED,
-          message: i18n.t('Cannot cancel order {id}: status is "{status}", expected "pending"'),
+          message: i18n.t('Cannot cancel order {id}: status is "{status}", expected "pending" or "draft"'),
           values: { id, status: order.status },
         })
       }
@@ -370,6 +381,11 @@ export class OrderModuleService implements IOrderModuleService {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  /** The order row of a creation payload. A draft is created as a Draft Order, and stays one until converted. */
+  private toOrderInput(data: CreateOrderDTO): CreateOrderDTO & { isDraftOrder: boolean } {
+    return { ...data, isDraftOrder: data.status === 'draft' }
+  }
 
   /** The two nested addresses of a creation payload, as rows the order already owns. */
   private toAddressInputs(orderId: string, data: CreateOrderDTO | undefined): OrderAddressInput[] {

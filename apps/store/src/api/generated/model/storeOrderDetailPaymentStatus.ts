@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type StoreOrderResponseOrderPaymentStatus = typeof StoreOrderResponseOrderPaymentStatus[keyof typeof StoreOrderResponseOrderPaymentStatus];
+export type StoreOrderDetailPaymentStatus = typeof StoreOrderDetailPaymentStatus[keyof typeof StoreOrderDetailPaymentStatus];
 
 
-export const StoreOrderResponseOrderPaymentStatus = {
+export const StoreOrderDetailPaymentStatus = {
   awaiting: 'awaiting',
   authorized: 'authorized',
   captured: 'captured',

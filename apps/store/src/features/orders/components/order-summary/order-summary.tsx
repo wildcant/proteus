@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import type { StoreOrderDetail } from '#/api/generated/model'
 import { Panel } from '#/components/store/panel/panel'
 import { OrderItems } from '#/features/orders/components/order-items/order-items'
 import {
@@ -22,7 +22,7 @@ import {
 import { useFormatters } from '#/hooks/use-formatters'
 
 /** The order's lines and totals. The set's root and its Panel instance are one element here. */
-export function OrderSummary({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {
+export function OrderSummary({ order, className }: { order: StoreOrderDetail; className?: string }) {
   const { t } = useLingui()
   const { formatPrice } = useFormatters()
 

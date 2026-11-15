@@ -15,8 +15,11 @@ export function generateOrderDTO(overrides?: Partial<OrderDTO>): OrderDTO {
     id: `ord_${faker.string.alphanumeric(32)}`,
     displayId: faker.number.int({ min: 1, max: 99999 }),
     status: 'pending',
+    isDraftOrder: false,
     email: faker.internet.email(),
     customerId: null,
+    regionId: null,
+    salesChannelId: null,
     currencyCode: 'usd',
     canceledAt: null,
     createdAt: faker.date.recent(),
@@ -47,6 +50,7 @@ export function generateOrderLineItemDTO(overrides?: Partial<OrderLineItemDTO>):
     variantBarcode: null,
     variantTitle: null,
     variantOptionValues: null,
+    variantOptions: [],
     requiresShipping: true,
     createdAt: faker.date.recent(),
     updatedAt: faker.date.recent(),
@@ -108,7 +112,7 @@ export function generateCreateOrderAddressDTO(overrides?: Partial<CreateOrderAdd
 
 export function generateUpdateOrderDTO(overrides?: Partial<UpdateOrderDTO>): UpdateOrderDTO {
   return {
-    status: faker.helpers.arrayElement(['pending', 'completed', 'canceled', 'archived'] as const),
+    status: faker.helpers.arrayElement(['draft', 'pending', 'completed', 'canceled', 'archived'] as const),
     email: faker.internet.email(),
     customerId: `cus_${faker.string.alphanumeric(32)}`,
     canceledAt: faker.date.recent(),

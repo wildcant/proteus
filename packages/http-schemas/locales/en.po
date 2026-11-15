@@ -59,6 +59,11 @@ msgid "Write a filter as key:value"
 msgstr "Write a filter as key:value"
 
 #. js-lingui-explicit-id
+#: src/store/order/payloads.ts:10
+msgid "Enter the last 4 digits of your phone"
+msgstr "Enter the last 4 digits of your phone"
+
+#. js-lingui-explicit-id
 #: src/store/customer/payloads.ts:7
 #: src/store/customer/payloads.ts:19
 msgid "First name is required"

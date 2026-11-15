@@ -5,6 +5,7 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
+import type { StoreOrderLineItemOption } from './storeOrderLineItemOption.ts';
 
 export interface StoreOrderLineItem {
   id: string;
@@ -13,6 +14,7 @@ export interface StoreOrderLineItem {
   variantTitle: string | null;
   /** @nullable */
   variantOptionValues: string | null;
+  variantOptions: StoreOrderLineItemOption[];
   /** @nullable */
   thumbnail: string | null;
   quantity: number;

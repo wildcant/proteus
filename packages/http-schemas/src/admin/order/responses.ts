@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PaginatedResponse } from '../../common.js'
 import {
+  AdminDraftOrder,
   AdminOrder,
   AdminOrderAddress,
   AdminOrderAllowedActions,
@@ -34,3 +35,8 @@ export const AdminOrderListResponse = PaginatedResponse.extend({
   orders: z.array(AdminOrder),
 }).openapi('AdminOrderListResponse')
 export type AdminOrderListResponse = z.input<typeof AdminOrderListResponse>
+
+export const AdminDraftOrderListResponse = PaginatedResponse.extend({
+  draftOrders: z.array(AdminDraftOrder),
+}).openapi('AdminDraftOrderListResponse')
+export type AdminDraftOrderListResponse = z.input<typeof AdminDraftOrderListResponse>

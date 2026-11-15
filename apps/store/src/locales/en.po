@@ -312,7 +312,7 @@ msgstr "Company"
 msgid "Completing your order…"
 msgstr "Completing your order…"
 
-#: src/features/orders/components/delivery-details/delivery-details.tsx:73
+#: src/features/orders/components/delivery-details/delivery-details.tsx:77
 msgid "Confirmation sent to"
 msgstr "Confirmation sent to"
 
@@ -373,7 +373,7 @@ msgid "Delivered"
 msgstr "Delivered"
 
 #: src/features/checkout/components/delivery/delivery-section.tsx:48
-#: src/features/orders/components/delivery-details/delivery-details.tsx:39
+#: src/features/orders/components/delivery-details/delivery-details.tsx:42
 msgid "Delivery"
 msgstr "Delivery"
 
@@ -647,7 +647,7 @@ msgstr "Newest"
 msgid "Next"
 msgstr "Next"
 
-#: src/features/orders/components/delivery-details/delivery-details.tsx:51
+#: src/features/orders/components/delivery-details/delivery-details.tsx:54
 msgid "No address provided"
 msgstr "No address provided"
 
@@ -704,7 +704,7 @@ msgstr "Open menu"
 msgid "Open this link in the same browser you signed up with."
 msgstr "Open this link in the same browser you signed up with."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:59
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:65
 #: src/features/orders/components/order-content/order-content.tsx:56
 msgid "Order #{displayId}"
 msgstr "Order #{displayId}"
@@ -776,7 +776,7 @@ msgstr "Phone"
 msgid "Place order"
 msgstr "Place order"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:62
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:68
 #: src/features/orders/components/order-content/order-content.tsx:59
 msgid "Placed {placedAt}"
 msgstr "Placed {placedAt}"
@@ -1060,7 +1060,7 @@ msgstr "Subtotal"
 msgid "Summary"
 msgstr "Summary"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:41
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:42
 msgid "Thank you!"
 msgstr "Thank you!"
 
@@ -1239,9 +1239,13 @@ msgstr "We couldn't show this product"
 msgid "We email you a link rather than asking for your current password."
 msgstr "We email you a link rather than asking for your current password."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:49
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:52
 msgid "We have sent the order confirmation details to <0>{email}</0>."
 msgstr "We have sent the order confirmation details to <0>{email}</0>."
+
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:56
+msgid "We have sent the order confirmation details to your email."
+msgstr "We have sent the order confirmation details to your email."
 
 #: src/features/auth/components/verify-pending/verify-pending.tsx:24
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
@@ -1299,7 +1303,7 @@ msgstr "Your default card is the one your next checkout starts on. Cards are sav
 msgid "Your email is confirmed. Sign in to pick up where you left off."
 msgstr "Your email is confirmed. Sign in to pick up where you left off."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:45
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:46
 msgid "Your order was placed successfully."
 msgstr "Your order was placed successfully."
 

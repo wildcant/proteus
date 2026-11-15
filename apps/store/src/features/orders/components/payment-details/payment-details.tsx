@@ -2,7 +2,7 @@ import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import type { StoreOrderDetail } from '#/api/generated/model'
 import { Panel } from '#/components/store/panel/panel'
 import {
   paymentDetails,
@@ -18,7 +18,7 @@ import { useFormatters } from '#/hooks/use-formatters'
  * or last four — `transaction` records amounts, not instruments — so a "Payment method" heading
  * over a status was a lie of placement.
  */
-export function PaymentDetails({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {
+export function PaymentDetails({ order, className }: { order: StoreOrderDetail; className?: string }) {
   const { t } = useLingui()
   const formatters = useFormatters()
   const { headline, detail } = paymentLines(order, formatters)
@@ -49,7 +49,7 @@ export function PaymentDetails({ order, className }: { order: StoreOrderResponse
  * no moment to name, and printing the amount "on" the day it was placed would read as paid.
  */
 function paymentLines(
-  order: StoreOrderResponseOrder,
+  order: StoreOrderDetail,
   { formatPrice, formatDatetime }: ReturnType<typeof useFormatters>,
 ): { headline: MessageDescriptor; detail: MessageDescriptor } {
   const total = formatPrice(order.totals.orderTotal, order.currencyCode)

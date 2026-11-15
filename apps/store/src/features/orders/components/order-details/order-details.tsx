@@ -1,5 +1,5 @@
 import { cn } from '@proteus/ui-core'
-import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import type { StoreOrderDetail } from '#/api/generated/model'
 import { DeliveryDetails } from '#/features/orders/components/delivery-details/delivery-details'
 import {
   orderDetails,
@@ -19,7 +19,7 @@ import { PaymentDetails } from '#/features/orders/components/payment-details/pay
  * and opening an order does not reflow the column under them. One column on a phone, stacked in
  * DOM order, so nothing is reordered by CSS.
  */
-export function OrderDetails({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {
+export function OrderDetails({ order, className }: { order: StoreOrderDetail; className?: string }) {
   return (
     <div className={cn(orderDetails(), className)}>
       <OrderSummary order={order} className={orderDetailsSummary()} />

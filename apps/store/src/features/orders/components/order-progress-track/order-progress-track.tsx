@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import type { StoreOrderDetail } from '#/api/generated/model'
 import {
   orderProgressTrack,
   orderProgressTrackStep,
@@ -22,7 +22,7 @@ import { orderProgress } from '#/features/orders/utils/order-progress'
  * Segments rather than dots and connectors: at four steps a dot row spends most of its width on
  * the rules between the dots, and the rule is the part that carries no information.
  */
-export function OrderProgressTrack({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {
+export function OrderProgressTrack({ order, className }: { order: StoreOrderDetail; className?: string }) {
   const { t } = useLingui()
   const progress = orderProgress(order)
 

@@ -279,7 +279,7 @@ msgstr "Archive order"
 msgid "Archive orders"
 msgstr "Archive orders"
 
-#: src/features/orders/utils/order-status.ts:26
+#: src/features/orders/utils/order-status.ts:28
 msgid "archived"
 msgstr "archived"
 
@@ -451,7 +451,7 @@ msgstr "Cancel order"
 msgid "Cancel orders"
 msgstr "Cancel orders"
 
-#: src/features/orders/utils/order-status.ts:25
+#: src/features/orders/utils/order-status.ts:27
 msgid "canceled"
 msgstr "canceled"
 
@@ -578,7 +578,7 @@ msgstr "Complete order"
 msgid "Complete orders"
 msgstr "Complete orders"
 
-#: src/features/orders/utils/order-status.ts:24
+#: src/features/orders/utils/order-status.ts:26
 msgid "completed"
 msgstr "completed"
 
@@ -894,7 +894,7 @@ msgstr "Delete users"
 msgid "Deliver orders"
 msgstr "Deliver orders"
 
-#: src/features/orders/utils/order-status.ts:33
+#: src/features/orders/utils/order-status.ts:35
 msgid "delivered"
 msgstr "delivered"
 
@@ -939,6 +939,7 @@ msgstr "Download file"
 msgid "Download sample CSV"
 msgstr "Download sample CSV"
 
+#: src/features/orders/utils/order-status.ts:24
 #: src/features/products/utils/product-status.ts:17
 msgid "draft"
 msgstr "draft"
@@ -1458,7 +1459,7 @@ msgstr "Fulfill order"
 msgid "Fulfill orders"
 msgstr "Fulfill orders"
 
-#: src/features/orders/utils/order-status.ts:31
+#: src/features/orders/utils/order-status.ts:33
 msgid "fulfilled"
 msgstr "fulfilled"
 
@@ -2300,7 +2301,7 @@ msgstr "Passwords do not match"
 msgid "Payment Providers"
 msgstr "Payment Providers"
 
-#: src/features/orders/utils/order-status.ts:23
+#: src/features/orders/utils/order-status.ts:25
 msgid "pending"
 msgstr "pending"
 
@@ -2746,7 +2747,7 @@ msgstr "Ship"
 msgid "Ship orders"
 msgstr "Ship orders"
 
-#: src/features/orders/utils/order-status.ts:32
+#: src/features/orders/utils/order-status.ts:34
 msgid "shipped"
 msgstr "shipped"
 
@@ -3072,7 +3073,7 @@ msgstr "Type to add one."
 msgid "Types"
 msgstr "Types"
 
-#: src/features/orders/utils/order-status.ts:30
+#: src/features/orders/utils/order-status.ts:32
 msgid "unfulfilled"
 msgstr "unfulfilled"
 
