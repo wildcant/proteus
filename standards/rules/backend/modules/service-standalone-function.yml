@@ -5,6 +5,7 @@ message: A standalone function sits outside the service class. Move it to `utils
 note: 'A module service file is the class and nothing else. A pure helper belongs in the module''s `utils/` directory; a function that needs instance state belongs on the class as a private method. Standalone functions hide from callers scanning the class and from tests that instantiate it. standards/rules/backend/modules/__docs__/modules.md'
 files:
   - "**/src/modules/*/services/*-service.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/modules/*/services/*-service.ts"
 rule:
   kind: function_declaration
   inside:

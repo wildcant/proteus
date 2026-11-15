@@ -5,6 +5,7 @@ message: 'This route runs `setPricingContext()` but no `<Method>Input` declares 
 note: 'Declare it beside the body or query it accompanies: `export const PostInput = { body: CreateCart, contextQuery: StorePricingContextParams }`. The middleware parses `req.query` itself, before `applyMiddleware` validates anything, so `contextQuery` is the only thing that documents what it reads. standards/rules/backend/api/__docs__/routes.md'
 files:
   - "**/src/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
 ignores:
   - "**/__tests__/**"
 # Scope is the file, not the method — nothing correlates `PostInput` with `PostMiddlewares` for

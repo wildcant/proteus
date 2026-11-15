@@ -5,6 +5,7 @@ message: This constructs a generic `Error`. Backend code raises `AppError`, whic
 note: 'Use `AppError` from `core/errors/app-error.ts` — it carries the `ErrorTypes` member `errorHandler` maps to a status and the domain `code` the client reads, both of which a bare `Error` loses on the way out as a 500 with no code. This matches the *construction* rather than the throw, because the two are routinely written apart: `const error = new Error(…)` then `throw error`, `Promise.reject(new Error(…))`, `Object.assign(new Error(…), …)`. A text search for `throw new Error(` sees none of them. docs/error-handling.md'
 files:
   - "apps/backend/src/**/*.ts"
+  - "apps/backend/tests/extension-fixture/**/*.ts"
 ignores:
   # Deliberately odd errors, thrown to be caught by the assertion two lines down.
   - "**/__tests__/**"

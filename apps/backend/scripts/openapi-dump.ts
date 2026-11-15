@@ -1,9 +1,10 @@
 import { writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { extensionRegistry } from '../src/extensions/registry.gen.js'
 import { registerOpenApiRoute } from '../src/framework/http/openapi/register-route.js'
 import { createRegistry, documentInfo, generateDocument } from '../src/framework/http/openapi/registry.js'
-import { adminDefinitions, storeDefinitions } from '../src/routes.js'
+import { routeDefinitions } from '../src/routes.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -17,6 +18,9 @@ const requestedOutDir = outDirFlag === -1 ? undefined : process.argv[outDirFlag 
 if (outDirFlag !== -1 && !requestedOutDir) {
   throw new Error('--out-dir requires a directory')
 }
+// Extension store routes ship in the store document beside core's, so a fork's storefront gets a typed client.
+const { admin: adminDefinitions, store: storeDefinitions } = routeDefinitions(extensionRegistry)
+
 const outDir = requestedOutDir ? resolve(requestedOutDir) : resolve(__dirname, '../openapi')
 
 // Admin API

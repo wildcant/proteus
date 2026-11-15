@@ -3,7 +3,8 @@
 **Status:** Accepted, and amended — see [Amendment: the cron Worker owns cron, end to
 end](#amendment-the-cron-worker-owns-cron-end-to-end) at the bottom. The decision recorded here
 stands; what changed is which process reconciles, how complete reconciliation is, and
-`pauseOnFailure`.
+`pauseOnFailure`. Amended again by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): workerd's
+cron triggers are generated from the job list, and the job list includes extension jobs.
 
 ## Context
 
@@ -277,8 +278,10 @@ it the wrapper could be deleted and every other test would stay green. Like the 
 server-dependent suites it is excluded from the default verification gate, which keeps working for a
 checkout that has not started Temporal.
 
-**workerd is unchanged.** Cloudflare keeps its cron triggers, the wrangler cron list keeps being
-hand-synced with the job list, and the structural rule forbidding any path from the workerd entry
+**workerd is unchanged.** Cloudflare keeps its cron triggers, ~~the wrangler cron list keeps being
+hand-synced with the job list,~~ *superseded by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md):*
+`jobs:generate` writes the wrangler cron list from the job list and `check:workerd-crons` fails on
+drift, and the structural rule forbidding any path from the workerd entry
 point to Temporal is what makes this a runtime split rather than a configuration — ADR-0022's
 position, applied to a third subsystem.
 
@@ -418,8 +421,9 @@ keeping a dead Schedule buys nothing.
   stated non-goal here rather than an accepted cost.
 - **Leader election among cron Workers.**
 - **Worker Versioning**, still the outstanding follow-up ADR-0022 and this ADR already name.
-- **Any change to the workerd runtime.** Cloudflare owns that clock through `wrangler.jsonc`, which
-  stays hand-synced with the job list. `JobDefinition`, the driver workflow, the activity and the
+- **Any change to the workerd runtime.** Cloudflare owns that clock through `wrangler.jsonc`, ~~which
+  stays hand-synced with the job list~~ *whose `triggers.crons` `jobs:generate` now writes from the
+  job list ([ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md))*. `JobDefinition`, the driver workflow, the activity and the
   heartbeat are all untouched by this amendment.
 - **Schedules in the namespace that this code did not create.** The sweep is scoped by prefix.
 

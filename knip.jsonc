@@ -87,7 +87,17 @@
         "lingui.config.ts",
         // The compiled message catalogs. Shipped code, loaded by the Translator adapter rather than
         // by a static import from src/ — until that adapter lands, nothing else references them.
-        "locales/*.ts!"
+        "locales/*.ts!",
+        // An extension's manifest is read by extensions:generate as source, never imported. The
+        // fixture extension's is the same, and so is its module's drizzle-kit config; the fixture is
+        // test code, so no `!`.
+        "src/extensions/*/extension.ts!",
+        "tests/extension-fixture/*/extension.ts",
+        "tests/extension-fixture/*/modules/*/database.config.ts",
+        // The hook API: workflows run hooks through it and extensions handle them, and upstream has
+        // neither yet — the first hook comes with draft orders. Its exports carry `@extensionApi`
+        // too, but a tag cannot answer for a whole file that nothing imports in production.
+        "src/core/workflows/hooks.ts!"
       ],
       // Factories, fixtures, vitest setup. Test code — production never reaches it by design.
       "project": ["**/*.{js,mjs,cjs,jsx,ts,tsx,mts,cts,css}!", "!tests/**!", "!src/**/__tests__/**!"]

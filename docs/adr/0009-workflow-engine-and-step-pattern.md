@@ -1,6 +1,6 @@
 # 9. Workflow Engine and Step Pattern
 
-**Status:** Accepted
+**Status:** Accepted. Amended by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): workflow hooks (`hookStep`, `runHook`) join the vocabulary, built on `ctx.step` with no change to the port.
 
 ## Context
 

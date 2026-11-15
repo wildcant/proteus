@@ -1,6 +1,7 @@
+import type { Messages } from '@lingui/core'
 import type { Msgid } from '@proteus/utils'
 import { z } from 'zod'
-import { messages as catalogMessages } from '../locales/en.js'
+import { messages as packageMessages } from '../locales/en.js'
 
 /**
  * Validation messages are translated where an issue is shown, never where a schema is built.
@@ -26,8 +27,8 @@ export function zodLocaleFor(language: string): ZodLocale {
 }
 
 // Our messages are exactly the catalog's ids: the English sentence is the msgid.
-function isCatalogMessage(message: string): message is Msgid {
-  return Object.hasOwn(catalogMessages, message)
+function isCatalogMessage(message: string, messages: Messages): message is Msgid {
+  return Object.hasOwn(messages, message)
 }
 
 function renderZodDefault(result: ReturnType<z.core.$ZodErrorMap>): string | undefined {
@@ -44,15 +45,20 @@ function valueAt(value: unknown, path: readonly PropertyKey[]): unknown {
  * `value` is what was parsed. Zod drops each issue's `input` unless the parse asked for
  * `reportInput`, and some defaults name it ("expected number, received string"), so pass it where
  * the caller has it — TanStack Form's Standard Schema path cannot ask for `reportInput`.
+ *
+ * `messages` is the catalog `translate` reads, and decides which messages are ours. The package's
+ * own by default; the backend passes its merged one, so an extension schema's message (from its
+ * own catalog) is translated too.
  */
 export function translateIssue(
   issue: z.core.$ZodIssue,
   translate: Translate,
   zodLocale: ZodLocale,
   value?: unknown,
+  messages: Messages = packageMessages,
 ): string {
   // Ours: a catalog id whose placeholders (`{maximum}`, `{minimum}`) come from the issue's own fields.
-  if (isCatalogMessage(issue.message)) return translate(issue.message, { ...issue })
+  if (isCatalogMessage(issue.message, messages)) return translate(issue.message, { ...issue })
   // Zod's own default: re-rendered from the issue in the request's language.
   const raw = { input: valueAt(value, issue.path), ...issue } as z.core.$ZodRawIssue
   return renderZodDefault(zodLocale.localeError(raw)) ?? issue.message

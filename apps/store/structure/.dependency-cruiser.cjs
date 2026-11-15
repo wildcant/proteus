@@ -15,10 +15,10 @@ module.exports = {
   forbidden: [
     {
       name: 'no-admin-schemas-in-store',
-      comment: 'Store app must not import admin schemas.',
+      comment: "Store app must not import admin schemas, core's or an extension's.",
       severity: 'error',
       from: { path: '^src/' },
-      to: { path: 'packages/http-schemas/src/admin/' },
+      to: { path: 'packages/http-schemas/src/(admin|extensions/[^/]+/admin)/' },
     },
     {
       name: 'no-shared-kit-in-store',

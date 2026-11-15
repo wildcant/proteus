@@ -5,6 +5,7 @@ message: This workflow does not pass its handler inline, so nothing about its bo
 note: 'Write the handler as an inline `async (ctx, input) => { … }` argument to `createWorkflow`. Every other rule in this directory reads the handler body out of the call; a handler passed by name is a body the purity rules cannot see, and they report nothing rather than reporting a problem. standards/rules/backend/workflows/__docs__/workflows.md'
 files:
   - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
 ignores:
   - "**/__tests__/**"
 rule:

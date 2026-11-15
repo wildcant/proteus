@@ -161,3 +161,12 @@ derived from the payload, and the subscriber's own name.
 
 A subscriber is why an event exists, and both are usually written in the same change. Adding the name
 and choosing where it is published from is [events](./events.md).
+
+## In an extension
+
+A fork's subscriber lives in `src/extensions/<ext>/subscribers/`, one per file, with the same shape and
+rules. Its name carries the dot prefix (`'pisos-dj.notify-quote'`), and `subscribers:generate` reads
+the folder beside `src/subscribers/`. It may handle a core event or one of its extension's own. For
+the extension's own, the type argument and `event` are the event value, not a string, as in
+[events](./events.md#in-an-extension). The fixture's
+`tests/extension-fixture/fixture/subscribers/record-note-created.ts` is a worked example.

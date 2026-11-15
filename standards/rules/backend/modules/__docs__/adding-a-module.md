@@ -317,6 +317,32 @@ migration is picked up for free; a local dev database needs `pnpm --filter backe
 afterwards, since the migration it already applied has changed underneath it. Revisit this once there
 is a real deployment to migrate.
 
+## In an extension
+
+A fork's module lives at `src/extensions/<ext>/modules/<name>/`, in the same layout and with the
+same models, repositories and service (steps 3 to 6, and 10). Four steps change, because a fork
+never edits the closed lists core's modules go in.
+
+- **Step 1: the key goes in the extension's `keys.ts`, not in `Modules`.** The key carries the
+  service type, so it also replaces the contract entry core's modules need:
+
+  ```ts
+  export const PisosDjModules = { SHIPPING: defineModuleKey<IPisosDjShippingService>('pisos-dj.shipping') }
+  ```
+
+- **Step 2: the types go in the extension's `types/`, not in `src/core/types/`.**
+- **Step 7: `Module(PisosDjModules.SHIPPING, { service, models, repositories })`.** No `features`:
+  extension permissions do not exist yet.
+- **Step 8: there is no bootstrap edit.** `pnpm --filter backend run extensions:generate` adds the
+  module to the extension registry, and the container bootstraps it after core's.
+
+Every database name carries the snake prefix (`pisos_dj_shipping_rates`, and indexes and constraints
+named explicitly). The migrations table is `migrations_pisos_dj_shipping` (step 9), and paths in
+`database.config.ts` point into the extension. A table stores a core row's id as plain text and
+holds no foreign key to it. The layout, prefixes and the full checklist are in
+[extensions](../../extensions/__docs__/extensions.md#a-module). The fixture's
+`tests/extension-fixture/fixture/modules/notes/` is a worked example.
+
 ## Enforcement
 
 No rule is held by this document. The two that fail while you are following these steps — step 4's

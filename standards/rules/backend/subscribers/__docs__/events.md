@@ -104,3 +104,34 @@ fails visibly if it ever stops being true; everything else here is a convention.
 
 An event exists because something handles it. Writing that handler — and the idempotency it owes the
 weaker transport — is [subscribers](./subscribers.md).
+
+## In an extension
+
+An extension never edits `EventPayloads`. It declares its events as values in its own `events.ts`,
+each carrying its payload type and its deduplication key:
+
+```ts
+// src/extensions/pisos-dj/events.ts
+export const PisosDjEvents = {
+  QUOTE_REQUESTED: defineEvent<{ id: string }>({ name: 'pisos-dj.quote_requested' }),
+  // No `id`, or more than once per resource: say how it is keyed.
+  RATES_SYNCED: defineEvent<{ city: string; syncedAt: string }>({
+    name: 'pisos-dj.rates_synced',
+    key: (data) => `${data.city}:${data.syncedAt}`,
+  }),
+}
+```
+
+```ts
+// the workflow's final step
+await container.resolve(ContainerRegistrationKeys.EVENT_BUS).emit(PisosDjEvents.QUOTE_REQUESTED, { id })
+```
+
+The rules above still hold: the payload carries `id` unless `key` says otherwise, the event exists
+because a subscriber wants it, and it is published from a workflow's final step. The name carries
+the dot prefix (`pisos-dj.`), and `extensions:generate` fails on an unprefixed name or one core
+already has. A subscriber names the value, not a string:
+`SubscriberConfig<typeof PisosDjEvents.QUOTE_REQUESTED>` with `event: PisosDjEvents.QUOTE_REQUESTED`.
+It goes in the extension's `subscribers/`, named `'pisos-dj.<name>'`, and `subscribers:generate`
+reads it there. An extension's subscriber may handle a core event too. The rest is in
+[extensions](../../extensions/__docs__/extensions.md#an-event).

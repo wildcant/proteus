@@ -15,14 +15,28 @@
  * The artifact is committed, so every environment runs the identical file, and `--check` fails the
  * verify gate when it drifts from the source tree.
  *
+ * It reads core's `src/subscribers/` and each extension's `subscribers/` folder
+ * (`runtime-sources.ts`), and an extension's subscriber names must start with its runtime prefix
+ * (`<ext>.`).
+ *
  * Parsing is `ts-source.ts`, shared with the workflow tooling. What is here is what a *subscriber*
  * file means: one `export const config`, carrying a name the generator can read without running it.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 import * as ts from 'typescript'
-import { collect, parse } from './ts-source.js'
+import {
+  BACKEND,
+  byOwnerThenModule,
+  collectRuntimeSources,
+  isEntryPoint,
+  moduleSpecifier,
+  type Problem,
+  repoRootOf,
+  unprefixedName,
+} from './runtime-sources.js'
+import { parse } from './ts-source.js'
 
 const RED = '\x1b[0;31m'
 const GREEN = '\x1b[0;32m'
@@ -40,15 +54,13 @@ type Discovered = {
   module: string
   /** `file:line`, so a rejection prints a clickable location. */
   location: string
+  /** The extension it belongs to; `undefined` for core. */
+  extension: string | undefined
 }
 
-type Problem = { location: string; message: string; remedy: string }
-
-/** Repo root, because `collect` yields repo-relative paths and the module specifiers derive from them. */
-const root = fileURLToPath(new URL('../../../', import.meta.url))
-const SUBSCRIBERS_DIR = `${root}apps/backend/src/subscribers`
-const OUTPUT = `${root}apps/backend/src/subscribers/registry.gen.ts`
-const OUTPUT_PATH = 'apps/backend/src/subscribers/registry.gen.ts'
+export function outputOf(backend: string): string {
+  return join(backend, 'src/subscribers/registry.gen.ts')
+}
 
 /** The `export const config = { … }` statement, or `undefined` if the file has no such export. */
 function exportedConfig(source: ts.SourceFile): ts.ObjectLiteralExpression | undefined {
@@ -85,12 +97,14 @@ function aliasOf(name: string): string {
   return [first, ...rest.map((word) => word[0]?.toUpperCase() + word.slice(1))].join('')
 }
 
-function discover(): { subscribers: Discovered[]; problems: Problem[] } {
+function discover(backend: string): { subscribers: Discovered[]; problems: Problem[] } {
   const subscribers: Discovered[] = []
   const problems: Problem[] = []
+  const output = outputOf(backend)
+  const outputPath = relative(repoRootOf(backend), output)
 
-  for (const file of collect(SUBSCRIBERS_DIR, root)) {
-    if (file.path === OUTPUT_PATH) continue
+  for (const file of collectRuntimeSources(backend, 'subscribers')) {
+    if (file.path === outputPath) continue
 
     const source = parse(file)
     const config = exportedConfig(source)
@@ -104,7 +118,7 @@ function discover(): { subscribers: Discovered[]; problems: Problem[] } {
         message: 'no `export const config` object',
         remedy:
           'export the subscriber as `export const config: SubscriberConfig<…> = { name, event, handler }`, ' +
-          'or move this file out of src/subscribers/',
+          'or move this file out of the subscribers folder',
       })
       continue
     }
@@ -121,11 +135,11 @@ function discover(): { subscribers: Discovered[]; problems: Problem[] } {
       continue
     }
 
-    const module = file.path.replace('apps/backend/src/subscribers/', './').replace(/\.ts$/, '.js')
-    subscribers.push({ alias: aliasOf(name), name, module, location })
+    const module = moduleSpecifier(backend, output, file.path)
+    subscribers.push({ alias: aliasOf(name), name, module, location, extension: file.extension })
   }
 
-  return { subscribers: subscribers.sort((a, b) => a.module.localeCompare(b.module)), problems }
+  return { subscribers: subscribers.sort(byOwnerThenModule), problems }
 }
 
 /**
@@ -207,50 +221,63 @@ function report(problems: Problem[]): void {
   }
 }
 
-const checking = process.argv.includes('--check')
-const { subscribers, problems } = discover()
-const allProblems = [...problems, ...collisions(subscribers)]
-
-if (allProblems.length > 0) {
-  report(allProblems)
-  process.exit(1)
+/** The registry `backend`'s sources produce, or what is wrong with them. Exported for the tests. */
+export function generateSubscriberRegistry(backend: string): { rendered: string; count: number; problems: Problem[] } {
+  const { subscribers, problems } = discover(backend)
+  const prefixes = subscribers.flatMap((entry) => unprefixedName('subscriber', entry) ?? [])
+  return {
+    rendered: render(subscribers),
+    count: subscribers.length,
+    problems: [...problems, ...prefixes, ...collisions(subscribers)],
+  }
 }
 
 /** Absent on the first run, and an empty string then differs from any render, which is the right answer. */
-function existingOutput(): string {
+function existingOutput(output: string): string {
   try {
-    return readFileSync(OUTPUT, 'utf8')
+    return readFileSync(output, 'utf8')
   } catch {
     return ''
   }
 }
 
-const rendered = render(subscribers)
-const existing = existingOutput()
+function main(): void {
+  const checking = process.argv.includes('--check')
+  const output = outputOf(BACKEND)
+  const { rendered, count, problems } = generateSubscriberRegistry(BACKEND)
 
-if (checking) {
-  if (existing !== rendered) {
-    heading('subscriber-registry')
-    console.info(`  ${RED}✖${RESET} src/subscribers/registry.gen.ts is out of date with src/subscribers/.`)
-    console.info(`    ${DIM}${subscribers.length} subscribers found in the source tree.${RESET}`)
-    console.info(`    ${YELLOW}→${RESET} run \`pnpm --filter backend run subscribers:generate\` and commit the result`)
-    console.info('')
+  if (problems.length > 0) {
+    report(problems)
     process.exit(1)
   }
-  console.info(
-    `${GREEN}✔${RESET} subscriber-registry — registry.gen.ts matches src/subscribers/. ${DIM}${subscribers.length} subscribers.${RESET}`,
-  )
-} else {
+
+  const existing = existingOutput(output)
+
+  if (checking) {
+    if (existing !== rendered) {
+      heading('subscriber-registry')
+      console.info(`  ${RED}✖${RESET} src/subscribers/registry.gen.ts is out of date with the subscriber sources.`)
+      console.info(`    ${DIM}${count} subscribers found in the source tree.${RESET}`)
+      console.info(
+        `    ${YELLOW}→${RESET} run \`pnpm --filter backend run subscribers:generate\` and commit the result`,
+      )
+      console.info('')
+      process.exit(1)
+    }
+    console.info(
+      `${GREEN}✔${RESET} subscriber-registry — registry.gen.ts matches the subscriber sources. ${DIM}${count} subscribers.${RESET}`,
+    )
+    return
+  }
+
   // Only write on a real change: an unconditional write bumps the mtime and re-triggers every watcher
   // pointed at this file, which on a dev worker means a second restart for nothing.
   if (existing === rendered) {
-    console.info(
-      `${GREEN}✔${RESET} subscriber-registry — already current. ${DIM}${subscribers.length} subscribers.${RESET}`,
-    )
-  } else {
-    writeFileSync(OUTPUT, rendered)
-    console.info(
-      `${GREEN}✔${RESET} subscriber-registry — wrote registry.gen.ts. ${DIM}${subscribers.length} subscribers.${RESET}`,
-    )
+    console.info(`${GREEN}✔${RESET} subscriber-registry — already current. ${DIM}${count} subscribers.${RESET}`)
+    return
   }
+  writeFileSync(output, rendered)
+  console.info(`${GREEN}✔${RESET} subscriber-registry — wrote registry.gen.ts. ${DIM}${count} subscribers.${RESET}`)
 }
+
+if (isEntryPoint(import.meta.url)) main()

@@ -1,0 +1,25 @@
+id: omits-hook-errors
+language: typescript
+severity: error
+message: This runs $HOOK but never spreads `...$HOOK.throws`, so the errors its handler may raise reach the client undocumented.
+note: 'Spread the hook into the `throws` of the workflow or route that runs it — `throws: [...orderChargesHook.throws]`. A handler error the hook does not declare is reported as an unexpected-state error, so the list is the whole contract a handler gets. standards/rules/backend/workflows/__docs__/hooks.md'
+files:
+  - "**/src/api/**/route.ts"
+  - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/api/**/route.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
+ignores:
+  - "**/__tests__/**"
+rule:
+  any:
+    - pattern: hookStep($CTX, $HOOK, $$$)
+    - pattern: runHook($CONTAINER, $HOOK, $$$)
+  not:
+    inside:
+      kind: program
+      stopBy: end
+      has:
+        stopBy: end
+        pattern:
+          context: "const t = [...$HOOK.throws]"
+          selector: spread_element

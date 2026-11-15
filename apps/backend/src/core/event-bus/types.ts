@@ -1,8 +1,8 @@
 import type { AppContainer } from '../types/container.js'
-import type { Event, EventName } from './events.js'
+import { type Event, type EventRef, eventNameOf } from './events.js'
 
 /** What a subscriber handler is handed — the event, and the same container a route handler uses. */
-export type SubscriberArgs<TEvent extends EventName> = {
+export type SubscriberArgs<TEvent extends EventRef> = {
   event: Event<TEvent>
   container: AppContainer
 }
@@ -16,7 +16,7 @@ export type SubscriberArgs<TEvent extends EventName> = {
  * widen to every event in the map, and the handler would stop type-checking against the payloads it
  * actually receives instead of failing to compile. Omitting it is an error you get told about.
  */
-export type SubscriberConfig<TEvent extends EventName> = {
+export type SubscriberConfig<TEvent extends EventRef> = {
   /**
    * The subscriber's identity, and the subscriber half of the dispatch key.
    *
@@ -32,8 +32,14 @@ export type SubscriberConfig<TEvent extends EventName> = {
 /** One subscriber, with its type argument erased — what a registry can hold and an adapter can call. */
 export type SubscriberDefinition = {
   name: string
-  events: readonly EventName[]
-  handler: (args: SubscriberArgs<EventName>) => Promise<void>
+  events: readonly string[]
+  /**
+   * The resource key of each extension event this subscriber names, by event name. A delivery read
+   * back off a transport carries only the name, so this is how its identity is derived the way the
+   * event declared it. Core events are keyed by `EVENT_KEYS` and have no entry.
+   */
+  keys?: Readonly<Record<string, (data: unknown) => string>>
+  handler: (args: SubscriberArgs<EventRef>) => Promise<void>
 }
 
 /**
@@ -44,10 +50,22 @@ export type SubscriberDefinition = {
  * construction and unprovable to the compiler: `config.handler` accepts exactly the events
  * `config.event` names, and the adapter only ever calls it with one of those.
  */
-export function defineSubscriber<TEvent extends EventName>(config: SubscriberConfig<TEvent>): SubscriberDefinition {
+export function defineSubscriber<TEvent extends EventRef>(config: SubscriberConfig<TEvent>): SubscriberDefinition {
+  const events: readonly EventRef[] = isEventList(config.event) ? config.event : [config.event]
+  const keys = Object.fromEntries(
+    events.flatMap((event) =>
+      typeof event === 'string' ? [] : [[event.name, (data: unknown) => event.key(data)] as const],
+    ),
+  )
+
   return {
     name: config.name,
-    events: typeof config.event === 'string' ? [config.event] : [...config.event],
+    events: events.map(eventNameOf),
+    ...(Object.keys(keys).length > 0 ? { keys } : {}),
     handler: config.handler as SubscriberDefinition['handler'],
   }
+}
+
+function isEventList(event: EventRef | readonly EventRef[]): event is readonly EventRef[] {
+  return Array.isArray(event)
 }

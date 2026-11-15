@@ -16,7 +16,8 @@
     "./auth": "./src/auth/index.ts",
     "./store": "./src/store/index.ts",
     "./i18n": "./src/i18n.ts",
-    "./locales/*": "./locales/*.ts"
+    "./locales/*": "./locales/*.ts",
+    "./extensions/*": "./src/extensions/*.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "catalog:",

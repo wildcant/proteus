@@ -1,4 +1,4 @@
-import { buildEvent, type Event } from '../../core/event-bus/events.js'
+import { buildDelivery, type Event, eventNameOf } from '../../core/event-bus/events.js'
 import type { EventBus } from '../../core/event-bus/ports.js'
 import type { AppContainer } from '../../core/types/container.js'
 import type { Logger } from '../../core/types/logger.js'
@@ -37,17 +37,19 @@ export function createInlineEventBus(deps: {
   const { registry, container, logger } = deps
 
   return {
-    async emit(name, data) {
+    async emit(declared, data) {
+      const name = eventNameOf(declared)
       await Promise.all(
         registry.forEvent(name).map(async (subscriber) => {
-          // Caught, not left to escape. `buildEvent` runs a key extractor from `EVENT_KEYS`, which
+          // Caught, not left to escape. `buildDelivery` runs a key extractor — `EVENT_KEYS`, or an
+          // extension event's `key` — which
           // is ordinary code that can throw — and a throw here would reject `emit`, which the port
           // forbids for exactly the reason a subscriber failure is caught below. No extractor can
           // throw today; leaving it uncaught means the first one that can is discovered inside a
           // compensated checkout.
           let event: Event
           try {
-            event = buildEvent(name, data, subscriber.name)
+            event = buildDelivery(name, data, subscriber)
           } catch (error) {
             logger.error(`[event-bus] Could not build the delivery of "${name}" to "${subscriber.name}"`)
             logger.error(error instanceof Error ? error : String(error))

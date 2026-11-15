@@ -1,9 +1,12 @@
 import { noopLogger } from '@core/logger/noop-logger.js'
 import type { Msgid } from '@proteus/utils'
+import { messages as fixtureEn } from '@tests/extension-fixture/fixture/locales/en.js'
+import { messages as fixtureEs } from '@tests/extension-fixture/fixture/locales/es.js'
+import { FixtureCreateNoteBody } from '@tests/extension-fixture/fixture/schemas/notes.js'
 import { noopTranslator } from '@tests/setup/noop-translator.js'
 import { describe, expect, it, vi } from 'vitest'
 import { createDefaultLanguage } from '../default-language.js'
-import { createLinguiTranslator } from '../lingui-translator.js'
+import { createLinguiTranslator, mergeCatalogs } from '../lingui-translator.js'
 
 // Cast, not `i18n.t()`: the extractor scans tests too, and these ids belong to the catalogs already.
 const tooLong = 'Use {maximum} characters or fewer' as Msgid
@@ -68,6 +71,41 @@ describe('createLinguiTranslator', () => {
       'Ocurrió un error interno',
       'An internal error occurred',
     ])
+  })
+})
+
+describe('extension catalogs', () => {
+  // The fixture extension's messages, from its own catalog (tests/extension-fixture/fixture/locales).
+  const notFound = 'Fixture note "{id}" was not found' as Msgid
+  const fixture = { extension: 'fixture', messages: { en: fixtureEn, es: fixtureEs } }
+
+  it("translates an extension's message beside core's", async () => {
+    const translator = await createLinguiTranslator('es-CO', async () => 'en', mergeCatalogs([fixture]))
+
+    expect(translator.translate(notFound, { id: 'fixnote_1' })).toBe('No se encontró la nota de prueba "fixnote_1"')
+    expect(translator.translate(internal)).toBe('Ocurrió un error interno')
+  })
+
+  it("translates a validation issue from an extension schema's message", async () => {
+    const result = FixtureCreateNoteBody.safeParse({ title: 'ab' })
+    if (result.success) throw new Error('expected the parse to fail')
+    const translator = await createLinguiTranslator('es-CO', async () => 'en', mergeCatalogs([fixture]))
+
+    expect(result.error.issues.map((issue) => translator.translateIssue(issue))).toEqual([
+      'Una nota de prueba necesita un título de al menos tres caracteres',
+    ])
+  })
+
+  it('merges after core, in extension-name order whatever the registry order', async () => {
+    const said = (word: string) => ({ es: { [internal]: [word] } })
+    const catalogs = mergeCatalogs([
+      { extension: 'zeta', messages: said('zeta') },
+      { extension: 'alpha', messages: said('alpha') },
+    ])
+
+    expect((await createLinguiTranslator('es-CO', async () => 'en', catalogs)).translate(internal)).toBe('zeta')
+    // Core's languages only: an extension catalog in a language core lacks gives a request no language.
+    expect(Object.keys(mergeCatalogs([{ extension: 'alpha', messages: { fr: {} } }]))).toEqual(['en', 'es'])
   })
 })
 

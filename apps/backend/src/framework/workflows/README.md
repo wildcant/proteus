@@ -306,6 +306,40 @@ reach `@temporalio/*`, `src/framework/temporal/` or `src/framework/workflows/tem
 **A workerd deployment therefore has no durable execution.** That is deliberate and recorded as an
 accepted limitation in ADR-0022, along with the table of what each runtime does and does not get.
 
+## Hooks
+
+A hook (`src/core/workflows/hooks.ts`) is a named point in a core workflow where an extension's
+handler replaces core's computation, the hook's fallback. It is built on `ctx.step` and adds no
+member to `WorkflowContext` or `WorkflowEngine`, so neither adapter knows it exists. What follows is
+why it behaves as it does; adding one is
+[hooks](../../../../../standards/rules/backend/workflows/__docs__/hooks.md).
+
+- **Always one step, `hook:<name>`.** The handler is looked up *inside* the step action, from the
+  container the step is handed — never in the handler glue. So the step sequence, and the shape
+  fingerprint, are the same with a handler, without one, and across a deploy that adds or removes
+  one between two steps of an execution in flight. A replay hands back the recorded output; it does
+  not re-resolve the handler.
+- **The output records its producer.** The step stores `{ handledBy, value }`, `handledBy` being
+  the extension whose handler ran or `null` for the fallback; `hookStep` returns `value`. Compensation
+  calls the registered handler's `compensate` only when that handler's extension is `handledBy`, so a
+  handler replaced or removed before the rollback never undoes work it did not do, and the fallback
+  has nothing to undo.
+- **Errors.** A handler error whose `AppError` type is on the hook's `throws` is rethrown as a
+  `WorkflowTerminalError`, so it is never retried and keeps its type through the Temporal failure
+  details. Anything else becomes an `UNEXPECTED_STATE` `AppError` naming the hook and the extension.
+- **Outside a workflow**, `runHook(container, hook, input)` resolves the same way and runs only the
+  handler's `run`. Nothing compensates it.
+- **Handlers live on the container, the engine holds one global container.** `registerHookHandlers`
+  puts the map on every container `bootstrapContainer` builds, but `.run()` uses whichever container
+  `setWorkflowEngine` saw last. A test that needs a different handler builds its container last with
+  `createTestContainer({ hookHandlers })`.
+- **The Temporal Worker is its own process.** It imported its handlers at start, so a changed handler
+  needs the Worker restarted; the API and the Worker deploy together, or one runs a handler the other
+  has not got.
+
+`src/framework/workflows/__tests__/hooks.test.ts` runs the hook journey on both engines; under
+`test:temporal` it is what proves a handler registered mid-execution leaves the replay intact.
+
 ## Testing
 
 Workflows are testable without a real database — mock the services and register them in a test container:

@@ -1,0 +1,23 @@
+id: omits-hook-errors
+snapshots:
+  ? |
+    export const GetThrows = [...shippingQuoteHook.throws] as const
+    export const GET = async (req) => runHook(req.scope, orderChargesHook, { cartId: req.params.id })
+  : labels:
+    - source: 'runHook(req.scope, orderChargesHook, { cartId: req.params.id })'
+      style: primary
+      start: 98
+      end: 161
+  ? |
+    export const createDraftOrderWorkflow = createWorkflow(
+      { name: 'create-draft-order', throws: [ErrorTypes.NOT_FOUND] },
+      async (ctx, input) => {
+        const charges = await hookStep(ctx, orderChargesHook, { cartId: input.cartId })
+        return charges
+      },
+    )
+  : labels:
+    - source: 'hookStep(ctx, orderChargesHook, { cartId: input.cartId })'
+      style: primary
+      start: 174
+      end: 231

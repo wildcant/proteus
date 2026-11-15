@@ -1,3 +1,4 @@
+import type { ModuleKey } from '../extensions/module-key.js'
 import type { PermissionKey } from '../types/access-control/common.js'
 import type { AppContainer, ModuleServiceContracts } from '../types/container.js'
 
@@ -49,11 +50,26 @@ export type ModuleDefinition = {
   features?: readonly FeatureDeclaration[]
 }
 
-/** Public members the class has and the module's contract in `core/types/` does not. */
-type MethodsMissingFromContract<Service extends Constructor, Key extends keyof ModuleServiceContracts> = Exclude<
+/** Public members the class has and the module's contract does not. */
+type MethodsMissingFromContract<Service extends Constructor, Contract> = Exclude<
   keyof InstanceType<Service>,
-  keyof ModuleServiceContracts[Key]
+  keyof Contract
 >
+
+/** The contract a key names: core's entry in `ModuleServiceContracts`, or the type a module key carries. */
+type ContractOf<Key> = Key extends keyof ModuleServiceContracts
+  ? ModuleServiceContracts[Key]
+  : Key extends ModuleKey<infer TService>
+    ? TService
+    : never
+
+type ModuleConfig<Service extends Constructor> = {
+  service: Service
+  repositories: Record<string, Constructor>
+  models: Record<string, unknown>
+  loaders?: LoaderFunction[]
+  postLoaders?: LoaderFunction[]
+}
 
 type ContractGap<TMethods> = { 'these public methods are missing from the module contract': TMethods }
 
@@ -70,18 +86,26 @@ export function Module<
   const Features extends readonly FeatureDeclaration<Key>[] = [],
 >(
   key: Key,
-  config: {
-    service: Service
-    repositories: Record<string, Constructor>
-    models: Record<string, unknown>
-    loaders?: LoaderFunction[]
-    postLoaders?: LoaderFunction[]
-    features?: Features & NoDuplicateFeatureIds<Features>
-  },
-  ...contractGap: MethodsMissingFromContract<Service, Key> extends never
+  config: ModuleConfig<Service> & { features?: Features & NoDuplicateFeatureIds<Features> },
+  ...contractGap: MethodsMissingFromContract<Service, ContractOf<Key>> extends never
     ? []
-    : [error: ContractGap<MethodsMissingFromContract<Service, Key>>]
+    : [error: ContractGap<MethodsMissingFromContract<Service, ContractOf<Key>>>]
+): ModuleDefinition
+/**
+ * An extension module, keyed by its `defineModuleKey` value and checked against the service type the
+ * key carries. It declares no features: permission keys are a closed core list, and extension
+ * permissions do not exist yet.
+ */
+export function Module<const Key extends ModuleKey, const Service extends Constructor>(
+  key: Key,
+  config: ModuleConfig<Service> & { features?: never },
+  ...contractGap: MethodsMissingFromContract<Service, ContractOf<Key>> extends never
+    ? []
+    : [error: ContractGap<MethodsMissingFromContract<Service, ContractOf<Key>>>]
+): ModuleDefinition
+export function Module(
+  key: string,
+  config: ModuleConfig<Constructor> & { features?: readonly FeatureDeclaration[] },
 ): ModuleDefinition {
-  void contractGap
   return { key, ...config }
 }

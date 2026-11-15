@@ -34,4 +34,4 @@ export default {
 }
 ```
 
-Cron patterns must also be registered in `wrangler.jsonc` under `triggers.crons` for Cloudflare to dispatch them.
+Cloudflare dispatches only the patterns listed in `wrangler.jsonc` under `triggers.crons`. That list is generated: `pnpm --filter backend run jobs:generate` writes one entry per distinct schedule of the enabled jobs (core's and the extensions'), and `check:workerd-crons` fails `pnpm run verify` when it drifts. See `scripts/generate-workerd-crons.ts`.

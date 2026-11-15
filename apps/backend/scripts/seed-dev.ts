@@ -21,12 +21,14 @@ import type { IStoreModuleService } from '../src/core/types/store/service.js'
 import type { IUserModuleService } from '../src/core/types/user/service.js'
 import { ContainerRegistrationKeys } from '../src/core/utils/container.js'
 import { Modules } from '../src/core/utils/modules-definition.js'
+import { EXTENSION_SEEDS } from '../src/extensions/seeds.gen.js'
 import { createWorkerContainer } from '../src/framework/runtime/container.worker.js'
 import type { AccessControlModuleService } from '../src/modules/access-control/services/access-control-module-service.js'
 import { config as alertLowStock } from '../src/subscribers/alert-low-stock.js'
 import { SOURCE_LOCALE } from '../src/workflows/admin/utils/admin-locales.js'
 import { importProductWorkflow } from '../src/workflows/product/import-product.js'
 import { seedAdmin } from './seed/admin.js'
+import { runExtensionSeeds } from './seed/extensions.js'
 import { seedMarkets } from './seed/markets.js'
 import { SEED_IMAGE_DIR, seedImageFile } from './seed/seed-images.js'
 
@@ -583,6 +585,10 @@ if (seedNotifications && (await notificationService.listNotifications({ channel:
 } else if (seedNotifications) {
   console.info('Skipped notifications (already exist)')
 }
+
+// --- Extensions ---
+// Last, so a step can read anything core seeded. The e2e database setup does not run them.
+await runExtensionSeeds(EXTENSION_SEEDS, { container, logger: container.resolve(ContainerRegistrationKeys.LOGGER) })
 
 console.info('Done!')
 process.exit(0)

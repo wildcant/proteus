@@ -15,9 +15,14 @@ import qs from 'qs'
 import request, { type Agent } from 'supertest'
 import type { ZodType } from 'zod'
 import type { AppContainer } from '../../src/core/types/container.js'
+import { mergeCatalogs } from '../../src/framework/i18n/lingui-translator.js'
 import { createExpressApp } from '../../src/framework/runtime/express/app.js'
 import type { Database } from '../../src/schema.type.js'
 import { type CreateContainerOptions, createTestContainer } from './create-container.js'
+import { testExtensions } from './test-extensions.js'
+
+/** Core's catalogs with the test extensions' merged after them, as the container carries their modules. */
+const testCatalogs = mergeCatalogs(testExtensions.catalogs)
 
 export type CreateApiOptions = CreateContainerOptions & {
   /** Definitions to mount. Sorted with the same RoutesSorter the real server uses. */
@@ -135,7 +140,7 @@ export async function createApi(
         matcher: definition.matcher,
         handler: applyMiddleware(definition),
       }))
-      server = await listen(createExpressApp({ routes, container, logger, corsOrigins: [] }))
+      server = await listen(createExpressApp({ routes, container, logger, corsOrigins: [], catalogs: testCatalogs }))
     }
   } catch (error) {
     // Otherwise a container — and its twelve modules — leaks for every failed setup.

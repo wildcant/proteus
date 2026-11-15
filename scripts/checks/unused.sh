@@ -23,6 +23,11 @@
 # harness does". Third answer to a pass 2 finding, after deleting the code and after dropping the
 # `export`.
 #
+# `-extensionApi` skips exports tagged `@extensionApi` — the extension and hook API (`defineExtension`,
+# `defineModuleKey`, `defineEvent`, `defineHook`, …), which only an extension calls. Upstream ships no
+# extension, so production has no caller until a fork adds one; the fixture extension calls it, which
+# is what pass 1 counts. Drop the tag from an export once core itself calls it.
+#
 # Run by hand as `pnpm -w run check:unused`. The `-w` matters: knip roots the project at the current
 # directory, so from a workspace it reads neither knip.jsonc nor pnpm-workspace.yaml and reports a
 # tree it was never configured for.
@@ -34,6 +39,6 @@ cd "$(dirname "$0")/../.."
 code=0
 
 pnpm exec knip --no-progress --include nsExports,nsTypes || code=1
-pnpm exec knip --no-progress --production --tags=-testSeam --include nsExports,nsTypes || code=1
+pnpm exec knip --no-progress --production --tags=-testSeam,-extensionApi --include nsExports,nsTypes || code=1
 
 exit $code

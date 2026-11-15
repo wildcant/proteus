@@ -141,7 +141,14 @@ job_generated() {
   # since that list is also the desired state reconciliation deletes schedules against. See
   # scripts/generate-job-registry.ts.
   pnpm --silent --filter backend run check:job-registry || code=1
+  # workerd's cron triggers in wrangler.jsonc, written in place from the same job list. A schedule
+  # missing there is a job that never runs on workerd. See scripts/generate-workerd-crons.ts.
+  pnpm --silent --filter backend run check:workerd-crons || code=1
   pnpm --silent --filter backend run check:feature-registry || code=1
+  # The extensions' registries — the runtime one the composition roots read and the dev seed's — and
+  # the fixture extension's test registry, generated the same way. See
+  # scripts/generate-extension-registry.ts.
+  pnpm --silent --filter backend run check:extension-registry || code=1
   # The module half of the drizzle schema is one `export *` per model file, so a new model reaches
   # drizzle only once it is regenerated. See scripts/generate-schema.ts.
   pnpm --silent --filter backend run check:schema-registry || code=1
@@ -243,8 +250,10 @@ job_unused() { pnpm --silent run check:unused; }
 # The API tests plus the unit tests worth gating — the option-combination matrix, the Stripe
 # adapter's currency and status tables, which decide what a shopper is charged, the platform
 # adapters, which decide whether a webhook signature can be verified at all, and the event bus,
-# whose pin probe is what says the suite published through the adapter it claims to. The full
-# suite is ~96s and would dominate the gate. One vitest process, not two: every backend test file
+# whose pin probe is what says the suite published through the adapter it claims to. Also every
+# extension's tests (src/extensions/), the fixture extension's journey, which is what covers the
+# extension mechanism upstream, and the structure rules' tests (apps/backend/structure/__tests__/),
+# which break each extension rule once. The full suite is ~96s and would dominate the gate. One vitest process, not two: every backend test file
 # pulls in db-setup, and the suite is not safe to run twice concurrently against the shared test
 # database.
 #

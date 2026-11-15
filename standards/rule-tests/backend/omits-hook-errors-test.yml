@@ -1,0 +1,29 @@
+id: omits-hook-errors
+valid:
+  # A workflow running the hook step spreads the hook into its own `throws`.
+  - |
+    export const createDraftOrderWorkflow = createWorkflow(
+      { name: 'create-draft-order', throws: [ErrorTypes.NOT_FOUND, ...orderChargesHook.throws] },
+      async (ctx, input) => {
+        const charges = await hookStep(ctx, orderChargesHook, { cartId: input.cartId })
+        return charges
+      },
+    )
+  # A route previewing the hook outside a workflow spreads it into the route's own list.
+  - |
+    export const GetThrows = [...orderChargesHook.throws] as const
+    export const GET = async (req) => runHook(req.scope, orderChargesHook, { cartId: req.params.id })
+invalid:
+  # The hook step's errors are missing from the workflow's contract.
+  - |
+    export const createDraftOrderWorkflow = createWorkflow(
+      { name: 'create-draft-order', throws: [ErrorTypes.NOT_FOUND] },
+      async (ctx, input) => {
+        const charges = await hookStep(ctx, orderChargesHook, { cartId: input.cartId })
+        return charges
+      },
+    )
+  # Spreading another hook is not spreading this one.
+  - |
+    export const GetThrows = [...shippingQuoteHook.throws] as const
+    export const GET = async (req) => runHook(req.scope, orderChargesHook, { cartId: req.params.id })

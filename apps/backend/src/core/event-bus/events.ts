@@ -1,3 +1,4 @@
+import type { ExtensionEvent } from '../extensions/define-event.js'
 import type { PaymentActions } from '../types/payment/common.js'
 
 /**
@@ -22,7 +23,7 @@ export type PaymentCapturedAction = Extract<PaymentActions, 'authorized' | 'capt
  * nothing consumes is a catalogue nobody can delete from, because no one can tell which entries are
  * live. `order.placed` and `payment.captured` arrive with the subscribers that read them.
  */
-export type EventPayloads = {
+type EventPayloads = {
   /** The bus's own round trip, the way `pingWorkflow` is the workflow engine's. Nothing else emits it. */
   'bus.probe': { id: string }
   /** The same probe, for the event shape that legitimately fires more than once per resource. */
@@ -83,14 +84,28 @@ export type EventPayloads = {
 export type EventName = keyof EventPayloads
 
 /**
+ * What names an event at a call site: a core event's name, or an extension's event value. Extension
+ * events sit beside the closed map rather than in it, so a fork adds them without editing this file.
+ */
+export type EventRef = EventName | ExtensionEvent
+
+/** The payload an event carries, whichever of the two declared it. */
+export type EventPayload<R extends EventRef> = R extends EventName
+  ? EventPayloads[R]
+  : R extends ExtensionEvent<infer P>
+    ? P
+    : never
+
+/**
  * What a subscriber is handed. Distributive on purpose: `Event<'a' | 'b'>` is
  * `{name:'a', data:Pa} | {name:'b', data:Pb}`, not `{name:'a'|'b', data:Pa|Pb}`, so a handler that
- * switches on `event.name` narrows `event.data` with it.
+ * switches on `event.name` narrows `event.data` with it. An extension event's name is a plain
+ * string, so a handler on two of them narrows by comparing `event.name` to each event's `name`.
  */
-export type Event<N extends EventName = EventName> = N extends EventName
+export type Event<R extends EventRef = EventRef> = R extends EventRef
   ? {
-      name: N
-      data: EventPayloads[N]
+      name: R extends EventName ? R : string
+      data: EventPayload<R>
       /**
        * This delivery's identity — `${name}:${key}:${subscriber}`, derived by the bus. A subscriber
        * gets it because every subscriber has to be idempotent (the weaker of the two transport
@@ -99,6 +114,11 @@ export type Event<N extends EventName = EventName> = N extends EventName
       dispatchId: string
     }
   : never
+
+/** The name an event travels under. */
+export function eventNameOf(event: EventRef): string {
+  return typeof event === 'string' ? event : event.name
+}
 
 /**
  * How the resource half of the dispatch identity is read out of a payload, for the events where
@@ -138,10 +158,14 @@ const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
 /**
  * The resource key for one event. `data.id` unless the map overrides it — and `data.id` only
  * compiles because every payload above carries one, which is how that requirement is enforced.
+ *
+ * An extension event brings its own key with it (`defineEvent`), passed in as `key`; core's map is
+ * not consulted for a name it cannot hold.
  */
-function eventKey<N extends EventName>(name: N, data: EventPayloads[N]): string {
-  const custom = EVENT_KEYS[name]
-  return custom ? custom(data) : data.id
+function eventKey(name: string, data: unknown, key: ((data: unknown) => string) | undefined): string {
+  if (key) return key(data)
+  const custom = (EVENT_KEYS as Partial<Record<string, (data: unknown) => string>>)[name]
+  return custom ? custom(data) : (data as { id: string }).id
 }
 
 /**
@@ -155,18 +179,38 @@ function eventKey<N extends EventName>(name: N, data: EventPayloads[N]): string 
  * The subscriber name is part of it because dedup is per subscriber: two subscribers on
  * `order.placed` are two deliveries, and collapsing them would drop one.
  */
-function dispatchIdentity<N extends EventName>(name: N, data: EventPayloads[N], subscriber: string): string {
-  return `${name}:${eventKey(name, data)}:${subscriber}`
+function dispatchIdentity(
+  name: string,
+  data: unknown,
+  subscriber: string,
+  key: ((data: unknown) => string) | undefined,
+): string {
+  return `${name}:${eventKey(name, data, key)}:${subscriber}`
 }
 
 /**
- * The event object handed to one subscriber.
+ * The event object handed to one subscriber, for a core event or an extension one.
  *
- * The cast is the one place the generic `N` is widened back to the `Event` union. TypeScript cannot
+ * The cast is the one place the generic is widened back to the `Event` union. TypeScript cannot
  * prove `{ name: N; data: EventPayloads[N] }` is a member of a union it distributed over `N`, even
  * though every instantiation is; keeping the widening here means no adapter and no call site has to
  * repeat it.
  */
-export function buildEvent<N extends EventName>(name: N, data: EventPayloads[N], subscriber: string): Event {
-  return { name, data, dispatchId: dispatchIdentity(name, data, subscriber) } as Event
+export function buildEvent<R extends EventRef>(event: R, data: EventPayload<R>, subscriber: string): Event {
+  const name = eventNameOf(event)
+  const key = typeof event === 'string' ? undefined : (value: unknown) => event.key(value)
+  return { name, data, dispatchId: dispatchIdentity(name, data, subscriber, key) } as Event
+}
+
+/**
+ * The same, for a delivery read back by name — off a queue, or out of the registry — where the
+ * event's declaration arrives as the subscriber's `keys` rather than as a value.
+ */
+export function buildDelivery(
+  name: string,
+  data: unknown,
+  subscriber: { name: string; keys?: Readonly<Record<string, (data: unknown) => string>> },
+): Event {
+  const key = subscriber.keys?.[name]
+  return { name, data, dispatchId: dispatchIdentity(name, data, subscriber.name, key) } as Event
 }

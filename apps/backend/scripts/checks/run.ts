@@ -13,6 +13,8 @@
  */
 import { cascadeRelationshipIndex } from './cascade-relationship-index.js'
 import { destroyOnlyChildren } from './destroy-only-children.js'
+import { extensionDatabaseNames } from './extension-database-names.js'
+import { extensionForeignKeys } from './extension-foreign-keys.js'
 import { guardOutsideItsClosure } from './guard-outside-its-closure.js'
 import { modelReachesCascadeGraph } from './model-reaches-cascade-graph.js'
 import { collectModels } from './models.js'
@@ -25,6 +27,8 @@ const CHECKS: Check[] = [
   modelReachesCascadeGraph,
   destroyOnlyChildren,
   guardOutsideItsClosure,
+  extensionDatabaseNames,
+  extensionForeignKeys,
 ]
 
 const RED = '\x1b[0;31m'

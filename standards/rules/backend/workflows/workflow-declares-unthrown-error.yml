@@ -5,6 +5,7 @@ message: This workflow declares $TYPE but nothing in the file raises it — ever
 note: 'Remove it, or suppress with the reason written above when the throw belongs to a module service this workflow calls. standards/rules/backend/workflows/__docs__/workflows.md'
 files:
   - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
 ignores:
   - "**/__tests__/**"
 rule:

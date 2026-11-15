@@ -1,7 +1,7 @@
 import { i18n } from '@proteus/utils'
 import type { DbProvider } from '../../core/db/ports.js'
 import { AppError, ErrorTypes } from '../../core/errors/app-error.js'
-import { buildEvent, type EventName, type EventPayloads } from '../../core/event-bus/events.js'
+import { buildDelivery, eventNameOf } from '../../core/event-bus/events.js'
 import type { EventBus } from '../../core/event-bus/ports.js'
 import type { AppContainer } from '../../core/types/container.js'
 import type { Logger } from '../../core/types/logger.js'
@@ -43,7 +43,7 @@ const MAX_BATCH_BYTES = 256 * 1024
  * that wanted it would be redelivered whole, so a mail provider being down would re-run the
  * webhook processor next to it.
  *
- * `dispatchId` is deliberately absent: it is derived by `buildEvent` from these three fields and
+ * `dispatchId` is deliberately absent: it is derived by `buildDelivery` from these three fields and
  * from nothing else, so carrying it would be carrying a second copy of a value that can disagree
  * with the first. The consumer derives it the same way the in-process adapter does, through the one
  * function that is allowed to.
@@ -53,8 +53,8 @@ const MAX_BATCH_BYTES = 256 * 1024
  * property the consumer can rely on the compiler for.
  */
 export type QueuedEvent = {
-  name: EventName
-  data: EventPayloads[EventName]
+  name: string
+  data: unknown
   subscriber: string
 }
 
@@ -91,7 +91,8 @@ export function createCloudflareQueuesEventBus(deps: {
   const queue = requireQueueBinding(deps.queue)
 
   return {
-    async emit(name, data) {
+    async emit(declared, data) {
+      const name = eventNameOf(declared)
       const subscribers = registry.forEvent(name)
       // Nothing wanted it. Sending anyway would put a message on the queue that the consumer could
       // only fail to dispatch, and pay a retry cycle and a dead-letter entry to say so.
@@ -257,5 +258,5 @@ async function dispatch(body: QueuedEvent, deps: { registry: SubscriberRegistry;
     })
   }
 
-  await subscriber.handler({ event: buildEvent(body.name, body.data, subscriber.name), container })
+  await subscriber.handler({ event: buildDelivery(body.name, body.data, subscriber), container })
 }

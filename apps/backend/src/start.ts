@@ -4,6 +4,7 @@ import type { DbProvider } from './core/db/ports.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { env } from './env.js'
+import { extensionRegistry } from './extensions/registry.gen.js'
 import { createRegistry, documentInfo, generateDocument } from './framework/http/openapi/registry.js'
 import { closeWorkflowEngine, container } from './framework/runtime/container.node.js'
 import { createExpressApp } from './framework/runtime/express/app.js'
@@ -40,7 +41,7 @@ export async function start(options?: StartOptions): Promise<StartResult> {
 
   const adminRegistry = createRegistry()
   const storeRegistry = createRegistry()
-  const routes = prepareRoutes(logger, { admin: adminRegistry, store: storeRegistry })
+  const routes = prepareRoutes(logger, extensionRegistry, { admin: adminRegistry, store: storeRegistry })
 
   const expressApp = createExpressApp({
     routes,

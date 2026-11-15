@@ -5,6 +5,7 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { i18n } from '@proteus/utils'
 import { AppError, ErrorTypes } from './core/errors/app-error.js'
 import type { Logger } from './core/types/logger.js'
+import type { ExtensionRegistry } from './framework/extensions/types.js'
 import { registerOpenApiRoute } from './framework/http/openapi/register-route.js'
 import type { PreparedRoute } from './framework/http/ports.js'
 import { RoutesSorter } from './framework/http/routes-sorter.js'
@@ -66,6 +67,10 @@ const storeSharedAuthRoutes = new Set([
 
 // ---- Definitions by scope ----
 
+/**
+ * @testSeam Production reads core's routes through `routeDefinitions` below, extensions' added. The
+ * two exports are for the shipped-documents test, which pins core's public operations per document.
+ */
 export const adminDefinitions: RouteDefinition[] = [
   ...authDefinitions,
   ...adminAccessControlPermissionDefinitions,
@@ -99,6 +104,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminUserDefinitions,
 ]
 
+/** @testSeam See `adminDefinitions`. */
 export const storeDefinitions: RouteDefinition[] = [
   ...storeAuthDefinitions,
   ...authDefinitions.filter((d) => storeSharedAuthRoutes.has(d.matcher)),
@@ -116,8 +122,18 @@ export const storeDefinitions: RouteDefinition[] = [
   ...storeProductDefinitions,
 ]
 
-// All unique definitions for runtime registration (deduplicated since scoped arrays share auth routes)
-const allDefinitions = [...new Set([...adminDefinitions, ...storeDefinitions, ...hookDefinitions])]
+/**
+ * Core's routes with the extensions' added to the store and webhook arrays, so namespace auth,
+ * OpenAPI registration and sorting treat them exactly as core's. Extensions declare no admin routes:
+ * `extensions:generate` rejects them until extension permissions exist.
+ */
+export function routeDefinitions(extensions: ExtensionRegistry) {
+  const store = [...storeDefinitions, ...extensions.routes.store]
+  const hooks = [...hookDefinitions, ...extensions.routes.hooks]
+  // Deduplicated, since the scoped arrays share the auth routes.
+  const all = [...new Set([...adminDefinitions, ...store, ...hooks])]
+  return { admin: adminDefinitions, store, hooks, all }
+}
 
 // ---- Preparation ----
 
@@ -148,9 +164,12 @@ function validatePermissionDeclarations(definitions: RouteDefinition[]): void {
 
 export function prepareRoutes(
   logger: Logger,
+  extensions: ExtensionRegistry,
   registries?: { admin: OpenAPIRegistry; store: OpenAPIRegistry },
 ): PreparedRoute[] {
-  for (const definition of allDefinitions) {
+  const definitions = routeDefinitions(extensions)
+
+  for (const definition of definitions.all) {
     applyNamespaceAuth(definition)
   }
 
@@ -160,13 +179,13 @@ export function prepareRoutes(
     for (const definition of adminDefinitions) {
       registerOpenApiRoute(registries.admin, definition.matcher, definition)
     }
-    for (const definition of storeDefinitions) {
+    for (const definition of definitions.store) {
       registerOpenApiRoute(registries.store, definition.matcher, definition)
     }
   }
 
   logger.info('Registering routes.')
-  const sorted = new RoutesSorter(allDefinitions).sort()
+  const sorted = new RoutesSorter(definitions.all).sort()
   return sorted.map((definition) => {
     logger.debug(`  ${definition.method} ${definition.matcher}`)
     return {

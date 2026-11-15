@@ -12,6 +12,11 @@
  * lets the folder around it stay closed: `framework` may not name a workflow, the generated
  * registry inside it may. Their paths are in COMPOSITION_ROOTS below.
  *
+ * The `extension*` rows are the same layers inside an extension (src/extensions/<ext>/), each
+ * mirroring its core row: what core's layer may reach in core, the extension's may reach in core
+ * plus the extension's own vocabulary and types. Below them, the registries that list extension
+ * code are composition roots like the rest. See EXTENSION_LAYERS for the paths.
+ *
  * See docs/adr/0027-the-backend-layer-graph-is-default-deny.md for the reasoning, and
  * docs/adr/0026-core-is-known-framework-runs.md for what `core/` and `framework/` mean.
  */
@@ -23,23 +28,92 @@ const LAYER_GRAPH = {
   modules: ['core', 'providers'],
   subscribers: ['core', 'workflows'],
   'link-modules': ['core', 'modules'],
-  framework: ['core', 'workflowRegistry', 'subscriberRegistry'],
+  framework: ['core', 'i18n', 'workflowRegistry', 'subscriberRegistry'],
   api: ['core', 'framework', 'workflows'],
 
+  // The translator merges every extension's catalogs into core's, so it is the one part of
+  // framework/ that names the extension registry.
+  i18n: ['core', 'framework', 'extensionRegistry'],
+
+  // An extension's manifest, module keys, events and settings: its own vocabulary, beside core's.
+  extensionVocabulary: ['core', 'extensionTypes'],
+  // Its contracts (service interfaces, DTOs), the counterpart of core/types/.
+  extensionTypes: ['core'],
+  extensionSchemas: ['core'],
+  // Compiled message catalogs, which import nothing.
+  extensionLocales: [],
+  // No `providers`: an extension module bringing a provider is deferred.
+  extensionModules: ['core', 'extensionVocabulary', 'extensionTypes'],
+  extensionWorkflows: ['core', 'extensionVocabulary', 'extensionTypes'],
+  // A handler imports the hook it handles, which is defined beside the core workflow that runs it.
+  extensionHooks: ['core', 'workflows', 'extensionVocabulary', 'extensionTypes'],
+  extensionSubscribers: ['core', 'workflows', 'extensionWorkflows', 'extensionVocabulary', 'extensionTypes'],
+  extensionJobs: ['core', 'extensionVocabulary', 'extensionTypes'],
+  extensionApi: [
+    'core',
+    'framework',
+    'workflows',
+    'extensionWorkflows',
+    'extensionVocabulary',
+    'extensionTypes',
+    'extensionSchemas',
+  ],
+  extensionSeeds: ['core', 'extensionVocabulary', 'extensionTypes'],
+
   dbConfig: ['appSchema'],
-  appSchema: ['modules', 'link-modules'],
+  appSchema: ['modules', 'link-modules', 'extensionModules'],
   appConfig: ['core', 'framework'],
-  workflowRegistry: ['core', 'workflows'],
-  subscriberRegistry: ['core', 'subscribers'],
+  workflowRegistry: ['core', 'workflows', 'extensionWorkflows'],
+  subscriberList: ['core', 'subscribers', 'extensionSubscribers'],
+  subscriberRegistry: ['core', 'subscriberList'],
+  jobRegistry: ['core', 'jobs', 'extensionJobs'],
+  extensionRegistry: ['framework', 'extensionModules', 'extensionApi', 'extensionHooks', 'extensionLocales'],
+  // The fixture's test registry also lists its subscribers, for the test container's in-process bus.
+  fixtureRegistry: [
+    'core',
+    'framework',
+    'extensionModules',
+    'extensionApi',
+    'extensionHooks',
+    'extensionLocales',
+    'extensionSubscribers',
+  ],
+  // Imported by scripts/seed-dev.ts only; no row here lists it. See seed-registry-only-from-the-dev-seed.
+  extensionSeedRegistry: ['framework', 'extensionSeeds'],
   routes: ['core', 'framework', 'api'],
   container: ['core', 'framework', 'modules', 'link-modules', 'appConfig', 'subscriberRegistry'],
-  runtimeContainers: ['core', 'framework', 'container', 'appConfig', 'subscriberRegistry'],
+  runtimeContainers: ['core', 'framework', 'container', 'appConfig', 'subscriberRegistry', 'extensionRegistry'],
   entrypoints: '*',
 }
 
 /**
+ * One extension's folder: `src/extensions/<ext>/`, and the fixture extension the test suite runs,
+ * `tests/extension-fixture/<ext>/`, so the rules hold for it while upstream's folder is empty.
+ * `__tests__/` beside the fixture is the fixture's journey test, not an extension.
+ */
+const EXTENSION = '^(?:src/extensions|tests/extension-fixture)/(?!__tests__/)[^/]+/'
+
+/** The same, capturing the root and the extension's name, for the rules that compare two paths. */
+const EXTENSION_CAPTURED = '^(src/extensions|tests/extension-fixture)/((?!__tests__/)[^/]+)/'
+
+/** Where each extension layer lives inside an extension. The layout rules below close the set. */
+const EXTENSION_LAYERS = {
+  extensionVocabulary: `${EXTENSION}(?:extension|keys|events|config)\\.ts$`,
+  extensionTypes: `${EXTENSION}types/`,
+  extensionSchemas: `${EXTENSION}schemas/`,
+  extensionLocales: `${EXTENSION}locales/`,
+  extensionModules: `${EXTENSION}modules/`,
+  extensionWorkflows: `${EXTENSION}workflows/`,
+  extensionHooks: `${EXTENSION}hooks/`,
+  extensionSubscribers: `${EXTENSION}subscribers/`,
+  extensionJobs: `${EXTENSION}jobs/`,
+  extensionApi: `${EXTENSION}api/`,
+  extensionSeeds: `${EXTENSION}seeds/`,
+}
+
+/**
  * Where the non-folder nodes live. A layer's path is just its name — `core` is `^src/core/` — so
- * only the composition roots need one written down.
+ * only the composition roots, the translator's folder and the extension layers need one written down.
  *
  * `entrypoints` is the process mains: the API's, the workerd fetch handler, the three Temporal
  * Workers and the surface the e2e suites import. Each starts something and may name anything to do
@@ -49,8 +123,15 @@ const COMPOSITION_ROOTS = {
   dbConfig: '^src/core/db/config\\.ts$',
   appSchema: '^src/schema\\.gen\\.ts$',
   appConfig: '^src/config\\.ts$',
+  i18n: '^src/framework/i18n/',
   workflowRegistry: '^src/framework/workflows/temporal/registry\\.gen\\.ts$',
+  subscriberList: '^src/subscribers/registry\\.gen\\.ts$',
   subscriberRegistry: '^src/framework/event-bus/registry\\.ts$',
+  jobRegistry: '^src/jobs/registry\\.gen\\.ts$',
+  extensionRegistry: '^src/extensions/registry\\.gen\\.ts$',
+  fixtureRegistry: '^tests/extension-fixture/registry\\.gen\\.ts$',
+  extensionSeedRegistry: '^(?:src/extensions|tests/extension-fixture)/seeds\\.gen\\.ts$',
+  ...EXTENSION_LAYERS,
   routes: '^src/routes\\.ts$',
   container: '^src/container\\.ts$',
   runtimeContainers: '^src/framework/runtime/container\\.(?:node|worker|workerd)\\.ts$',
@@ -65,12 +146,14 @@ const COMPOSITION_ROOTS = {
  * runtime it is testing: two workflow tests build the in-process engine, and one framework test
  * reads the route table to check the shipped OpenAPI documents against it.
  *
- * Deliberately two entries rather than exempting `__tests__/` from the graph — a blanket exemption
+ * Deliberately a short list rather than exempting `__tests__/` from the graph — a blanket exemption
  * would also let an API test reach a module service directly, which is the thing it must not do.
  */
 const TESTS_MAY_ALSO_IMPORT = {
   workflows: ['framework'],
   framework: ['routes'],
+  // The translator's test merges the fixture extension's catalogs and translates its schema's message.
+  i18n: ['extensionLocales', 'extensionSchemas'],
 }
 
 /**
@@ -90,11 +173,18 @@ const nestedBranches = (name) =>
     .flatMap(branchesOf)
     .filter((branch) => branchesOf(name).some((outer) => outer.endsWith('/') && branch.startsWith(outer)))
 
-/** Everything under src/ that `allowed` does not cover — the default-deny half of the graph. */
-const forbiddenFor = (name, allowed) =>
-  NODES.filter((other) => other !== name && !allowed.includes(other))
+/**
+ * Everything under src/ that `allowed` does not cover — the default-deny half of the graph. An
+ * allowed node sitting inside a forbidden folder is carved back out: subscriberRegistry may name
+ * src/subscribers/registry.gen.ts and nothing else in src/subscribers/.
+ */
+const forbiddenFor = (name, allowed) => {
+  const forbidden = NODES.filter((other) => other !== name && !allowed.includes(other)).flatMap(branchesOf)
+  const carved = allowed
     .flatMap(branchesOf)
-    .join('|')
+    .filter((branch) => forbidden.some((outer) => outer.endsWith('/') && branch.startsWith(outer)))
+  return { path: forbidden.join('|'), ...(carved.length ? { pathNot: carved.join('|') } : {}) }
+}
 
 const describe = (name, allowed) =>
   `${name} may import ${allowed.length ? allowed.join(', ') : 'nothing else under src/'}. ` +
@@ -117,7 +207,7 @@ const layerGraphRules = NODES.flatMap((name) => {
           ? { pathNot: [...nested, ...(alsoInTests ? ['__tests__/'] : [])].join('|') }
           : {}),
       },
-      to: { path: forbiddenFor(name, mayImport) },
+      to: forbiddenFor(name, mayImport),
     },
   ]
   if (!alsoInTests) return rules
@@ -134,7 +224,7 @@ const layerGraphRules = NODES.flatMap((name) => {
         path: branchesOf(name).map((branch) => `${branch}.*__tests__/`),
         ...(nested.length ? { pathNot: nested.join('|') } : {}),
       },
-      to: { path: forbiddenFor(name, withTests) },
+      to: forbiddenFor(name, withTests),
     },
   ]
 })
@@ -152,7 +242,7 @@ layerGraphRules.push({
     'A new layer is added to LAYER_GRAPH before it may import anything under src/, so its edges are ' +
     'declared with the layer rather than inherited by being unlisted.',
   severity: 'error',
-  from: { path: '^src/', pathNot: [...ALL_NODE_PATHS, ...SHARED_VOCABULARY].join('|') },
+  from: { path: `^src/|${EXTENSION}`, pathNot: [...ALL_NODE_PATHS, ...SHARED_VOCABULARY].join('|') },
   to: { path: ALL_NODE_PATHS.join('|') },
 })
 
@@ -171,6 +261,71 @@ module.exports = {
       to: {
         path: '^src/modules/([^/]+)/.+',
         pathNot: '^src/modules/$1/.+',
+      },
+    },
+    {
+      name: 'no-cross-extension-module-imports',
+      comment:
+        "An extension module may not import from a sibling module, its own extension's included. " +
+        'Work across two of them is a workflow, as it is in core.',
+      severity: 'error',
+      from: {
+        path: `${EXTENSION_CAPTURED}modules/([^/]+)/.+`,
+      },
+      to: {
+        path: `${EXTENSION}modules/[^/]+/.+`,
+        pathNot: '^$1/$2/modules/$3/.+',
+      },
+    },
+    {
+      name: 'no-imports-between-extensions',
+      comment:
+        'An extension may not import another. Each is removed by deleting its folder, which holds ' +
+        'only while nothing outside the folder names it — and only the generated registries may. ' +
+        'Code two extensions share is either core (an upstream change) or one extension.',
+      severity: 'error',
+      from: {
+        path: `${EXTENSION_CAPTURED}.+`,
+      },
+      to: {
+        path: `${EXTENSION}.+`,
+        pathNot: '^$1/$2/.+',
+      },
+    },
+    {
+      name: 'seed-registry-only-from-the-dev-seed',
+      comment:
+        'src/extensions/seeds.gen.ts is imported by scripts/seed-dev.ts and nothing else — least of ' +
+        'all anything under src/, which a runtime root could reach. That is what lets a seed step ' +
+        'read files: the seeds never travel to workerd. The layer graph already lists the registry ' +
+        'in no row; this names the one importer it has.',
+      severity: 'error',
+      from: {
+        pathNot: '^scripts/seed-dev\\.ts$',
+      },
+      to: {
+        path: '^src/extensions/seeds\\.gen\\.ts$',
+      },
+    },
+    {
+      name: 'no-file-system-in-workerd-extensions',
+      comment:
+        'An extension file the workerd entry reaches may not reach a file-system module: workerd has ' +
+        'no file system, so the import is a broken deploy rather than a slow path. The workerd entry ' +
+        'reaches every extension layer through the registries — the runtime one, and the workflow, ' +
+        'subscriber and job lists — except seeds/, which only the dev seed reads ' +
+        '(seed-registry-only-from-the-dev-seed), and tests. So the rule starts from those files ' +
+        "rather than from the entry, which would also report core's local file provider: that one " +
+        'reaches node:fs on purpose and is out of scope here. Reachability, not a direct import: a ' +
+        'helper two folders away reads the disk just as well.',
+      severity: 'error',
+      from: {
+        path: EXTENSION,
+        pathNot: `${EXTENSION}seeds/|__tests__/`,
+      },
+      to: {
+        path: '^(?:node:)?fs(?:/promises)?$',
+        reachable: true,
       },
     },
     {
@@ -339,7 +494,7 @@ module.exports = {
         '__tests__/, which build events through events.ts rather than through a transport.',
       severity: 'error',
       from: {
-        path: '^src/subscribers/',
+        path: `^src/subscribers/|${EXTENSION}subscribers/`,
       },
       to: {
         path:
@@ -379,15 +534,46 @@ module.exports = {
         'modules/, a third-party adapter in providers/, work caused by something that happened in ' +
         'subscribers/, and cross-module orchestration in workflows/. A folder that fits none of them ' +
         'is a decision rather than a convenience, and a decision comes with a rule saying what may ' +
-        'import it — the way subscribers/ has subscribers-name-no-transport. ',
+        'import it — the way subscribers/ has subscribers-name-no-transport. extensions/ is the ' +
+        "store's own code, one folder per extension; extensions-holds-registries-and-extensions closes it.",
       severity: 'error',
       module: {
         path:
           '^src/' +
-          '(?!(?:api|core|framework|jobs|link-modules|modules|providers' +
+          '(?!(?:api|core|extensions|framework|jobs|link-modules|modules|providers' +
           '|subscribers|workflows)/)' +
           '(?!(?:config|container|env|index|index\\.workerd|routes|schema\\.gen|schema\\.type|start' +
           '|test-exports)\\.ts$)',
+      },
+      to: { path: '(?!)' },
+    },
+    {
+      name: 'extensions-holds-registries-and-extensions',
+      comment:
+        'src/extensions/ holds one folder per extension and the two registries extensions:generate ' +
+        'writes: registry.gen.ts, which the composition roots read, and seeds.gen.ts, which only the ' +
+        'dev seed reads. A file beside them belongs to no extension, so no generator sees it.',
+      severity: 'error',
+      module: {
+        path: '^src/extensions/(?![^/]+/)(?!(?:registry|seeds)\\.gen\\.ts$)',
+      },
+      to: { path: '(?!)' },
+    },
+    {
+      name: 'extension-holds-only-known-entries',
+      comment:
+        "An extension mirrors core's folders, every one optional: extension.ts (its manifest), " +
+        'keys.ts (module keys), events.ts, config.ts (typed settings), and modules/, api/, ' +
+        'workflows/, hooks/ (hook handlers), subscribers/, jobs/, seeds/, schemas/, locales/, types/ ' +
+        'and __tests__/. extensions:generate reads these by name, so anything else is invisible to ' +
+        'it and becomes a private convention. A pure helper belongs to the layer that uses it — a ' +
+        "module's utils/, say. See src/extensions/AGENTS.md.",
+      severity: 'error',
+      module: {
+        path:
+          `${EXTENSION}` +
+          '(?!(?:extension|keys|events|config)\\.ts$)' +
+          '(?!(?:modules|api|workflows|hooks|subscribers|jobs|seeds|schemas|locales|types|__tests__)/)',
       },
       to: { path: '(?!)' },
     },
@@ -404,6 +590,21 @@ module.exports = {
       severity: 'error',
       module: {
         path: '^src/api/(?!(?:.+/)?(?:route|definitions|middlewares)\\.ts$)(?!(?:.+/)?__tests__/)',
+      },
+      to: { path: '(?!)' },
+    },
+    {
+      name: 'extension-api-holds-only-four-file-kinds',
+      comment:
+        "An extension's api/ follows src/api/'s four file kinds, under api/store/ or api/hooks/ only: " +
+        'namespace auth decides the actor from the matcher prefix, and extensions:generate rejects ' +
+        'admin routes until extension permissions exist, so a third namespace has nothing to serve it. ' +
+        'See api-holds-only-four-file-kinds for the reasons the kinds are closed.',
+      severity: 'error',
+      module: {
+        path:
+          `${EXTENSION}api/` +
+          '(?!(?:store|hooks)/(?:.+/)?(?:route|definitions|middlewares)\\.ts$)(?!(?:.+/)?__tests__/)',
       },
       to: { path: '(?!)' },
     },
@@ -433,6 +634,22 @@ module.exports = {
       to: { path: '(?!)' },
     },
     {
+      name: 'extension-module-holds-only-known-file-kinds',
+      comment:
+        "An extension module is a core module's layout without the provider kinds — providers/, " +
+        'provider-declarations.ts and sync-<registry>.ts — since an extension module bringing its own ' +
+        'providers is deferred: models/, repositories/, services/, migrations/, __tests__/, loaders/, ' +
+        'utils/, index.ts and database.config.ts. See module-holds-only-known-file-kinds.',
+      severity: 'error',
+      module: {
+        path:
+          `${EXTENSION}modules/[^/]+/` +
+          '(?!(?:index|database\\.config)\\.ts$)' +
+          '(?!(?:models|repositories|services|migrations|__tests__|loaders|utils)/)',
+      },
+      to: { path: '(?!)' },
+    },
+    {
       name: 'module-tests-live-in-a-tests-folder',
       comment:
         "A module's tests live in __tests__/, never beside the file they cover. One place to look " +
@@ -443,6 +660,15 @@ module.exports = {
       severity: 'error',
       module: {
         path: '^src/modules/(?!(?:.+/)?__tests__/).*\\.test\\.ts$',
+      },
+      to: { path: '(?!)' },
+    },
+    {
+      name: 'extension-module-tests-live-in-a-tests-folder',
+      comment: "An extension module's tests live in __tests__/, as core's do. See module-tests-live-in-a-tests-folder.",
+      severity: 'error',
+      module: {
+        path: `${EXTENSION}modules/(?!(?:.+/)?__tests__/).*\\.test\\.ts$`,
       },
       to: { path: '(?!)' },
     },

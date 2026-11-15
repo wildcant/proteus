@@ -1,5 +1,6 @@
 import { test } from '@tests/setup/test-extend.js'
-import { buildEvent } from '../events.js'
+import { defineEvent } from '../../extensions/define-event.js'
+import { buildDelivery, buildEvent } from '../events.js'
 
 /**
  * The identity is derived, never supplied — that is the whole reason it exists in this shape. An
@@ -48,5 +49,34 @@ test.describe('dispatch identity', () => {
       data: { id: 'ord_1' },
       dispatchId: 'bus.probe:ord_1:bus-probe',
     })
+  })
+
+  /**
+   * An extension event is not in the closed map, so its key travels with its declaration. Read back
+   * by name — off a queue — the subscriber's `keys` must give the identity the emitting side gave.
+   */
+  test('an extension event is keyed by its id, or by the key it declared', async ({ expect }) => {
+    const once = defineEvent<{ id: string }>({ name: 'pisos-dj.quote_requested' })
+    const repeatable = defineEvent<{ cityId: string; version: number }>({
+      name: 'pisos-dj.rate_changed',
+      key: (data) => `${data.cityId}:${data.version}`,
+    })
+
+    expect(buildEvent(once, { id: 'q_1' }, 'pisos-dj.mail').dispatchId).toBe(
+      'pisos-dj.quote_requested:q_1:pisos-dj.mail',
+    )
+    expect(buildEvent(repeatable, { cityId: 'bog', version: 2 }, 'pisos-dj.sync').dispatchId).toBe(
+      'pisos-dj.rate_changed:bog:2:pisos-dj.sync',
+    )
+
+    const readBack = buildDelivery(
+      'pisos-dj.rate_changed',
+      { cityId: 'bog', version: 2 },
+      {
+        name: 'pisos-dj.sync',
+        keys: { 'pisos-dj.rate_changed': (data) => repeatable.key(data as { cityId: string; version: number }) },
+      },
+    )
+    expect(readBack.dispatchId).toBe('pisos-dj.rate_changed:bog:2:pisos-dj.sync')
   })
 })

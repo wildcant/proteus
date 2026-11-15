@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+import { defineModuleKey } from '../../extensions/module-key.js'
 import { ContainerRegistrationKeys } from '../../utils/container.js'
 import { Modules } from '../../utils/modules-definition.js'
 import type { AppContainer, ModuleContainer } from '../container.js'
@@ -53,4 +54,18 @@ test('a shared-container read cannot be typed by hand', () => {
   }
 
   expect([overrides, privateKeys].every((check) => typeof check === 'function')).toBe(true)
+})
+
+test('an extension module key types its own read, without the closed lists naming it', () => {
+  const NotesKey = defineModuleKey<{ listNotes(): Promise<string[]> }>('fixture.notes')
+
+  function extensionRead(container: AppContainer) {
+    void container.resolve(NotesKey).listNotes()
+    // @ts-expect-error - the key carries its service, which has no such method
+    void container.resolve(NotesKey).listOrders()
+    // @ts-expect-error - a bare string is not a key, even one spelled like an extension's
+    void container.resolve('fixture.notes')
+  }
+
+  expect(typeof extensionRead).toBe('function')
 })

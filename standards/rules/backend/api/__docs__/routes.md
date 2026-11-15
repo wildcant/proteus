@@ -288,3 +288,28 @@ the ones that fire most often.
 5. `pnpm --filter backend run typecheck` — zero errors
 6. `pnpm run openapi:generate` to regenerate the specs and clients
 7. `pnpm run verify` — the rules above check the `Throws` list against the handler in both directions
+
+## In an extension
+
+A fork's endpoint lives at `src/extensions/<ext>/api/store/<domain>/` (or `api/hooks/<domain>/` for a
+webhook), with the same `route.ts` and `definitions.ts`, the same shape and the same rules. What
+changes:
+
+- **The matcher keeps the namespace prefix, and the rest is free.** `api/store/` matchers start
+  `/store/` and `api/hooks/` matchers start `/hooks/` (`/store/shipping-cities`). Namespace auth
+  picks the actor from the prefix. There is no `api/admin/`: `extensions:generate` rejects an
+  admin route until extension permissions exist.
+- **No core route may be matched or shadowed.** The same method on the same pattern fails generation,
+  whatever the parameter names. So does a static path in front of a core parameter route.
+- **Names carry the prefix.** The `operationId` is camel-prefixed (`pisosDjListShippingCities`) and
+  every `.openapi('…')` component name is Pascal-prefixed (`PisosDjShippingCity`). Tags are core's
+  closed list, so reuse one (`Tags.STORE`).
+- **Schemas** go in the extension's `schemas/` when only the backend uses them, or in
+  `packages/http-schemas/src/extensions/<ext>/{store,admin}/` when a client form shares them. Never in
+  the package's own folders (step 1).
+- **Step 4 is `pnpm --filter backend run extensions:generate`**, not an edit to `src/routes.ts`. The
+  registry puts the definitions in route preparation's store or webhook array.
+
+The rest of the steps, and the names table, are in
+[extensions](../../extensions/__docs__/extensions.md#a-route). The fixture's
+`tests/extension-fixture/fixture/api/store/fixture-notes/` is a worked example.

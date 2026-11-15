@@ -45,6 +45,26 @@ and provider instances sit under computed string keys `core/` has never seen. Th
 `ModuleContainer`, which keeps both signatures. Which type a parameter has is therefore the whole
 statement about which container it is.
 
+### In an extension
+
+An extension's module is not in `Modules`, and its contract is not in `ModuleServiceContracts`. Both
+are closed core lists a fork never edits. Its key carries the service type itself instead.
+`defineModuleKey<IService>('<ext>.<module>')` is declared once, in the extension's keys object in
+`keys.ts`, and `AppContainer.resolve` has a signature for that key type:
+
+```ts
+// src/extensions/pisos-dj/keys.ts
+export const PisosDjModules = { SHIPPING: defineModuleKey<IPisosDjShippingService>('pisos-dj.shipping') }
+
+// anywhere with the container: an IPisosDjShippingService, with nothing written down
+const shipping = container.resolve(PisosDjModules.SHIPPING)
+```
+
+The two rules above hold unchanged. The key is a member of that object, never the string, and the
+type comes from the key, never from a type argument. At runtime the key is just its string, which is
+what Awilix registers. Layout and prefixes are in
+[extensions](../standards/rules/backend/extensions/__docs__/extensions.md).
+
 ## Enforcement
 
 | Rule id | The paragraph it enforces |

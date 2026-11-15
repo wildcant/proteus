@@ -1,6 +1,6 @@
 # 27. The Backend's Layer Graph Is Declared and Default-Deny
 
-**Status:** Accepted
+**Status:** Accepted. Amended by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): the extension registry is a composition-root node, and the graph gains extension layers.
 
 ## Context
 

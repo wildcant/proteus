@@ -282,6 +282,13 @@ steps below, `<store>` is the new store's short name.
    `pnpm run cloudflare:create <store>` creates the new resources, and `pnpm run push-keys` uploads the
    new keys. Use a new Supabase project.
 
+5. **Put the store's backend code in an extension**, `apps/backend/src/extensions/<store>/`, not in
+   Proteus's files. Its modules, routes, workflows, subscribers, jobs, seeds, schemas and messages
+   live there, so a sync never conflicts with them. See
+   [`apps/backend/src/extensions/README.md`](../apps/backend/src/extensions/README.md). The renames
+   above are the only Proteus files a fork edits, along with the few fork-owned edits the extension
+   docs name.
+
 To run a fork and Proteus on one machine at the same time, give the fork its own Docker Compose
 project, database and bucket names, and its own host ports. Set `name:` at the top of both compose
 files. Change the host side of each port mapping in the compose files, and change the ports in the
@@ -306,7 +313,13 @@ git merge upstream/main
      are encrypted with Proteus's keys, so the fork cannot read them. Add any new variable with
      `dotenvx set`.
    - Don't hand-merge generated files. Take either side, then run the generators (`pnpm run
-     openapi:generate`, the backend `*:generate` scripts, the design exporters).
+     openapi:generate`, the backend `*:generate` scripts, the design exporters). The backend's
+     generators include `extensions:generate`, which rewrites the extension registries from the
+     fork's `src/extensions/`. It fails if upstream added a name, route or hook handler the fork's
+     extension collides with. Rename the extension's side, since core's names are not the fork's to change.
+   - Code in `apps/backend/src/extensions/` does not conflict. Upstream ships only that folder's
+     README, its `AGENTS.md` and the two generated registries, which the step above regenerates. A conflict elsewhere in fork code usually means it belongs in an
+     extension ([`apps/backend/src/extensions/README.md`](../apps/backend/src/extensions/README.md)).
 2. **If upstream added a migration**, run `pnpm --filter backend run db:migrate:dev`.
 3. **Run `pnpm run verify`**, push the branch and open a pull request.
 4. **Merge the pull request with a merge commit** (`gh pr merge <n> --merge`), never a squash or a

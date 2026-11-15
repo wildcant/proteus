@@ -5,6 +5,7 @@ message: This step runs only on some paths, so the recorded step sequence differ
 note: 'Call the step unconditionally and move the condition inside its action, which returns early when there is nothing to do. An `if` outside a step may hold a `return` and nothing else — ending the handler early is the one decision that belongs there, because the alternative is every later step growing an "already done?" branch of its own. A conditional step is also the shape `StepSequenceChangedError` exists for: the sequence is stable today only because these conditions happen to read a previous step''s recorded output, and nothing says the next one will. Where the step has compensation, make the no-op path record that it did not act, so the rollback does not undo work it never did. standards/rules/backend/workflows/__docs__/workflows.md'
 files:
   - "**/src/workflows/**/*.ts"
+  - "**/{src/extensions,tests/extension-fixture}/*/workflows/**/*.ts"
 ignores:
   - "**/__tests__/**"
 rule:

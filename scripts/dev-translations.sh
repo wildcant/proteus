@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# The one Lingui watcher of a dev session: backend recompiles `locales/*.ts`, store and admin re-extract their
-# `.po`. Its own process rather than part of each app's dev script, because four backend processes
+# The one Lingui watcher of a dev session: backend recompiles `locales/*.ts` (core's and each extension's
+# `src/extensions/<ext>/locales/*.ts`), store and admin re-extract their `.po`. The backend's catalogs
+# are read from its config at start, so restart this after adding an extension's first message. Its own process rather than part of each app's dev script, because four backend processes
 # share one compiled catalog and it must have exactly one writer.
 #
 # Teardown is the reason this is a script rather than `pnpm --parallel`: pnpm does not forward

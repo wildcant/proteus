@@ -3,6 +3,7 @@
 import { appConfigInput } from '../../config.js'
 import { bootstrapContainer } from '../../container.js'
 import type { DbProvider } from '../../core/db/ports.js'
+import { extensionRegistry } from '../../extensions/registry.gen.js'
 import { createCloudflareQueuesEventBus, type QueuedEvent } from '../event-bus/cloudflare-queues-adapter.js'
 import { subscriberRegistry } from '../event-bus/registry.js'
 import { ConsoleLogger } from '../logger/console-logger.js'
@@ -22,6 +23,7 @@ const logger = new ConsoleLogger()
  */
 export function createWorkerdContainer(deps: { events: Queue<QueuedEvent> | undefined; dbProvider: DbProvider }) {
   return bootstrapContainer({
+    extensions: extensionRegistry,
     logger,
     dbProvider: deps.dbProvider,
     config: {

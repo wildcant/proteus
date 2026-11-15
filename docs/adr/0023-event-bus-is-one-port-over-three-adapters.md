@@ -1,6 +1,6 @@
 # 23. The Event Bus Is One Port over Three Adapters, and Subscribers Are Written to the Weaker One
 
-**Status:** Accepted
+**Status:** Accepted. Amended by [ADR-0038](0038-extensions-are-a-forks-backend-code-beside-proteus.md): the bus also accepts extension events, values carrying their payload type and deduplication key.
 
 ## Context
 
