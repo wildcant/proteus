@@ -13,6 +13,8 @@ export const GetOutput = StoreOrderResponse
 // Readable by anyone holding the id, drafts included: it is the shopper's shareable order link, and
 // an Order id cannot be guessed. What it answers is allowlisted by `StoreOrderDetail`, so the link
 // carries the email, the street and the phone only in `owner`, for the customer who placed it.
+// an unknown id is `retrieveOrder`'s NOT_FOUND
+// ast-grep-ignore: route-declares-unthrown-error
 export const GetThrows = [ErrorTypes.NOT_FOUND] as const
 
 export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
