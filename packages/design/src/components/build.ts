@@ -98,6 +98,27 @@ export function buildComponents(sets: ComponentSet[], context: ComponentsContext
   return { files, notes }
 }
 
+/**
+ * A state's prefix as the variants it stacks (`enabled:hover` → `enabled`, `hover`). Only a colon outside brackets and
+ * parentheses separates two: `has-[input:not(:placeholder-shown)]` is one variant.
+ */
+function stackedVariants(prefix: string): string[] {
+  const variants: string[] = []
+  let depth = 0
+  let start = 0
+  for (let i = 0; i < prefix.length; i++) {
+    const char = prefix[i]
+    if (char === '[' || char === '(') depth++
+    else if (char === ']' || char === ')') depth--
+    else if (char === ':' && depth === 0) {
+      variants.push(prefix.slice(start, i))
+      start = i + 1
+    }
+  }
+  variants.push(prefix.slice(start))
+  return variants
+}
+
 function generateSet(set: ComponentSet, context: ComponentsContext) {
   const designOnly = [VIEWPORT, INTERACTION, POSITION]
   const variantProps = set.properties.filter((p) => p.type === 'variant' && !designOnly.includes(p.name))
@@ -125,8 +146,7 @@ function generateSet(set: ComponentSet, context: ComponentsContext) {
   const stateVariant = (state: string, part: string, owner: string) => {
     const variant = statePrefixes[state] ?? STATE_VARIANTS[state] ?? state
     if (part === owner) return `${variant}:`
-    return `${variant
-      .split(':')
+    return `${stackedVariants(variant)
       .map((v) => `group-${v}/${groupOf(owner)}`)
       .join(':')}:`
   }
