@@ -1,20 +1,17 @@
-import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreCartDetailResponse, StoreUpdateCartResponse, UpdateCart } from '@proteus/http-schemas/store'
 import { updateCartWorkflow } from '@workflows/cart/update-cart.js'
-import { lineItemStockProjection } from '@workflows/cart/utils/line-item-stock.js'
-import { buildAvailableQuantities } from '@workflows/product/utils/build-variant-stock.js'
+import { attachLineItemStock } from '../middlewares.js'
 
 export const GetInput = { params: IdParams }
+export const GetMiddlewares = [attachLineItemStock()] as const
 export const GetOutput = StoreCartDetailResponse
 
-export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
+export const GET = async (
+  req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
+): Promise<HttpResult<typeof GetOutput>> => {
   const cartService = req.scope.resolve(Modules.CART)
-  const productService = req.scope.resolve(Modules.PRODUCT)
-  const inventoryService = req.scope.resolve(Modules.INVENTORY)
-  const storeService = req.scope.resolve(Modules.STORE)
-  const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
 
   const [cart, lineItems, shippingMethods, addresses] = await Promise.all([
     cartService.retrieveCart(req.params.id),
@@ -26,24 +23,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const shippingAddress = addresses.find((address) => address.type === 'shipping') ?? null
   const billingAddress = addresses.find((address) => address.type === 'billing') ?? null
 
-  // Stock is read live rather than kept on the line: what the shelf holds now is what decides
-  // whether the line can still be bought and where its stepper stops.
-  const variantIds = [...new Set(lineItems.flatMap((lineItem) => (lineItem.variantId ? [lineItem.variantId] : [])))]
-  const [variants, inventoryLinks, store] = await Promise.all([
-    // An empty filter array would reach the query builder as `inArray(column, [])`.
-    variantIds.length > 0 ? productService.listProductVariants({ id: variantIds }) : [],
-    linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds),
-    storeService.resolveStore(),
-  ])
-  const itemIds = [...new Set(inventoryLinks.map((link) => link.inventoryItemId))]
-  // Every item's levels in one read, as the product routes read them.
-  const levels = itemIds.length > 0 ? await inventoryService.listInventoryLevels({ inventoryItemId: itemIds }) : []
-  const stockOf = lineItemStockProjection(
-    variants,
-    inventoryLinks,
-    buildAvailableQuantities(levels),
-    store?.lowStockThreshold ?? null,
-  )
+  const stockOf = await req.lineItemStock(lineItems)
 
   const totals = cartService.computeCartTotals({ lineItems, shippingMethods })
   const enrichedItems = cartService
