@@ -11,7 +11,7 @@ export type RefreshableShippingMethod = {
 }
 
 /** A method's price and the provider's data it was based on, as a refresh writes them. */
-export type ShippingMethodRequote = Omit<RefreshableShippingMethod, 'shippingOptionId'>
+type ShippingMethodRequote = Omit<RefreshableShippingMethod, 'shippingOptionId'>
 
 /** What a refresh changed, so its compensation can put each method back as it was. */
 export type ShippingMethodRefreshUndo = {

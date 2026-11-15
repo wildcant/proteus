@@ -6,7 +6,6 @@ import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
 import { vi } from 'vitest'
-import { SystemPaymentProvider } from '../../../modules/payment/providers/system.js'
 import { convertDraftOrderWorkflow } from '../../draft-order/convert-draft-order.js'
 import { addOrderTransactionsStep } from '../../order/steps/add-order-transactions.js'
 import { recordOrderPaymentWorkflow } from '../record-order-payment.js'
@@ -245,7 +244,9 @@ test.describe('record-order-payment', () => {
       items: [{ title: variant.title, variantId: variant.id, quantity: 1, unitPrice: new BigNumber(100) }],
     })
 
-    vi.spyOn(SystemPaymentProvider.prototype, 'capturePayment').mockRejectedValueOnce(new Error('capture refused'))
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'capturePaymentCollection').mockRejectedValueOnce(
+      new Error('capture refused'),
+    )
 
     await expect(
       convertDraftOrderWorkflow.run({ orderId: draft.id, paymentAmount: new BigNumber(30) }),

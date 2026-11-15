@@ -102,7 +102,7 @@ export type DraftOrderShippingMethodReplacement = {
 }
 
 /** A shipping method's price, and the provider's data that price was based on, as a refresh re-states them. */
-export type OrderShippingMethodPriceUpdateDTO = {
+type OrderShippingMethodPriceUpdateDTO = {
   id: string
   amount: BigNumber
   isTaxInclusive: boolean

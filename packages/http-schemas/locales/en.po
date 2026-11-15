@@ -60,7 +60,7 @@ msgid "Write a filter as key:value"
 msgstr "Write a filter as key:value"
 
 #. js-lingui-explicit-id
-#: src/store/order/payloads.ts:10
+#: src/store/order/payloads.ts:13
 msgid "Enter the last 4 digits of your phone"
 msgstr "Enter the last 4 digits of your phone"
 
