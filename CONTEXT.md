@@ -231,9 +231,9 @@ it.
 _Avoid_: balance, amount due, remaining, rest
 
 **Reference**:
-How an Order is named to a shopper and in the chat: the store's optional prefix followed by the
-Order's `displayId` (`PDJ-1042`), or the bare `displayId` when the store sets no prefix. Derived,
-never stored.
+How an Order is named to a shopper, on their order page and in what the shop tells them: the
+store's optional prefix followed by the Order's `displayId` (`ORD-1042`), or the bare `displayId`
+when the store sets no prefix. Derived, never stored.
 _Avoid_: order id (the internal id), order number (for the prefixed form), code
 
 **Payment Method**:

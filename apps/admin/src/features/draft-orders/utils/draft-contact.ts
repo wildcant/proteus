@@ -26,7 +26,7 @@ export type DraftContactValues = { email: string } & Record<AddressField, string
 
 /**
  * The route's own body schemas, flattened to the drawer's fields, with an empty email allowed: a
- * chat-only shopper has none, and the field starts empty for them.
+ * shopper who ordered without one has none, and the field starts empty for them.
  */
 const address = AdminDraftOrderAddress.shape
 export const draftContactSchema = z.object({

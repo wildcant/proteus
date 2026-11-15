@@ -6,9 +6,9 @@ an extension may bring a fulfillment provider, and draft orders ship with no hoo
 ## Context
 
 Some stores built from Proteus don't take payment at checkout. They sell through a chat: the
-shopper builds a Cart and hands it to the shop on WhatsApp, the shop confirms the pair is available
-and asks for a deposit by bank transfer, then ships and collects the rest cash on delivery. The
-motivating store is the Pisos DJ fork, which built all of this inside Proteus files on its own
+shopper builds a Cart and sends it to the shop in a message, the shop confirms the items are
+available and asks for a deposit by bank transfer, then ships and collects the rest cash on
+delivery. A fork that sells this way had to build all of it inside Proteus files on its own
 branch, so every sync with Proteus conflicted.
 
 Proteus could not express any step of that sale:
@@ -27,7 +27,7 @@ Proteus could not express any step of that sale:
 - A fork that needed its own courier's rate table had to edit Proteus files, because
   extension-owned providers were deferred (ADR-0038).
 
-**Prior art.** Medusa has all three of the pieces a chat sale needs: draft orders (an Order with the
+**Prior art.** Medusa has all three of the pieces such a sale needs: draft orders (an Order with the
 `draft` status, created and edited in the admin and converted to a pending Order), the system
 payment provider as a real manual provider, and calculated shipping options priced by their
 fulfillment provider. An Order has one payment collection; `capturePaymentWorkflow` captures an
@@ -48,14 +48,14 @@ no stock and holds no payment collection. There are no new tables. A draft's ite
 items, its address an Order address, its shipping an Order shipping method. The Order carries the
 region and sales channel ids copied from the Cart, as Medusa's does, so the admin can still price a
 draft's items after the Cart has closed. Email is optional on every Order, and the confirmation
-email is skipped when there is none, so a chat is enough to buy.
+email is skipped when there is none, so a shopper can order without giving one.
 
 Drafts are left out of the admin orders list, a Customer's order history, order counts and the
 order placed event. The admin lists them on their own, edits a draft's shipping address (phone
 included), shipping method (with a custom amount) and items, deletes one made by mistake, cancels
 one the shop won't fulfil, and converts one.
 
-**Converting** reserves inventory and fails if a pair sold out since the draft was made. It sets the
+**Converting** reserves inventory and fails if an item sold out since the draft was made. It sets the
 status to pending, creates the Order's payment collection and emits order placed.
 
 ### A store creates a draft from a Cart, and the Cart closes
@@ -66,7 +66,7 @@ same transaction, so the shopper can no longer change it, it can't be checked ou
 storefront starts a new Cart. Sending the same Cart again returns its existing draft unchanged,
 through the order–cart link, so an admin's edits are never overwritten. A line that can't be sold
 (sold out, deleted variant) refuses the draft with the line named. Nothing is reserved and no
-payment is taken, so an abandoned chat never locks stock.
+payment is taken, so an abandoned draft never locks stock.
 
 ### A deposit converts the draft
 
@@ -132,7 +132,7 @@ id. Wrong digits, an Order without a phone and an unknown number all answer the 
 same single query, so the lookup says nothing about which Orders exist. Attempt limiting is
 deferred.
 
-An Order's **reference** is the store's optional prefix followed by its display id (`PDJ-1042`),
+An Order's **reference** is the store's optional prefix followed by its display id (`ORD-1042`),
 or the bare display id when the store sets no prefix.
 
 ### Calculated shipping
@@ -214,13 +214,13 @@ would have been a second place to price shipping and a second ledger beside the 
 Order, each created for an amount and marked paid in full. Rejected. The Order's total would be split across collections whose amounts are only known
 after the fact, and a later real provider could not take "the rest" as one collection.
 
-**A draft that reserves stock.** Rejected. Most chats end without a sale, and a reservation per
-abandoned chat would show pairs as sold out that are on the shelf. Stock is held at conversion,
-which can fail when a pair sold out in between.
+**A draft that reserves stock.** Rejected. Most drafts end without a sale, and a reservation per
+abandoned draft would show items as sold out that are on the shelf. Stock is held at conversion,
+which can fail when an item sold out in between.
 
 **A draft that leaves the Cart open.** Rejected. The shopper could keep editing a Cart the shop
-was already confirming in the chat, and the two would drift. Closing the Cart, and returning the
-same draft when it is sent again, keeps one order per chat.
+was already confirming with the shopper, and the two would drift. Closing the Cart, and returning
+the same draft when it is sent again, keeps one order per Cart.
 
 **A draft order table of its own.** Rejected. Medusa's draft is an Order with a status, and every
 Order read, edit and total already works on it.

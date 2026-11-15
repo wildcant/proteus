@@ -30,7 +30,7 @@ export function EditDraftShippingForm({ draftOrder }: { draftOrder: AdminDraftOr
               <Trans>Edit shipping</Trans>
             </RouteDrawer.Title>
             <RouteDrawer.Description>
-              <Trans>Pick how the order ships, and override its price with what you agreed in the chat.</Trans>
+              <Trans>Pick how the order ships, and override its price with what you agreed with the shopper.</Trans>
             </RouteDrawer.Description>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="flex flex-col gap-y-6">

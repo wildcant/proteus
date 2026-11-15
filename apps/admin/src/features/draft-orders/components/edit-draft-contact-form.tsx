@@ -19,7 +19,7 @@ export function EditDraftContactForm({ draftOrder }: { draftOrder: AdminDraftOrd
               <Trans>Edit customer</Trans>
             </RouteDrawer.Title>
             <RouteDrawer.Description>
-              <Trans>Record what the shopper told you in the chat.</Trans>
+              <Trans>Record the contact details and address the shopper gave you.</Trans>
             </RouteDrawer.Description>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="flex flex-col gap-y-6">
