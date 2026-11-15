@@ -202,8 +202,9 @@ test.describe('record-order-payment', () => {
   /** Outstanding is the total less the Paid Total, on the Order and on its collection alike. */
   test('what a refund returned can be recorded again', async ({ service, expect }) => {
     const { orderId, paymentCollectionId } = await orderForAHundred(service)
-    const paid = await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(100) })
-    await refundPaymentWorkflow.run({ paymentId: paid.paymentId, amount: new BigNumber(25) })
+    const { paymentId } = await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(100) })
+    assertDefined(paymentId)
+    await refundPaymentWorkflow.run({ paymentId, amount: new BigNumber(25) })
 
     const recollected = await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(25) })
 
