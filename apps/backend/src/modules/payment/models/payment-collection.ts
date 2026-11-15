@@ -9,7 +9,9 @@ export const paymentCollectionStatusEnum = pgEnum('payment_collection_status', [
   'awaiting',
   'authorized',
   'partially_authorized',
+  'partially_captured',
   'completed',
+  'canceled',
 ])
 
 export const paymentCollectionTable = pgTable(

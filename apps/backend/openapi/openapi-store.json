@@ -1868,12 +1868,7 @@
             ]
           },
           "paymentStatus": {
-            "type": "string",
-            "enum": [
-              "awaiting",
-              "authorized",
-              "captured"
-            ]
+            "$ref": "#/components/schemas/OrderPaymentStatus"
           },
           "fulfillmentStatus": {
             "type": "string",
@@ -1941,6 +1936,21 @@
           "shippingAddress",
           "shippingMethods",
           "totals"
+        ]
+      },
+      "OrderPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "not_paid",
+          "awaiting",
+          "authorized",
+          "partially_authorized",
+          "partially_captured",
+          "captured",
+          "partially_refunded",
+          "refunded",
+          "canceled",
+          "requires_action"
         ]
       },
       "StoreOrderLineItem": {
@@ -2260,7 +2270,9 @@
               "awaiting",
               "authorized",
               "partially_authorized",
-              "completed"
+              "partially_captured",
+              "completed",
+              "canceled"
             ]
           },
           "metadata": {

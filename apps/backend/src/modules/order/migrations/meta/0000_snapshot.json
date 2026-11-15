@@ -747,7 +747,7 @@
               "nulls": "last"
             }
           ],
-          "isUnique": false,
+          "isUnique": true,
           "where": "deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",

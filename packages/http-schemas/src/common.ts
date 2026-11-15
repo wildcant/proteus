@@ -116,6 +116,27 @@ export type FindParams<TParams extends z.ZodType = z.ZodTypeAny> = {
   filters: Omit<z.infer<TParams>, 'offset' | 'limit' | 'order' | 'q'>
 }
 
+/**
+ * An Order's payment status, Medusa's: aggregated from its payment collections, independent of the
+ * Order's status and fulfillment status. Shared by the admin and store reads so a storefront words
+ * the same values the admin shows.
+ */
+export const OrderPaymentStatus = z
+  .enum([
+    'not_paid',
+    'awaiting',
+    'authorized',
+    'partially_authorized',
+    'partially_captured',
+    'captured',
+    'partially_refunded',
+    'refunded',
+    'canceled',
+    'requires_action',
+  ])
+  .openapi('OrderPaymentStatus')
+export type OrderPaymentStatus = z.infer<typeof OrderPaymentStatus>
+
 export const DeleteResponse = z.object({ id: z.string(), deleted: z.boolean() }).openapi('DeleteResponse')
 export type DeleteResponse = z.infer<typeof DeleteResponse>
 

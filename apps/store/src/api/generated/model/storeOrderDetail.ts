@@ -5,8 +5,8 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderPaymentStatus } from './orderPaymentStatus.ts';
 import type { StoreOrderDetailFulfillmentStatus } from './storeOrderDetailFulfillmentStatus.ts';
-import type { StoreOrderDetailPaymentStatus } from './storeOrderDetailPaymentStatus.ts';
 import type { StoreOrderDetailStatus } from './storeOrderDetailStatus.ts';
 import type { StoreOrderLineItem } from './storeOrderLineItem.ts';
 import type { StoreOrderLocality } from './storeOrderLocality.ts';
@@ -19,7 +19,7 @@ export interface StoreOrderDetail {
   displayId: number;
   reference: string;
   status: StoreOrderDetailStatus;
-  paymentStatus: StoreOrderDetailPaymentStatus;
+  paymentStatus: OrderPaymentStatus;
   fulfillmentStatus: StoreOrderDetailFulfillmentStatus;
   currencyCode: string;
   createdAt: string;

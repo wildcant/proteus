@@ -22,6 +22,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const orderService = req.scope.resolve(Modules.ORDER)
   const linkService = req.scope.resolve(ContainerRegistrationKeys.LINK)
   const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
+  const paymentService = req.scope.resolve(Modules.PAYMENT)
   const order = await orderService.retrieveOrder(req.params.id)
 
   if (customerId && order.customerId !== customerId) {
@@ -41,6 +42,10 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
   const link = await linkService.repo('orderFulfillment').findByOrderId(order.id)
   const fulfillments = link ? [await fulfillmentService.retrieveFulfillment(link.fulfillmentId)] : []
+  const paymentLink = await linkService.repo('orderPaymentCollection').findByOrderId(order.id)
+  const paymentCollections = paymentLink
+    ? [await paymentService.retrievePaymentCollection(paymentLink.paymentCollectionId)]
+    : []
 
   const totals = orderService.computeOrderTotals({ lineItems, shippingMethods, transactions })
 
@@ -52,7 +57,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
         displayId: order.displayId,
         reference: orderReference(order.displayId),
         status: order.status,
-        paymentStatus: computePaymentStatus(totals),
+        paymentStatus: computePaymentStatus(paymentCollections),
         fulfillmentStatus: computeFulfillmentStatus(fulfillments),
         currencyCode: order.currencyCode,
         createdAt: order.createdAt,

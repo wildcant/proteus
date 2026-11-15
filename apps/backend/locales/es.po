@@ -76,6 +76,12 @@ msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its s
 msgstr "La variante \"{variantId}\" no puede dejar de controlar inventario mientras haya pedidos que reservan su stock: reserva(s) {reservations}. Primero complétalas o cancélalas."
 
 #. js-lingui-explicit-id
+#: src/workflows/payment/capture-payment.ts:59
+#: src/workflows/payment/steps/record-order-payment.ts:118
+msgid "Payment \"{id}\" holds no capture recorded under this request."
+msgstr "El pago \"{id}\" no tiene ninguna captura registrada para esta solicitud."
+
+#. js-lingui-explicit-id
 #: src/workflows/cart/add-shipping-method-to-cart.ts:43
 #: src/workflows/cart/add-to-cart.ts:64
 #: src/workflows/cart/complete-cart.ts:296
@@ -92,6 +98,11 @@ msgid "Cart \"{cartId}\" has no items or zero total"
 msgstr "El carrito \"{cartId}\" no tiene productos o su total es cero"
 
 #. js-lingui-explicit-id
+#: src/workflows/payment/refund-payment.ts:48
+msgid "Refund amount {amount} must be more than zero and at most the {received} received."
+msgstr "El monto del reembolso {amount} debe ser mayor que cero y como máximo los {received} recibidos."
+
+#. js-lingui-explicit-id
 #: src/workflows/payment/reprice-payment-session.ts:37
 msgid "Payment session \"{sessionId}\" is not part of payment collection \"{collectionId}\""
 msgstr "La sesión de pago \"{sessionId}\" no forma parte de la colección de pagos \"{collectionId}\""
@@ -102,9 +113,34 @@ msgid "Payment collection \"{collectionId}\" is not linked to a cart, so it has 
 msgstr "La colección de pagos \"{collectionId}\" no está vinculada a un carrito, así que no tiene un total contra el cual recalcular el precio"
 
 #. js-lingui-explicit-id
-#: src/workflows/order/cancel-order.ts:26
+#: src/workflows/payment/steps/record-order-payment.ts:52
+msgid "Payment amount must be greater than zero."
+msgstr "El monto del pago debe ser mayor que cero."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:60
+msgid "Cannot record a payment on order {orderId}: it is canceled."
+msgstr "No se puede registrar un pago en el pedido {orderId}: está cancelado."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:75
+msgid "Payment amount {amount} exceeds the {outstanding} outstanding on order {orderId}."
+msgstr "El monto del pago {amount} supera los {outstanding} pendientes del pedido {orderId}."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/refund-payments.ts:61
+msgid "Payment \"{id}\" holds no refund recorded under this request."
+msgstr "El pago \"{id}\" no tiene ningún reembolso registrado para esta solicitud."
+
+#. js-lingui-explicit-id
+#: src/workflows/order/cancel-order.ts:41
 msgid "Cannot cancel order {orderId}: fulfillment status is \"{status}\", expected \"unfulfilled\""
 msgstr "No se puede cancelar el pedido {orderId}: el estado de preparación es \"{status}\", se esperaba \"unfulfilled\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/cancel-order.ts:67
+msgid "Cannot cancel order {orderId}: a refund of {amount} is not between 0 and the {received} received."
+msgstr "No se puede cancelar el pedido {orderId}: un reembolso de {amount} no está entre 0 y los {received} recibidos."
 
 #. js-lingui-explicit-id
 #: src/workflows/order/create-order-fulfillment.ts:34
@@ -393,7 +429,7 @@ msgstr "La pasarela de pago no está disponible por el momento. Vuelve a intenta
 
 #. js-lingui-explicit-id
 #: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
-#: src/modules/payment/services/payment-module-service.ts:928
+#: src/modules/payment/services/payment-module-service.ts:907
 #: src/providers/payment-stripe/errors.ts:145
 msgid "That payment method is no longer available."
 msgstr "Ese método de pago ya no está disponible."
@@ -404,7 +440,7 @@ msgid "The card could not be charged."
 msgstr "No se pudo hacer el cargo a la tarjeta."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:253
+#: src/modules/payment/services/payment-module-service.ts:255
 #: src/providers/payment-stripe/errors.ts:157
 msgid "The payment could not be processed."
 msgstr "No pudimos procesar el pago."
@@ -712,24 +748,49 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "No puedes eliminar valores de opción que usan los productos. Quítalos primero de todos los productos."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:515
-msgid "Payment \"{id}\" has been canceled and cannot be captured."
-msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
+#: src/modules/payment/services/payment-module-service.ts:561
+msgid "Payment amount {amount} exceeds the {outstanding} outstanding on payment collection \"{id}\"."
+msgstr "El monto del pago {amount} supera los {outstanding} pendientes de la colección de pagos \"{id}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:532
-msgid "Payment \"{id}\" has already been fully captured."
-msgstr "El pago \"{id}\" ya se capturó por completo."
-
-#. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:584
+#: src/modules/payment/services/payment-module-service.ts:602
 msgid "Payment \"{id}\" has no refundable amount remaining."
 msgstr "El pago \"{id}\" no tiene saldo reembolsable."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:592
+#: src/modules/payment/services/payment-module-service.ts:610
 msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 msgstr "El monto del reembolso {refundAmount} supera el monto reembolsable {refundableAmount}."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:972
+msgid "Payment \"{id}\" has been canceled and cannot be captured."
+msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:987
+msgid "Payment \"{id}\" has already been fully captured."
+msgstr "El pago \"{id}\" ya se capturó por completo."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:997
+msgid "Capture amount must be greater than zero."
+msgstr "El monto de la captura debe ser mayor que cero."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1004
+msgid "Capture amount {amount} exceeds the {remaining} still authorized on payment \"{id}\"."
+msgstr "El monto de la captura {amount} supera los {remaining} que aún quedan autorizados en el pago \"{id}\"."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1012
+msgid "Payment \"{id}\" can only be captured in full: its provider cannot take part of an authorization."
+msgstr "El pago \"{id}\" solo se puede capturar por completo: su proveedor no puede tomar parte de una autorización."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1070
+msgid "The manual payment for collection \"{id}\" was not authorized."
+msgstr "El pago manual de la colección \"{id}\" no fue autorizado."
 
 #. js-lingui-explicit-id
 #: src/modules/payment/services/payment-provider-service.ts:68
@@ -737,22 +798,40 @@ msgid "Payment provider \"{providerId}\" is not registered."
 msgstr "El proveedor de pagos \"{providerId}\" no está registrado."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/providers/system.ts:63
+#: src/modules/payment/repositories/payment-collection.ts:23
+msgid "Locking payment collection \"{id}\" needs a transaction."
+msgstr "Bloquear la colección de pagos \"{id}\" requiere una transacción."
+
+#. js-lingui-explicit-id
+#: src/core/utils/base-repository.ts:139
+#: src/core/utils/base-repository.ts:206
+#: src/modules/payment/repositories/payment-collection.ts:37
+msgid "Entity with id \"{id}\" not found"
+msgstr "No se encontró la entidad con id \"{id}\""
+
+#. js-lingui-explicit-id
+#: src/modules/payment/providers/system.ts:69
 msgid "Method not implemented."
 msgstr "Método no implementado."
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:312
+#: src/core/utils/base-repository.ts:179
+#: src/modules/order/services/order-module-service.ts:285
+msgid "Expected row to be created"
+msgstr "Se esperaba que se creara la fila"
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:342
 msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 msgstr "No se puede completar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:328
+#: src/modules/order/services/order-module-service.ts:358
 msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
 msgstr "No se puede cancelar el pedido {id}: el estado es \"{status}\", se esperaba \"pending\" o \"draft\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:344
+#: src/modules/order/services/order-module-service.ts:374
 msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 msgstr "No se puede archivar el pedido {id}: el estado es \"{status}\", se esperaba \"completed\""
 
@@ -1147,17 +1226,6 @@ msgid "This authentication provider does not support validateCallback"
 msgstr "Este método de acceso no permite validar la respuesta del proveedor"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:139
-#: src/core/utils/base-repository.ts:206
-msgid "Entity with id \"{id}\" not found"
-msgstr "No se encontró la entidad con id \"{id}\""
-
-#. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:179
-msgid "Expected row to be created"
-msgstr "Se esperaba que se creara la fila"
-
-#. js-lingui-explicit-id
 #: src/core/utils/validate-body.ts:15
 msgid "Invalid request body"
 msgstr "Cuerpo de la solicitud no válido"
@@ -1278,7 +1346,7 @@ msgid "No order matches that number and phone"
 msgstr "Ningún pedido coincide con ese número y teléfono"
 
 #. js-lingui-explicit-id
-#: src/api/store/orders/[id]/route.ts:30
+#: src/api/store/orders/[id]/route.ts:31
 msgid "Order with id \"{id}\" not found"
 msgstr "No se encontró el pedido con id \"{id}\""
 

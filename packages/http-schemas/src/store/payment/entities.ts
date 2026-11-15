@@ -75,7 +75,15 @@ export const StorePaymentCollection = z
     capturedAmount: nullableBigNumberToString,
     refundedAmount: nullableBigNumberToString,
     completedAt: dateToIso.nullable(),
-    status: z.enum(['not_paid', 'awaiting', 'authorized', 'partially_authorized', 'completed']),
+    status: z.enum([
+      'not_paid',
+      'awaiting',
+      'authorized',
+      'partially_authorized',
+      'partially_captured',
+      'completed',
+      'canceled',
+    ]),
     metadata: z.record(z.string(), z.unknown()).nullable(),
     ...timestamps.shape,
   })

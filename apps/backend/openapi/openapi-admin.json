@@ -1311,12 +1311,7 @@
                     "$ref": "#/components/schemas/AdminOrderTotals"
                   },
                   "paymentStatus": {
-                    "type": "string",
-                    "enum": [
-                      "awaiting",
-                      "authorized",
-                      "captured"
-                    ]
+                    "$ref": "#/components/schemas/OrderPaymentStatus"
                   },
                   "allowedActions": {
                     "$ref": "#/components/schemas/AdminOrderAllowedActions"
@@ -1329,6 +1324,12 @@
                     "items": {
                       "$ref": "#/components/schemas/AdminOrderFulfillment"
                     }
+                  },
+                  "paymentCollections": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AdminPaymentCollection"
+                    }
                   }
                 },
                 "required": [
@@ -1339,7 +1340,8 @@
                   "paymentStatus",
                   "allowedActions",
                   "shippingAddress",
-                  "fulfillments"
+                  "fulfillments",
+                  "paymentCollections"
                 ]
               }
             ]
@@ -1685,6 +1687,21 @@
           "outstandingTotal"
         ]
       },
+      "OrderPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "not_paid",
+          "awaiting",
+          "authorized",
+          "partially_authorized",
+          "partially_captured",
+          "captured",
+          "partially_refunded",
+          "refunded",
+          "canceled",
+          "requires_action"
+        ]
+      },
       "AdminOrderAllowedActions": {
         "type": "object",
         "properties": {
@@ -1864,6 +1881,388 @@
           "deletedAt"
         ]
       },
+      "AdminPaymentCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "authorizedAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "capturedAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "refundedAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_paid",
+              "awaiting",
+              "authorized",
+              "partially_authorized",
+              "partially_captured",
+              "completed",
+              "canceled"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "paymentSessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPaymentSession"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminPayment"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "currencyCode",
+          "amount",
+          "authorizedAmount",
+          "capturedAmount",
+          "refundedAmount",
+          "completedAt",
+          "status",
+          "metadata",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminPaymentSession": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentCollectionId": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "authorized",
+              "captured",
+              "requires_more",
+              "error",
+              "canceled",
+              "pending_authorization"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "context": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "authorizedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "payment": {
+            "$ref": "#/components/schemas/AdminPayment"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentCollectionId",
+          "providerId",
+          "currencyCode",
+          "amount",
+          "status",
+          "data",
+          "context",
+          "authorizedAt",
+          "metadata",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminPayment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentCollectionId": {
+            "type": "string"
+          },
+          "paymentSessionId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "data": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "capturedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "canceledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "captures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCapture"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRefund"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentCollectionId",
+          "paymentSessionId",
+          "amount",
+          "currencyCode",
+          "providerId",
+          "data",
+          "metadata",
+          "capturedAt",
+          "canceledAt",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
+      },
+      "AdminCapture": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentId",
+          "amount",
+          "createdBy",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "AdminRefund": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "refundReasonId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdBy": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {}
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "paymentId",
+          "refundReasonId",
+          "amount",
+          "note",
+          "createdBy",
+          "metadata",
+          "createdAt"
+        ]
+      },
       "AdminOrderActionResponse": {
         "type": "object",
         "properties": {
@@ -1873,6 +2272,41 @@
         },
         "required": [
           "order"
+        ]
+      },
+      "AdminCancelOrder": {
+        "type": "object",
+        "properties": {
+          "refundAmount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "default": {}
+      },
+      "AdminPaymentCollectionResponse": {
+        "type": "object",
+        "properties": {
+          "paymentCollection": {
+            "$ref": "#/components/schemas/AdminPaymentCollection"
+          }
+        },
+        "required": [
+          "paymentCollection"
+        ]
+      },
+      "AdminRecordOrderPayment": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "required": [
+          "amount"
         ]
       },
       "AdminCreateOrderFulfillment": {
@@ -2547,397 +2981,6 @@
           "countryCode"
         ]
       },
-      "AdminPaymentCollectionResponse": {
-        "type": "object",
-        "properties": {
-          "paymentCollection": {
-            "$ref": "#/components/schemas/AdminPaymentCollection"
-          }
-        },
-        "required": [
-          "paymentCollection"
-        ]
-      },
-      "AdminPaymentCollection": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "authorizedAmount": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "capturedAmount": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "refundedAmount": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "completedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "not_paid",
-              "awaiting",
-              "authorized",
-              "partially_authorized",
-              "completed"
-            ]
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "paymentSessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminPaymentSession"
-            }
-          },
-          "payments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminPayment"
-            }
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "currencyCode",
-          "amount",
-          "authorizedAmount",
-          "capturedAmount",
-          "refundedAmount",
-          "completedAt",
-          "status",
-          "metadata",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
-      },
-      "AdminPaymentSession": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentCollectionId": {
-            "type": "string"
-          },
-          "providerId": {
-            "type": "string"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "pending",
-              "authorized",
-              "captured",
-              "requires_more",
-              "error",
-              "canceled",
-              "pending_authorization"
-            ]
-          },
-          "data": {
-            "type": "object",
-            "additionalProperties": {}
-          },
-          "context": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "authorizedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "payment": {
-            "$ref": "#/components/schemas/AdminPayment"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentCollectionId",
-          "providerId",
-          "currencyCode",
-          "amount",
-          "status",
-          "data",
-          "context",
-          "authorizedAt",
-          "metadata",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
-      },
-      "AdminPayment": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentCollectionId": {
-            "type": "string"
-          },
-          "paymentSessionId": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "currencyCode": {
-            "type": "string"
-          },
-          "providerId": {
-            "type": "string"
-          },
-          "data": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "capturedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "canceledAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "captures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminCapture"
-            }
-          },
-          "refunds": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminRefund"
-            }
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deletedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentCollectionId",
-          "paymentSessionId",
-          "amount",
-          "currencyCode",
-          "providerId",
-          "data",
-          "metadata",
-          "capturedAt",
-          "canceledAt",
-          "createdAt",
-          "updatedAt",
-          "deletedAt"
-        ]
-      },
-      "AdminCapture": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentId": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "createdBy": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentId",
-          "amount",
-          "createdBy",
-          "metadata",
-          "createdAt"
-        ]
-      },
-      "AdminRefund": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "paymentId": {
-            "type": "string"
-          },
-          "refundReasonId": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "note": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "createdBy": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "metadata": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {}
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "paymentId",
-          "refundReasonId",
-          "amount",
-          "note",
-          "createdBy",
-          "metadata",
-          "createdAt"
-        ]
-      },
       "AdminPaymentResponse": {
         "type": "object",
         "properties": {
@@ -2977,6 +3020,17 @@
           "id",
           "isEnabled"
         ]
+      },
+      "AdminCapturePayment": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "format": "decimal",
+            "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+          }
+        },
+        "default": {}
       },
       "AdminRefundPayment": {
         "type": "object",
@@ -9935,6 +9989,15 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCancelOrder"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",
@@ -9942,6 +10005,61 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminOrderActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}/payments": {
+      "post": {
+        "operationId": "recordOrderPayment",
+        "summary": "Record a payment on an order",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecordOrderPayment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPaymentCollectionResponse"
                 }
               }
             }
@@ -10881,52 +10999,6 @@
         }
       }
     },
-    "/admin/payment-collections/{id}/mark-as-paid": {
-      "post": {
-        "operationId": "markPaymentCollectionAsPaid",
-        "summary": "Mark a payment collection as paid",
-        "tags": [
-          "Payment Collections"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            },
-            "required": true,
-            "name": "id",
-            "in": "path"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminPaymentCollectionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Not found"
-          }
-        }
-      }
-    },
     "/admin/payments/{id}": {
       "get": {
         "operationId": "getPayment",
@@ -11028,6 +11100,15 @@
             "in": "path"
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCapturePayment"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response",

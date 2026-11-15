@@ -75,6 +75,14 @@ export abstract class AbstractPaymentProvider<TConfig = Record<string, unknown>>
   static isTestOnly = false
 
   /**
+   * Whether {@link capturePayment} can take less than the whole authorization. Off by default,
+   * because a gateway that cannot (Stripe's adapter here captures the entire intent) would charge
+   * the full amount while the module recorded a deposit — the ledger and the money would disagree.
+   * The payment module refuses a partial capture against a provider that leaves this off.
+   */
+  static canCapturePartially = false
+
+  /**
    * Checked by the provider loader before the provider is constructed, so a deployment missing a
    * credential fails at boot rather than at the first payment — which is in front of a shopper,
    * as an unexplained failure, however long after the deploy that caused it. Throw to refuse

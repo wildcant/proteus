@@ -79,6 +79,12 @@ export class PaymentProviderService {
     return { label: klass.label, isTestOnly: klass.isTestOnly, publicConfig: provider.getPublicConfig?.() ?? {} }
   }
 
+  /** See `AbstractPaymentProvider.canCapturePartially`. */
+  canCapturePartially(providerId: string): boolean {
+    const klass = this.retrieveProvider(providerId).constructor as typeof AbstractPaymentProvider
+    return klass.canCapturePartially
+  }
+
   // -- Provider table CRUD --
 
   async list(

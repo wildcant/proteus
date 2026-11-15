@@ -14,6 +14,7 @@ import type {
   SavedMethodDTO,
 } from './common.js'
 import type {
+  CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
   CreatePaymentCollectionDTO,
@@ -91,14 +92,16 @@ export type IPaymentModuleService = {
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
   cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
   /**
-   * Settles a collection against money taken outside Proteus — a transfer, cash, a terminal.
-   *
-   * Opens a session on the manual provider, authorizes and captures it, all in one transaction:
-   * a collection left holding an authorized payment nobody captured reads as unpaid while the
-   * money is gone, and no gateway event is coming to fix it. Answers with the collection as it
-   * stands afterwards.
+   * Records a payment of an amount against a collection, under its row lock: opens and authorizes
+   * a manual session for what is outstanding when the collection holds no live authorization, then
+   * captures the amount. Refused above what is outstanding. A capture already recorded under
+   * `idempotencyKey` is answered with rather than taken again.
    */
-  markPaymentCollectionAsPaid(id: string, context?: Context): Promise<PaymentCollectionDTO>
+  capturePaymentCollection(
+    paymentCollectionId: string,
+    data: CapturePaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentDTO>
 
   // Providers
   listPaymentProviders(

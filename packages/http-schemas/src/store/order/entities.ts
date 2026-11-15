@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { bigNumberToString, dateToIso, timestamps } from '../../common.js'
+import { bigNumberToString, dateToIso, OrderPaymentStatus, timestamps } from '../../common.js'
 
 export const StoreOrderStatus = z.enum(['draft', 'pending', 'completed', 'canceled', 'archived'])
 
@@ -124,7 +124,7 @@ export const StoreOrderDetail = z
     reference: z.string(),
     /** Whether the shop has confirmed the Order, separately from its payments and its delivery. */
     status: StoreOrderStatus,
-    paymentStatus: z.enum(['awaiting', 'authorized', 'captured']),
+    paymentStatus: OrderPaymentStatus,
     fulfillmentStatus: StoreOrderFulfillmentStatus,
     currencyCode: z.string(),
     createdAt: dateToIso,

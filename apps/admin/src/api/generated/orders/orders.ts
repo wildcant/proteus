@@ -6,12 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  AdminCancelOrder,
   AdminCreateOrderFulfillment,
   AdminCreateOrderShipment,
   AdminDraftOrderListResponse,
   AdminOrderActionResponse,
   AdminOrderListResponse,
   AdminOrderResponse,
+  AdminPaymentCollectionResponse,
+  AdminRecordOrderPayment,
   ListDraftOrdersParams,
   ListOrdersParams
 } from '../model';
@@ -60,9 +63,26 @@ export const completeOrder = (
  */
 export const cancelOrder = (
     id: string,
+    adminCancelOrder?: BodyType<AdminCancelOrder>,
  ) => {
       return fetcher<AdminOrderActionResponse>(
-      {url: `/admin/orders/${id}/cancel`, method: 'POST'
+      {url: `/admin/orders/${id}/cancel`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminCancelOrder
+    },
+      );
+    }
+  /**
+ * @summary Record a payment on an order
+ */
+export const recordOrderPayment = (
+    id: string,
+    adminRecordOrderPayment?: BodyType<AdminRecordOrderPayment>,
+ ) => {
+      return fetcher<AdminPaymentCollectionResponse>(
+      {url: `/admin/orders/${id}/payments`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: adminRecordOrderPayment
     },
       );
     }
@@ -134,6 +154,7 @@ export const listDraftOrders = (
 export type GetOrderResult = NonNullable<Awaited<ReturnType<typeof getOrder>>>
 export type CompleteOrderResult = NonNullable<Awaited<ReturnType<typeof completeOrder>>>
 export type CancelOrderResult = NonNullable<Awaited<ReturnType<typeof cancelOrder>>>
+export type RecordOrderPaymentResult = NonNullable<Awaited<ReturnType<typeof recordOrderPayment>>>
 export type ArchiveOrderResult = NonNullable<Awaited<ReturnType<typeof archiveOrder>>>
 export type CreateOrderFulfillmentResult = NonNullable<Awaited<ReturnType<typeof createOrderFulfillment>>>
 export type CreateOrderShipmentResult = NonNullable<Awaited<ReturnType<typeof createOrderShipment>>>

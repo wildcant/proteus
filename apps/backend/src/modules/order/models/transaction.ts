@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm'
 import { pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
-import { liveIndex } from '../../../core/db/indexes.js'
+import { liveIndex, liveUniqueIndex } from '../../../core/db/indexes.js'
 import { orderTable } from './order.js'
 
 export const orderTransactionTable = pgTable(
@@ -20,7 +20,12 @@ export const orderTransactionTable = pgTable(
   },
   (table) => [
     liveIndex('idx_order_transaction_order_id').on(table.orderId),
-    liveIndex('idx_order_transaction_reference').on(table.reference, table.referenceId),
+    /**
+     * One live transaction per payment-module row it records — a capture or a refund. The workflow
+     * step that writes it can run twice (a retry, or a later run converging on the same capture),
+     * and the second write has to land on this slot rather than double the Order's Paid Total.
+     */
+    liveUniqueIndex('idx_order_transaction_reference').on(table.reference, table.referenceId),
   ],
 )
 

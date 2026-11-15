@@ -14,5 +14,7 @@ export const AdminPaymentCollectionStatus = {
   awaiting: 'awaiting',
   authorized: 'authorized',
   partially_authorized: 'partially_authorized',
+  partially_captured: 'partially_captured',
   completed: 'completed',
+  canceled: 'canceled',
 } as const;

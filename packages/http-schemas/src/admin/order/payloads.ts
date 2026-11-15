@@ -10,6 +10,7 @@ import {
   shortText,
   textBlob,
 } from '../../bounded.js'
+import { amountToBigNumber } from '../../common.js'
 
 export const AdminCreateFulfillmentItem = z.object({
   title: shortText.min(1),
@@ -60,3 +61,24 @@ export const AdminCreateOrderShipment = z
   })
   .openapi('AdminCreateOrderShipment')
 export type AdminCreateOrderShipmentBody = z.infer<typeof AdminCreateOrderShipment>
+
+/** A payment received outside Proteus — a transfer, cash on delivery — recorded on the Order. */
+export const AdminRecordOrderPayment = z
+  .object({
+    amount: amountToBigNumber,
+  })
+  .openapi('AdminRecordOrderPayment')
+export type AdminRecordOrderPaymentBody = z.infer<typeof AdminRecordOrderPayment>
+
+export const AdminCancelOrder = z
+  .object({
+    /**
+     * How much of what the Order has received to return, from nothing to all of it. Omitted, all
+     * of it is refunded.
+     */
+    refundAmount: amountToBigNumber.optional(),
+  })
+  // A cancel with nothing to say about refunds sends no body at all.
+  .default({})
+  .openapi('AdminCancelOrder')
+export type AdminCancelOrderBody = z.infer<typeof AdminCancelOrder>
