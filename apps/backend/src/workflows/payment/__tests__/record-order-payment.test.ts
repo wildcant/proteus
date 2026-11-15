@@ -117,6 +117,23 @@ test.describe('record-order-payment', () => {
       return createPaymentCollection(...args)
     })
 
+    // Then holds the run that won the link until the other has captured, so the winner's own
+    // capture is the one refused and its rollback runs over a collection the other paid into.
+    const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+    const createMany = linkService.createMany.bind(linkService)
+    const capturePaymentCollection = paymentService.capturePaymentCollection.bind(paymentService)
+    let releaseWinner: () => void = () => undefined
+    const loserCaptured = new Promise<void>((resolve) => {
+      releaseWinner = resolve
+    })
+    vi.spyOn(linkService, 'createMany').mockImplementation(async (...args) => {
+      await createMany(...args)
+      await loserCaptured
+    })
+    vi.spyOn(paymentService, 'capturePaymentCollection').mockImplementation((...args) =>
+      capturePaymentCollection(...args).finally(releaseWinner),
+    )
+
     const results = await Promise.allSettled([
       recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(60) }),
       recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(60) }),
