@@ -91,6 +91,16 @@ CREATE TABLE "service_zone" (
 	"deleted_at" timestamp with time zone
 );
 --> statement-breakpoint
+CREATE TABLE "shipping_option_type" (
+	"id" text PRIMARY KEY DEFAULT CONCAT('sotype_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
+	"label" text NOT NULL,
+	"description" text,
+	"code" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"deleted_at" timestamp with time zone
+);
+--> statement-breakpoint
 CREATE TABLE "shipping_option" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('so_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"name" text NOT NULL,
@@ -103,16 +113,6 @@ CREATE TABLE "shipping_option" (
 	"data" jsonb,
 	"metadata" text,
 	"is_enabled" boolean DEFAULT true NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"deleted_at" timestamp with time zone
-);
---> statement-breakpoint
-CREATE TABLE "shipping_option_type" (
-	"id" text PRIMARY KEY DEFAULT CONCAT('sotype_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
-	"label" text NOT NULL,
-	"description" text,
-	"code" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -142,7 +142,7 @@ CREATE INDEX "idx_fulfillment_set_type" ON "fulfillment_set" USING btree ("type"
 CREATE INDEX "idx_fulfillment_provider_id" ON "fulfillment" USING btree ("provider_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_fulfillment_shipping_option_id" ON "fulfillment" USING btree ("shipping_option_id") WHERE shipping_option_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_geo_zone_service_zone_id" ON "geo_zone" USING btree ("service_zone_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_geo_zone_country_code" ON "geo_zone" USING btree ("country_code") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE INDEX "idx_geo_zone_country_code" ON "geo_zone" USING btree (lower("country_code")) WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_service_zone_fulfillment_set_id" ON "service_zone" USING btree ("fulfillment_set_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_shipping_option_service_zone_id" ON "shipping_option" USING btree ("service_zone_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_shipping_option_provider_id" ON "shipping_option" USING btree ("provider_id") WHERE deleted_at IS NULL;--> statement-breakpoint

@@ -1,5 +1,5 @@
 {
-  "id": "747198c9-152b-4630-8b6e-8bf599c645e9",
+  "id": "d2759163-f0a5-4597-bd8f-25008c19dd8a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -131,8 +131,12 @@
           "name": "fulfillment_address_fulfillment_id_fulfillment_id_fk",
           "tableFrom": "fulfillment_address",
           "tableTo": "fulfillment",
-          "columnsFrom": ["fulfillment_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fulfillment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -246,8 +250,12 @@
           "name": "fulfillment_item_fulfillment_id_fulfillment_id_fk",
           "tableFrom": "fulfillment_item",
           "tableTo": "fulfillment",
-          "columnsFrom": ["fulfillment_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fulfillment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -511,8 +519,12 @@
           "name": "fulfillment_shipping_option_id_shipping_option_id_fk",
           "tableFrom": "fulfillment",
           "tableTo": "shipping_option",
-          "columnsFrom": ["shipping_option_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shipping_option_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -618,9 +630,9 @@
           "name": "idx_geo_zone_country_code",
           "columns": [
             {
-              "expression": "country_code",
-              "isExpression": false,
+              "expression": "lower(\"country_code\")",
               "asc": true,
+              "isExpression": true,
               "nulls": "last"
             }
           ],
@@ -636,8 +648,12 @@
           "name": "geo_zone_service_zone_id_service_zone_id_fk",
           "tableFrom": "geo_zone",
           "tableTo": "service_zone",
-          "columnsFrom": ["service_zone_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "service_zone_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -721,12 +737,74 @@
           "name": "service_zone_fulfillment_set_id_fulfillment_set_id_fk",
           "tableFrom": "service_zone",
           "tableTo": "fulfillment_set",
-          "columnsFrom": ["fulfillment_set_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "fulfillment_set_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.shipping_option_type": {
+      "name": "shipping_option_type",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "CONCAT('sotype_', REPLACE(gen_random_uuid()::text, '-', ''))"
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -881,8 +959,12 @@
           "name": "shipping_option_service_zone_id_service_zone_id_fk",
           "tableFrom": "shipping_option",
           "tableTo": "service_zone",
-          "columnsFrom": ["service_zone_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "service_zone_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -890,8 +972,12 @@
           "name": "shipping_option_shipping_profile_id_shipping_profile_id_fk",
           "tableFrom": "shipping_option",
           "tableTo": "shipping_profile",
-          "columnsFrom": ["shipping_profile_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shipping_profile_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -899,70 +985,16 @@
           "name": "shipping_option_shipping_option_type_id_shipping_option_type_id_fk",
           "tableFrom": "shipping_option",
           "tableTo": "shipping_option_type",
-          "columnsFrom": ["shipping_option_type_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "shipping_option_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.shipping_option_type": {
-      "name": "shipping_option_type",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "CONCAT('sotype_', REPLACE(gen_random_uuid()::text, '-', ''))"
-        },
-        "label": {
-          "name": "label",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "code": {
-          "name": "code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
