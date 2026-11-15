@@ -6,7 +6,6 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { type PlannedRefund, refundPaymentsStep } from '../payment/steps/refund-payments.js'
-import { addOrderTransactionsStep } from './steps/add-order-transactions.js'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type CancelOrderInput = {
@@ -129,8 +128,7 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
 
     /** Payments last — these are irreversible provider-side operations. First the refund the
      *  admin chose, each written as an Order transaction so the Paid Total shows what was kept. */
-    const refunded = await refundPaymentsStep(ctx, refundPlan)
-    await addOrderTransactionsStep(ctx, refunded)
+    await refundPaymentsStep(ctx, refundPlan)
 
     /** Then void what the authorizations still hold, so no money can be captured against a
      *  canceled Order. A fully captured payment has nothing left to void and is left alone. */

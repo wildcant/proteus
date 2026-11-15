@@ -1,7 +1,9 @@
+import { BigNumber } from '@core/bignumber.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
+import { recordOrderPaymentWorkflow } from '@workflows/payment/record-order-payment.js'
 import { vi } from 'vitest'
 import { cancelOrderWorkflow } from '../cancel-order.js'
 
@@ -143,6 +145,30 @@ test.describe('cancelOrderWorkflow', () => {
       availableQuantity: 0,
     })
     expect(await service.read.reservationItems(container, { lineItemId: lineItem.id })).toHaveLength(1)
+  })
+
+  /**
+   * The refund has no compensation — the money is back with the shopper — so a failure after it
+   * must leave its Order transaction standing too, or the Paid Total would count returned money.
+   */
+  test('rollback after a refund keeps the refund recorded on the order', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'cancelPayment').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(10) })).rejects.toThrow(
+      'provider unavailable',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending', canceledAt: null })
+    expect((await service.read.paymentCollection(container, paymentCollectionId)).refundedAmount).toEqual(
+      new BigNumber(10),
+    )
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-10', '30'])
   })
 
   test('rollback un-cancels the order and leaves the payment standing when the release fails', async ({

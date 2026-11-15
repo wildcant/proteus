@@ -130,9 +130,7 @@ test.describe('record-order-payment', () => {
     const refunds = [{ paymentId: payment.id, amount: new BigNumber(10), idempotencyKey: 'refund-once' }]
     await createWorkflow<void, void>('test-retried-refund', async (ctx) => {
       await refundPaymentsStep(ctx, { refunds, orderId })
-      const refunded = await refundPaymentsStep(ctx, { refunds, orderId })
-      await addOrderTransactionsStep(ctx, refunded)
-      await addOrderTransactionsStep(ctx, refunded)
+      await refundPaymentsStep(ctx, { refunds, orderId })
     }).run()
 
     expect((await service.read.paymentCollection(container, paymentCollectionId)).refundedAmount).toEqual(
