@@ -46,3 +46,25 @@ export function serviceZonesServingAddress(
 ): Set<string> {
   return new Set(geoZones.filter((zone) => geoZoneServesAddress(zone, address)).map((zone) => zone.serviceZoneId))
 }
+
+/** What each geo zone type needs to match anything: its own field and every field of the type above. */
+const REQUIRED_GEO_ZONE_FIELDS = {
+  country: ['countryCode'],
+  province: ['countryCode', 'provinceCode'],
+  city: ['countryCode', 'provinceCode', 'city'],
+  zip: ['countryCode', 'provinceCode', 'city', 'postalExpression'],
+} as const satisfies Record<MatchableGeoZone['type'], (keyof GeoZoneFields)[]>
+
+/** A geo zone as created or edited, its optional fields possibly absent. */
+type GeoZoneFields = { [Field in keyof MatchableGeoZone]?: MatchableGeoZone[Field] | undefined } & {
+  type: MatchableGeoZone['type']
+}
+
+/**
+ * The first field a geo zone of its type lacks, by Medusa's `validateGeoZones`; null when it has
+ * them all. A zone without one is refused rather than stored, because it could never match an
+ * address and nothing would say why.
+ */
+export function missingGeoZoneField(zone: GeoZoneFields): keyof GeoZoneFields | null {
+  return REQUIRED_GEO_ZONE_FIELDS[zone.type].find((field) => normalized(zone[field]) === null) ?? null
+}

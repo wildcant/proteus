@@ -40,7 +40,9 @@ its geo zones matches it, as in Medusa:
 
 Country codes compare exactly. Province, city and postal code compare trimmed and case-insensitively,
 so `Medellín ` and `medellín` are one city. An address missing a field a zone needs doesn't match
-that zone.
+that zone. A zone missing a field its own type needs (a city zone
+without its province, a postal-code zone without its city) is refused when it is created or edited,
+as Medusa refuses it, since it could never match an address.
 
 ## Flat and calculated prices
 

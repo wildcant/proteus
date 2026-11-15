@@ -16,6 +16,7 @@ import type {
   FulfillmentProviderDTO,
   FulfillmentSetDTO,
   GeoZoneDTO,
+  GeoZoneType,
   ServiceZoneDTO,
   ShippingOptionDTO,
   ShippingOptionTypeDTO,
@@ -57,7 +58,7 @@ import type { ServiceZoneRepository } from '../repositories/service-zone.js'
 import type { ShippingOptionRepository } from '../repositories/shipping-option.js'
 import type { ShippingOptionTypeRepository } from '../repositories/shipping-option-type.js'
 import type { ShippingProfileRepository } from '../repositories/shipping-profile.js'
-import { serviceZonesServingAddress } from '../utils/geo-zone-match.js'
+import { missingGeoZoneField, serviceZonesServingAddress } from '../utils/geo-zone-match.js'
 import type { FulfillmentProviderService } from './fulfillment-provider-service.js'
 
 type InjectedDependencies = {
@@ -170,6 +171,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createServiceZones(data: CreateServiceZoneDTO[], context?: Context): Promise<ServiceZoneDTO[]> {
     this.logger.debug(`Creating ${data.length} service zone(s)`)
+    this.assertGeoZonesMatchable(data.flatMap((zone) => zone.geoZones ?? []))
     return this.withTransaction(context, async (ctx) => {
       const zones = await this.serviceZoneRepository.createMany(
         data.map(({ geoZones: _, ...zone }) => zone),
@@ -214,6 +216,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
   }
 
   async createServiceZone(data: CreateServiceZoneDTO, context?: Context): Promise<ServiceZoneDTO> {
+    this.assertGeoZonesMatchable(data.geoZones ?? [])
     return this.withTransaction(context, async (ctx) => {
       const { geoZones: geoZoneInputs, ...zoneData } = data
       const zone = await this.serviceZoneRepository.create(zoneData, ctx)
@@ -245,6 +248,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createGeoZones(data: CreateGeoZoneDTO[], context?: Context): Promise<GeoZoneDTO[]> {
     this.logger.debug(`Creating ${data.length} geo zone(s)`)
+    this.assertGeoZonesMatchable(data)
     return this.geoZoneRepository.createMany(
       data.map((gz) => {
         if (!gz.serviceZoneId) {
@@ -269,6 +273,8 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async updateGeoZones(ids: string[], data: UpdateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO[]> {
     return this.withTransaction(context, async (ctx) => {
+      const existing = await this.geoZoneRepository.find({ id: ids }, undefined, ctx)
+      this.assertGeoZonesMatchable(existing.map((zone) => ({ ...zone, type: zone.type as GeoZoneType, ...data })))
       return this.geoZoneRepository.updateMany(ids, data, ctx) as Promise<GeoZoneDTO[]>
     })
   }
@@ -280,11 +286,14 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
         message: i18n.t('serviceZoneId is required when creating geo zones directly'),
       })
     }
+    this.assertGeoZonesMatchable([data])
     return this.geoZoneRepository.create({ ...data, serviceZoneId: data.serviceZoneId }, context) as Promise<GeoZoneDTO>
   }
 
   async updateGeoZone(id: string, data: UpdateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO> {
     return this.withTransaction(context, async (ctx) => {
+      const existing = await this.geoZoneRepository.findByIdOrFail(id, undefined, ctx)
+      this.assertGeoZonesMatchable([{ ...existing, type: existing.type as GeoZoneType, ...data }])
       return this.geoZoneRepository.update(id, data, ctx) as Promise<GeoZoneDTO>
     })
   }
@@ -293,6 +302,19 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     return this.withTransaction(context, async (ctx) => {
       await this.geoZoneRepository.softDelete(ids, ctx)
     })
+  }
+
+  /** Medusa's `validateGeoZones`: a zone lacking a field its type needs could never match an address. */
+  private assertGeoZonesMatchable(zones: CreateGeoZoneDTO[]): void {
+    for (const zone of zones) {
+      const field = missingGeoZoneField(zone)
+      if (!field) continue
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: i18n.t('A {type} geo zone needs {field}'),
+        values: { type: zone.type, field },
+      })
+    }
   }
 
   // -- ShippingProfile --
