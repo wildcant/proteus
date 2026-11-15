@@ -75,7 +75,8 @@ an empty list.
 
 Setting a shipping method on a Cart validates the option against the Cart's address (it must still
 be one the list would return), calls the provider's `validateFulfillmentData`, and stores the
-calculated amount and that result in the method's `data`. Cart totals include the stored amount. A
+calculated amount as the method's `amount` and that result as its `data`. The price always comes
+from the provider, never from the request. Cart totals include the stored amount. A
 provider keeps anything it needs later there, a delivery estimate included; there is no core column
 for one.
 

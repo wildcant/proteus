@@ -8,9 +8,13 @@ import type {
   AdminOrderResponse,
 } from '@proteus/http-schemas/admin'
 import type {
+  StoreCartDetailResponse,
   StoreCreateCartLineItemResponse,
+  StoreCreateCartShippingMethodResponse,
   StoreCreateDraftOrderResponse,
+  StoreOrderLookupResponse,
   StoreOrderResponse,
+  StoreShippingOptionListResponse,
 } from '@proteus/http-schemas/store'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -55,6 +59,9 @@ const createMarket = async ({ factories, service }: Pick<Fixtures, 'factories' |
   return { region, courier, sneaker, sandal }
 }
 
+const bogotaAddress = (http: Fixtures['http']) =>
+  http.store.cartAddress({ countryCode: 'CO', city: 'Bogotá', province: 'Cundinamarca', phone: '+57 300 123 4567' })
+
 /** A Cart in the market holding these variants, shipped to Bogotá with a phone. */
 const createBogotaCart = async (
   { http, service }: Pick<Fixtures, 'http' | 'service'>,
@@ -66,14 +73,7 @@ const createBogotaCart = async (
   for (const line of lines) {
     added.push((await api.post<StoreCreateCartLineItemResponse>(`/store/carts/${cart.id}/line-items`, line)).body)
   }
-  await api.post(`/store/carts/${cart.id}`, {
-    shippingAddress: http.store.cartAddress({
-      countryCode: 'CO',
-      city: 'Bogotá',
-      province: 'Cundinamarca',
-      phone: '+57 300 123 4567',
-    }),
-  })
+  await api.post(`/store/carts/${cart.id}`, { shippingAddress: bogotaAddress(http) })
   return { cart, lineItems: added.map((body) => body.lineItem) }
 }
 
@@ -94,9 +94,40 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     const { cart, lineItems } = await createBogotaCart({ http, service }, region.id, [
       { variantId: sneaker.variant.id, quantity: 1 },
     ])
-    await api.post(`/store/carts/${cart.id}/shipping-methods`, { shippingOptionId: courier.id })
     const readDraft = async (id: string) =>
       (await api.get<AdminDraftOrderResponse>(`/admin/draft-orders/${id}`)).body.draftOrder
+    const readOrder = async (id: string) => (await api.get<AdminOrderResponse>(`/admin/orders/${id}`)).body.order
+    const listOrderIds = async () =>
+      (await api.get<AdminOrderListResponse>('/admin/orders')).body.orders.map((listed) => listed.id)
+    const listOptions = async () =>
+      (await api.get<StoreShippingOptionListResponse>(`/store/carts/${cart.id}/shipping-options`)).body.shippingOptions
+    const readCartShipping = async () => {
+      const read = (await api.get<StoreCartDetailResponse>(`/store/carts/${cart.id}`)).body.cart
+      return { amounts: read.shippingMethods.map((method) => method.amount), shippingTotal: read.totals.shippingTotal }
+    }
+
+    // Bogotá is quoted by the courier from its rate table; a city it doesn't reach is offered nothing.
+    expect(await listOptions()).toMatchObject([{ id: courier.id, priceType: 'calculated', amount: 10000 }])
+    await api.post(`/store/carts/${cart.id}`, {
+      shippingAddress: http.store.cartAddress({ countryCode: 'CO', city: 'Leticia', province: 'Amazonas' }),
+    })
+    expect(await listOptions()).toEqual([])
+    await api.post(`/store/carts/${cart.id}`, { shippingAddress: bogotaAddress(http) })
+
+    // The method keeps the provider's price and its data.
+    const chosen = await api.post<StoreCreateCartShippingMethodResponse>(`/store/carts/${cart.id}/shipping-methods`, {
+      shippingOptionId: courier.id,
+    })
+    expect(chosen.status).toBe(201)
+    expect(chosen.body.shippingMethod).toMatchObject({ amount: '10000', data: { deliveryDays: 2 } })
+
+    // A second pair re-quotes the parcel, and taking it out quotes it back.
+    const runnerLineId = lineItems[0]?.id
+    if (!runnerLineId) throw new Error('The Cart should hold the runner')
+    await api.post(`/store/carts/${cart.id}/line-items/${runnerLineId}`, { quantity: 2 })
+    expect(await readCartShipping()).toEqual({ amounts: ['12000'], shippingTotal: '12000' })
+    await api.post(`/store/carts/${cart.id}/line-items/${runnerLineId}`, { quantity: 1 })
+    expect(await readCartShipping()).toEqual({ amounts: ['10000'], shippingTotal: '10000' })
 
     // The Cart becomes a draft, closed in the same run.
     const sent = await api.post<StoreCreateDraftOrderResponse>(`/store/carts/${cart.id}/draft-order`)
@@ -114,6 +145,29 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     const checkout = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/complete`)
     expect(checkout.status).toBe(400)
     expect(checkout.body.message).toContain('draft order')
+
+    // The shopper's link: the draft, its totals and nothing paid yet, without the email.
+    const shared = (await api.get<StoreOrderResponse>(`/store/orders/${draftId}`)).body.order
+    expect(shared).toMatchObject({
+      status: 'draft',
+      reference: sent.body.reference,
+      paymentStatus: 'not_paid',
+      totals: { itemsTotal: '100000', shippingTotal: '10000', orderTotal: '110000', paidTotal: '0' },
+    })
+    expect(shared.totals.outstandingTotal).toBe('110000')
+    expect(shared).not.toHaveProperty('email')
+    expect(shared).not.toHaveProperty('owner')
+
+    // A shopper who lost the link finds it by number and the end of the phone, and only so.
+    const lookup = (phoneLastDigits: string) =>
+      api.post<StoreOrderLookupResponse>('/store/orders/lookup', { displayId: shared.displayId, phoneLastDigits })
+    const found = await lookup('4567')
+    expect(found.status).toBe(200)
+    expect(found.body.id).toBe(draftId)
+    expect((await lookup('4568')).status).toBe(404)
+
+    // Not an order yet: the admin's orders list leaves it out.
+    expect(await listOrderIds()).not.toContain(draftId)
 
     // What the shop opens: the Cart as stored, the courier's quote and data included, nothing reserved.
     const opened = await readDraft(draftId)
@@ -184,7 +238,7 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     const early = await api.post<ApiErrorBody>(`/admin/orders/${draftId}/payments`, { amount: '61500' })
     expect(early.status).toBe(400)
     expect(early.body.type).toBe('not_allowed')
-    expect((await api.get<AdminOrderResponse>(`/admin/orders/${draftId}`)).body.order.paymentCollections).toEqual([])
+    expect((await readOrder(draftId)).paymentCollections).toEqual([])
 
     // Converting with the deposit holds the stock and records the payment.
     const converted = await api.post<AdminOrderActionResponse>(`/admin/draft-orders/${draftId}/convert-to-order`, {
@@ -198,7 +252,7 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
       .listInventoryLevels({ inventoryItemId: sneaker.inventoryItem?.id })
     expect(level).toMatchObject({ stockedQuantity: 5, reservedQuantity: 2 })
 
-    const order = (await api.get<AdminOrderResponse>(`/admin/orders/${draftId}`)).body.order
+    const order = await readOrder(draftId)
     expect(order.paymentStatus).toBe('partially_captured')
     expect(order.paymentCollections).toHaveLength(1)
     expect(order.totals).toMatchObject({ orderTotal: '205000', paidTotal: '61500', outstandingTotal: '143500' })
@@ -206,14 +260,19 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     // It has left the drafts for the orders list.
     const drafts = (await api.get<AdminDraftOrderListResponse>('/admin/draft-orders')).body
     expect(drafts.draftOrders.map((draft) => draft.id)).not.toContain(draftId)
-    const orders = (await api.get<AdminOrderListResponse>('/admin/orders')).body
-    expect(orders.orders.map((listed) => listed.id)).toContain(draftId)
+    expect(await listOrderIds()).toContain(draftId)
 
     // The rest, cash on delivery.
     await api.post(`/admin/orders/${draftId}/payments`, { amount: '143500' })
-    const paid = (await api.get<AdminOrderResponse>(`/admin/orders/${draftId}`)).body.order
+    const paid = await readOrder(draftId)
     expect(paid.paymentStatus).toBe('captured')
     expect(paid.totals).toMatchObject({ paidTotal: '205000', outstandingTotal: '0' })
+    // The shopper's link reads the same money, and the confirmation apart from it.
+    expect((await api.get<StoreOrderResponse>(`/store/orders/${draftId}`)).body.order).toMatchObject({
+      status: 'pending',
+      paymentStatus: 'captured',
+      totals: { paidTotal: '205000', outstandingTotal: '0' },
+    })
 
     // A second Cart's draft the shop won't fulfil: canceled, and the shopper's link says so.
     const second = await createBogotaCart({ http, service }, region.id, [{ variantId: sandal.variant.id, quantity: 1 }])
@@ -228,9 +287,21 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     const canceled = await api.post(`/admin/orders/${secondDraft.body.orderId}/cancel`)
     expect(canceled.status).toBe(200)
     expect((await api.get<StoreOrderResponse>(link)).body.order.status).toBe('canceled')
+
+    // A third, converted on its deposit, then canceled with part of the deposit returned.
+    const third = await createBogotaCart({ http, service }, region.id, [{ variantId: sandal.variant.id, quantity: 1 }])
+    await api.post(`/store/carts/${third.cart.id}/shipping-methods`, { shippingOptionId: courier.id })
+    const thirdDraft = await api.post<StoreCreateDraftOrderResponse>(`/store/carts/${third.cart.id}/draft-order`)
+    const thirdId = thirdDraft.body.orderId
+    await api.post(`/admin/draft-orders/${thirdId}/convert-to-order`, { paymentAmount: '30000' })
+    const keptPart = await api.post(`/admin/orders/${thirdId}/cancel`, { refundAmount: '10000' })
+    expect(keptPart.status).toBe(200)
+    const thirdOrder = await readOrder(thirdId)
+    expect(thirdOrder).toMatchObject({ status: 'canceled', paymentStatus: 'partially_refunded' })
+    expect(thirdOrder.totals).toMatchObject({ orderTotal: '60000', paidTotal: '20000' })
   })
 
-  test('refuses an unsellable line by name, at sending and at converting', async ({
+  test('refuses an unsellable line by name, at sending and at converting, and converts unpaid once it is back', async ({
     factories,
     service,
     http,
@@ -276,6 +347,18 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     const stillDraft = (await api.get<AdminOrderResponse>(`/admin/orders/${draft.body.orderId}`)).body.order
     expect(stillDraft).toMatchObject({ status: 'draft', paymentCollections: [] })
     expect(await service.read.reservationItems(api.container, {})).toEqual([])
+
+    // Back in stock, and the shop confirms without a deposit: the stock is held and the Order
+    // gets its one collection, with nothing received.
+    await stockAt(sneaker, 5)
+    const unpaid = await api.post<AdminOrderActionResponse>(
+      `/admin/draft-orders/${draft.body.orderId}/convert-to-order`,
+    )
+    expect(unpaid.status).toBe(200)
+    const confirmed = (await api.get<AdminOrderResponse>(`/admin/orders/${draft.body.orderId}`)).body.order
+    expect(confirmed).toMatchObject({ status: 'pending', paymentStatus: 'not_paid', totals: { paidTotal: '0' } })
+    expect(confirmed.paymentCollections).toHaveLength(1)
+    expect(await service.read.reservationItems(api.container, {})).toHaveLength(1)
   })
 
   test('deletes a draft, and only a draft', async ({ service, expect }) => {

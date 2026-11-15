@@ -167,7 +167,20 @@ so nothing about an order's charges is left for a store to compute.
 
 The store settings package (`packages/store-config`) gains an optional deposit percentage, an
 optional order reference prefix and a flag that enables store-side drafts, off by default. Proteus
-ships neutral values, and the admin reads the same package.
+ships neutral values, and the admin reads the same package. The backend reads the flag
+(`STORE_DRAFT_ORDERS_ENABLED`) as `projectConfig.store.draftOrders`; with it off, the store draft
+route answers 404.
+
+### Events and permissions
+
+No event is added. A draft's conversion publishes the existing `order.placed`, as a checkout does,
+and nothing is published when a draft is created, edited or canceled, or when a payment or refund
+is recorded. The event map adds an event only together with the subscriber that consumes it, and
+none consumes these yet.
+
+One permission key is added, `order.edit`, for editing and deleting drafts. Listing and reading
+drafts take `order.read`, converting takes `order.complete`, canceling takes `order.cancel`, and
+recording a payment or a refund takes `payment.capture` or `payment.refund`.
 
 ## Where Proteus departs from Medusa
 
