@@ -8,7 +8,7 @@ type TransferCartCustomerInput = { cartId: string; customerId: string }
 
 // TODO(locking): No distributed lock — concurrent calls could race. Add acquireLock/releaseLock once available.
 export const transferCartCustomerWorkflow = createWorkflow<TransferCartCustomerInput, CartDTO>(
-  { name: 'transfer-cart-customer', throws: [ErrorTypes.NOT_FOUND] },
+  { name: 'transfer-cart-customer', throws: [ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] },
   async (ctx, input) => {
     return ctx.step<CartDTO>('transfer-cart', async ({ container }) => {
       const cartService = container.resolve(Modules.CART)
@@ -27,6 +27,15 @@ export const transferCartCustomerWorkflow = createWorkflow<TransferCartCustomerI
 
       if (cart.customerId === customer.id) {
         return cart
+      }
+
+      // A completed Cart is the record behind an Order, so it can't change hands afterwards.
+      if (cart.completedAt) {
+        throw new WorkflowTerminalError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t('Cart "{cartId}" is already completed'),
+          values: { cartId: input.cartId },
+        })
       }
 
       return cartService.updateCart(input.cartId, {
