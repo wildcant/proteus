@@ -1272,7 +1272,7 @@ msgid "Shipping option \"{shippingOptionId}\" is not available"
 msgstr "La opción de envío \"{shippingOptionId}\" no está disponible"
 
 #. js-lingui-explicit-id
-#: src/api/store/carts/[id]/line-items/route.ts:18
+#: src/api/store/carts/[id]/line-items/route.ts:19
 msgid "Line item not returned after add"
 msgstr "No se devolvió el artículo después de agregarlo"
 
