@@ -216,8 +216,10 @@ run it at start) and commit the generated files. `pnpm run verify` fails on a st
 1. A class in `providers/fulfillment/` extending `AbstractFulfillmentProvider`, with a static
    `identifier` carrying the snake prefix (`pisos_dj_courier`). A core identifier, or another
    extension's, fails generation.
-2. Its declaration beside it, as core's are in the fulfillment module's `provider-declarations.ts`.
-   The fixture extension has the worked example.
+2. The same file declares it as its default export,
+   `ModuleProvider(Modules.FULFILLMENT, { services: [YourProvider] })`. The generator reads that
+   export, and the fulfillment module merges it after core's providers. The fixture extension's
+   `providers/fulfillment/city-rates.ts` is the worked example.
 3. It may depend on its own extension's module services (its rate table), resolved from the shared
    container by the extension's module key. It may not reach a core module's repositories or models;
    a core module is read through its service, like anywhere else in the extension.
@@ -232,7 +234,9 @@ run it at start) and commit the generated files. `pnpm run verify` fails on a st
 5. `extensions:generate`. The fulfillment module registers the provider at bootstrap, and the
    provider sync writes its row: at boot on Node, and through `scripts/seed-providers.ts` before a
    workerd deploy.
-6. The admin creates a shipping option that uses it, with the price type `calculated`.
+6. The admin creates a shipping option that uses it, with the price type `calculated`. Creation
+   asks the provider's `canCalculate`, and refuses the option with the code
+   `fulfillment_cannot_calculate` when it answers false.
 
 ### A hook handler
 

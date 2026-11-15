@@ -29,7 +29,7 @@ This prototype proves you don't have to accept that. It demonstrates:
 - **Swappable ORM adapters** — change one import to go from Drizzle to Prisma
 - **Swappable HTTP frameworks** — same route handlers work with a zero-dep router, Express, or Hono
 - **Swappable platform runners** — Node.js, Cloudflare Workers, Bun, Deno, Vercel, Lambda — same code
-- **Swappable payment providers** — Stripe, system (mark-as-paid), or your own — same payment module
+- **Swappable payment providers** — Stripe, manual (payments received outside a gateway), or your own — same payment module
 - **True module independence** — modules don't import each other; cross-module concerns live in dedicated link modules and workflows
 
 ---
