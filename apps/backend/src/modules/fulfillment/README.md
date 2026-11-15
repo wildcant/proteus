@@ -71,7 +71,9 @@ The amount is in the Cart's currency, in the same units as every other amount. A
 can't price this address or these items (a city the courier doesn't reach, a parcel over its
 limit) throws the typed "can't calculate" error the port declares. The module leaves that option
 out of the list rather than failing the request, so a Cart whose address no option reaches answers
-an empty list.
+an empty list. Any other error from a provider (its API down, a bug) also leaves only that option
+out, and is logged: one failing courier leaves the shopper the others. Medusa fails the whole list
+there instead.
 
 ### The shipping method keeps what the price was based on
 

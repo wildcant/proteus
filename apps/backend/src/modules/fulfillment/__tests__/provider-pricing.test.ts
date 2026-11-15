@@ -1,5 +1,6 @@
 import { test } from '@tests/setup/test-extend.js'
 import { asValue, createContainer } from 'awilix'
+import { vi } from 'vitest'
 import { buildCascadeGraph } from '../../../core/db/cascade-graph.js'
 import type {
   CalculatedShippingPrice,
@@ -61,7 +62,9 @@ class StubCourier extends AbstractFulfillmentProvider {
     return { data: {} }
   }
 
-  async cancelFulfillment(): Promise<void> {}
+  async cancelFulfillment(): Promise<void> {
+    // Nothing is booked, so there is nothing to cancel.
+  }
 }
 
 let service: FulfillmentModuleService
@@ -117,4 +120,32 @@ test('an update to a calculated option’s data is checked against its provider,
     service: 'economy',
   })
   expect((await service.updateShippingOption(option.id, { name: 'Renamed' })).name).toBe('Renamed')
+})
+
+test('a courier failing unexpectedly loses its own option from the list, logged, and not the others', async ({
+  factories,
+  logger,
+  expect,
+}) => {
+  const working = await factories.create.shippingOptionWithZone({
+    geoZone: { countryCode: 'co' },
+    shippingOption: calculatedOption('express'),
+  })
+  const failing = await factories.create.shippingOptionWithZone({
+    geoZone: { countryCode: 'co' },
+    shippingOption: calculatedOption('down'),
+  })
+  const flat = await factories.create.shippingOptionWithZone({ geoZone: { countryCode: 'co' } })
+  const loggedError = vi.spyOn(logger, 'error')
+
+  const listed = await service.listPricedShippingOptionsForContext({
+    currencyCode: 'cop',
+    shippingAddress: { countryCode: 'co', city: 'Medellín' },
+    items: [],
+  })
+
+  expect(listed.map((option) => option.id).sort()).toEqual([working.id, flat.id].sort())
+  expect(listed.find((option) => option.id === working.id)?.calculatedPrice.calculatedAmount).toBe(900)
+  expect(listed.map((option) => option.id)).not.toContain(failing.id)
+  expect(loggedError).toHaveBeenCalledWith(expect.objectContaining({ message: 'Courier API unavailable' }))
 })

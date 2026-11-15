@@ -544,9 +544,9 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   /**
    * A flat option costs its own amount; a calculated one what its provider answers for the context.
-   * A provider that cannot price the context drops the option — `cannotCalculateShippingPrice` —
-   * while any other error from it fails the call, because a courier being down is not the same
-   * answer as a courier that does not deliver there.
+   * A provider that cannot price the context drops the option (`cannotCalculateShippingPrice`).
+   * Any other error drops it too, logged, rather than failing the call: one courier being down
+   * should leave the shopper the others, not an empty checkout. (Medusa fails the whole list.)
    */
   private async priceOptions(
     options: { option: ShippingOptionDTO; data: Record<string, unknown> }[],
@@ -561,18 +561,13 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
           }
         }
 
-        try {
-          const calculatedPrice = await this.fulfillmentProviderService.calculatePrice(
-            option.providerId,
-            option.data ?? {},
-            data,
-            pricingContext,
-          )
-          return { ...option, calculatedPrice }
-        } catch (error) {
-          if (isCannotCalculateShippingPrice(error)) return null
-          throw error
-        }
+        const calculatedPrice = await this.fulfillmentProviderService
+          .calculatePrice(option.providerId, option.data ?? {}, data, pricingContext)
+          .catch((error) => {
+            if (!isCannotCalculateShippingPrice(error)) this.logger.error(error)
+            return null
+          })
+        return calculatedPrice ? { ...option, calculatedPrice } : null
       }),
     )
 
