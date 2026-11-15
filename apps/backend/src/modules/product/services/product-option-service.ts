@@ -5,6 +5,7 @@ import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   EnrichedProductVariantDTO,
+  EnrichedVariantOptionValueDTO,
   FilterableProductOptionCombinationProps,
   FilterableProductOptionProps,
   FilterableProductOptionValueProps,
@@ -24,7 +25,6 @@ import type {
   ProductVariantDTO,
   ProductVariantOptionDTO,
   VariantOptionLabelDTO,
-  VariantOptionValueDTO,
 } from '../../../core/types/product/common.js'
 import type {
   CreateProductOptionDTO,
@@ -974,12 +974,12 @@ export class ProductOptionService {
   private resolveOptionValues(
     options: ProductOptionWithValuesDTO[],
     optionValues: Record<string, string>,
-  ): VariantOptionValueDTO[] {
+  ): EnrichedVariantOptionValueDTO[] {
     return options.flatMap((option) => {
       const valueId = optionValues[option.id]
       const value = option.values.find((optionValue) => optionValue.id === valueId)
       if (!valueId || !value) return []
-      return { optionId: option.id, optionTitle: option.title, valueId, value: value.value }
+      return { optionId: option.id, optionTitle: option.title, renderAs: option.renderAs, valueId, value: value.value }
     })
   }
 

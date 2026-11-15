@@ -178,6 +178,7 @@ import {
   createProductVariant,
   createProductVariants,
   deleteProductType,
+  deleteProductVariant,
   listProductImages,
   listProductOptionsForProduct,
   listProducts,
@@ -405,6 +406,7 @@ export type Fixtures = {
       product: typeof updateProduct
       productType: typeof updateProductType
       deletedProductType: typeof deleteProductType
+      deletedProductVariant: typeof deleteProductVariant
       productVariant: typeof updateProductVariant
       authIdentity: typeof updateAuthIdentity
       authVerification: typeof updateAuthVerification
@@ -640,6 +642,7 @@ export const test = testBase.extend<Fixtures>({
         product: updateProduct,
         productType: updateProductType,
         deletedProductType: deleteProductType,
+        deletedProductVariant: deleteProductVariant,
         productVariant: updateProductVariant,
         authIdentity: updateAuthIdentity,
         authVerification: updateAuthVerification,

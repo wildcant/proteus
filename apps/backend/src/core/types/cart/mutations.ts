@@ -1,4 +1,5 @@
 import type { BigNumber } from '../../bignumber.js'
+import type { CartLineItemOptionDTO } from './common.js'
 
 export type CreateLineItemDTO = {
   title: string
@@ -11,11 +12,13 @@ export type CreateLineItemDTO = {
   productDescription?: string | null | undefined
   productSubtitle?: string | null | undefined
   productType?: string | null | undefined
+  productSubline?: string | null | undefined
   productHandle?: string | null | undefined
   variantSku?: string | null | undefined
   variantBarcode?: string | null | undefined
   variantTitle?: string | null | undefined
   variantOptionValues?: string | null | undefined
+  variantOptions?: CartLineItemOptionDTO[] | undefined
   requiresShipping?: boolean | undefined
   isDiscountable?: boolean | undefined
   isGiftcard?: boolean | undefined

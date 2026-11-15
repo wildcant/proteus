@@ -89,6 +89,32 @@ const operationsWithoutUnauthorized = {
   ],
 }
 
+/**
+ * The registered schemas whose own type admits null. A `.nullable()` on a registered schema marks the
+ * shared component, not the one field, so every other place that references it turns nullable too —
+ * a list of cities becomes a list of maybe-cities in the generated client. A field that may be null
+ * says so with `z.union([Schema, z.null()])`. These predate the check and are pinned so that a new
+ * one fails here rather than in a client.
+ */
+const nullableComponents = {
+  admin: ['AdminImportedProduct', 'AdminOrderAddress', 'AdminProductGroupingRule', 'AdminVariantStock'],
+  store: [
+    'StoreCartAddress',
+    'StoreNavigationViewAll',
+    'StoreOrderAddress',
+    'StoreProductListingAvailability',
+    'StoreProductListingGroups',
+    'StoreProductPriceBounds',
+  ],
+}
+
+type ComponentSchema = { type?: string | string[]; properties?: Record<string, ComponentSchema> }
+
+const componentsOf = (document: ReturnType<typeof buildDocument>) =>
+  (document.components?.schemas ?? {}) as Record<string, ComponentSchema>
+
+const admitsNull = (schema: ComponentSchema | undefined) => Array.isArray(schema?.type) && schema.type.includes('null')
+
 test.describe('shipped OpenAPI documents', () => {
   for (const [name, document] of Object.entries(documents)) {
     test(`${name}: every operation states its security and carries at least one tag`, ({ expect }) => {
@@ -123,6 +149,15 @@ test.describe('shipped OpenAPI documents', () => {
       expect(without).toEqual(operationsWithoutUnauthorized[name as keyof typeof operationsWithoutUnauthorized])
     })
 
+    test(`${name}: only the pinned components are nullable themselves`, ({ expect }) => {
+      const nullable = Object.entries(componentsOf(document))
+        .filter(([, schema]) => admitsNull(schema))
+        .map(([componentName]) => componentName)
+        .sort()
+
+      expect(nullable).toEqual(nullableComponents[name as keyof typeof nullableComponents])
+    })
+
     test(`${name}: the root tag list matches the tags the operations use`, ({ expect }) => {
       const declared = (document.tags ?? []).map((tag) => tag.name).sort()
       const used = [...new Set(operationsOf(document).flatMap((operation) => operation.tags ?? []))].sort()
@@ -130,4 +165,10 @@ test.describe('shipped OpenAPI documents', () => {
       expect(declared).toEqual(used)
     })
   }
+
+  test('store: a cart line with no compare-at price says its compareAtUnitPrice is null', ({ expect }) => {
+    // `bigNumberToString.nullable()` is documented as a plain string; the client would then promise a
+    // string the API sends as null for every line with no compare-at price.
+    expect(admitsNull(componentsOf(documents.store).StoreCartLineItem?.properties?.compareAtUnitPrice)).toBe(true)
+  })
 })

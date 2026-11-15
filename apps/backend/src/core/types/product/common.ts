@@ -148,11 +148,17 @@ export type VariantOptionLabelDTO = {
  * One entry of a variant's Option Combination, resolved for display: both the ids a client posts
  * back and the labels it renders. Always in the product's option order.
  */
-export type VariantOptionValueDTO = {
+type VariantOptionValueDTO = {
   optionId: string
   optionTitle: string
   valueId: string
   value: string
+}
+
+/** A variant's option value as an enriched variant carries it: with how its option draws values. */
+export type EnrichedVariantOptionValueDTO = VariantOptionValueDTO & {
+  /** A `swatch` value names itself; a `text` one needs its option's title beside it. */
+  renderAs: ProductOptionRenderAs
 }
 
 /**
@@ -162,7 +168,7 @@ export type VariantOptionValueDTO = {
  * the detail card, the generated title. The storefront takes the lean map instead, via
  * `listVariantOptionMaps`.
  */
-export type EnrichedProductVariantDTO = ProductVariantDTO & { optionValues: VariantOptionValueDTO[] }
+export type EnrichedProductVariantDTO = ProductVariantDTO & { optionValues: EnrichedVariantOptionValueDTO[] }
 
 /** An Option Combination a product could sell, and the variant that has it if one does. */
 export type ProductOptionCombinationDTO = {

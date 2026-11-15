@@ -1,5 +1,5 @@
 {
-  "id": "cbd37a95-2d68-4c18-a9a6-c71d0a0caa7c",
+  "id": "540964be-98a3-433b-9fdb-6f1094d79790",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -368,6 +368,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "product_subline": {
+          "name": "product_subline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "product_handle": {
           "name": "product_handle",
           "type": "text",
@@ -397,6 +403,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "variant_options": {
+          "name": "variant_options",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'"
         },
         "requires_shipping": {
           "name": "requires_shipping",

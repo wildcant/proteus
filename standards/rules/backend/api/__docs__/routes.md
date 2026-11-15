@@ -148,6 +148,7 @@ recovers the type from. Which middlewares carry context today:
 | `attachCustomer()` | `customer?: CustomerDTO` — for `auth: 'optional'` routes |
 | `setPricingContext()` | `pricingContext: { currencyCode }` |
 | `validateToken()` | `authContext: AuthContext` |
+| `attachLineItemStock()` | `lineItemStock: LineItemStockReader` — reads the live stock behind cart lines |
 | `validateAddressOwnership()`, `validateScopeProviderAssociation()` | nothing — pure guards |
 
 `authenticate()` stays context-free: whether it sets `authContext` depends on its runtime

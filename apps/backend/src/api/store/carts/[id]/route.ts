@@ -2,11 +2,15 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreCartDetailResponse, StoreUpdateCartResponse, UpdateCart } from '@proteus/http-schemas/store'
 import { updateCartWorkflow } from '@workflows/cart/update-cart.js'
+import { attachLineItemStock } from '../middlewares.js'
 
 export const GetInput = { params: IdParams }
+export const GetMiddlewares = [attachLineItemStock()] as const
 export const GetOutput = StoreCartDetailResponse
 
-export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult<typeof GetOutput>> => {
+export const GET = async (
+  req: HttpRequest<typeof GetInput, typeof GetMiddlewares>,
+): Promise<HttpResult<typeof GetOutput>> => {
   const cartService = req.scope.resolve(Modules.CART)
 
   const [cart, lineItems, shippingMethods, addresses] = await Promise.all([
@@ -19,8 +23,12 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const shippingAddress = addresses.find((address) => address.type === 'shipping') ?? null
   const billingAddress = addresses.find((address) => address.type === 'billing') ?? null
 
+  const stockOf = await req.lineItemStock(lineItems)
+
   const totals = cartService.computeCartTotals({ lineItems, shippingMethods })
-  const enrichedItems = cartService.enrichLineItems(lineItems)
+  const enrichedItems = cartService
+    .enrichLineItems(lineItems)
+    .map((lineItem) => ({ ...lineItem, ...stockOf(lineItem) }))
 
   return {
     status: 200,

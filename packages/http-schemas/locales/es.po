@@ -29,8 +29,8 @@ msgid "Invalid amount"
 msgstr "Monto no válido"
 
 #. js-lingui-explicit-id
-#: src/common.ts:34
-#: src/common.ts:39
+#: src/common.ts:41
+#: src/common.ts:46
 msgid "Invalid numeric value"
 msgstr "Valor numérico no válido"
 

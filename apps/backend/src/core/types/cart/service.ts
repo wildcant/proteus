@@ -56,6 +56,11 @@ export type ICartModuleService = {
   addLineItem(cartId: string, item: CreateLineItemDTO, context?: Context): Promise<CartLineItemDTO>
   updateLineItem(lineItemId: string, data: UpdateLineItemDTO, context?: Context): Promise<CartLineItemDTO>
   softDeleteLineItems(lineItemIds: string[], context?: Context): Promise<void>
+  /**
+   * Removes one line from the cart named, and only from it: a line id another cart holds is not
+   * found. Refused once the cart is completed, as every other write to its lines is.
+   */
+  removeLineItem(cartId: string, lineItemId: string, context?: Context): Promise<void>
   listShippingMethods(
     filters?: FilterableCartShippingMethodProps,
     config?: FindConfig<CartShippingMethodDTO>,
