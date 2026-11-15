@@ -1,6 +1,7 @@
 import { i18n } from '@proteus/utils'
-import { AppError, ErrorTypes } from '../../../core/errors/app-error.js'
+import { cannotCalculateShippingPrice } from '../../../core/types/fulfillment/errors.js'
 import type {
+  CalculatedShippingPrice,
   CalculateShippingPriceContext,
   CreateProviderFulfillmentInput,
   FulfillmentOption,
@@ -21,7 +22,7 @@ export class ManualFulfillmentProvider extends AbstractFulfillmentProvider {
   async validateFulfillmentData(
     _optionData: Record<string, unknown>,
     _data: Record<string, unknown>,
-    _context: Record<string, unknown>,
+    _context: CalculateShippingPriceContext,
   ): Promise<Record<string, unknown>> {
     return {}
   }
@@ -38,11 +39,8 @@ export class ManualFulfillmentProvider extends AbstractFulfillmentProvider {
     _optionData: Record<string, unknown>,
     _data: Record<string, unknown>,
     _context: CalculateShippingPriceContext,
-  ): Promise<{ amount: number }> {
-    throw new AppError({
-      type: ErrorTypes.NOT_ALLOWED,
-      message: i18n.t('Manual provider does not support calculated prices'),
-    })
+  ): Promise<CalculatedShippingPrice> {
+    throw cannotCalculateShippingPrice(i18n.t('Manual provider does not support calculated prices'))
   }
 
   async createFulfillment(_input: CreateProviderFulfillmentInput): Promise<{ data: Record<string, unknown> }> {

@@ -1,69 +1,30 @@
-import { and, eq, inArray, isNull, or } from 'drizzle-orm'
+import { and, inArray, isNull, sql } from 'drizzle-orm'
 import type { Context } from '../../../core/types/context.js'
+import type { GeoZoneType } from '../../../core/types/fulfillment/common.js'
+import type { ShippingAddressContext } from '../../../core/types/fulfillment/service.js'
 import { BaseRepository } from '../../../core/utils/base-repository.js'
 import { geoZoneTable } from '../models/geo-zone.js'
+import { geoZoneServesAddress } from '../utils/geo-zone-match.js'
 
 export class GeoZoneRepository extends BaseRepository(geoZoneTable) {
   /**
-   * Finds geo zones matching an address with cascading specificity:
-   * country → province → city → zip. Returns the broadest match set
-   * (all zones whose constraints are satisfied by the address).
-   * TODO(shipping-options): currently filtering only by us to simplify testing.
+   * The geo zones that cover an address, by the rule in `geoZoneServesAddress`.
+   *
+   * The database narrows to the address's country, which every zone type requires and the country
+   * index serves; the province, city and postal comparisons then run in one place, the pure rule,
+   * so the listing and a shipping method's validation cannot disagree on what "serves" means.
    */
-  async findMatchingZones(
-    address: { countryCode: string; province?: string; city?: string; postalCode?: string },
-    context?: Context,
-  ) {
+  async findMatchingZones(address: ShippingAddressContext, context?: Context) {
     const client = this.getClient(context)
-
-    // Build OR conditions from broadest (country) to narrowest (zip).
-    // A geo zone matches if all its non-null fields match the address.
-    const conditions = [
-      // Country-level zones
-      and(eq(this.table.type, 'country'), eq(this.table.countryCode, address.countryCode)),
-    ]
-
-    // if (address.province) {
-    //   conditions.push(
-    //     and(
-    //       eq(this.table.type, 'province'),
-    //       eq(this.table.countryCode, address.countryCode),
-    //       eq(this.table.provinceCode, address.province),
-    //     ),
-    //   )
-    // }
-
-    // if (address.province && address.city) {
-    //   conditions.push(
-    //     and(
-    //       eq(this.table.type, 'city'),
-    //       eq(this.table.countryCode, address.countryCode),
-    //       eq(this.table.provinceCode, address.province),
-    //       eq(this.table.city, address.city),
-    //     ),
-    //   )
-    // }
-
-    // Zip matching uses exact string match for now (postal_expression = postal code).
-    // A regex-based approach can be added later.
-    // if (address.province && address.city && address.postalCode) {
-    //   conditions.push(
-    //     and(
-    //       eq(this.table.type, 'zip'),
-    //       eq(this.table.countryCode, address.countryCode),
-    //       eq(this.table.provinceCode, address.province),
-    //       eq(this.table.city, address.city),
-    //       eq(this.table.postalExpression, address.postalCode),
-    //     ),
-    //   )
-    // }
 
     const rows = await client
       .select()
       .from(this.table)
-      .where(and(isNull(this.table.deletedAt), or(...conditions)))
+      .where(
+        and(isNull(this.table.deletedAt), sql`lower(${this.table.countryCode}) = ${address.countryCode.toLowerCase()}`),
+      )
 
-    return rows
+    return rows.filter((zone) => geoZoneServesAddress({ ...zone, type: zone.type as GeoZoneType }, address))
   }
 
   async findByServiceZoneIds(serviceZoneIds: string[], context?: Context) {

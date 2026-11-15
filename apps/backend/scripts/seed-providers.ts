@@ -13,6 +13,7 @@ import postgres from 'postgres'
 import { appConfig } from '../src/config.js'
 import { DB_OPTIONS } from '../src/core/db/config.js'
 import { env } from '../src/env.js'
+import { extensionRegistry } from '../src/extensions/registry.gen.js'
 import { syncFulfillmentProviders } from '../src/modules/fulfillment/sync-providers.js'
 import { syncNotificationProviders } from '../src/modules/notification/sync-providers.js'
 import { syncPaymentProviders } from '../src/modules/payment/sync-providers.js'
@@ -24,7 +25,10 @@ const getDb = () => db
 await syncPaymentProviders(getDb, appConfig.projectConfig.providers)
 console.info('Seeded payment providers')
 
-await syncFulfillmentProviders(getDb)
+await syncFulfillmentProviders(
+  getDb,
+  extensionRegistry.fulfillmentProviders.map((declaration) => declaration.resolve),
+)
 console.info('Seeded fulfillment providers')
 
 await syncNotificationProviders(getDb, appConfig.projectConfig.providers)

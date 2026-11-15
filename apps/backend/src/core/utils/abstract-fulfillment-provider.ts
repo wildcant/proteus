@@ -1,4 +1,5 @@
 import type {
+  CalculatedShippingPrice,
   CalculateShippingPriceContext,
   CreateProviderFulfillmentInput,
   FulfillmentOption,
@@ -31,7 +32,7 @@ export abstract class AbstractFulfillmentProvider<TConfig = Record<string, unkno
   abstract validateFulfillmentData(
     optionData: Record<string, unknown>,
     data: Record<string, unknown>,
-    context: Record<string, unknown>,
+    context: CalculateShippingPriceContext,
   ): Promise<Record<string, unknown>>
 
   abstract validateOption(data: Record<string, unknown>): Promise<boolean>
@@ -42,7 +43,7 @@ export abstract class AbstractFulfillmentProvider<TConfig = Record<string, unkno
     optionData: Record<string, unknown>,
     data: Record<string, unknown>,
     context: CalculateShippingPriceContext,
-  ): Promise<{ amount: number }>
+  ): Promise<CalculatedShippingPrice>
 
   abstract createFulfillment(input: CreateProviderFulfillmentInput): Promise<{ data: Record<string, unknown> }>
 

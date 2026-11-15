@@ -1,5 +1,6 @@
 import { buildCascadeGraph } from '../../core/db/cascade-graph.js'
 import { noopLogger } from '../../core/logger/noop-logger.js'
+import type { ModuleProviderExports } from '../../core/utils/module-provider.js'
 import type { Database } from '../../schema.type.js'
 import { seedProviders } from './loaders/providers.js'
 import { fulfillmentTable } from './models/fulfillment.js'
@@ -29,12 +30,13 @@ const cascadeGraph = buildCascadeGraph({
   shippingProfileTable,
 })
 
-export async function syncFulfillmentProviders(getDb: () => Database) {
+/** `extensionProviders` is the extension registry's, so workerd gets the extensions' rows as well as core's. */
+export async function syncFulfillmentProviders(getDb: () => Database, extensionProviders: ModuleProviderExports[]) {
   const fulfillmentProviderRepository = new FulfillmentProviderRepository({ getDb, cascadeGraph })
   const providerService = new FulfillmentProviderService({
     container: undefined as never,
     fulfillmentProviderRepository,
     logger: noopLogger,
   })
-  await seedProviders(providerService, fulfillmentProviderDeclarations.providers)
+  await seedProviders(providerService, fulfillmentProviderDeclarations(extensionProviders))
 }

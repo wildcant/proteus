@@ -155,6 +155,46 @@ test.describe('extensions:generate', () => {
     ).toEqual([expect.stringMatching(/^a second handler for the hook orderChargesHook — the first is at /)])
   })
 
+  test('a fulfillment provider’s identifier carries the snake prefix and is not core’s', async ({ expect }) => {
+    const provider = (identifier: string) =>
+      `class Rates extends AbstractFulfillmentProvider { static identifier = '${identifier}' }\nexport default ModuleProvider(Modules.FULFILLMENT, { services: [Rates] })`
+
+    expect(problems({ 'pisos-dj/providers/fulfillment/rates.ts': provider('pisos_dj_rates') })).toEqual([])
+
+    // It becomes a `fulfillment_provider` row id, so it takes the database form of the prefix.
+    expect(problems({ 'pisos-dj/providers/fulfillment/rates.ts': provider('pisos-dj.rates') })).toEqual([
+      'the fulfillment provider identifier "pisos-dj.rates" in extension "pisos-dj" does not start with "pisos_dj_"',
+    ])
+
+    // An extension named `manual` passes the prefix check with `manual_…`, but not with core's own.
+    expect(problems({ 'manual/providers/fulfillment/rates.ts': provider('manual') })).toEqual([
+      'the fulfillment provider identifier "manual" in extension "manual" does not start with "manual_"',
+      'the fulfillment provider identifier "manual" is already core\'s',
+    ])
+
+    // An identifier built at runtime cannot be checked, so it is refused.
+    expect(
+      problems({
+        'shop/providers/fulfillment/rates.ts':
+          'class Rates { static identifier = ID }\nexport default ModuleProvider(Modules.FULFILLMENT, { services: [Rates] })',
+      }),
+    ).toEqual(['a fulfillment provider file declaring no class with a string-literal `static identifier`'])
+  })
+
+  test('renders an extension’s fulfillment providers into the registry', async ({ expect }) => {
+    const root = extensionsFolder({
+      'shop/providers/fulfillment/rates.ts':
+        "class Rates { static identifier = 'shop_rates' }\nexport default ModuleProvider(Modules.FULFILLMENT, { services: [Rates] })",
+    })
+    const generated = await generateExtensionRegistry(options(root))
+
+    expect(generated.problems).toEqual([])
+    expect(generated.files[0]?.content).toContain(
+      "import shopRatesFulfillmentProvider from './shop/providers/fulfillment/rates.js'",
+    )
+    expect(generated.files[0]?.content).toContain("{ extension: 'shop', resolve: shopRatesFulfillmentProvider }")
+  })
+
   /** `--check` is what verify runs: a file added without regenerating is caught, not shipped. */
   test('reports a registry gone stale when an extension gains a module', async ({ expect }) => {
     const root = extensionsFolder({ 'shop/extension.ts': "export default defineExtension({ name: 'shop' })" })
