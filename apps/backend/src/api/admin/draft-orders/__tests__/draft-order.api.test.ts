@@ -1,6 +1,7 @@
 import type { AdminDraftOrderListResponse, AdminOrderListResponse } from '@proteus/http-schemas/admin'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
+import { orderReference } from '@workflows/order/utils/order-reference.js'
 import orderDefinitions from '../../orders/definitions.js'
 import draftOrderDefinitions from '../definitions.js'
 
@@ -24,13 +25,21 @@ test.describe('GET /admin/draft-orders', () => {
     const orders = await api.get<AdminOrderListResponse>('/admin/orders')
     const drafts = await api.get<AdminDraftOrderListResponse>('/admin/draft-orders')
 
-    expect(orders.body).toMatchObject({ count: 1, orders: [{ id: order.id, reference: String(order.displayId) }] })
+    expect(orders.body).toMatchObject({
+      count: 1,
+      orders: [{ id: order.id, reference: orderReference(order.displayId) }],
+    })
     expect(drafts.body.count).toBe(2)
     expect(drafts.body.draftOrders.map((draftOrder) => draftOrder.id).sort()).toEqual(
       [draft.id, canceledDraft.id].sort(),
     )
     expect(drafts.body.draftOrders).toContainEqual(
-      expect.objectContaining({ id: draft.id, status: 'draft', email: null, reference: String(draft.displayId) }),
+      expect.objectContaining({
+        id: draft.id,
+        status: 'draft',
+        email: null,
+        reference: orderReference(draft.displayId),
+      }),
     )
   })
 })
