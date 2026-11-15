@@ -6,7 +6,7 @@ import { useAppForm } from '#/lib/form-hook.ts'
 import { errorMessage, type SubmitFormParams } from '#/types/form.ts'
 
 /** The form's fields as text: a guest may have no email or no phone, and its field starts empty. */
-export type UpdateCustomerFormValues = {
+type UpdateCustomerFormValues = {
   firstName: string
   lastName: string
   email: string
