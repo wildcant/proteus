@@ -1,7 +1,7 @@
 import { BigNumber } from '@core/bignumber.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
-import { createWorkflow } from '@core/workflows/types.js'
+import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
@@ -90,6 +90,14 @@ test.describe('record-order-payment', () => {
       capturedAmount: new BigNumber(30),
       status: 'partially_captured',
     })
+  })
+
+  /** The workflow is idempotent, so a retryable refusal would have Temporal ask again for an id that is not there. */
+  test('refuses an unknown order as final, not as worth retrying', async ({ expect }) => {
+    const run = recordOrderPaymentWorkflow.run({ orderId: 'ord_missing', amount: new BigNumber(30) })
+
+    await expect(run).rejects.toThrow(WorkflowTerminalError)
+    await expect(run).rejects.toThrow('Order with id "ord_missing" not found')
   })
 
   test('a retried capture step takes the money once and writes one order transaction', async ({ service, expect }) => {
