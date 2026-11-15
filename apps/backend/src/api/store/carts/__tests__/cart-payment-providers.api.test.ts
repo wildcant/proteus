@@ -103,20 +103,20 @@ test.describe('GET /store/carts/:id/payment-providers', () => {
   })
 
   /**
-   * Scoping to the region replaced the list the test-only filter used to run over, so this is the
-   * one that says the filter survived the move. Manual payment is test-only; Stripe is not.
+   * Manual payment is a real provider: a store that takes transfers and cash on delivery offers it
+   * in production, and the Region link is the only thing that decides whether a shopper sees it.
    */
-  test('still hides a test-only provider in production', async ({ expect, factories, service }) => {
-    const { unitedStates } = await createMarkets(factories)
+  test('offers manual payment in production wherever the region links it', async ({ expect, factories, service }) => {
+    const { unitedStates, colombia } = await createMarkets(factories)
     await offer(factories, unitedStates, MANUAL_PROVIDER_ID)
-    await offer(factories, unitedStates, STRIPE_PROVIDER_ID)
-    const cart = await cartIn(service, unitedStates)
-
-    expect(await providerIdsFor(cart.id)).toEqual(expect.arrayContaining([MANUAL_PROVIDER_ID, STRIPE_PROVIDER_ID]))
+    await offer(factories, colombia, STRIPE_PROVIDER_ID)
+    const american = await cartIn(service, unitedStates)
+    const colombian = await cartIn(service, colombia)
 
     vi.spyOn(env, 'NODE_ENV', 'get').mockReturnValue('production')
 
-    expect(await providerIdsFor(cart.id)).toEqual([STRIPE_PROVIDER_ID])
+    expect(await providerIdsFor(american.id)).toEqual([MANUAL_PROVIDER_ID])
+    expect(await providerIdsFor(colombian.id)).toEqual([STRIPE_PROVIDER_ID])
   })
 
   /**

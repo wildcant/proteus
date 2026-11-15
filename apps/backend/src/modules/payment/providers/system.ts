@@ -22,10 +22,16 @@ import type {
 } from '../../../core/types/payment/mutations.js'
 import { AbstractPaymentProvider } from '../../../core/utils/abstract-payment-provider.js'
 
+/**
+ * The manual payment provider: money taken outside Proteus — a bank transfer, cash on delivery, a
+ * terminal — and recorded by an admin. It talks to no gateway and authorizes whatever it is handed,
+ * which is what lets an Order's collection be authorized for its total and captured a deposit at a
+ * time. A Region offers it at checkout only when the admin links it to that Region.
+ */
 export class SystemPaymentProvider extends AbstractPaymentProvider {
   static identifier = 'system'
   static label = 'Manual Payment'
-  static isTestOnly = true
+  static canCapturePartially = true
 
   constructor() {
     super({}, {} as Record<string, unknown>)

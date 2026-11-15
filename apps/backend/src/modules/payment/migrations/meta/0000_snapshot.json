@@ -149,6 +149,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "metadata": {
           "name": "metadata",
           "type": "jsonb",
@@ -195,6 +201,22 @@
           ],
           "isUnique": false,
           "where": "deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_capture_idempotency_key": {
+          "name": "idx_capture_idempotency_key",
+          "columns": [
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "idempotency_key IS NOT NULL AND deleted_at IS NULL",
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -744,6 +766,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "metadata": {
           "name": "metadata",
           "type": "jsonb",
@@ -805,6 +833,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "idx_refund_idempotency_key": {
+          "name": "idx_refund_idempotency_key",
+          "columns": [
+            {
+              "expression": "idempotency_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "idempotency_key IS NOT NULL AND deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -838,7 +882,15 @@
     "public.payment_collection_status": {
       "name": "payment_collection_status",
       "schema": "public",
-      "values": ["not_paid", "awaiting", "authorized", "partially_authorized", "completed"]
+      "values": [
+        "not_paid",
+        "awaiting",
+        "authorized",
+        "partially_authorized",
+        "partially_captured",
+        "completed",
+        "canceled"
+      ]
     },
     "public.payment_session_status": {
       "name": "payment_session_status",

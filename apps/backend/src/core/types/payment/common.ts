@@ -5,7 +5,20 @@ import type { BaseFilterable } from '../common.js'
 // Status enums
 // ---------------------------------------------------------------------------
 
-export type PaymentCollectionStatus = 'not_paid' | 'awaiting' | 'authorized' | 'partially_authorized' | 'completed'
+/**
+ * Derived from the collection's sessions, payments, captures and refunds on every write that moves
+ * them (see `maybeUpdatePaymentCollection_`). `partially_captured` is a deposit taken against a
+ * larger authorization; `canceled` is a collection whose every payment was voided before any money
+ * was taken.
+ */
+export type PaymentCollectionStatus =
+  | 'not_paid'
+  | 'awaiting'
+  | 'authorized'
+  | 'partially_authorized'
+  | 'partially_captured'
+  | 'completed'
+  | 'canceled'
 
 export type PaymentSessionStatus =
   | 'pending'
@@ -115,6 +128,7 @@ type CaptureDTO = {
   paymentId: string
   amount: BigNumber
   createdBy: string | null
+  idempotencyKey: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
 }
@@ -126,6 +140,7 @@ type RefundDTO = {
   amount: BigNumber
   note: string | null
   createdBy: string | null
+  idempotencyKey: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
 }

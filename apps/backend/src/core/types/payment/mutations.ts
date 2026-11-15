@@ -40,10 +40,21 @@ export type UpdatePaymentSessionDTO = {
 // Capture
 // ---------------------------------------------------------------------------
 
-/** No `amount`: a capture takes the whole authorization. See `PaymentModuleService.capturePayment`. */
 export type CreateCaptureDTO = {
   paymentId: string
+  /** Omitted, the capture takes everything the authorization still holds. */
+  amount?: BigNumber | undefined
   capturedBy?: string | undefined
+  /** A capture already recorded under this key is answered with, not taken again. */
+  idempotencyKey?: string | undefined
+}
+
+/** A capture against a collection rather than a payment: what recording a payment on an Order is. */
+export type CapturePaymentCollectionDTO = {
+  amount: BigNumber
+  capturedBy?: string | undefined
+  /** A capture already recorded under this key is answered with, not taken again. */
+  idempotencyKey?: string | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +67,8 @@ export type CreateRefundDTO = {
   refundReasonId?: string | undefined
   note?: string | undefined
   createdBy?: string | undefined
+  /** A refund already recorded under this key is answered with, not made again. */
+  idempotencyKey?: string | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -161,6 +174,9 @@ export type AuthorizePaymentOutput = {
 }
 
 export type CapturePaymentInput = {
+  /** What this capture takes. Only a provider declaring `canCapturePartially` is handed less than the authorization. */
+  amount: BigNumber
+  currencyCode: string
   data?: Record<string, unknown> | undefined
   context?: Record<string, unknown> | undefined
 }
