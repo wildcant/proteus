@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { toast } from '@proteus/ui'
-import type { UseMutationOptions } from '@tanstack/react-query'
+import type { UseMutationOptions, UseQueryOptions } from '@tanstack/react-query'
 import {
   keepPreviousData,
   queryOptions,
@@ -16,6 +16,7 @@ import type {
   AdminBatchVariantImagesResponse,
   AdminCreateProductVariant,
   AdminCreateProductVariantResponse,
+  AdminProductVariantListResponse,
   AdminSetVariantStock,
   AdminSetVariantStockResponse,
   AdminUpdateProductVariant,
@@ -58,11 +59,21 @@ const imageVariantsQueryOptions = (productId: string, imageId: string) =>
     queryFn: () => listImageVariants(productId, imageId),
   })
 
-const productVariantsListQueryOptions = (productId: string, params?: ListProductVariantsParams) =>
+type ProductVariantsListQueryOptions = Omit<
+  UseQueryOptions<AdminProductVariantListResponse, Error, AdminProductVariantListResponse>,
+  'queryFn' | 'queryKey'
+>
+
+const productVariantsListQueryOptions = (
+  productId: string,
+  params?: ListProductVariantsParams,
+  options?: ProductVariantsListQueryOptions,
+) =>
   queryOptions({
     queryKey: variantKeys.list({ ...params, productId }),
     queryFn: () => listProductVariants(productId, params),
     placeholderData: keepPreviousData,
+    ...options,
   })
 
 export const productVariantQueryOptions = (productId: string, variantId: string) =>
@@ -95,8 +106,11 @@ export const useSuspenseProductVariant = (productId: string, variantId: string) 
 export const useSuspenseImageVariants = (productId: string, imageId: string) =>
   useSuspenseQuery(imageVariantsQueryOptions(productId, imageId))
 
-export const useProductVariants = (productId: string, params?: ListProductVariantsParams) =>
-  useQuery(productVariantsListQueryOptions(productId, params))
+export const useProductVariants = (
+  productId: string,
+  params?: ListProductVariantsParams,
+  options?: ProductVariantsListQueryOptions,
+) => useQuery(productVariantsListQueryOptions(productId, params, options))
 
 export const useCreateProductVariant = (
   productId: string,
