@@ -50,7 +50,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   ])
 
   const pricingContext = buildShippingPricingContext({
-    cart,
+    cartId: cart.id,
+    currencyCode: cart.currencyCode,
     shippingAddress: shippingAddress ?? null,
     regionCountryCode: regionCountries[0]?.id ?? null,
     lineItems,
