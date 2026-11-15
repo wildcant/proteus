@@ -113,6 +113,27 @@ test.describe('the payment.captured subscriber', () => {
   })
 
   /**
+   * The Order was placed with its card authorized, and the gateway captures later (from its own
+   * dashboard). The Paid Total has to count that money, once however often the event arrives.
+   */
+  test('records a capture after the order exists as one order transaction', async ({ service, expect }) => {
+    const { order, paymentSession, paymentCollection } = await service.create.order(container)
+    assertDefined(paymentSession)
+    assertDefined(paymentCollection)
+    expect(await service.read.orderTransactions(container, order.id)).toEqual([])
+
+    await deliver(paymentSession.id)
+    await deliver(paymentSession.id)
+
+    const [capture] =
+      (await service.read.paymentCollection(container, paymentCollection.id)).payments?.[0]?.captures ?? []
+    assertDefined(capture)
+    expect(await service.read.orderTransactions(container, order.id)).toEqual([
+      expect.objectContaining({ amount: capture.amount, reference: 'capture', referenceId: capture.id }),
+    ])
+  })
+
+  /**
    * Convergence, not a guess.
    *
    * Our own read disagreeing with the event — the provider says the money moved, the session says

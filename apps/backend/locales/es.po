@@ -99,7 +99,7 @@ msgid "Cart \"{cartId}\" has no items or zero total"
 msgstr "El carrito \"{cartId}\" no tiene productos o su total es cero"
 
 #. js-lingui-explicit-id
-#: src/workflows/payment/refund-payment.ts:47
+#: src/workflows/payment/refund-payment.ts:46
 msgid "Refund amount {amount} must be more than zero and at most the {received} received."
 msgstr "El monto del reembolso {amount} debe ser mayor que cero y como máximo los {received} recibidos."
 
@@ -144,12 +144,12 @@ msgid "Payment \"{id}\" holds no refund recorded under this request."
 msgstr "El pago \"{id}\" no tiene ningún reembolso registrado para esta solicitud."
 
 #. js-lingui-explicit-id
-#: src/workflows/order/cancel-order.ts:41
+#: src/workflows/order/cancel-order.ts:42
 msgid "Cannot cancel order {orderId}: fulfillment status is \"{status}\", expected \"unfulfilled\""
 msgstr "No se puede cancelar el pedido {orderId}: el estado de preparación es \"{status}\", se esperaba \"unfulfilled\""
 
 #. js-lingui-explicit-id
-#: src/workflows/order/cancel-order.ts:67
+#: src/workflows/order/cancel-order.ts:65
 msgid "Cannot cancel order {orderId}: a refund of {amount} is not between 0 and the {received} received."
 msgstr "No se puede cancelar el pedido {orderId}: un reembolso de {amount} no está entre 0 y los {received} recibidos."
 
@@ -473,7 +473,7 @@ msgstr "La pasarela de pago no está disponible por el momento. Vuelve a intenta
 
 #. js-lingui-explicit-id
 #: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
-#: src/modules/payment/services/payment-module-service.ts:940
+#: src/modules/payment/services/payment-module-service.ts:978
 #: src/providers/payment-stripe/errors.ts:145
 msgid "That payment method is no longer available."
 msgstr "Ese método de pago ya no está disponible."
@@ -792,52 +792,62 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "No puedes eliminar valores de opción que usan los productos. Quítalos primero de todos los productos."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:571
+#: src/modules/payment/services/payment-module-service.ts:566
 msgid "Payment amount {amount} exceeds the {outstanding} outstanding on payment collection \"{id}\"."
 msgstr "El monto del pago {amount} supera los {outstanding} pendientes de la colección de pagos \"{id}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:612
+#: src/modules/payment/services/payment-module-service.ts:614
 msgid "Payment \"{id}\" has no refundable amount remaining."
 msgstr "El pago \"{id}\" no tiene saldo reembolsable."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:620
+#: src/modules/payment/services/payment-module-service.ts:622
 msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 msgstr "El monto del reembolso {refundAmount} supera el monto reembolsable {refundableAmount}."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:692
-msgid "Payment \"{id}\" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile."
-msgstr "No se puede cancelar el pago \"{id}\": mientras tanto se registró un pago de {amount} en su colección de pagos."
+#: src/modules/payment/services/payment-module-service.ts:712
+msgid "Payment collection \"{id}\" cannot be canceled: a payment of {amount} was recorded on it meanwhile."
+msgstr "La colección de pagos \"{id}\" no se puede cancelar: mientras tanto se registró en ella un pago de {amount}."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1005
+#: src/modules/payment/services/payment-module-service.ts:1049
+msgid "Payment collection \"{id}\" has been canceled: no payment can be recorded on it."
+msgstr "La colección de pagos \"{id}\" ha sido cancelada: no se puede registrar ningún pago en ella."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1057
 msgid "Payment \"{id}\" has been canceled and cannot be captured."
 msgstr "El pago \"{id}\" fue cancelado y no se puede capturar."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1020
+#: src/modules/payment/services/payment-module-service.ts:1072
 msgid "Payment \"{id}\" has already been fully captured."
 msgstr "El pago \"{id}\" ya se capturó por completo."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1030
+#: src/modules/payment/services/payment-module-service.ts:1082
 msgid "Capture amount must be greater than zero."
 msgstr "El monto de la captura debe ser mayor que cero."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1037
+#: src/modules/payment/services/payment-module-service.ts:1089
 msgid "Capture amount {amount} exceeds the {remaining} still authorized on payment \"{id}\"."
 msgstr "El monto de la captura {amount} supera los {remaining} que aún quedan autorizados en el pago \"{id}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1045
+#: src/modules/payment/services/payment-module-service.ts:1097
 msgid "Payment \"{id}\" can only be captured in full: its provider cannot take part of an authorization."
 msgstr "El pago \"{id}\" solo se puede capturar por completo: su proveedor no puede tomar parte de una autorización."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1103
+#: src/modules/payment/services/payment-module-service.ts:1170
+msgid "Payment amount {amount} cannot be recorded on payment collection \"{id}\": {held} of it is held by an open authorization at another provider. Capture or cancel that payment first."
+msgstr "No se puede registrar el pago de {amount} en la colección de pagos \"{id}\": {held} está retenido por una autorización abierta en otro proveedor. Captura o cancela ese pago primero."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1189
 msgid "The manual payment for collection \"{id}\" was not authorized."
 msgstr "El pago manual de la colección \"{id}\" no fue autorizado."
 

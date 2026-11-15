@@ -1,5 +1,5 @@
 {
-  "id": "9539ad43-861d-456e-b69a-52324243bcf6",
+  "id": "03991943-54b4-4a3b-b9b9-bc5ec89cc4dc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -265,6 +265,12 @@
         "captured_amount": {
           "name": "captured_amount",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canceled_at": {
+          "name": "canceled_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },

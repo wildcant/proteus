@@ -43,6 +43,11 @@ The admin records a payment against that collection:
    as Medusa collects again through a new session. An authorization still open but holding less
    than the amount asked is not topped up: the capture is refused with what it still holds.
 
+Only a manual authorization is captured this way. A card authorized at checkout and not yet captured
+is never captured by recording a payment, which would charge the card as well as take the cash. The
+manual authorization opened beside it covers only what the card does not hold, and a payment that
+does not fit there is refused until the card's payment is captured or canceled.
+
 Capture takes an amount, as Medusa's does, so the same collection could later be authorized by a
 real gateway and captured the same way, with no change to the Order.
 
@@ -72,5 +77,15 @@ payments, captures and refunds, as Medusa aggregates it: `not_paid`, `awaiting`,
 `captured`; a partial refund at cancel leaves it `partially_refunded`. It is independent of the
 Order's status and its fulfillment status, and every read returns the three separately.
 
-Canceling an Order with money received records the refund the admin chose (from nothing to all of
-it), cancels what remains authorized, and then cancels the Order.
+Canceling an Order cancels the Order, then voids what remains authorized on its collection
+(`cancelPaymentCollection`), then records the refund the admin chose (from nothing to all of it).
+The void runs under the collection's lock and is refused if a payment was recorded since the cancel
+looked, so a refusal comes before any refund and leaves nothing done. The refund goes last because
+it has no compensation.
+
+The void also marks the collection canceled (`canceledAt`). Every capture reads that mark under the
+same lock, so a payment the admin started before the cancel and that reaches the collection after
+it is refused, rather than opening a new manual authorization and capturing onto a canceled Order.
+A canceled collection with nothing captured reads `canceled`; one that took money keeps the status
+that shows what it received. If the cancel rolls back after the void, the mark comes off again
+(`reopenPaymentCollection`): the void stays, and the next payment recorded authorizes anew.

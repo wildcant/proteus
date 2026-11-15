@@ -1,6 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { AuthorizePaymentSessionResult, PaymentDTO } from '@core/types/payment/common.js'
+import type { PaymentDTO, PaymentSessionAuthorization } from '@core/types/payment/common.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { Msgid } from '@proteus/utils'
 import type { Fixtures } from '@tests/setup/test-extend.js'
@@ -29,7 +29,7 @@ const cascadeGraph = buildCascadeGraph(paymentModule.models)
  * these tests are about what happens to a payment that exists. The two outcomes that carry none
  * have their own tests, where the discriminant is the assertion rather than a precondition.
  */
-function authorizedPayment(result: AuthorizePaymentSessionResult): PaymentDTO {
+function authorizedPayment(result: PaymentSessionAuthorization): PaymentDTO {
   if (result.outcome !== 'authorized') {
     throw new Error(`Expected an authorized payment, got outcome "${result.outcome}"`)
   }
@@ -476,6 +476,84 @@ test.describe('PaymentModuleService', () => {
       expect(after.capturedAmount).toEqual(new BigNumber(60))
       // One authorization, not one per admin.
       expect(after.payments).toHaveLength(1)
+    })
+
+    /**
+     * A shopper paid by card at checkout and the card is authorized, not yet taken. Cash recorded
+     * against the collection must not capture the card at the gateway, or the shopper pays twice.
+     */
+    test("never captures another provider's open authorization", async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(
+        dto.generate.createPaymentCollection({ amount: new BigNumber(100) }),
+      )
+      const cardSession = await service.createPaymentSession(
+        collection.id,
+        dto.generate.createPaymentSession({ providerId: 'pp_stripe_stripe', amount: new BigNumber(60) }),
+      )
+      const card = authorizedPayment(await service.authorizePaymentSession(cardSession.id))
+
+      // The 40 the card does not hold is recorded through a manual authorization beside it.
+      const cash = await service.capturePaymentCollection(collection.id, { amount: new BigNumber(30) })
+
+      expect(cash.id).not.toBe(card.id)
+      expect(cash).toMatchObject({ providerId: 'pp_system_default', amount: new BigNumber(40) })
+      expect(mockProvider.capturePayment).not.toHaveBeenCalledWith('pp_stripe_stripe', expect.anything())
+      expect((await service.retrievePayment(card.id)).captures).toEqual([])
+
+      // The manual authorization holds 10 more; the 60 the card holds is not the admin's to record.
+      await expect(
+        service.capturePaymentCollection(collection.id, { amount: new BigNumber(11) }),
+      ).rejects.toMatchObject({ type: ErrorTypes.INVALID_DATA })
+      expect((await service.retrievePayment(card.id)).captures).toEqual([])
+      expect((await service.retrievePaymentCollection(collection.id)).capturedAmount).toEqual(new BigNumber(30))
+    })
+
+    test('refuses a payment when a card authorization holds the whole collection, and takes nothing', async ({
+      expect,
+      dto,
+    }) => {
+      const collection = await service.createPaymentCollection(
+        dto.generate.createPaymentCollection({ amount: new BigNumber(100) }),
+      )
+      const cardSession = await service.createPaymentSession(
+        collection.id,
+        dto.generate.createPaymentSession({ providerId: 'pp_stripe_stripe', amount: new BigNumber(100) }),
+      )
+      const card = authorizedPayment(await service.authorizePaymentSession(cardSession.id))
+
+      await expect(
+        service.capturePaymentCollection(collection.id, { amount: new BigNumber(30) }),
+      ).rejects.toMatchObject({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: expect.stringContaining('100 of it is held by an open authorization at another provider'),
+      })
+
+      expect(mockProvider.capturePayment).not.toHaveBeenCalled()
+      const after = await service.retrievePaymentCollection(collection.id)
+      expect(after.payments?.map((payment) => payment.id)).toEqual([card.id])
+      expect(after.capturedAmount).toBeNull()
+    })
+
+    test('a canceled collection takes no capture until it is reopened', async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(
+        dto.generate.createPaymentCollection({ amount: new BigNumber(100) }),
+      )
+      const deposit = await service.capturePaymentCollection(collection.id, { amount: new BigNumber(30) })
+
+      const canceled = await service.cancelPaymentCollection(collection.id, { capturedAmount: new BigNumber(30) })
+
+      expect(canceled).toMatchObject({ canceledAt: expect.any(Date), authorizedAmount: null })
+      expect(canceled.payments?.map((payment) => payment.canceledAt)).toEqual([expect.any(Date)])
+      await expect(
+        service.capturePaymentCollection(collection.id, { amount: new BigNumber(20) }),
+      ).rejects.toMatchObject({ type: ErrorTypes.NOT_ALLOWED })
+      expect((await service.retrievePaymentCollection(collection.id)).payments).toHaveLength(1)
+
+      await service.reopenPaymentCollection(collection.id)
+      const rest = await service.capturePaymentCollection(collection.id, { amount: new BigNumber(20) })
+
+      expect(rest.id).not.toBe(deposit.id)
+      expect((await service.retrievePaymentCollection(collection.id)).capturedAmount).toEqual(new BigNumber(50))
     })
 
     test('refuses a partial capture against a provider that cannot take one', async ({ expect, dto }) => {

@@ -71,13 +71,13 @@ export type CreateRefundDTO = {
   idempotencyKey?: string | undefined
 }
 
-export type CancelPaymentDTO = {
+export type CancelPaymentCollectionDTO = {
   /**
-   * What the caller saw captured on the payment's collection when it decided to cancel. Checked
-   * under the collection's lock: a capture recorded since then refuses the cancel, so money taken
-   * in between is never left on a canceled Order unaccounted for.
+   * What the caller saw captured on the collection when it decided to cancel. Checked under the
+   * collection's lock: a capture recorded since then refuses the cancel, so money taken in between
+   * is never left on a canceled Order unaccounted for.
    */
-  capturedAmount?: BigNumber | undefined
+  capturedAmount: BigNumber
 }
 
 // ---------------------------------------------------------------------------

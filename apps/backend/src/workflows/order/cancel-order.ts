@@ -7,6 +7,7 @@ import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { type PlannedRefund, refundPaymentsStep } from '../payment/steps/refund-payments.js'
 import { asTerminalRefusal } from '../payment/utils/as-terminal-refusal.js'
+import { capturedAcross, receivedBy } from '../payment/utils/payment-amounts.js'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type CancelOrderInput = {
@@ -19,9 +20,9 @@ type CancelOrderInput = {
 }
 
 /**
- * Cancels an unfulfilled Order: releases its stock, returns the chosen part of what it received
- * (one negative Order transaction per refund), voids whatever its authorization still holds, and
- * marks it canceled (Medusa's `cancelOrderWorkflow`).
+ * Cancels an unfulfilled Order: marks it canceled, releases its stock, voids whatever its
+ * authorization still holds, and then returns the chosen part of what it received (one negative
+ * Order transaction per refund). Medusa's `cancelOrderWorkflow`.
  */
 export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
   { name: 'cancel-order', throws: [ErrorTypes.NOT_ALLOWED, ErrorTypes.INVALID_DATA] },
@@ -53,11 +54,8 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
 
       const link = await linkService.repo('orderPaymentCollection').findByOrderId(input.orderId)
       const collection = link ? await paymentService.retrievePaymentCollection(link.paymentCollectionId) : null
-      const received = (collection?.payments ?? []).map((payment) => {
-        const captured = (payment.captures ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-        const refunded = (payment.refunds ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-        return { paymentId: payment.id, received: captured.minus(refunded) }
-      })
+      const payments = collection?.payments ?? []
+      const received = payments.map((payment) => ({ paymentId: payment.id, received: receivedBy(payment) }))
       const totalReceived = received.reduce((sum, row) => sum.plus(row.received), new BigNumber(0))
       const refundAmount = input.refundAmount ?? totalReceived
 
@@ -82,22 +80,12 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
         left = left.minus(amount)
       }
 
-      // What the void will check under the collection's lock: the payments still holding money,
-      // and the captured total this plan was made against.
-      const payments = collection?.payments ?? []
-      const holding = payments.filter((payment) => {
-        if (payment.canceledAt) return false
-        const captured = (payment.captures ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-        return captured.isLessThan(payment.amount)
-      })
-      const capturedAmount = payments
-        .flatMap((payment) => payment.captures ?? [])
-        .reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-
       return {
         refunds,
         orderId: input.orderId,
-        voids: { paymentIds: holding.map((payment) => payment.id), capturedAmount },
+        // What the cancel of the collection checks under its lock: the captured total this plan
+        // was made against. Null for an Order with no collection, a draft.
+        collection: collection ? { id: collection.id, capturedAmount: capturedAcross(payments) } : null,
       }
     })
 
@@ -143,24 +131,33 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
       },
     )
 
-    /** Payments last — these are irreversible provider-side operations. First the refund the
-     *  admin chose, each written as an Order transaction so the Paid Total shows what was kept. */
+    /** Payments last — these are irreversible provider-side operations. First void what the
+     *  authorizations still hold, so no money can be captured against a canceled Order. The void
+     *  checks, under the collection's lock, that nothing was captured since the plan: a payment
+     *  recorded meanwhile refuses the cancel before anything is refunded, so the rollback leaves
+     *  nothing done. The collection is marked canceled too, so a payment that started before the
+     *  cancel and reaches the lock after it is refused instead of capturing onto a canceled Order.
+     *  The compensation takes the mark off again; the voids cannot be undone, and a payment recorded
+     *  on the reopened Order authorizes anew. */
+    await ctx.step(
+      'cancel-payment-collection',
+      async ({ container }) => {
+        if (!refundPlan.collection) return { paymentCollectionId: null }
+        const paymentService = container.resolve(Modules.PAYMENT)
+        const { id, capturedAmount } = refundPlan.collection
+
+        await paymentService.cancelPaymentCollection(id, { capturedAmount }).catch(asTerminalRefusal)
+        return { paymentCollectionId: id }
+      },
+      async ({ paymentCollectionId }, { container }) => {
+        if (!paymentCollectionId) return
+        await container.resolve(Modules.PAYMENT).reopenPaymentCollection(paymentCollectionId)
+      },
+    )
+
+    /** Then the refund the admin chose, each written as an Order transaction so the Paid Total
+     *  shows what was kept. Last, because it has no compensation: the money is with the shopper. */
     await refundPaymentsStep(ctx, refundPlan)
-
-    /** Then void what the authorizations still hold, so no money can be captured against a
-     *  canceled Order. A fully captured payment has nothing left to void and is left alone. Each
-     *  void checks, under the collection's lock, that nothing was captured since the plan: a payment
-     *  recorded meanwhile refuses the cancel rather than staying on a canceled Order unrefunded. */
-    await ctx.step('cancel-payments', async ({ container }) => {
-      const paymentService = container.resolve(Modules.PAYMENT)
-      const { paymentIds, capturedAmount } = refundPlan.voids
-
-      await Promise.all(
-        paymentIds.map((paymentId) =>
-          paymentService.cancelPayment(paymentId, { capturedAmount }).catch(asTerminalRefusal),
-        ),
-      )
-    })
 
     return canceled
   },

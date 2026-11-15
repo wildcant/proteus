@@ -2,19 +2,19 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AccountHolderDTO,
-  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
   PaymentDTO,
   PaymentProviderDTO,
   PaymentProviderMeta,
+  PaymentSessionAuthorization,
   PaymentSessionDTO,
   RefundReasonDTO,
   SavedMethodDTO,
 } from './common.js'
 import type {
-  CancelPaymentDTO,
+  CancelPaymentCollectionDTO,
   CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -83,7 +83,7 @@ export type IPaymentModuleService = {
    * to tell an intent that is still settling from one the provider refused, and `null` said both.
    * Idempotent — a session already authorized answers with the payment it produced.
    */
-  authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult>
+  authorizePaymentSession(id: string, context?: Context): Promise<PaymentSessionAuthorization>
 
   // Payment retrieval
   retrievePayment(id: string, context?: Context): Promise<PaymentDTO>
@@ -91,7 +91,20 @@ export type IPaymentModuleService = {
   // Payment lifecycle
   capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO>
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
-  cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO>
+  cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
+  /**
+   * Voids every authorization on the collection still holding money and marks it canceled, under
+   * its row lock: what an Order's cancel does before it refunds anything. No capture lands on a
+   * canceled collection. Refused, with nothing voided, when the collection's captures no longer
+   * add up to `capturedAmount`.
+   */
+  cancelPaymentCollection(
+    paymentCollectionId: string,
+    data: CancelPaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentCollectionDTO>
+  /** Takes the cancel mark off, for an Order cancel that rolled back. What was voided stays voided. */
+  reopenPaymentCollection(paymentCollectionId: string, context?: Context): Promise<PaymentCollectionDTO>
   /**
    * Records a payment of an amount against a collection, under its row lock: opens and authorizes
    * a manual session for what is outstanding when the collection holds no live authorization, then

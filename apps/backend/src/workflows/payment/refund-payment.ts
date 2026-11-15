@@ -1,10 +1,11 @@
-import { BigNumber } from '@core/bignumber.js'
+import type { BigNumber } from '@core/bignumber.js'
 import { ErrorTypes } from '@core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { type PlannedRefund, refundPaymentsStep } from './steps/refund-payments.js'
+import { receivedBy } from './utils/payment-amounts.js'
 
 type RefundPaymentInput = {
   paymentId: string
@@ -36,9 +37,7 @@ export const refundPaymentWorkflow = createWorkflow<RefundPaymentInput, { paymen
       const linkService = container.resolve(ContainerRegistrationKeys.LINK)
 
       const payment = await paymentService.retrievePayment(input.paymentId)
-      const captured = (payment.captures ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-      const refunded = (payment.refunds ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-      const received = captured.minus(refunded)
+      const received = receivedBy(payment)
       const amount = input.amount ?? received
 
       if (!amount.isGreaterThan(0) || amount.isGreaterThan(received)) {
