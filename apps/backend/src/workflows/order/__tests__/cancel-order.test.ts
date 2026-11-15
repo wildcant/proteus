@@ -1,7 +1,9 @@
+import { BigNumber } from '@core/bignumber.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
 import { assertDefined } from '@tests/utils/assert-defined.js'
+import { recordOrderPaymentWorkflow } from '@workflows/payment/record-order-payment.js'
 import { vi } from 'vitest'
 import { cancelOrderWorkflow } from '../cancel-order.js'
 
@@ -143,6 +145,86 @@ test.describe('cancelOrderWorkflow', () => {
       availableQuantity: 0,
     })
     expect(await service.read.reservationItems(container, { lineItemId: lineItem.id })).toHaveLength(1)
+  })
+
+  test('refunds the part of a deposit the admin chose and voids what is still authorized', async ({
+    service,
+    expect,
+  }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+    const payment = await authorizedPayment(service, paymentCollectionId)
+
+    const canceled = await cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(10) })
+
+    expect(canceled.status).toBe('canceled')
+    const afterwards = await service.read.payment(container, payment.id)
+    expect(afterwards.canceledAt).toBeInstanceOf(Date)
+    expect(afterwards.refunds?.map((refund) => refund.amount.toFixed())).toEqual(['10'])
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-10', '30'])
+  })
+
+  test('refuses a refund above what the order received, and leaves it standing', async ({ service, expect }) => {
+    const { orderId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(31) })).rejects.toThrow(
+      'a refund of 31 is not between 0 and the 30 received',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending' })
+    expect(await service.read.orderTransactions(container, orderId)).toHaveLength(1)
+  })
+
+  /**
+   * A payment recorded after the cancel planned its refund, before it voided the authorization:
+   * canceling anyway would leave that money on a canceled Order, neither refunded nor voided.
+   */
+  test('refuses to cancel when a payment is recorded while it runs', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+    const payment = await authorizedPayment(service, paymentCollectionId)
+
+    const orderService = container.resolve(Modules.ORDER)
+    const cancelOrder = orderService.cancelOrder.bind(orderService)
+    vi.spyOn(orderService, 'cancelOrder').mockImplementationOnce(async (id) => {
+      await container
+        .resolve(Modules.PAYMENT)
+        .capturePaymentCollection(paymentCollectionId, { amount: new BigNumber(20), idempotencyKey: 'meanwhile' })
+      return cancelOrder(id)
+    })
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(0) })).rejects.toThrow(
+      'was recorded on its collection meanwhile',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending', canceledAt: null })
+    expect(await service.read.payment(container, payment.id)).toMatchObject({ canceledAt: null })
+  })
+
+  /**
+   * The refund has no compensation — the money is back with the shopper — so a failure after it
+   * must leave its Order transaction standing too, or the Paid Total would count returned money.
+   */
+  test('rollback after a refund keeps the refund recorded on the order', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'cancelPayment').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(10) })).rejects.toThrow(
+      'provider unavailable',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending', canceledAt: null })
+    expect((await service.read.paymentCollection(container, paymentCollectionId)).refundedAmount).toEqual(
+      new BigNumber(10),
+    )
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-10', '30'])
   })
 
   test('rollback un-cancels the order and leaves the payment standing when the release fails', async ({

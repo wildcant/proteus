@@ -21,6 +21,7 @@ import type {
 } from '../../../core/types/payment/common.js'
 import { PaymentErrorCodes } from '../../../core/types/payment/errors.js'
 import type {
+  CancelPaymentDTO,
   CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -550,10 +551,19 @@ export class PaymentModuleService implements IPaymentModuleService {
       const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, ctx)
       const payments = collection.payments ?? []
 
+      // Net of refunds, the Order's own definition: Outstanding Amount is the total less the Paid
+      // Total, and a refund takes money back out of the Paid Total. After paying 100 and refunding
+      // 25, 25 is outstanding again. The authorization was fully captured, so no open payment holds
+      // it and a new manual one is authorized below — Medusa's way of collecting again, a new session.
+      // An open authorization holding less than the amount asked is not topped up: `capture_`
+      // refuses it with what it still holds, and the admin records that first.
       const captured = payments
         .flatMap((payment) => payment.captures ?? [])
         .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
-      const outstanding = collection.amount.minus(captured)
+      const refunded = payments
+        .flatMap((payment) => payment.refunds ?? [])
+        .reduce((sum, refund) => sum.plus(refund.amount), new BigNumber(0))
+      const outstanding = collection.amount.minus(captured.minus(refunded))
 
       if (data.amount.isGreaterThan(outstanding)) {
         throw new AppError({
@@ -655,13 +665,36 @@ export class PaymentModuleService implements IPaymentModuleService {
     })
   }
 
-  async cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO> {
+  /**
+   * Voids what the authorization still holds, under the collection's row lock so a capture cannot
+   * land on it halfway. With `capturedAmount`, refused when the collection's captures no longer add
+   * up to what the caller saw: the caller planned around that figure (cancel-order's refund), and a
+   * capture recorded since would otherwise stay on a canceled Order, neither refunded nor voided.
+   */
+  async cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO> {
     this.logger.debug(`Canceling payment "${paymentId}"`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, ctx)
+      await this.paymentCollectionRepository.lockForUpdate(payment.paymentCollectionId, ctx)
 
       if (payment.canceledAt) {
         return this.retrievePayment(payment.id, ctx)
+      }
+
+      if (options?.capturedAmount) {
+        const collection = await this.retrievePaymentCollection(payment.paymentCollectionId, undefined, ctx)
+        const captured = (collection.payments ?? [])
+          .flatMap((row) => row.captures ?? [])
+          .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
+        if (!captured.isEqualTo(options.capturedAmount)) {
+          throw new AppError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: i18n.t(
+              'Payment "{id}" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile.',
+            ),
+            values: { id: payment.id, amount: captured.minus(options.capturedAmount).toFixed() },
+          })
+        }
       }
 
       await this.paymentProviderService.cancelPayment(payment.providerId, {

@@ -111,6 +111,9 @@ test('a calculated option is quoted, stored and re-priced from the fixture couri
   })
   expect(refused.status).toBe(400)
   expect(refused.body).toMatchObject({ type: 'not_allowed', code: 'fulfillment_option_unavailable' })
+  expect((await readCart()).shippingMethods.map(({ name, amount }) => ({ name, amount }))).toEqual([
+    { name: 'Courier', amount: '10000' },
+  ])
 
   // Three units: the courier's quote follows the quantity, and so does the cart total.
   await api.post(`/store/carts/${cart.id}/line-items/${added.body.lineItem.id}`, { quantity: 3 })

@@ -38,6 +38,10 @@ The admin records a payment against that collection:
 2. **Each later payment** captures another part of the same authorized payment, up to what is
    outstanding (usually the rest, cash on delivery).
 3. **A refund** is recorded against captured money, up to what was captured and not yet refunded.
+   What it returns is outstanding again, on the collection as on the Order. Once the authorization
+   is fully captured, recording that amount authorizes a new manual payment for what is outstanding,
+   as Medusa collects again through a new session. An authorization still open but holding less
+   than the amount asked is not topped up: the capture is refused with what it still holds.
 
 Capture takes an amount, as Medusa's does, so the same collection could later be authorized by a
 real gateway and captured the same way, with no change to the Order.

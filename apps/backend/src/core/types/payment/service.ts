@@ -14,6 +14,7 @@ import type {
   SavedMethodDTO,
 } from './common.js'
 import type {
+  CancelPaymentDTO,
   CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -90,11 +91,11 @@ export type IPaymentModuleService = {
   // Payment lifecycle
   capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO>
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
-  cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
+  cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO>
   /**
    * Records a payment of an amount against a collection, under its row lock: opens and authorizes
    * a manual session for what is outstanding when the collection holds no live authorization, then
-   * captures the amount. Refused above what is outstanding. A capture already recorded under
+   * captures the amount. Refused above what is outstanding, net of refunds. A capture already recorded under
    * `idempotencyKey` is answered with rather than taken again.
    */
   capturePaymentCollection(

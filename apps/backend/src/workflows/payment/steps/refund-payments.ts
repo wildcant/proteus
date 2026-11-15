@@ -1,5 +1,6 @@
 import type { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import type { OrderTransactionDTO } from '@core/types/order/common.js'
 import type { CreateOrderTransactionDTO } from '@core/types/order/mutations.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
@@ -23,16 +24,19 @@ type RefundPaymentsInput = {
 
 type RefundPaymentsOutput = {
   /** One Order transaction per refund row, negative, keyed by the refund. */
-  transactions: CreateOrderTransactionDTO[]
+  transactions: OrderTransactionDTO[]
 }
 
 /**
- * Returns money already captured, one refund per planned entry, and hands back the Order
- * transactions that record them for `addOrderTransactionsStep` to write.
+ * Returns money already captured, one refund per planned entry, and writes the Order transactions
+ * that record them.
  *
  * No compensation: a refund is money sent back, and nothing a later step does can take it back
- * from the shopper. Workflows place this after every step that could still fail for reasons of
- * their own.
+ * from the shopper. The transactions are written here rather than by `addOrderTransactionsStep`
+ * for the same reason: that step's compensation would delete them when a later step fails, and
+ * the Paid Total would go on counting money that was returned. Safe to run twice: the refund is
+ * found again by its key, and the order module answers a transaction already recorded for the
+ * same refund row with the existing one.
  */
 export async function refundPaymentsStep(
   ctx: WorkflowContext,
@@ -74,6 +78,8 @@ export async function refundPaymentsStep(
       }
     }
 
-    return { transactions }
+    if (transactions.length === 0) return { transactions: [] }
+    const orderService = container.resolve(Modules.ORDER)
+    return { transactions: await orderService.addOrderTransactions(transactions) }
   })
 }

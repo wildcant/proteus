@@ -1,3 +1,5 @@
+import { BigNumber } from '@core/bignumber.js'
+import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
@@ -46,9 +48,20 @@ export async function createOrderPaymentCollectionStep(
         amount: orderTotal,
         currencyCode: order.currencyCode,
       })
-      await linkService.createMany([
-        { link: 'orderPaymentCollection', data: { orderId: order.id, paymentCollectionId: collection.id } },
-      ])
+      try {
+        await linkService.createMany([
+          { link: 'orderPaymentCollection', data: { orderId: order.id, paymentCollectionId: collection.id } },
+        ])
+      } catch (error) {
+        // Lost the race to a payment recorded at the same moment: the unique index on the Order
+        // kept the other collection. Drop this one and capture against the winner's, under its
+        // lock, which is what refuses the two together going above the total.
+        if (!AppError.isError(error) || error.type !== ErrorTypes.DUPLICATE_ERROR) throw error
+        await paymentService.softDeletePaymentCollections([collection.id])
+        const winner = await linkService.repo('orderPaymentCollection').findByOrderId(input.orderId)
+        if (!winner) throw error
+        return { paymentCollectionId: winner.paymentCollectionId, created: false }
+      }
 
       return { paymentCollectionId: collection.id, created: true }
     },
@@ -57,6 +70,14 @@ export async function createOrderPaymentCollectionStep(
 
       const linkService = container.resolve(ContainerRegistrationKeys.LINK)
       const paymentService = container.resolve(Modules.PAYMENT)
+
+      // A payment recorded at the same moment may have converged on this collection and been
+      // captured into it. That money is the Order's now, so the collection stays. This run's own
+      // capture, if any, was refunded by its compensation before this one runs.
+      const collection = await paymentService.retrievePaymentCollection(paymentCollectionId)
+      const held = (collection.capturedAmount ?? new BigNumber(0)).minus(collection.refundedAmount ?? 0)
+      if (held.isGreaterThan(0)) return
+
       await linkService.dismissLinks({ paymentCollectionId: [paymentCollectionId] })
       await paymentService.softDeletePaymentCollections([paymentCollectionId])
     },

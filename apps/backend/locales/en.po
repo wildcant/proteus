@@ -77,7 +77,7 @@ msgstr "Variant \"{variantId}\" cannot stop being tracked while orders hold its 
 
 #. js-lingui-explicit-id
 #: src/workflows/payment/capture-payment.ts:59
-#: src/workflows/payment/steps/record-order-payment.ts:147
+#: src/workflows/payment/steps/record-order-payment.ts:156
 msgid "Payment \"{id}\" holds no capture recorded under this request."
 msgstr "Payment \"{id}\" holds no capture recorded under this request."
 
@@ -99,7 +99,7 @@ msgid "Cart \"{cartId}\" has no items or zero total"
 msgstr "Cart \"{cartId}\" has no items or zero total"
 
 #. js-lingui-explicit-id
-#: src/workflows/payment/refund-payment.ts:48
+#: src/workflows/payment/refund-payment.ts:47
 msgid "Refund amount {amount} must be more than zero and at most the {received} received."
 msgstr "Refund amount {amount} must be more than zero and at most the {received} received."
 
@@ -119,22 +119,27 @@ msgid "Payment amount must be greater than zero."
 msgstr "Payment amount must be greater than zero."
 
 #. js-lingui-explicit-id
-#: src/workflows/payment/steps/record-order-payment.ts:70
+#: src/workflows/payment/steps/record-order-payment.ts:72
+msgid "Order with id \"{id}\" not found"
+msgstr "Order with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:79
 msgid "Cannot record a payment on order {orderId}: it is canceled."
 msgstr "Cannot record a payment on order {orderId}: it is canceled."
 
 #. js-lingui-explicit-id
-#: src/workflows/payment/steps/record-order-payment.ts:78
+#: src/workflows/payment/steps/record-order-payment.ts:87
 msgid "Cannot record a payment on order {orderId}: it is a draft — convert it to record its deposit."
 msgstr "Cannot record a payment on order {orderId}: it is a draft — convert it to record its deposit."
 
 #. js-lingui-explicit-id
-#: src/workflows/payment/steps/record-order-payment.ts:96
+#: src/workflows/payment/steps/record-order-payment.ts:105
 msgid "Payment amount {amount} exceeds the {outstanding} outstanding on order {orderId}."
 msgstr "Payment amount {amount} exceeds the {outstanding} outstanding on order {orderId}."
 
 #. js-lingui-explicit-id
-#: src/workflows/payment/steps/refund-payments.ts:61
+#: src/workflows/payment/steps/refund-payments.ts:65
 msgid "Payment \"{id}\" holds no refund recorded under this request."
 msgstr "Payment \"{id}\" holds no refund recorded under this request."
 
@@ -468,7 +473,7 @@ msgstr "The payment gateway is temporarily unavailable. Please try again."
 
 #. js-lingui-explicit-id
 #: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
-#: src/modules/payment/services/payment-module-service.ts:907
+#: src/modules/payment/services/payment-module-service.ts:940
 #: src/providers/payment-stripe/errors.ts:145
 msgid "That payment method is no longer available."
 msgstr "That payment method is no longer available."
@@ -479,7 +484,7 @@ msgid "The card could not be charged."
 msgstr "The card could not be charged."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:255
+#: src/modules/payment/services/payment-module-service.ts:256
 #: src/providers/payment-stripe/errors.ts:157
 msgid "The payment could not be processed."
 msgstr "The payment could not be processed."
@@ -787,47 +792,52 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "Cannot remove option value(s) that are currently used by products. Remove them from all products first."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:561
+#: src/modules/payment/services/payment-module-service.ts:571
 msgid "Payment amount {amount} exceeds the {outstanding} outstanding on payment collection \"{id}\"."
 msgstr "Payment amount {amount} exceeds the {outstanding} outstanding on payment collection \"{id}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:602
+#: src/modules/payment/services/payment-module-service.ts:612
 msgid "Payment \"{id}\" has no refundable amount remaining."
 msgstr "Payment \"{id}\" has no refundable amount remaining."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:610
+#: src/modules/payment/services/payment-module-service.ts:620
 msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 msgstr "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:972
+#: src/modules/payment/services/payment-module-service.ts:692
+msgid "Payment \"{id}\" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile."
+msgstr "Payment \"{id}\" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1005
 msgid "Payment \"{id}\" has been canceled and cannot be captured."
 msgstr "Payment \"{id}\" has been canceled and cannot be captured."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:987
+#: src/modules/payment/services/payment-module-service.ts:1020
 msgid "Payment \"{id}\" has already been fully captured."
 msgstr "Payment \"{id}\" has already been fully captured."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:997
+#: src/modules/payment/services/payment-module-service.ts:1030
 msgid "Capture amount must be greater than zero."
 msgstr "Capture amount must be greater than zero."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1004
+#: src/modules/payment/services/payment-module-service.ts:1037
 msgid "Capture amount {amount} exceeds the {remaining} still authorized on payment \"{id}\"."
 msgstr "Capture amount {amount} exceeds the {remaining} still authorized on payment \"{id}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1012
+#: src/modules/payment/services/payment-module-service.ts:1045
 msgid "Payment \"{id}\" can only be captured in full: its provider cannot take part of an authorization."
 msgstr "Payment \"{id}\" can only be captured in full: its provider cannot take part of an authorization."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:1070
+#: src/modules/payment/services/payment-module-service.ts:1103
 msgid "The manual payment for collection \"{id}\" was not authorized."
 msgstr "The manual payment for collection \"{id}\" was not authorized."
 
@@ -973,7 +983,7 @@ msgid "Fulfillment provider \"{providerId}\" is not registered."
 msgstr "Fulfillment provider \"{providerId}\" is not registered."
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/providers/manual.ts:43
+#: src/modules/fulfillment/providers/manual.ts:44
 msgid "Manual provider does not support calculated prices"
 msgstr "Manual provider does not support calculated prices"
 
@@ -1260,7 +1270,7 @@ msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activit
 msgstr "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
 
 #. js-lingui-explicit-id
-#: src/core/workflows/hooks.ts:198
+#: src/core/workflows/hooks.ts:201
 msgid "The handler for hook \"{hook}\" from extension \"{extension}\" failed: {reason}"
 msgstr "The handler for hook \"{hook}\" from extension \"{extension}\" failed: {reason}"
 
@@ -1408,11 +1418,6 @@ msgstr "Product with handle \"{handle}\" has no price in {currencyCode}"
 #: src/api/store/orders/lookup/route.ts:22
 msgid "No order matches that number and phone"
 msgstr "No order matches that number and phone"
-
-#. js-lingui-explicit-id
-#: src/api/store/orders/[id]/route.ts:31
-msgid "Order with id \"{id}\" not found"
-msgstr "Order with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
 #: src/api/store/customers/middlewares.ts:28

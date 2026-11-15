@@ -4,7 +4,6 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
-import { addOrderTransactionsStep } from '../order/steps/add-order-transactions.js'
 import { type PlannedRefund, refundPaymentsStep } from './steps/refund-payments.js'
 
 type RefundPaymentInput = {
@@ -66,8 +65,7 @@ export const refundPaymentWorkflow = createWorkflow<RefundPaymentInput, { paymen
       return { refunds, orderId: link?.orderId ?? null }
     })
 
-    const refunded = await refundPaymentsStep(ctx, plan)
-    await addOrderTransactionsStep(ctx, refunded)
+    await refundPaymentsStep(ctx, plan)
 
     return { paymentId: input.paymentId }
   },

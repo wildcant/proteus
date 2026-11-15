@@ -78,7 +78,7 @@ CREATE INDEX "idx_invrl_role_id" ON "invite_role" USING btree ("role_id") WHERE 
 CREATE UNIQUE INDEX "idx_order_cart" ON "order_cart" USING btree ("order_id","cart_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_order_cart_cart_id" ON "order_cart" USING btree ("cart_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_order_fulfillment" ON "order_fulfillment" USING btree ("order_id","fulfillment_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_order_payment_collection" ON "order_payment_collection" USING btree ("order_id","payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_order_payment_collection_order_id" ON "order_payment_collection" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_pvitem_variant_inventory" ON "product_variant_inventory_item" USING btree ("variant_id","inventory_item_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_pvitem_variant_id" ON "product_variant_inventory_item" USING btree ("variant_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_pvitem_inventory_item_id" ON "product_variant_inventory_item" USING btree ("inventory_item_id") WHERE deleted_at IS NULL;--> statement-breakpoint

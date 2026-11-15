@@ -19,12 +19,13 @@ export class ManualFulfillmentProvider extends AbstractFulfillmentProvider {
     return [{ id: 'manual-fulfillment' }]
   }
 
+  /** Accepts what the shopper sent as it is, as Medusa's manual provider does: it is what the method stores. */
   async validateFulfillmentData(
     _optionData: Record<string, unknown>,
-    _data: Record<string, unknown>,
+    data: Record<string, unknown>,
     _context: CalculateShippingPriceContext,
   ): Promise<Record<string, unknown>> {
-    return {}
+    return data
   }
 
   async validateOption(_data: Record<string, unknown>): Promise<boolean> {

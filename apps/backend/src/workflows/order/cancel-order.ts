@@ -6,7 +6,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { type PlannedRefund, refundPaymentsStep } from '../payment/steps/refund-payments.js'
-import { addOrderTransactionsStep } from './steps/add-order-transactions.js'
+import { asTerminalRefusal } from '../payment/utils/as-terminal-refusal.js'
 import { computeFulfillmentStatus } from './utils/compute-fulfillment-status.js'
 
 type CancelOrderInput = {
@@ -82,7 +82,23 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
         left = left.minus(amount)
       }
 
-      return { refunds, orderId: input.orderId }
+      // What the void will check under the collection's lock: the payments still holding money,
+      // and the captured total this plan was made against.
+      const payments = collection?.payments ?? []
+      const holding = payments.filter((payment) => {
+        if (payment.canceledAt) return false
+        const captured = (payment.captures ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
+        return captured.isLessThan(payment.amount)
+      })
+      const capturedAmount = payments
+        .flatMap((payment) => payment.captures ?? [])
+        .reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
+
+      return {
+        refunds,
+        orderId: input.orderId,
+        voids: { paymentIds: holding.map((payment) => payment.id), capturedAmount },
+      }
     })
 
     /** Validate and mark the order as canceled — rejects anything but a draft or a pending order. */
@@ -129,27 +145,21 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
 
     /** Payments last — these are irreversible provider-side operations. First the refund the
      *  admin chose, each written as an Order transaction so the Paid Total shows what was kept. */
-    const refunded = await refundPaymentsStep(ctx, refundPlan)
-    await addOrderTransactionsStep(ctx, refunded)
+    await refundPaymentsStep(ctx, refundPlan)
 
     /** Then void what the authorizations still hold, so no money can be captured against a
-     *  canceled Order. A fully captured payment has nothing left to void and is left alone. */
+     *  canceled Order. A fully captured payment has nothing left to void and is left alone. Each
+     *  void checks, under the collection's lock, that nothing was captured since the plan: a payment
+     *  recorded meanwhile refuses the cancel rather than staying on a canceled Order unrefunded. */
     await ctx.step('cancel-payments', async ({ container }) => {
       const paymentService = container.resolve(Modules.PAYMENT)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const { paymentIds, capturedAmount } = refundPlan.voids
 
-      const link = await linkService.repo('orderPaymentCollection').findByOrderId(input.orderId)
-      if (!link) return
-
-      const collection = await paymentService.retrievePaymentCollection(link.paymentCollectionId)
-
-      const holding = (collection.payments ?? []).filter((payment) => {
-        if (payment.canceledAt) return false
-        const captured = (payment.captures ?? []).reduce((sum, row) => sum.plus(row.amount), new BigNumber(0))
-        return captured.isLessThan(payment.amount)
-      })
-
-      await Promise.all(holding.map((payment) => paymentService.cancelPayment(payment.id)))
+      await Promise.all(
+        paymentIds.map((paymentId) =>
+          paymentService.cancelPayment(paymentId, { capturedAmount }).catch(asTerminalRefusal),
+        ),
+      )
     })
 
     return canceled

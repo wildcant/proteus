@@ -9,7 +9,7 @@ import { createOrderPaymentCollectionStep } from '../../order/steps/create-order
 import { asTerminalRefusal } from '../utils/as-terminal-refusal.js'
 
 /** A step in its own file still owns its failure contract; the workflow calling it spreads this. */
-export const recordOrderPaymentThrows = [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED] as const
+export const recordOrderPaymentThrows = [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND] as const
 
 type RecordOrderPaymentInput = {
   orderId: string
@@ -63,7 +63,16 @@ async function prepareOrderPaymentStep(
       })
     }
 
-    const order = await orderService.retrieveOrder(input.orderId)
+    // Terminal, because the workflow is idempotent: a retryable NOT_FOUND would have the engine
+    // ask again for an id that is not there.
+    const order = await orderService.retrieveOrder(input.orderId).catch((error: unknown) => {
+      if (!AppError.isError(error) || error.type !== ErrorTypes.NOT_FOUND) throw error
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.NOT_FOUND,
+        message: i18n.t('Order with id "{id}" not found'),
+        values: { id: input.orderId },
+      })
+    })
     if (order.status === 'canceled') {
       throw new WorkflowTerminalError({
         type: ErrorTypes.NOT_ALLOWED,
