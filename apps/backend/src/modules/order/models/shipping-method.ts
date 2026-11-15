@@ -15,6 +15,7 @@ export const orderShippingMethodTable = pgTable(
     name: text().notNull(),
     description: text(),
     amount: bignum().notNull(),
+    isTaxInclusive: boolean().default(false).notNull(),
     shippingOptionId: text(),
     data: jsonb().$type<Record<string, unknown> | null>(),
     /** Set when the shop agreed this amount by hand (Medusa's `is_custom_amount`), so re-pricing a

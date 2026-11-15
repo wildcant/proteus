@@ -23,7 +23,7 @@ export type ConvertDraftOrderInput = {
  * Medusa's `convertDraftOrderWorkflow`: the shop confirms a Draft Order, and it becomes a `pending`
  * Order that holds stock and has its payment collection.
  *
- * Every line is checked first, so a pair that sold out since the draft was made is refused by name
+ * Every line is checked first, so an item that sold out since the draft was made is refused by name
  * rather than by inventory item. Stock is then reserved, the draft becomes an Order, and only then
  * is the deposit recorded (a Proteus departure: Medusa converts and takes payment separately), so a
  * conversion that can't hold the stock takes no money, and a store that takes deposits holds stock
@@ -37,6 +37,8 @@ export const convertDraftOrderWorkflow = createWorkflow<ConvertDraftOrderInput, 
       ...reserveOrderInventoryThrows,
       ...recordOrderPaymentThrows,
       ErrorTypes.INVALID_DATA,
+      // a draft no longer open is the order module's refusal, in `retrieveOpenDraftOrder`
+      // ast-grep-ignore: workflow-declares-unthrown-error
       ErrorTypes.NOT_ALLOWED,
     ],
   },
@@ -44,16 +46,10 @@ export const convertDraftOrderWorkflow = createWorkflow<ConvertDraftOrderInput, 
     /** Only a draft still open converts: not one already converted, and not one the shop canceled. */
     const lineItems = await ctx.step<SellableLineItem[]>('validate-draft-order', async ({ container }) => {
       const orderService = container.resolve(Modules.ORDER)
-      const order = await orderService.retrieveOrder(input.orderId)
-      if (!order.isDraftOrder || order.status !== 'draft') {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.NOT_ALLOWED,
-          message: i18n.t('Order "{orderId}" is not an open draft order, so it cannot be converted'),
-          values: { orderId: input.orderId },
-        })
-      }
-
-      const lines = await orderService.listOrderLineItems({ orderId: input.orderId })
+      const [, lines] = await Promise.all([
+        orderService.retrieveOpenDraftOrder(input.orderId),
+        orderService.listOrderLineItems({ orderId: input.orderId }),
+      ])
       if (lines.length === 0) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.INVALID_DATA,

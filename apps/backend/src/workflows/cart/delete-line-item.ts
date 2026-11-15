@@ -9,7 +9,7 @@ export type DeleteLineItemInput = {
 
 /**
  * Removes a line from a cart and re-prices its shipping, Medusa's `deleteLineItemsWorkflow`: a
- * courier that charges by the parcel quotes less once a pair is gone.
+ * courier that charges by the parcel quotes less once an item is gone.
  *
  * Declares no errors of its own: `removeLineItem` raises NOT_FOUND (a line the cart does not hold)
  * and NOT_ALLOWED (a completed cart) from the cart module, which the route declares.

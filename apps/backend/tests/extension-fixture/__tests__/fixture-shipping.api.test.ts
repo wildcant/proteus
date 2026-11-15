@@ -41,9 +41,10 @@ const createMarket = async ({ factories, service }: Pick<Fixtures, 'factories' |
   })
 
   // The rate table lives in the fixture extension's own module, which only its provider reads.
-  await api.container
-    .resolve(FixtureModules.SHIPPING_RATES)
-    .createShippingRates([{ city: 'Bogotá', baseAmount: 8000, perItemAmount: 2000, deliveryDays: 2 }])
+  await api.container.resolve(FixtureModules.SHIPPING_RATES).createShippingRates([
+    { city: 'Bogotá', baseAmount: 8000, perItemAmount: 2000, deliveryDays: 2 },
+    { city: 'Cali', baseAmount: 9000, perItemAmount: 1000, deliveryDays: 4 },
+  ])
 
   const product = await factories.create.productWithPricing({ price: { amount: COP_PRICE, currencyCode: 'cop' } })
   const otherProduct = await factories.create.productWithPricing({ price: { amount: COP_PRICE, currencyCode: 'cop' } })
@@ -104,6 +105,13 @@ test('a calculated option is quoted, stored and re-priced from the fixture couri
     shippingOptionId: courier.id,
     data: { deliveryDays: 2 },
   })
+
+  // Cali costs the same for one unit but takes longer: the method keeps the courier's new data,
+  // not the estimate it was chosen with.
+  await shipTo('Cali', 'Valle del Cauca')
+  expect((await readCart()).shippingMethods).toMatchObject([{ amount: '10000', data: { deliveryDays: 4 } }])
+  await shipTo('Bogotá', 'Cundinamarca')
+  expect((await readCart()).shippingMethods).toMatchObject([{ amount: '10000', data: { deliveryDays: 2 } }])
 
   // An option that does not serve the address is refused, and the choice already made survives.
   const refused = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/shipping-methods`, {

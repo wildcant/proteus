@@ -1,5 +1,5 @@
 {
-  "id": "3feacb01-b671-4ee6-ba6f-10b0442bc605",
+  "id": "d1cd6781-eb33-47ed-8658-863ca07905c3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -567,6 +567,13 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_tax_inclusive": {
+          "name": "is_tax_inclusive",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "shipping_option_id": {
           "name": "shipping_option_id",

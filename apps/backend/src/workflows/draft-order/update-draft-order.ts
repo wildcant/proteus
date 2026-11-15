@@ -13,7 +13,7 @@ type PreviousDraftDetails = {
 }
 
 /**
- * What the shop records on a draft after the chat (Medusa's `updateDraftOrderWorkflow`): the
+ * What the shop records on a draft once agreed with the shopper (Medusa's `updateDraftOrderWorkflow`): the
  * shopper's email, and the shipping address with the phone the shopper gave. The address is merged
  * into the draft's, so sending the phone alone keeps the city. A calculated shipping method is then
  * re-priced for the address, unless the shop set its amount by hand.

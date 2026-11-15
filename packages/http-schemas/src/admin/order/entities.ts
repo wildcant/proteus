@@ -51,6 +51,7 @@ export const AdminOrderShippingMethod = z
     name: z.string(),
     description: z.string().nullable(),
     amount: bigNumberToString,
+    isTaxInclusive: z.boolean(),
     shippingOptionId: z.string().nullable(),
     data: z.record(z.string(), z.unknown()).nullable(),
     /** The shop set this amount by hand, so editing a draft's items or address does not re-price it. */

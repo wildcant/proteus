@@ -32,7 +32,7 @@ let api: TestApi
 
 /**
  * A Colombian market whose courier is the fixture extension's calculated option, priced from its
- * rate table: Bogotá costs 8000 plus 2000 a unit. Two pairs, each stocked at one location.
+ * rate table: Bogotá costs 8000 plus 2000 a unit. Two products, each stocked at one location.
  */
 const createMarket = async ({ factories, service }: Pick<Fixtures, 'factories' | 'service'>) => {
   const region = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
@@ -41,9 +41,10 @@ const createMarket = async ({ factories, service }: Pick<Fixtures, 'factories' |
     geoZone: { type: 'country', countryCode: 'co' },
     shippingOption: { name: 'Courier', priceType: 'calculated', amount: null, providerId: CITY_RATES_PROVIDER },
   })
-  await api.container
-    .resolve(FixtureModules.SHIPPING_RATES)
-    .createShippingRates([{ city: 'Bogotá', baseAmount: 8000, perItemAmount: 2000, deliveryDays: 2 }])
+  await api.container.resolve(FixtureModules.SHIPPING_RATES).createShippingRates([
+    { city: 'Bogotá', baseAmount: 8000, perItemAmount: 2000, deliveryDays: 2 },
+    { city: 'Cali', baseAmount: 9000, perItemAmount: 1000, deliveryDays: 4 },
+  ])
 
   const sneaker = await service.create.sellableVariant(api.container, {
     product: { title: 'Runner' },
@@ -121,7 +122,7 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     expect(chosen.status).toBe(201)
     expect(chosen.body.shippingMethod).toMatchObject({ amount: '10000', data: { deliveryDays: 2 } })
 
-    // A second pair re-quotes the parcel, and taking it out quotes it back.
+    // A second unit re-quotes the parcel, and taking it out quotes it back.
     const runnerLineId = lineItems[0]?.id
     if (!runnerLineId) throw new Error('The Cart should hold the runner')
     await api.post(`/store/carts/${cart.id}/line-items/${runnerLineId}`, { quantity: 2 })
@@ -186,19 +187,29 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     expect(lineItems[0]?.variantOptions).toEqual(opened.lineItems[0]?.variantOptions)
     expect(await service.read.reservationItems(api.container, {})).toEqual([])
 
-    // The shop records the phone the shopper gave in the chat; the city stays.
+    // The shop records the phone the shopper gave off-site; the city stays.
     const phoned = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}`, {
       shippingAddress: { phone: '+57 311 000 0000' },
     })
     expect(phoned.status).toBe(200)
     expect(phoned.body.draftOrder.shippingAddress).toMatchObject({ city: 'Bogotá', phone: '+57 311 000 0000' })
 
+    // Moved to Cali, the courier re-quotes the draft and its delivery estimate with it; back to Bogotá.
+    const moved = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}`, {
+      shippingAddress: { city: 'Cali', province: 'Valle del Cauca' },
+    })
+    expect(moved.body.draftOrder.shippingMethods).toMatchObject([{ amount: '10000', data: { deliveryDays: 4 } }])
+    const back = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}`, {
+      shippingAddress: { city: 'Bogotá', province: 'Cundinamarca' },
+    })
+    expect(back.body.draftOrder.shippingMethods).toMatchObject([{ amount: '10000', data: { deliveryDays: 2 } }])
+
     // Sending the same Cart again answers the same draft and overwrites none of the shop's edit.
     const again = await api.post<StoreCreateDraftOrderResponse>(`/store/carts/${cart.id}/draft-order`)
     expect(again.body.orderId).toBe(draftId)
     expect((await readDraft(draftId)).shippingAddress?.phone).toBe('+57 311 000 0000')
 
-    // An added pair is priced in the draft's region, and the courier re-quotes the parcel.
+    // An added item is priced in the draft's region, and the courier re-quotes the parcel.
     const added = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}/edit/items`, {
       items: [{ variantId: sandal.variant.id, quantity: 1 }],
     })
@@ -220,7 +231,7 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     )
     expect(raised.body.draftOrder.totals).toMatchObject({ itemsTotal: '250000', shippingTotal: '14000' })
 
-    // The amount agreed in the chat sticks through a later item edit.
+    // The amount agreed with the shopper sticks through a later item edit.
     const agreed = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}/edit/shipping-methods`, {
       shippingOptionId: courier.id,
       customAmount: '5000',
@@ -325,7 +336,7 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     expect(refused.body.message).toContain('"Runner" is sold out')
     expect((await service.read.cart(api.container, soldOut.cart.id)).completedAt).toBeNull()
 
-    // A pair the catalogue no longer holds.
+    // An item the catalogue no longer holds.
     const discontinued = await createBogotaCart({ http, service }, region.id, [
       { variantId: sandal.variant.id, quantity: 1 },
     ])

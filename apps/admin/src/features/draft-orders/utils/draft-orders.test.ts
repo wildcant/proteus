@@ -107,6 +107,7 @@ describe("a draft's shipping method", () => {
     name: 'Courier',
     description: null,
     amount: '12.50',
+    isTaxInclusive: false,
     shippingOptionId: 'so_1',
     data: null,
     isCustomAmount: true,

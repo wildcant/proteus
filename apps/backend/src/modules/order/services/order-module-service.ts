@@ -327,7 +327,9 @@ export class OrderModuleService implements IOrderModuleService {
     context?: Context,
   ): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await Promise.all(update.map(({ id, amount }) => this.orderShippingMethodRepository.update(id, { amount }, ctx)))
+      await Promise.all(
+        update.map(({ id, ...requoted }) => this.orderShippingMethodRepository.update(id, requoted, ctx)),
+      )
       if (remove.length > 0) await this.orderShippingMethodRepository.softDelete(remove, ctx)
     })
   }
@@ -364,7 +366,7 @@ export class OrderModuleService implements IOrderModuleService {
 
   async updateDraftOrder(id: string, data: UpdateDraftOrderDTO, context?: Context): Promise<OrderDTO> {
     return this.withTransaction(context, async (ctx) => {
-      const order = await this.retrieveOpenDraft(id, ctx)
+      const order = await this.retrieveOpenDraftOrder(id, ctx)
       if (data.shippingAddress) await this.upsertOrderAddress(id, 'shipping', data.shippingAddress, ctx)
       if (data.email === undefined) return order
       return this.orderRepository.update(id, { email: data.email }, ctx)
@@ -377,12 +379,12 @@ export class OrderModuleService implements IOrderModuleService {
     context?: Context,
   ): Promise<DraftOrderLineItemsAddition> {
     return this.withTransaction(context, async (ctx) => {
-      await this.retrieveOpenDraft(id, ctx)
+      await this.retrieveOpenDraftOrder(id, ctx)
       const existing = await this.orderLineItemRepository.find({ orderId: id }, undefined, ctx)
       const existingByVariantId = new Map(existing.flatMap((line) => (line.variantId ? [[line.variantId, line]] : [])))
 
       const previousQuantities: OrderLineItemQuantityDTO[] = []
-      const raised: OrderLineItemDTO[] = []
+      const raises: { id: string; quantity: number }[] = []
       const toCreate: CreateOrderLineItemDTO[] = []
       for (const item of items) {
         const line = item.variantId ? existingByVariantId.get(item.variantId) : undefined
@@ -392,10 +394,11 @@ export class OrderModuleService implements IOrderModuleService {
         }
         // A line keeps the price it was ordered at; only its quantity grows.
         previousQuantities.push({ id: line.id, quantity: line.quantity })
-        raised.push(
-          await this.orderLineItemRepository.update(line.id, { quantity: line.quantity + item.quantity }, ctx),
-        )
+        raises.push({ id: line.id, quantity: line.quantity + item.quantity })
       }
+      const raised = await Promise.all(
+        raises.map(({ id: lineId, quantity }) => this.orderLineItemRepository.update(lineId, { quantity }, ctx)),
+      )
 
       const created = toCreate.length
         ? await this.orderLineItemRepository.createMany(
@@ -415,7 +418,7 @@ export class OrderModuleService implements IOrderModuleService {
     context?: Context,
   ): Promise<OrderLineItemDTO> {
     return this.withTransaction(context, async (ctx) => {
-      await this.retrieveOpenDraft(id, ctx)
+      await this.retrieveOpenDraftOrder(id, ctx)
       const lineItem = await this.retrieveDraftLineItem(id, lineItemId, ctx)
       return this.orderLineItemRepository.update(lineItem.id, { quantity }, ctx)
     })
@@ -423,7 +426,7 @@ export class OrderModuleService implements IOrderModuleService {
 
   async removeDraftOrderLineItem(id: string, lineItemId: string, context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await this.retrieveOpenDraft(id, ctx)
+      await this.retrieveOpenDraftOrder(id, ctx)
       const lineItem = await this.retrieveDraftLineItem(id, lineItemId, ctx)
       await this.orderLineItemRepository.softDelete([lineItem.id], ctx)
     })
@@ -435,7 +438,7 @@ export class OrderModuleService implements IOrderModuleService {
     context?: Context,
   ): Promise<DraftOrderShippingMethodReplacement> {
     return this.withTransaction(context, async (ctx) => {
-      await this.retrieveOpenDraft(id, ctx)
+      await this.retrieveOpenDraftOrder(id, ctx)
       const existing = await this.orderShippingMethodRepository.find({ orderId: id }, undefined, ctx)
       const replacedIds = existing.map((shippingMethod) => shippingMethod.id)
       if (replacedIds.length > 0) await this.orderShippingMethodRepository.softDelete(replacedIds, ctx)
@@ -447,7 +450,7 @@ export class OrderModuleService implements IOrderModuleService {
 
   async convertDraftOrder(id: string, context?: Context): Promise<OrderDTO> {
     return this.withTransaction(context, async (ctx) => {
-      await this.retrieveOpenDraft(id, ctx)
+      await this.retrieveOpenDraftOrder(id, ctx)
       return this.orderRepository.update(id, { status: 'pending', isDraftOrder: false }, ctx)
     })
   }
@@ -606,7 +609,7 @@ export class OrderModuleService implements IOrderModuleService {
   // ---------------------------------------------------------------------------
 
   /** A Draft Order still open for edits: not converted, and not canceled. */
-  private async retrieveOpenDraft(id: string, context: Context): Promise<OrderDTO> {
+  async retrieveOpenDraftOrder(id: string, context?: Context): Promise<OrderDTO> {
     const order = await this.orderRepository.findByIdOrFail(id, undefined, context)
     if (!order.isDraftOrder) {
       throw new AppError({

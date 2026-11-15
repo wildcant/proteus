@@ -40,7 +40,9 @@ its geo zones matches it, as in Medusa:
 
 Country codes compare exactly. Province, city and postal code compare trimmed and case-insensitively,
 so `Medellín ` and `medellín` are one city. An address missing a field a zone needs doesn't match
-that zone.
+that zone. A zone missing a field its own type needs (a city zone
+without its province, a postal-code zone without its city) is refused when it is created or edited,
+as Medusa refuses it, since it could never match an address.
 
 ## Flat and calculated prices
 
@@ -69,7 +71,9 @@ The amount is in the Cart's currency, in the same units as every other amount. A
 can't price this address or these items (a city the courier doesn't reach, a parcel over its
 limit) throws the typed "can't calculate" error the port declares. The module leaves that option
 out of the list rather than failing the request, so a Cart whose address no option reaches answers
-an empty list.
+an empty list. Any other error from a provider (its API down, a bug) also leaves only that option
+out, and is logged: one failing courier leaves the shopper the others. Medusa fails the whole list
+there instead.
 
 ### The shipping method keeps what the price was based on
 
@@ -83,8 +87,10 @@ for one.
 ### Refreshing when the Cart changes
 
 When a Cart's items or shipping address change, the Cart workflows refresh its shipping methods, as
-Medusa's `refreshCartShippingMethodsWorkflow` does: a calculated method is re-priced, and a method
-whose option no longer serves the address, or that its provider can no longer price, is removed.
-Completing a Cart and creating a Draft Order copy the method as stored, amount and `data` together.
-On a Draft Order, an item or address edit re-prices a calculated method the same way, unless the
-admin set a custom amount.
+Medusa's `refreshCartShippingMethodsWorkflow` does: each method is quoted again, its price and its
+provider's `validateFulfillmentData` answer together, so a delivery estimate follows the address
+the price did. A method whose option no longer serves the address, or that its provider can no
+longer price, is removed. Completing a Cart and creating a Draft Order copy the method as stored:
+amount, tax flag and `data`. On a Draft Order, an item or address edit refreshes a method the same
+way, unless the admin set a custom amount: that method keeps its amount and its data as the admin
+set them.

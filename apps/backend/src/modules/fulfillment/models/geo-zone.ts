@@ -21,7 +21,8 @@ export const geoZoneTable = pgTable(
   },
   (table) => [
     liveIndex('idx_geo_zone_service_zone_id').on(table.serviceZoneId),
-    liveIndex('idx_geo_zone_country_code').on(table.countryCode),
+    // On the expression the matching read compares, so an admin's `CO` and a cart's `co` meet in the index.
+    liveIndex('idx_geo_zone_country_code').on(sql`lower(${table.countryCode})`),
   ],
 )
 

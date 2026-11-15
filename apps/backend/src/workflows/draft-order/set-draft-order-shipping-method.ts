@@ -11,7 +11,7 @@ export type SetDraftOrderShippingMethodInput = {
   orderId: string
   shippingOptionId: string
   /**
-   * What the shop agreed in the chat, in the draft's currency. Given, the method is stored at it and
+   * What the shop agreed with the shopper, in the draft's currency. Given, the method is stored at it and
    * marked custom, so re-pricing never overrides it; omitted, the option prices the draft.
    */
   customAmount?: string | undefined
@@ -23,6 +23,7 @@ export type SetDraftOrderShippingMethodInput = {
 type PricedDraftShippingMethod = {
   name: string
   amount: string
+  isTaxInclusive: boolean
   shippingOptionId: string
   data: Record<string, unknown>
   isCustomAmount: boolean
@@ -48,14 +49,21 @@ export const setDraftOrderShippingMethodWorkflow = createWorkflow<
 
     if (input.customAmount !== undefined) {
       const option = await fulfillmentService.retrieveShippingOption(input.shippingOptionId)
-      return { name: option.name, amount: input.customAmount, shippingOptionId: option.id, data, isCustomAmount: true }
+      return {
+        name: option.name,
+        amount: input.customAmount,
+        isTaxInclusive: false,
+        shippingOptionId: option.id,
+        data,
+        isCustomAmount: true,
+      }
     }
 
     const pricingContext = await loadDraftOrderShippingPricingContext(container, input.orderId)
-    const [priced] = pricingContext
-      ? await fulfillmentService.priceShippingOptionsForContext([{ id: input.shippingOptionId, data }], pricingContext)
+    const [quoted] = pricingContext
+      ? await fulfillmentService.quoteShippingOptionsForContext([{ id: input.shippingOptionId, data }], pricingContext)
       : []
-    if (!priced || !pricingContext) {
+    if (!quoted) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.NOT_ALLOWED,
         code: FulfillmentErrorCodes.OPTION_UNAVAILABLE,
@@ -65,10 +73,11 @@ export const setDraftOrderShippingMethodWorkflow = createWorkflow<
     }
 
     return {
-      name: priced.name,
-      amount: String(priced.calculatedPrice.calculatedAmount),
-      shippingOptionId: priced.id,
-      data: await fulfillmentService.validateShippingOptionFulfillmentData(priced.id, data, pricingContext),
+      name: quoted.name,
+      amount: String(quoted.calculatedPrice.calculatedAmount),
+      isTaxInclusive: quoted.calculatedPrice.isCalculatedPriceTaxInclusive,
+      shippingOptionId: quoted.id,
+      data: quoted.fulfillmentData,
       isCustomAmount: false,
     }
   })

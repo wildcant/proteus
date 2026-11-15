@@ -7,7 +7,7 @@ import {
   type VariantStockFlags,
 } from './variant-inventory.js'
 
-export type ConfirmInventoryResult = {
+export type CartInventoryChecks = {
   cartId: string
   items: LineItemInventoryCheck[]
 }
@@ -25,7 +25,7 @@ export function prepareConfirmInventoryInput(data: {
   variants: VariantStockFlags[]
   mappings: ProductVariantInventoryItemDTO[]
   levels: InventoryLevelDTO[]
-}): ConfirmInventoryResult {
+}): CartInventoryChecks {
   return {
     cartId: data.cartId,
     items: prepareLineItemInventoryChecks(data.lineItems, data.variants, data.mappings, data.levels),

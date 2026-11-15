@@ -7,7 +7,7 @@ import { missingInventoryItemMessage, prepareLineItemInventoryChecks } from '../
 
 export const confirmLineItemsSellableThrows = [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA] as const
 
-/** A line as the shopper and the shop name it: its title, and the option values that pick the pair. */
+/** A line as the shopper and the shop name it: its title, and the option values that pick the variant. */
 export type SellableLineItem = {
   id: string
   title: string
@@ -21,7 +21,7 @@ export type SellableLineItem = {
  * catalogue no longer holds, and a tracked line the shelf no longer covers in its quantity.
  *
  * A Cart line or an Order line alike. Sending a Cart to the shop as a draft and converting that
- * draft both ask it, because neither should hand the shop a pair it can't ship; the refusal names
+ * draft both ask it, because neither should hand the shop an item it can't ship; the refusal names
  * the line, so the shopper or the admin knows which one to take out. It reserves nothing:
  * converting reserves afterwards, and the reservation stays the guard against a concurrent sale.
  */

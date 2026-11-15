@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { countryCode, decimalAmount, entityId, MAX_ITEMS, phone, postalCode, shortText } from '../../bounded.js'
 import { amountToBigNumber } from '../../common.js'
 
-/** What the shop records on a draft's shipping address after the chat; merged into what is there. */
+/** What the shop records on a draft's shipping address once agreed with the shopper; merged into what is there. */
 export const AdminDraftOrderAddress = z.object({
   company: shortText.nullable().optional(),
   firstName: shortText.nullable().optional(),
@@ -44,7 +44,7 @@ export const AdminSetDraftOrderShippingMethod = z
   .object({
     shippingOptionId: entityId.min(1),
     /**
-     * What the shop agreed in the chat, in the draft's currency. Given, re-pricing never overrides
+     * What the shop agreed with the shopper, in the draft's currency. Given, re-pricing never overrides
      * it; omitted, the option prices the draft as it would a Cart.
      */
     customAmount: decimalAmount.optional(),

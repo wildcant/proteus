@@ -7,7 +7,7 @@ import {
   AdminOrderTotals,
 } from '../order/entities.js'
 
-/** A Draft Order as the shop confirms it in the chat: its pairs, address and phone, shipping and totals. */
+/** A Draft Order as the shop confirms it with the shopper: its items, address and phone, shipping and totals. */
 const AdminDraftOrderWithDetails = AdminDraftOrder.extend({
   lineItems: z.array(AdminOrderLineItem),
   shippingMethods: z.array(AdminOrderShippingMethod),

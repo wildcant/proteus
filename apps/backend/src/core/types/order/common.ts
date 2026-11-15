@@ -109,6 +109,8 @@ export type OrderShippingMethodDTO = {
   name: string
   description: string | null
   amount: BigNumber
+  /** Whether `amount` already includes tax, as the option's provider priced it. */
+  isTaxInclusive: boolean
   shippingOptionId: string | null
   data: Record<string, unknown> | null
   /** The shop set this amount by hand, so re-pricing leaves it alone. */

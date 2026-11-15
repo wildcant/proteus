@@ -52,6 +52,9 @@ export type ShippingAddressContext = {
  */
 export type PricedShippingOptionDTO = ShippingOptionDTO & { calculatedPrice: CalculatedShippingPrice }
 
+/** A priced option with what its provider validated for a shipping method: the method's `data`. */
+export type QuotedShippingOptionDTO = PricedShippingOptionDTO & { fulfillmentData: Record<string, unknown> }
+
 /** One option to price, with the data a shipping method carries for it (the shopper's, or what it stored). */
 export type ShippingOptionToPrice = { id: string; data?: Record<string, unknown> | null | undefined }
 
@@ -156,23 +159,17 @@ export type IFulfillmentModuleService = {
     context?: Context,
   ): Promise<PricedShippingOptionDTO[]>
   /**
-   * The named options, priced for a plain context (an address, items and a currency — no cart
-   * required), in the order asked. An option that is disabled, does not serve the address, or that
-   * its provider cannot price there is missing from the answer: that absence is how a caller learns
-   * a shipping method no longer applies.
+   * The named options as a shipping method for each would store them, for a plain context (an
+   * address, items and a currency — no cart required): priced, and with the provider's
+   * `validateFulfillmentData` answer for the data given. An option that is disabled, does not serve
+   * the address, or that its provider cannot price or validate there is missing from the answer:
+   * that absence is how a caller learns a shipping method no longer applies.
    */
-  priceShippingOptionsForContext(
+  quoteShippingOptionsForContext(
     options: ShippingOptionToPrice[],
     pricingContext: CalculateShippingPriceContext,
     context?: Context,
-  ): Promise<PricedShippingOptionDTO[]>
-  /** The option's provider's `validateFulfillmentData`: what a shipping method for it stores in `data`. */
-  validateShippingOptionFulfillmentData(
-    shippingOptionId: string,
-    data: Record<string, unknown>,
-    pricingContext: CalculateShippingPriceContext,
-    context?: Context,
-  ): Promise<Record<string, unknown>>
+  ): Promise<QuotedShippingOptionDTO[]>
   updateShippingOptions(ids: string[], data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO[]>
   createShippingOption(data: CreateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO>
   updateShippingOption(id: string, data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO>

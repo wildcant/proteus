@@ -75,15 +75,15 @@ test.describe('completeCartWorkflow', () => {
     expect(await service.read.orders(container)).toHaveLength(1)
   })
 
-  test('carries the shipping method payload onto the order', async ({ service, expect }) => {
+  test('carries the shipping method payload and its tax flag onto the order', async ({ service, expect }) => {
     const { cart } = await service.create.checkoutReadyCart(container, {
-      shippingMethod: { data: { provider: 'ups', rateId: 'R123' } },
+      shippingMethod: { data: { provider: 'ups', rateId: 'R123' }, isTaxInclusive: true },
     })
 
     const order = await completeCartWorkflow.run({ cartId: cart.id })
 
     expect(await service.read.orderShippingMethods(container, order.id)).toMatchObject([
-      { data: { provider: 'ups', rateId: 'R123' } },
+      { data: { provider: 'ups', rateId: 'R123' }, isTaxInclusive: true },
     ])
   })
 

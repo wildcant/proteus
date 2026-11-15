@@ -1,9 +1,12 @@
-import { BigNumber } from '@core/bignumber.js'
-import type { ShippingMethodPriceUpdateDTO } from '@core/types/cart/mutations.js'
 import type { AppContainer } from '@core/types/container.js'
 import type { CalculateShippingPriceContext } from '@core/types/fulfillment/provider.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { WorkflowContext } from '@core/workflows/types.js'
+import {
+  planShippingMethodRefresh,
+  type ShippingMethodRefreshUndo,
+  shippingMethodsToQuote,
+} from '../utils/plan-shipping-method-refresh.js'
 import { buildShippingPricingContext } from '../utils/shipping-pricing-context.js'
 
 /**
@@ -43,12 +46,6 @@ export async function loadCartShippingPricingContext(
   })
 }
 
-/** What a refresh changed, so its compensation can put each method back as it was. */
-type ShippingMethodRefreshResult = {
-  previousPrices: ShippingMethodPriceUpdateDTO[]
-  removedIds: string[]
-}
-
 export type RefreshCartShippingMethodsInput = {
   cartId: string
   /**
@@ -63,11 +60,11 @@ export type RefreshCartShippingMethodsInput = {
  * shipping price depends on runs last: adding, changing or removing a line, and changing the
  * shipping address or the market.
  *
- * Each method is re-priced for the cart as it now stands — a calculated one by its provider, a flat
- * one at its option's current amount — and a method whose option no longer serves the address, is
- * disabled, or that its provider can no longer price there is removed, leaving the shopper to choose
- * again from what the cart now lists. A method with no option behind it cannot be shown to still
- * apply, so it goes too.
+ * Each method is quoted again for the cart as it now stands — a calculated one by its provider, a
+ * flat one at its option's current amount — and stores the provider's `validateFulfillmentData`
+ * answer with the new price, so data such as a delivery estimate follows the address. The rest is
+ * `planShippingMethodRefresh`: a method that can no longer be quoted is removed, leaving the shopper
+ * to choose again from what the cart now lists.
  *
  * `name` lets one workflow run it at two points; the default suits every caller that runs it once.
  */
@@ -75,51 +72,31 @@ export async function refreshCartShippingMethodsStep(
   ctx: WorkflowContext,
   input: RefreshCartShippingMethodsInput,
   name = 'refresh-cart-shipping-methods',
-): Promise<ShippingMethodRefreshResult> {
-  return ctx.step<ShippingMethodRefreshResult>(
+): Promise<ShippingMethodRefreshUndo> {
+  return ctx.step<ShippingMethodRefreshUndo>(
     name,
     async ({ container }) => {
-      if (input.deferred) return { previousPrices: [], removedIds: [] }
+      if (input.deferred) return { previous: [], removedIds: [] }
 
       const cartService = container.resolve(Modules.CART)
       const shippingMethods = await cartService.listShippingMethods({ cartId: input.cartId })
-      if (shippingMethods.length === 0) return { previousPrices: [], removedIds: [] }
+      if (shippingMethods.length === 0) return { previous: [], removedIds: [] }
 
       const pricingContext = await loadCartShippingPricingContext(container, input.cartId)
-      const priced = pricingContext
-        ? await container.resolve(Modules.FULFILLMENT).priceShippingOptionsForContext(
-            shippingMethods.flatMap((method) =>
-              method.shippingOptionId ? [{ id: method.shippingOptionId, data: method.data }] : [],
-            ),
-            pricingContext,
-          )
+      const quotes = pricingContext
+        ? await container
+            .resolve(Modules.FULFILLMENT)
+            .quoteShippingOptionsForContext(shippingMethodsToQuote(shippingMethods), pricingContext)
         : []
-      const priceByOptionId = new Map(priced.map((option) => [option.id, option.calculatedPrice]))
-
-      const update: ShippingMethodPriceUpdateDTO[] = []
-      const previousPrices: ShippingMethodPriceUpdateDTO[] = []
-      const removedIds: string[] = []
-      for (const method of shippingMethods) {
-        const price = method.shippingOptionId ? priceByOptionId.get(method.shippingOptionId) : undefined
-        if (!price) {
-          removedIds.push(method.id)
-          continue
-        }
-        update.push({
-          id: method.id,
-          amount: new BigNumber(price.calculatedAmount),
-          isTaxInclusive: price.isCalculatedPriceTaxInclusive,
-        })
-        previousPrices.push({ id: method.id, amount: method.amount, isTaxInclusive: method.isTaxInclusive })
-      }
+      const { update, previous, removedIds } = planShippingMethodRefresh(shippingMethods, quotes)
 
       await cartService.applyShippingMethodRefresh({ update, remove: removedIds })
-      return { previousPrices, removedIds }
+      return { previous, removedIds }
     },
-    async ({ previousPrices, removedIds }, { container }) => {
-      if (previousPrices.length === 0 && removedIds.length === 0) return
+    async ({ previous, removedIds }, { container }) => {
+      if (previous.length === 0 && removedIds.length === 0) return
       const cartService = container.resolve(Modules.CART)
-      await cartService.applyShippingMethodRefresh({ update: previousPrices, remove: [] })
+      await cartService.applyShippingMethodRefresh({ update: previous, remove: [] })
       if (removedIds.length > 0) await cartService.restoreShippingMethods(removedIds)
     },
   )

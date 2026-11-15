@@ -345,7 +345,7 @@ test.describe('POST /store/carts/:id/line-items', () => {
  * variant makes a line unavailable — a quantity above what is left is refused, not flagged.
  */
 test.describe('the cart line’s stock', () => {
-  test('reports pairs left, flags what cannot be bought, and refuses a quantity past the shelf', async ({
+  test('reports units left, flags what cannot be bought, and refuses a quantity past the shelf', async ({
     factories,
     service,
     expect,
@@ -367,7 +367,7 @@ test.describe('the cart line’s stock', () => {
     const kept = await addLine(plenty.variant.id)
     const gone = await addLine(retired.variant.id)
 
-    // The last pair sells elsewhere, and a variant is deleted, after both were in this cart.
+    // The last unit sells elsewhere, and a variant is deleted, after both were in this cart.
     assertDefined(selling.inventoryItem)
     assertDefined(selling.inventoryLevel)
     await service.update.inventoryLevel(api.container, selling.inventoryItem.id, selling.inventoryLevel.locationId, -1)

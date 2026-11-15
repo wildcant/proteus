@@ -9,10 +9,6 @@
 export type LookupStoreOrderBody = {
   /** @exclusiveMinimum 0 */
   displayId: number;
-  /**
-     * @minLength 4
-     * @maxLength 4
-     * @pattern ^\d{4}$
-     */
+  /** @maxLength 32 */
   phoneLastDigits: string;
 };

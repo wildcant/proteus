@@ -48,14 +48,14 @@ export const addShippingMethodToCartWorkflow = createWorkflow<AddShippingMethodT
       const fulfillmentService = container.resolve(Modules.FULFILLMENT)
       const data = input.data ?? {}
       const pricingContext = await loadCartShippingPricingContext(container, input.cartId)
-      const [priced] = pricingContext
-        ? await fulfillmentService.priceShippingOptionsForContext(
+      const [quoted] = pricingContext
+        ? await fulfillmentService.quoteShippingOptionsForContext(
             [{ id: input.shippingOptionId, data }],
             pricingContext,
           )
         : []
 
-      if (!priced || !pricingContext) {
+      if (!quoted) {
         throw new WorkflowTerminalError({
           type: ErrorTypes.NOT_ALLOWED,
           code: FulfillmentErrorCodes.OPTION_UNAVAILABLE,
@@ -65,11 +65,11 @@ export const addShippingMethodToCartWorkflow = createWorkflow<AddShippingMethodT
       }
 
       return {
-        name: priced.name,
-        amount: priced.calculatedPrice.calculatedAmount,
-        isTaxInclusive: priced.calculatedPrice.isCalculatedPriceTaxInclusive,
-        shippingOptionId: priced.id,
-        data: await fulfillmentService.validateShippingOptionFulfillmentData(priced.id, data, pricingContext),
+        name: quoted.name,
+        amount: quoted.calculatedPrice.calculatedAmount,
+        isTaxInclusive: quoted.calculatedPrice.isCalculatedPriceTaxInclusive,
+        shippingOptionId: quoted.id,
+        data: quoted.fulfillmentData,
       }
     })
 

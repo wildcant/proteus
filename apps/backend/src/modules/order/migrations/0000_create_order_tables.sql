@@ -68,6 +68,7 @@ CREATE TABLE "order_shipping_method" (
 	"name" text NOT NULL,
 	"description" text,
 	"amount" numeric NOT NULL,
+	"is_tax_inclusive" boolean DEFAULT false NOT NULL,
 	"shipping_option_id" text,
 	"data" jsonb,
 	"is_custom_amount" boolean DEFAULT false NOT NULL,
