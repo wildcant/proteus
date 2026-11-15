@@ -76,6 +76,11 @@ test.describe('addToCartWorkflow', () => {
     const [lineItem] = await service.read.cartLineItems(container, { cartId: cart.id })
     // In the product's own option order, values only — the string the cart panel prints verbatim.
     expect(lineItem?.variantOptionValues).toBe('M · Olive')
+    // The same values beside their option's title, so a surface can say which one is the size.
+    expect(lineItem?.variantOptions).toEqual([
+      { optionTitle: size.title, value: 'M' },
+      { optionTitle: colour.title, value: 'Olive' },
+    ])
     // And the variant's own name beside it, which the module derives from the same combination.
     expect(lineItem?.variantTitle).toBe('M / Olive')
   })

@@ -1,8 +1,9 @@
 import { sql } from 'drizzle-orm'
-import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveIndex } from '../../../core/db/indexes.js'
+import type { CartLineItemOptionDTO } from '../../../core/types/cart/common.js'
 import { cartTable } from './cart.js'
 
 export const cartLineItemTable = pgTable(
@@ -27,6 +28,7 @@ export const cartLineItemTable = pgTable(
     variantBarcode: text(),
     variantTitle: text(),
     variantOptionValues: text(),
+    variantOptions: jsonb().$type<CartLineItemOptionDTO[]>().default(sql`'[]'`).notNull(),
     requiresShipping: boolean().default(true).notNull(),
     isDiscountable: boolean().default(true).notNull(),
     isGiftcard: boolean().default(false).notNull(),

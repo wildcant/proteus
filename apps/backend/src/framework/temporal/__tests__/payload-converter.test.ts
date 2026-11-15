@@ -48,6 +48,7 @@ const lineItem: CartLineItemDTO = {
   variantBarcode: null,
   variantTitle: 'M / Black',
   variantOptionValues: null,
+  variantOptions: [],
   requiresShipping: true,
   isDiscountable: true,
   isGiftcard: false,

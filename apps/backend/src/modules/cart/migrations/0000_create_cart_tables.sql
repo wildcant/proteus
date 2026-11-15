@@ -49,6 +49,7 @@ CREATE TABLE "cart_line_item" (
 	"variant_barcode" text,
 	"variant_title" text,
 	"variant_option_values" text,
+	"variant_options" jsonb DEFAULT '[]' NOT NULL,
 	"requires_shipping" boolean DEFAULT true NOT NULL,
 	"is_discountable" boolean DEFAULT true NOT NULL,
 	"is_giftcard" boolean DEFAULT false NOT NULL,

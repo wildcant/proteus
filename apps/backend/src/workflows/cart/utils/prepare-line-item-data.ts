@@ -41,6 +41,9 @@ export function prepareLineItemData(input: PrepareLineItemDataInput): CreateLine
     // for a product with no options, which is stored as null rather than a blank line.
     variantOptionValues:
       variant.optionValues.map((optionValue) => optionValue.value).join(OPTION_VALUE_SEPARATOR) || null,
+    // The same values with their option's title, for a surface that has to say which value is the
+    // size — the cart line's «Talla 41 · Negro y Crema», and the order message built from it.
+    variantOptions: variant.optionValues.map(({ optionTitle, value }) => ({ optionTitle, value })),
     productId: product.id,
     productTitle: product.title,
     productDescription: product.description,

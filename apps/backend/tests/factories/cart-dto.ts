@@ -67,6 +67,7 @@ export function generateCartLineItemDTO(overrides?: Partial<CartLineItemDTO>): C
     variantBarcode: null,
     variantTitle: null,
     variantOptionValues: null,
+    variantOptions: [],
     requiresShipping: true,
     isDiscountable: true,
     isGiftcard: false,

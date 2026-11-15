@@ -25,6 +25,12 @@ export interface FilterableCartProps extends BaseFilterable<FilterableCartProps>
   createdAt?: OperatorMap<Date>
 }
 
+/** One entry of the variant's Option Combination as it stood when the line was added. */
+export type CartLineItemOptionDTO = {
+  optionTitle: string
+  value: string
+}
+
 export type CartLineItemDTO = {
   id: string
   cartId: string
@@ -43,6 +49,8 @@ export type CartLineItemDTO = {
   variantBarcode: string | null
   variantTitle: string | null
   variantOptionValues: string | null
+  /** The same values as `variantOptionValues`, each beside its option's title, in the product's option order. */
+  variantOptions: CartLineItemOptionDTO[]
   requiresShipping: boolean
   isDiscountable: boolean
   isGiftcard: boolean
