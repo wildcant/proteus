@@ -354,6 +354,9 @@ importers:
       '@proteus/http-schemas':
         specifier: workspace:*
         version: link:../../packages/http-schemas
+      '@proteus/store-config':
+        specifier: workspace:*
+        version: link:../../packages/store-config
       '@proteus/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -384,6 +387,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      bignumber.js:
+        specifier: 'catalog:'
+        version: 11.1.5
       lucide-react:
         specifier: 'catalog:'
         version: 0.545.0(react@19.2.8)
