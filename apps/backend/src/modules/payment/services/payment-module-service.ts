@@ -21,7 +21,7 @@ import type {
 } from '../../../core/types/payment/common.js'
 import { PaymentErrorCodes } from '../../../core/types/payment/errors.js'
 import type {
-  CancelPaymentDTO,
+  CancelPaymentCollectionDTO,
   CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -45,9 +45,9 @@ import type { PaymentCollectionRepository } from '../repositories/payment-collec
 import type { PaymentSessionRepository } from '../repositories/payment-session.js'
 import type { RefundRepository } from '../repositories/refund.js'
 import type { RefundReasonRepository } from '../repositories/refund-reason.js'
+import { capturedTotal, refundedTotal, remainingToCapture, sumAmounts } from '../utils/amounts.js'
 import { idempotencyKeyFor } from '../utils/idempotency-keys.js'
 import { MANUAL_PROVIDER_ID } from '../utils/provider-ids.js'
-import { remainingToCapture } from '../utils/remaining-to-capture.js'
 import { orderSavedMethods } from '../utils/saved-methods.js'
 import type { PaymentProviderService } from './payment-provider-service.js'
 
@@ -558,13 +558,7 @@ export class PaymentModuleService implements IPaymentModuleService {
       // it and a new manual one is authorized below — Medusa's way of collecting again, a new session.
       // An open authorization holding less than the amount asked is not topped up: `capture_`
       // refuses it with what it still holds, and the admin records that first.
-      const captured = payments
-        .flatMap((payment) => payment.captures ?? [])
-        .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
-      const refunded = payments
-        .flatMap((payment) => payment.refunds ?? [])
-        .reduce((sum, refund) => sum.plus(refund.amount), new BigNumber(0))
-      const outstanding = collection.amount.minus(captured.minus(refunded))
+      const outstanding = collection.amount.minus(capturedTotal(payments).minus(refundedTotal(payments)))
 
       if (data.amount.isGreaterThan(outstanding)) {
         throw new AppError({
@@ -606,13 +600,12 @@ export class PaymentModuleService implements IPaymentModuleService {
       }
 
       // Can only refund what was captured minus what was already refunded
-      const existingCaptures = await this.captureRepository.find({ paymentId: payment.id }, undefined, ctx)
-      const totalCaptured = existingCaptures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
-
-      const existingRefunds = await this.refundRepository.find({ paymentId: payment.id }, undefined, ctx)
-      const alreadyRefunded = existingRefunds.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0))
-
-      const refundableAmount = totalCaptured.minus(alreadyRefunded)
+      const [captures, refunds] = await Promise.all([
+        this.captureRepository.find({ paymentId: payment.id }, undefined, ctx),
+        this.refundRepository.find({ paymentId: payment.id }, undefined, ctx),
+      ])
+      const alreadyRefunded = sumAmounts(refunds)
+      const refundableAmount = sumAmounts(captures).minus(alreadyRefunded)
       const refundAmount = data.amount ?? refundableAmount
 
       if (refundAmount.isLessThanOrEqualTo(0)) {
@@ -674,13 +667,8 @@ export class PaymentModuleService implements IPaymentModuleService {
     })
   }
 
-  /**
-   * Voids what the authorization still holds, under the collection's row lock so a capture cannot
-   * land on it halfway. With `capturedAmount`, refused when the collection's captures no longer add
-   * up to what the caller saw: the caller planned around that figure (cancel-order's refund), and a
-   * capture recorded since would otherwise stay on a canceled Order, neither refunded nor voided.
-   */
-  async cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO> {
+  /** Voids what the authorization still holds, under the collection's row lock so a capture cannot land on it halfway. */
+  async cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO> {
     this.logger.debug(`Canceling payment "${paymentId}"`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, ctx)
@@ -690,32 +678,49 @@ export class PaymentModuleService implements IPaymentModuleService {
         return this.retrievePayment(payment.id, ctx)
       }
 
-      if (options?.capturedAmount) {
-        const collection = await this.retrievePaymentCollection(payment.paymentCollectionId, undefined, ctx)
-        const captured = (collection.payments ?? [])
-          .flatMap((row) => row.captures ?? [])
-          .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
-        if (!captured.isEqualTo(options.capturedAmount)) {
-          throw new AppError({
-            type: ErrorTypes.NOT_ALLOWED,
-            message: i18n.t(
-              'Payment "{id}" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile.',
-            ),
-            values: { id: payment.id, amount: captured.minus(options.capturedAmount).toFixed() },
-          })
-        }
-      }
-
-      await this.paymentProviderService.cancelPayment(payment.providerId, {
-        data: payment.data ?? undefined,
-        context: { idempotencyKey: idempotencyKeyFor('cancel', payment.paymentSessionId) },
-      })
-
-      await this.paymentRepository.update(payment.id, { canceledAt: new Date() }, ctx)
-
+      await this.void_(payment, ctx)
       await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
 
       return this.retrievePayment(payment.id, ctx)
+    })
+  }
+
+  /**
+   * Voids every authorization on the collection that still holds money, under its row lock, so no
+   * capture can land on it halfway through an Order's cancel. A fully captured payment has nothing
+   * left to void and is left alone.
+   *
+   * Refused, with nothing voided, when the collection's captures no longer add up to
+   * `capturedAmount`: the caller planned its refund around that figure, and a capture recorded since
+   * would otherwise stay on a canceled Order, neither refunded nor voided.
+   */
+  async cancelPaymentCollection(
+    paymentCollectionId: string,
+    data: CancelPaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentCollectionDTO> {
+    this.logger.debug(`Canceling payment collection "${paymentCollectionId}"`)
+    return this.withTransaction(context, async (ctx) => {
+      await this.paymentCollectionRepository.lockForUpdate(paymentCollectionId, ctx)
+      const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, ctx)
+      const payments = collection.payments ?? []
+
+      const captured = capturedTotal(payments)
+      if (!captured.isEqualTo(data.capturedAmount)) {
+        throw new AppError({
+          type: ErrorTypes.NOT_ALLOWED,
+          message: i18n.t(
+            'Payment collection "{id}" cannot be canceled: a payment of {amount} was recorded on it meanwhile.',
+          ),
+          values: { id: collection.id, amount: captured.minus(data.capturedAmount).toFixed() },
+        })
+      }
+
+      const holding = payments.filter((payment) => !payment.canceledAt && remainingToCapture(payment).isGreaterThan(0))
+      await Promise.all(holding.map((payment) => this.void_(payment, ctx)))
+      await this.maybeUpdatePaymentCollection_(collection.id, ctx)
+
+      return this.retrievePaymentCollection(collection.id, undefined, ctx)
     })
   }
 
@@ -1086,6 +1091,15 @@ export class PaymentModuleService implements IPaymentModuleService {
     await this.maybeUpdatePaymentCollection_(payment.paymentCollectionId, ctx)
   }
 
+  /** The void itself, for a caller already holding the collection's lock. */
+  private async void_(payment: PaymentDTO, ctx: Context): Promise<void> {
+    await this.paymentProviderService.cancelPayment(payment.providerId, {
+      data: payment.data ?? undefined,
+      context: { idempotencyKey: idempotencyKeyFor('cancel', payment.paymentSessionId) },
+    })
+    await this.paymentRepository.update(payment.id, { canceledAt: new Date() }, ctx)
+  }
+
   private async findCaptureByKey_(idempotencyKey: string | undefined, ctx: Context) {
     if (!idempotencyKey) return null
     return this.captureRepository.findOne({ idempotencyKey }, undefined, ctx)
@@ -1144,8 +1158,10 @@ export class PaymentModuleService implements IPaymentModuleService {
   private async maybeUpdatePaymentCollection_(collectionId: string, context?: Context): Promise<void> {
     const collection = await this.paymentCollectionRepository.findByIdOrFail(collectionId, undefined, context)
 
-    const sessions = await this.paymentSessionRepository.find({ paymentCollectionId: collectionId }, undefined, context)
-    const payments = await this.paymentRepository.find({ paymentCollectionId: collectionId }, undefined, context)
+    const [sessions, payments] = await Promise.all([
+      this.paymentSessionRepository.find({ paymentCollectionId: collectionId }, undefined, context),
+      this.paymentRepository.find({ paymentCollectionId: collectionId }, undefined, context),
+    ])
 
     const paymentIds = payments.map((p) => p.id)
     const [captures, refunds] =
@@ -1158,11 +1174,11 @@ export class PaymentModuleService implements IPaymentModuleService {
 
     // A voided payment's session still reads `authorized`; its money is no longer held.
     const canceledSessionIds = new Set(payments.filter((p) => p.canceledAt).map((p) => p.paymentSessionId))
-    const authorizedAmount = sessions
-      .filter((s) => s.status === 'authorized' && !canceledSessionIds.has(s.id))
-      .reduce((sum, s) => sum.plus(s.amount), new BigNumber(0))
-    const capturedAmount = captures.reduce((sum, c) => sum.plus(c.amount), new BigNumber(0))
-    const refundedAmount = refunds.reduce((sum, r) => sum.plus(r.amount), new BigNumber(0))
+    const authorizedAmount = sumAmounts(
+      sessions.filter((session) => session.status === 'authorized' && !canceledSessionIds.has(session.id)),
+    )
+    const capturedAmount = sumAmounts(captures)
+    const refundedAmount = sumAmounts(refunds)
 
     // Derive status (check most advanced status first). A refund does not move it: the Order's
     // payment status reads `refundedAmount` beside it, as Medusa's aggregation does.

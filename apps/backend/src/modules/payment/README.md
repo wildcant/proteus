@@ -77,5 +77,8 @@ payments, captures and refunds, as Medusa aggregates it: `not_paid`, `awaiting`,
 `captured`; a partial refund at cancel leaves it `partially_refunded`. It is independent of the
 Order's status and its fulfillment status, and every read returns the three separately.
 
-Canceling an Order with money received records the refund the admin chose (from nothing to all of
-it), cancels what remains authorized, and then cancels the Order.
+Canceling an Order cancels the Order, then voids what remains authorized on its collection
+(`cancelPaymentCollection`), then records the refund the admin chose (from nothing to all of it).
+The void runs under the collection's lock and is refused if a payment was recorded since the cancel
+looked, so a refusal comes before any refund and leaves nothing done. The refund goes last because
+it has no compensation.

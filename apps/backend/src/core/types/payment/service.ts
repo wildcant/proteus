@@ -14,7 +14,7 @@ import type {
   SavedMethodDTO,
 } from './common.js'
 import type {
-  CancelPaymentDTO,
+  CancelPaymentCollectionDTO,
   CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -91,7 +91,17 @@ export type IPaymentModuleService = {
   // Payment lifecycle
   capturePayment(data: CreateCaptureDTO, context?: Context): Promise<PaymentDTO>
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
-  cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO>
+  cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
+  /**
+   * Voids every authorization on the collection still holding money, under its row lock: what an
+   * Order's cancel does before it refunds anything. Refused, with nothing voided, when the
+   * collection's captures no longer add up to `capturedAmount`.
+   */
+  cancelPaymentCollection(
+    paymentCollectionId: string,
+    data: CancelPaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentCollectionDTO>
   /**
    * Records a payment of an amount against a collection, under its row lock: opens and authorizes
    * a manual session for what is outstanding when the collection holds no live authorization, then
