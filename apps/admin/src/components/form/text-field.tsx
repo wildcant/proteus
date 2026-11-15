@@ -1,17 +1,18 @@
-import { cn, Field, FieldLabel, Input } from '@proteus/ui'
+import { cn, Field, FieldDescription, FieldLabel, Input } from '@proteus/ui'
 import { useId } from 'react'
 import { TranslatedFieldError } from '#/components/form/field-errors'
 import { useFieldContext } from '#/lib/form-context.ts'
 
 type TextFieldProps = Pick<
   React.ComponentProps<'input'>,
-  'type' | 'placeholder' | 'disabled' | 'autoComplete' | 'autoFocus' | 'className'
+  'type' | 'inputMode' | 'placeholder' | 'disabled' | 'autoComplete' | 'autoFocus' | 'className'
 > & {
   label: string
+  description?: string
   hideLabel?: boolean
 }
 
-export function TextField({ label, className, hideLabel, placeholder, ...inputProps }: TextFieldProps) {
+export function TextField({ label, description, className, hideLabel, placeholder, ...inputProps }: TextFieldProps) {
   const field = useFieldContext<string>()
   const id = useId()
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
@@ -32,6 +33,7 @@ export function TextField({ label, className, hideLabel, placeholder, ...inputPr
         {...inputProps}
       />
       {!!isInvalid && <TranslatedFieldError errors={field.state.meta.errors} />}
+      {!!description && <FieldDescription>{description}</FieldDescription>}
     </Field>
   )
 }

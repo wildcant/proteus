@@ -4,9 +4,12 @@ import type { UseMutationOptions } from '@tanstack/react-query'
 import { keepPreviousData, queryOptions, useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { listAdminFulfillmentProviders } from '#/api/generated/fulfillment-providers/fulfillment-providers'
 import type {
+  AdminCancelOrder,
   AdminCreateOrderFulfillment,
   AdminCreateOrderShipment,
   AdminOrderActionResponse,
+  AdminPaymentCollectionResponse,
+  AdminRecordOrderPayment,
   ListOrdersParams,
 } from '#/api/generated/model'
 import {
@@ -18,11 +21,12 @@ import {
   getOrder,
   listOrders,
   markOrderAsDelivered,
+  recordOrderPayment,
 } from '#/api/generated/orders/orders'
 import { queryClient } from '#/lib/query-client'
 import { queryKeysFactory } from '#/lib/query-key-factory'
 
-const orderKeys = queryKeysFactory<'orders', ListOrdersParams>('orders')
+export const orderKeys = queryKeysFactory<'orders', ListOrdersParams>('orders')
 const fulfillmentProviderKeys = queryKeysFactory('fulfillmentProviders')
 
 export const ordersListQueryOptions = (params?: ListOrdersParams) =>
@@ -69,12 +73,15 @@ export const useCompleteOrder = (id: string, options?: UseMutationOptions<AdminO
   })
 }
 
-export const useCancelOrder = (id: string, options?: UseMutationOptions<AdminOrderActionResponse, Error, void>) => {
+export const useCancelOrder = (
+  id: string,
+  options?: UseMutationOptions<AdminOrderActionResponse, Error, AdminCancelOrder | undefined>,
+) => {
   const { t } = useLingui()
   const { onSuccess, onError, ...rest } = options ?? {}
   return useMutation({
     ...rest,
-    mutationFn: () => cancelOrder(id),
+    mutationFn: (data?: AdminCancelOrder) => cancelOrder(id, data),
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
@@ -170,6 +177,28 @@ export const useMarkAsDelivered = (
     onError: (...args) => {
       const [error] = args
       toast.add({ type: 'error', title: t`Failed to mark as delivered`, description: error.message })
+      onError?.(...args)
+    },
+  })
+}
+
+export const useRecordOrderPayment = (
+  id: string,
+  options?: UseMutationOptions<AdminPaymentCollectionResponse, Error, AdminRecordOrderPayment>,
+) => {
+  const { t } = useLingui()
+  const { onSuccess, onError, ...rest } = options ?? {}
+  return useMutation({
+    ...rest,
+    mutationFn: (data: AdminRecordOrderPayment) => recordOrderPayment(id, data),
+    onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() })
+      onSuccess?.(...args)
+    },
+    onError: (...args) => {
+      const [error] = args
+      toast.add({ type: 'error', title: t`Failed to record payment`, description: error.message })
       onError?.(...args)
     },
   })
