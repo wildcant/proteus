@@ -11,12 +11,18 @@ import type { AdminOrderStatus } from './adminOrderStatus.ts';
 export interface AdminOrder {
   id: string;
   displayId: number;
+  reference: string;
   status: AdminOrderStatus;
+  isDraftOrder: boolean;
   fulfillmentStatus: AdminOrderFulfillmentStatus;
   /** @nullable */
   email: string | null;
   /** @nullable */
   customerId: string | null;
+  /** @nullable */
+  regionId: string | null;
+  /** @nullable */
+  salesChannelId: string | null;
   currencyCode: string;
   /** @nullable */
   canceledAt: string | null;

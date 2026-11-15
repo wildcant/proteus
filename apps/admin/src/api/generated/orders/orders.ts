@@ -8,9 +8,11 @@
 import type {
   AdminCreateOrderFulfillment,
   AdminCreateOrderShipment,
+  AdminDraftOrderListResponse,
   AdminOrderActionResponse,
   AdminOrderListResponse,
   AdminOrderResponse,
+  ListDraftOrdersParams,
   ListOrdersParams
 } from '../model';
 
@@ -116,6 +118,18 @@ export const markOrderAsDelivered = (
     },
       );
     }
+  /**
+ * @summary List draft orders
+ */
+export const listDraftOrders = (
+    params?: ListDraftOrdersParams,
+ ) => {
+      return fetcher<AdminDraftOrderListResponse>(
+      {url: `/admin/draft-orders`, method: 'GET',
+        params
+    },
+      );
+    }
   export type ListOrdersResult = NonNullable<Awaited<ReturnType<typeof listOrders>>>
 export type GetOrderResult = NonNullable<Awaited<ReturnType<typeof getOrder>>>
 export type CompleteOrderResult = NonNullable<Awaited<ReturnType<typeof completeOrder>>>
@@ -124,3 +138,4 @@ export type ArchiveOrderResult = NonNullable<Awaited<ReturnType<typeof archiveOr
 export type CreateOrderFulfillmentResult = NonNullable<Awaited<ReturnType<typeof createOrderFulfillment>>>
 export type CreateOrderShipmentResult = NonNullable<Awaited<ReturnType<typeof createOrderShipment>>>
 export type MarkOrderAsDeliveredResult = NonNullable<Awaited<ReturnType<typeof markOrderAsDelivered>>>
+export type ListDraftOrdersResult = NonNullable<Awaited<ReturnType<typeof listDraftOrders>>>

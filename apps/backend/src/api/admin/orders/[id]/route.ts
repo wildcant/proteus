@@ -5,6 +5,7 @@ import { AdminOrderResponse, IdParams } from '@proteus/http-schemas/admin'
 import { computeAllowedActions } from '@workflows/order/utils/compute-allowed-actions.js'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
 import { computePaymentStatus } from '@workflows/order/utils/compute-payment-status.js'
+import { orderReference } from '@workflows/order/utils/order-reference.js'
 
 export const GetInput = { params: IdParams }
 export const GetOutput = AdminOrderResponse
@@ -38,6 +39,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
     json: {
       order: {
         ...order,
+        reference: orderReference(order.displayId),
         fulfillmentStatus,
         lineItems: enrichedLineItems,
         shippingMethods,

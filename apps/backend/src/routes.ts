@@ -16,6 +16,7 @@ import adminCatalogStructureDefinitions from './api/admin/catalog-structure/defi
 import adminCollectionDefinitions from './api/admin/collections/definitions.js'
 import adminCountryDefinitions from './api/admin/countries/definitions.js'
 import adminCustomerDefinitions from './api/admin/customers/definitions.js'
+import adminDraftOrderDefinitions from './api/admin/draft-orders/definitions.js'
 import adminFulfillmentProviderDefinitions from './api/admin/fulfillment-providers/definitions.js'
 import adminFulfillmentSetDefinitions from './api/admin/fulfillment-sets/definitions.js'
 import adminInventoryItemDefinitions from './api/admin/inventory-items/definitions.js'
@@ -82,6 +83,7 @@ export const adminDefinitions: RouteDefinition[] = [
   ...adminInviteDefinitions,
   ...adminNotificationDefinitions,
   ...adminOrderDefinitions,
+  ...adminDraftOrderDefinitions,
   ...adminFulfillmentSetDefinitions,
   ...adminPaymentCollectionDefinitions,
   ...adminPaymentDefinitions,

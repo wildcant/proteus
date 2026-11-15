@@ -279,7 +279,7 @@ msgstr "Archivar pedido"
 msgid "Archive orders"
 msgstr "Archivar pedidos"
 
-#: src/features/orders/utils/order-status.ts:26
+#: src/features/orders/utils/order-status.ts:28
 msgid "archived"
 msgstr "archivado"
 
@@ -451,7 +451,7 @@ msgstr "Cancelar pedido"
 msgid "Cancel orders"
 msgstr "Cancelar pedidos"
 
-#: src/features/orders/utils/order-status.ts:25
+#: src/features/orders/utils/order-status.ts:27
 msgid "canceled"
 msgstr "cancelado"
 
@@ -578,7 +578,7 @@ msgstr "Completar pedido"
 msgid "Complete orders"
 msgstr "Completar pedidos"
 
-#: src/features/orders/utils/order-status.ts:24
+#: src/features/orders/utils/order-status.ts:26
 msgid "completed"
 msgstr "completado"
 
@@ -894,7 +894,7 @@ msgstr "Eliminar usuarios"
 msgid "Deliver orders"
 msgstr "Entregar pedidos"
 
-#: src/features/orders/utils/order-status.ts:33
+#: src/features/orders/utils/order-status.ts:35
 msgid "delivered"
 msgstr "entregado"
 
@@ -939,6 +939,7 @@ msgstr "Descargar archivo"
 msgid "Download sample CSV"
 msgstr "Descargar CSV de ejemplo"
 
+#: src/features/orders/utils/order-status.ts:24
 #: src/features/products/utils/product-status.ts:17
 msgid "draft"
 msgstr "borrador"
@@ -1458,7 +1459,7 @@ msgstr "Preparar pedido"
 msgid "Fulfill orders"
 msgstr "Preparar pedidos"
 
-#: src/features/orders/utils/order-status.ts:31
+#: src/features/orders/utils/order-status.ts:33
 msgid "fulfilled"
 msgstr "preparado"
 
@@ -2300,7 +2301,7 @@ msgstr "Las contraseñas no coinciden"
 msgid "Payment Providers"
 msgstr "Proveedores de pago"
 
-#: src/features/orders/utils/order-status.ts:23
+#: src/features/orders/utils/order-status.ts:25
 msgid "pending"
 msgstr "pendiente"
 
@@ -2746,7 +2747,7 @@ msgstr "Enviar"
 msgid "Ship orders"
 msgstr "Enviar pedidos"
 
-#: src/features/orders/utils/order-status.ts:32
+#: src/features/orders/utils/order-status.ts:34
 msgid "shipped"
 msgstr "enviado"
 
@@ -3072,7 +3073,7 @@ msgstr "Escribe para añadir uno."
 msgid "Types"
 msgstr "Tipos"
 
-#: src/features/orders/utils/order-status.ts:30
+#: src/features/orders/utils/order-status.ts:32
 msgid "unfulfilled"
 msgstr "sin preparar"
 

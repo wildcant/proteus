@@ -3,6 +3,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { AdminOrderActionResponse, IdParams } from '@proteus/http-schemas/admin'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
+import { orderReference } from '@workflows/order/utils/order-reference.js'
 
 export const PostInput = { params: IdParams }
 export const PostOutput = AdminOrderActionResponse
@@ -18,5 +19,5 @@ export const POST = async (req: HttpRequest<typeof PostInput>): Promise<HttpResu
   const fulfillments = link ? [await fulfillmentService.retrieveFulfillment(link.fulfillmentId)] : []
   const fulfillmentStatus = computeFulfillmentStatus(fulfillments)
 
-  return { status: 200, json: { order: { ...order, fulfillmentStatus } } }
+  return { status: 200, json: { order: { ...order, reference: orderReference(order.displayId), fulfillmentStatus } } }
 }

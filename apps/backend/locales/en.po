@@ -24,7 +24,7 @@ msgid "The \"{adapter}\" event bus adapter was selected but no factory was injec
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:159
+#: src/routes.ts:161
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
@@ -308,12 +308,12 @@ msgid "Cart \"{cartId}\" has no email — an email is required to complete check
 msgstr "Cart \"{cartId}\" has no email — an email is required to complete checkout"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:481
+#: src/workflows/cart/complete-cart.ts:484
 msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
 msgstr "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:575
+#: src/workflows/cart/complete-cart.ts:578
 msgid "Payment for session \"{sessionId}\" has not been authorized yet"
 msgstr "Payment for session \"{sessionId}\" has not been authorized yet"
 
@@ -375,7 +375,7 @@ msgid "Payment session \"{sessionId}\" is still settling, so the \"{action}\" th
 msgstr "Payment session \"{sessionId}\" is still settling, so the \"{action}\" the provider reported cannot be recorded yet"
 
 #. js-lingui-explicit-id
-#: src/subscribers/send-order-confirmation.ts:73
+#: src/subscribers/send-order-confirmation.ts:81
 msgid "The order confirmation for order \"{orderId}\" was not sent — provider \"{providerId}\" refused it"
 msgstr "The order confirmation for order \"{orderId}\" was not sent — provider \"{providerId}\" refused it"
 
@@ -736,17 +736,17 @@ msgid "Method not implemented."
 msgstr "Method not implemented."
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:301
+#: src/modules/order/services/order-module-service.ts:312
 msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 msgstr "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:317
-msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
-msgstr "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
+#: src/modules/order/services/order-module-service.ts:328
+msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
+msgstr "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:333
+#: src/modules/order/services/order-module-service.ts:344
 msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 msgstr "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 
@@ -1247,7 +1247,7 @@ msgstr "Cannot price this request: no countryCode was given and the store has no
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
 #: src/api/store/middlewares.ts:106
-#: src/api/store/orders/route.ts:16
+#: src/api/store/orders/route.ts:17
 msgid "Not authenticated"
 msgstr "Not authenticated"
 
@@ -1262,7 +1262,12 @@ msgid "Product with handle \"{handle}\" has no price in {currencyCode}"
 msgstr "Product with handle \"{handle}\" has no price in {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/api/store/orders/[id]/route.ts:28
+#: src/api/store/orders/lookup/route.ts:22
+msgid "No order matches that number and phone"
+msgstr "No order matches that number and phone"
+
+#. js-lingui-explicit-id
+#: src/api/store/orders/[id]/route.ts:30
 msgid "Order with id \"{id}\" not found"
 msgstr "Order with id \"{id}\" not found"
 

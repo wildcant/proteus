@@ -5,8 +5,8 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
-import type { StoreOrderResponseOrder } from './storeOrderResponseOrder.ts';
+import type { StoreOrderDetail } from './storeOrderDetail.ts';
 
 export interface StoreOrderResponse {
-  order: StoreOrderResponseOrder;
+  order: StoreOrderDetail;
 }

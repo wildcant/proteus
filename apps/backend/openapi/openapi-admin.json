@@ -1185,14 +1185,21 @@
           "displayId": {
             "type": "number"
           },
+          "reference": {
+            "type": "string"
+          },
           "status": {
             "type": "string",
             "enum": [
+              "draft",
               "pending",
               "completed",
               "canceled",
               "archived"
             ]
+          },
+          "isDraftOrder": {
+            "type": "boolean"
           },
           "fulfillmentStatus": {
             "type": "string",
@@ -1210,6 +1217,18 @@
             ]
           },
           "customerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "regionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "salesChannelId": {
             "type": [
               "string",
               "null"
@@ -1244,10 +1263,14 @@
         "required": [
           "id",
           "displayId",
+          "reference",
           "status",
+          "isDraftOrder",
           "fulfillmentStatus",
           "email",
           "customerId",
+          "regionId",
+          "salesChannelId",
           "currencyCode",
           "canceledAt",
           "createdAt",
@@ -1434,6 +1457,12 @@
               "null"
             ]
           },
+          "variantOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderLineItemOption"
+            }
+          },
           "requiresShipping": {
             "type": "boolean"
           },
@@ -1474,10 +1503,34 @@
           "variantBarcode",
           "variantTitle",
           "variantOptionValues",
+          "variantOptions",
           "requiresShipping",
           "createdAt",
           "updatedAt",
           "deletedAt"
+        ]
+      },
+      "AdminOrderLineItemOption": {
+        "type": "object",
+        "properties": {
+          "optionTitle": {
+            "type": "string"
+          },
+          "renderAs": {
+            "type": "string",
+            "enum": [
+              "text",
+              "swatch"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionTitle",
+          "renderAs",
+          "value"
         ]
       },
       "AdminOrderShippingMethod": {
@@ -1954,6 +2007,124 @@
             "maxLength": 2048
           }
         }
+      },
+      "AdminDraftOrderListResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "draftOrders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminDraftOrder"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "offset",
+          "limit",
+          "draftOrders"
+        ]
+      },
+      "AdminDraftOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayId": {
+            "type": "number"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending",
+              "completed",
+              "canceled",
+              "archived"
+            ]
+          },
+          "isDraftOrder": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "customerId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "regionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "salesChannelId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "canceledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "displayId",
+          "reference",
+          "status",
+          "isDraftOrder",
+          "email",
+          "customerId",
+          "regionId",
+          "salesChannelId",
+          "currencyCode",
+          "canceledAt",
+          "createdAt",
+          "updatedAt",
+          "deletedAt"
+        ]
       },
       "AdminFulfillmentSetListResponse": {
         "type": "object",
@@ -9512,6 +9683,7 @@
                 {
                   "type": "string",
                   "enum": [
+                    "draft",
                     "pending",
                     "completed",
                     "canceled",
@@ -9523,6 +9695,7 @@
                   "items": {
                     "type": "string",
                     "enum": [
+                      "draft",
                       "pending",
                       "completed",
                       "canceled",
@@ -10001,6 +10174,152 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/admin/draft-orders": {
+      "get": {
+        "operationId": "listDraftOrders",
+        "summary": "List draft orders",
+        "tags": [
+          "Orders"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": 0
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "$eq": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$ne": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$gt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$gte": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$lt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$lte": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "$in": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                },
+                "$nin": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                }
+              }
+            },
+            "required": false,
+            "name": "createdAt",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDraftOrderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
