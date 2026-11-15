@@ -56,11 +56,22 @@ type ProvidersConfig = {
   notification: NotificationProviderName[]
 }
 
+/** What the storefront may do beyond a card checkout, each off unless the store turns it on. */
+type StoreConfig = {
+  /**
+   * Whether `POST /store/carts/:id/draft-order` turns a Cart into a Draft Order. Read from the
+   * container rather than from `@proteus/store-config` at the route, so a test turns it on for its
+   * own container without touching the store's setting.
+   */
+  draftOrders: boolean
+}
+
 type ProjectConfig = {
   http: HttpConfig
   workflows: WorkflowsConfig
   eventBus: EventBusConfig
   providers: ProvidersConfig
+  store: StoreConfig
 }
 
 export type ConfigModule = {
@@ -74,6 +85,7 @@ export type InputConfig = {
     workflows?: Partial<WorkflowsConfig>
     eventBus?: Partial<EventBusConfig>
     providers?: Partial<ProvidersConfig>
+    store?: Partial<StoreConfig>
   }
   featureFlags?: Record<string, boolean | string | Record<string, boolean>>
 }

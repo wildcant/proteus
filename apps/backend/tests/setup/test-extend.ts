@@ -56,6 +56,7 @@ import {
 import { generateAdminCreateOrderFulfillmentBody } from '../factories/http/admin-order.js'
 import { generateAdminCreateProductCategoryBody } from '../factories/http/admin-product-category.js'
 import { generateAdminCreateProductCollectionBody } from '../factories/http/admin-product-collection.js'
+import { generateStoreCartAddressBody } from '../factories/http/store-cart.js'
 import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
@@ -147,6 +148,8 @@ import {
 import { linkRepo } from '../factories/services/link.js'
 import { listNotifications } from '../factories/services/notification.js'
 import {
+  addOrderTransaction,
+  createDraftOrder,
   createOrder,
   fulfillOrder,
   listOrderAddresses,
@@ -278,6 +281,7 @@ export type Fixtures = {
     }
     store: {
       createAddress: typeof generateStoreCreateAddressBody
+      cartAddress: typeof generateStoreCartAddressBody
     }
   }
   dto: {
@@ -381,6 +385,8 @@ export type Fixtures = {
       checkoutReadyCart: typeof createCheckoutReadyCart
       sellableVariant: typeof createSellableVariant
       order: typeof createOrder
+      draftOrder: typeof createDraftOrder
+      orderTransaction: typeof addOrderTransaction
       fulfilledOrder: typeof fulfillOrder
       shippedOrder: typeof shipOrder
       product: typeof createProduct
@@ -513,6 +519,7 @@ export const test = testBase.extend<Fixtures>({
       },
       store: {
         createAddress: generateStoreCreateAddressBody,
+        cartAddress: generateStoreCartAddressBody,
       },
     })
   },
@@ -617,6 +624,8 @@ export const test = testBase.extend<Fixtures>({
         checkoutReadyCart: createCheckoutReadyCart,
         sellableVariant: createSellableVariant,
         order: createOrder,
+        draftOrder: createDraftOrder,
+        orderTransaction: addOrderTransaction,
         fulfilledOrder: fulfillOrder,
         shippedOrder: shipOrder,
         product: createProduct,

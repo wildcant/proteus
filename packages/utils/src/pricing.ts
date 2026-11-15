@@ -64,3 +64,17 @@ export function formatAmount(value: string, currencyCode: string, locale: string
     maximumFractionDigits: 2,
   }).format(number)
 }
+
+/**
+ * How many decimal places the currency's minor unit has (2 for `usd`, 0 for `jpy`), as the
+ * runtime's ISO 4217 data says, so an amount computed from a share can be rounded to something
+ * the currency can actually be paid in.
+ */
+export function getCurrencyPrecision(currencyCode: string): number {
+  const { maximumFractionDigits } = new Intl.NumberFormat(DEFAULT_LOCALE, {
+    style: 'currency',
+    currency: currencyCode,
+  }).resolvedOptions()
+  // Always set for the currency style; the type is optional only because other styles may omit it.
+  return maximumFractionDigits ?? 2
+}

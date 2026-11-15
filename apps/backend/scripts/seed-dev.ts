@@ -448,7 +448,7 @@ if (existingShippingOptions.length === 0) {
       serviceZoneId: serviceZone.id,
       shippingProfileId: shippingProfile.id,
       shippingOptionTypeId: standardType.id,
-      providerId: 'manual_manual',
+      providerId: 'fp_manual_default',
     },
     {
       name: 'Express Shipping',
@@ -457,7 +457,7 @@ if (existingShippingOptions.length === 0) {
       serviceZoneId: serviceZone.id,
       shippingProfileId: shippingProfile.id,
       shippingOptionTypeId: expressType.id,
-      providerId: 'manual_manual',
+      providerId: 'fp_manual_default',
     },
   ])
   console.info('Seeded shipping profile, fulfillment set, service zone, geo zones, and 2 shipping options')

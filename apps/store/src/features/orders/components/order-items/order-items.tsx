@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import type { StoreOrderResponseOrder } from '#/api/generated/model'
+import type { StoreOrderDetail } from '#/api/generated/model'
 import { Icon } from '#/components/ui/icon/icon'
 import {
   orderItems,
@@ -29,7 +29,7 @@ import { useFormatters } from '#/hooks/use-formatters'
  *
  * A package, not the checkout summary's shopping bag: a bag is the thing you are still carrying.
  */
-export function OrderItems({ order, className }: { order: StoreOrderResponseOrder; className?: string }) {
+export function OrderItems({ order, className }: { order: StoreOrderDetail; className?: string }) {
   const { formatPrice } = useFormatters()
 
   return (

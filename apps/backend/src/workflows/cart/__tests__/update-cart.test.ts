@@ -239,7 +239,7 @@ test.describe('updateCartWorkflow — market switch rollback', () => {
     const before = await cartState(service, scene.cart.id)
     // Fails after the region and the prices have moved but before either was totalled, so the
     // rollback under test is the two writes that already landed rather than all of them.
-    vi.spyOn(container.resolve(Modules.CART), 'softDeleteShippingMethods').mockRejectedValueOnce(
+    vi.spyOn(container.resolve(Modules.CART), 'applyShippingMethodRefresh').mockRejectedValueOnce(
       new Error('Shipping method refresh failed'),
     )
 

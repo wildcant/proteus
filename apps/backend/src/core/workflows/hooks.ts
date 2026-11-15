@@ -2,7 +2,10 @@
  * Workflow hooks: a named point in a core workflow where a store's extension may replace core's
  * computation with its own. Not webhooks — those are the `/hooks/` API scope.
  *
- * A hook is defined next to the core workflow that runs it, with core's behaviour as its fallback:
+ * A hook is defined next to the core workflow that runs it, with core's behaviour as its fallback.
+ * Core defines no hook yet, so the example below is illustrative, the same one as the standard's: no
+ * core workflow computes an order's charges through a hook, since shipping is priced by a
+ * fulfillment provider and a deposit is a payment (ADR-0039).
  *
  * ```ts
  * export const orderChargesHook = defineHook<OrderChargesInput, OrderCharges>({
@@ -29,7 +32,7 @@
  * ```
  *
  * The extension generator imports each one under an alias and writes it into the registry's
- * `hookHandlers` with the extension's name added, `{ ...fixtureChargesHandler, extension: 'fixture' }`
+ * `hookHandlers` with the extension's name added, `{ ...fixtureOrderChargesHookHandler, extension: 'fixture' }`
  * — the handler never names its own extension, so it cannot name the wrong one. Exactly one handler
  * per hook across all extensions; the generator rejects a second, and so does `registerHookHandlers`.
  *

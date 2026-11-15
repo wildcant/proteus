@@ -16,3 +16,10 @@ export const OrderFulfillmentIdParams = z.object({
   fulfillmentId: z.string().min(1),
 })
 export type OrderFulfillmentIdParams = z.infer<typeof OrderFulfillmentIdParams>
+
+export const AdminDraftOrderListParams = createFindParams().extend({
+  q: z.string().optional(),
+  createdAt: createDateOperatorMap().optional(),
+})
+
+export type AdminDraftOrderListQuery = FindParams<typeof AdminDraftOrderListParams>

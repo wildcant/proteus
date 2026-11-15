@@ -10,18 +10,20 @@ import type { AdminOrderAddress } from './adminOrderAddress.ts';
 import type { AdminOrderAllowedActions } from './adminOrderAllowedActions.ts';
 import type { AdminOrderFulfillment } from './adminOrderFulfillment.ts';
 import type { AdminOrderLineItem } from './adminOrderLineItem.ts';
-import type { AdminOrderResponseOrderPaymentStatus } from './adminOrderResponseOrderPaymentStatus.ts';
 import type { AdminOrderShippingMethod } from './adminOrderShippingMethod.ts';
 import type { AdminOrderTotals } from './adminOrderTotals.ts';
 import type { AdminOrderTransaction } from './adminOrderTransaction.ts';
+import type { AdminPaymentCollection } from './adminPaymentCollection.ts';
+import type { OrderPaymentStatus } from './orderPaymentStatus.ts';
 
 export type AdminOrderResponseOrder = AdminOrder & ({
   lineItems: AdminOrderLineItem[];
   shippingMethods: AdminOrderShippingMethod[];
   transactions: AdminOrderTransaction[];
   totals: AdminOrderTotals;
-  paymentStatus: AdminOrderResponseOrderPaymentStatus;
+  paymentStatus: OrderPaymentStatus;
   allowedActions: AdminOrderAllowedActions;
   shippingAddress: AdminOrderAddress | null;
   fulfillments: AdminOrderFulfillment[];
+  paymentCollections: AdminPaymentCollection[];
 });

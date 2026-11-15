@@ -13,4 +13,8 @@ export interface StoreOrderTotals {
   shippingTotal: string;
   /** Numeric string (arbitrary precision) */
   orderTotal: string;
+  /** Numeric string (arbitrary precision) */
+  paidTotal: string;
+  /** Numeric string (arbitrary precision) */
+  outstandingTotal: string;
 }

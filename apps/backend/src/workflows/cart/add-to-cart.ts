@@ -1,14 +1,12 @@
 import { ErrorTypes } from '@core/errors/app-error.js'
 import type { CartLineItemDTO } from '@core/types/cart/common.js'
-import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
-import { buildListingSublines } from '../product/utils/build-listing-subline.js'
-import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { confirmVariantInventoryStep, confirmVariantInventoryThrows } from './steps/confirm-variant-inventory.js'
+import { prepareLineItemsStep, prepareLineItemsThrows } from './steps/prepare-line-items.js'
+import { refreshCartShippingMethodsStep } from './steps/refresh-cart-shipping-methods.js'
 import { lineItemPlanDemands, planLineItemActions } from './utils/plan-line-item-actions.js'
-import { prepareLineItemData } from './utils/prepare-line-item-data.js'
 
 /** What a shopper picks: which variant, and how many. Everything else is the catalogue's to say. */
 type AddToCartItem = {
@@ -39,7 +37,12 @@ export type AddToCartInput = {
 export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[]>(
   {
     name: 'add-to-cart',
-    throws: [...confirmVariantInventoryThrows, ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND],
+    throws: [
+      ...confirmVariantInventoryThrows,
+      ...prepareLineItemsThrows,
+      ErrorTypes.INVALID_DATA,
+      ErrorTypes.NOT_ALLOWED,
+    ],
   },
   async (ctx, input) => {
     /**
@@ -68,115 +71,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       return cart
     })
 
-    /**
-     * Resolves each requested variant into the line item the cart will store: its catalogue
-     * fields, and the price the shop is offering it at in the cart's currency. A variant the
-     * catalogue cannot price in that currency is refused here rather than written at whatever
-     * the caller suggested — the store's product routes drop unpriced variants for the same
-     * reason, so one should never have been offered.
-     */
-    const lineItems = await ctx.step('prepare-line-items', async ({ container }) => {
-      const productService = container.resolve(Modules.PRODUCT)
-      const pricingService = container.resolve(Modules.PRICING)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
-      const storeService = container.resolve(Modules.STORE)
-
-      const variantIds = [...new Set(input.items.map((item) => item.variantId))]
-      const variants = await productService.enrichVariants(await productService.listProductVariants({ id: variantIds }))
-      const variantById = new Map(variants.map((variant) => [variant.id, variant]))
-
-      const missing = variantIds.filter((variantId) => !variantById.has(variantId))
-      if (missing.length) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.NOT_FOUND,
-          message: i18n.t('Variant(s) not found: {missing}'),
-          values: { missing: missing.join(', ') },
-        })
-      }
-
-      const productIds = [...new Set(variants.map((variant) => variant.productId))]
-      // The product rows are flat, so the Type's value comes through the batched groupings read.
-      const [products, groupings, store] = await Promise.all([
-        productService.listProducts({ id: productIds }),
-        productService.listProductGroupings(productIds),
-        storeService.resolveStore(),
-      ])
-      const productById = new Map(products.map((product) => [product.id, product]))
-
-      // The card's subline, from the template the list and the product page render it with — and
-      // its fields only when the store has a template at all, as the list reads them.
-      const card = store?.card ?? { subline: null, listSeparator: ', ' }
-      const [fieldValuesByProductId, categories] = await Promise.all([
-        card.subline ? productService.listFieldValuesOfProducts(productIds) : {},
-        card.subline ? productService.listCategories() : [],
-      ])
-      const sublineByProductId = buildListingSublines(products, {
-        card,
-        typeByProductId: new Map(
-          Object.entries(groupings).flatMap(([id, grouping]) => (grouping.type ? [[id, grouping.type.value]] : [])),
-        ),
-        fieldValuesByProductId,
-        categories,
-      })
-
-      const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
-      const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
-      const calculatedPrices = await pricingService.calculatePrices(priceSetIds, {
-        currencyCode: cart.currencyCode,
-      })
-      const priceByVariantId = buildVariantPrices(links, calculatedPrices)
-
-      // One read per variant, and the ids are already deduplicated, so a repeat of the same
-      // variant in the payload does not pay for it twice.
-      const thumbnails = new Map(
-        await Promise.all(
-          variantIds.map(
-            async (variantId) => [variantId, await productService.resolveVariantThumbnail(variantId)] as const,
-          ),
-        ),
-      )
-
-      return input.items.map((item) => {
-        const variant = variantById.get(item.variantId)
-        const product = variant ? productById.get(variant.productId) : undefined
-        if (!variant || !product) {
-          throw new WorkflowTerminalError({
-            type: ErrorTypes.NOT_FOUND,
-            message: i18n.t('Variant "{variantId}" has no product'),
-            values: { variantId: item.variantId },
-          })
-        }
-
-        // The storefront only lists published products, so this is a caller reaching past the
-        // catalogue rather than a shopper doing something ordinary.
-        if (product.status !== 'published') {
-          throw new WorkflowTerminalError({
-            type: ErrorTypes.NOT_ALLOWED,
-            message: i18n.t('Product "{productId}" is not available for sale'),
-            values: { productId: product.id },
-          })
-        }
-
-        const price = priceByVariantId.get(variant.id)
-        if (!price) {
-          throw new WorkflowTerminalError({
-            type: ErrorTypes.INVALID_DATA,
-            message: i18n.t('Variant "{variantId}" has no price in {currencyCode}'),
-            values: { variantId: variant.id, currencyCode: cart.currencyCode },
-          })
-        }
-
-        return prepareLineItemData({
-          quantity: item.quantity,
-          product,
-          productType: groupings[product.id]?.type?.value ?? null,
-          productSubline: sublineByProductId.get(product.id) ?? null,
-          variant,
-          unitPrice: price.calculatedAmount,
-          thumbnail: thumbnails.get(variant.id) ?? null,
-        })
-      })
-    })
+    const lineItems = await prepareLineItemsStep(ctx, { currencyCode: cart.currencyCode, items: input.items })
 
     /**
      * Which of the prepared items join a line the cart already holds, and which start one — and the
@@ -194,13 +89,37 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
     await confirmVariantInventoryStep(ctx, planned.demands)
 
     /**
-     * No compensation, and none needed: the lines started and the lines raised are rows of one
-     * table in one module, so the cart module writes them in a single transaction and the
-     * database is what puts a failure back. A compensating write could fail on its own.
+     * The lines started and the lines raised are rows of one table in one module, so the cart module
+     * writes them in a single transaction and the database puts a failure of this step back. The
+     * compensation is for the shipping refresh after it: the started lines are removed and the raised
+     * ones return to the quantity they held.
      */
-    return ctx.step('write-line-items', async ({ container }) => {
-      const cartService = container.resolve(Modules.CART)
-      return cartService.applyLineItemPlan(cart.id, planned.plan)
-    })
+    const written = await ctx.step(
+      'write-line-items',
+      async ({ container }) => {
+        const cartService = container.resolve(Modules.CART)
+        const mergedIds = planned.plan.merge.map((merge) => merge.id)
+        const previous = mergedIds.length > 0 ? await cartService.listLineItems({ id: mergedIds, cartId: cart.id }) : []
+        const lineItems = await cartService.applyLineItemPlan(cart.id, planned.plan)
+        const mergedIdSet = new Set(mergedIds)
+
+        return {
+          lineItems,
+          createdIds: lineItems.filter((item) => !mergedIdSet.has(item.id)).map((item) => item.id),
+          previousQuantities: previous.map((item) => ({ id: item.id, data: { quantity: item.quantity } })),
+        }
+      },
+      async ({ createdIds, previousQuantities }, { container }) => {
+        const cartService = container.resolve(Modules.CART)
+        if (createdIds.length > 0) await cartService.softDeleteLineItems(createdIds)
+        if (previousQuantities.length > 0) {
+          await cartService.applyLineItemPlan(cart.id, { create: [], merge: previousQuantities })
+        }
+      },
+    )
+
+    await refreshCartShippingMethodsStep(ctx, { cartId: input.cartId })
+
+    return written.lineItems
   },
 )

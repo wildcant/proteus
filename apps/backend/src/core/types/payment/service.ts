@@ -2,18 +2,20 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AccountHolderDTO,
-  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
   PaymentDTO,
   PaymentProviderDTO,
   PaymentProviderMeta,
+  PaymentSessionAuthorization,
   PaymentSessionDTO,
   RefundReasonDTO,
   SavedMethodDTO,
 } from './common.js'
 import type {
+  CancelPaymentCollectionDTO,
+  CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
   CreatePaymentCollectionDTO,
@@ -81,7 +83,7 @@ export type IPaymentModuleService = {
    * to tell an intent that is still settling from one the provider refused, and `null` said both.
    * Idempotent — a session already authorized answers with the payment it produced.
    */
-  authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult>
+  authorizePaymentSession(id: string, context?: Context): Promise<PaymentSessionAuthorization>
 
   // Payment retrieval
   retrievePayment(id: string, context?: Context): Promise<PaymentDTO>
@@ -91,14 +93,29 @@ export type IPaymentModuleService = {
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
   cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
   /**
-   * Settles a collection against money taken outside Proteus — a transfer, cash, a terminal.
-   *
-   * Opens a session on the manual provider, authorizes and captures it, all in one transaction:
-   * a collection left holding an authorized payment nobody captured reads as unpaid while the
-   * money is gone, and no gateway event is coming to fix it. Answers with the collection as it
-   * stands afterwards.
+   * Voids every authorization on the collection still holding money and marks it canceled, under
+   * its row lock: what an Order's cancel does before it refunds anything. No capture lands on a
+   * canceled collection. Refused, with nothing voided, when the collection's captures no longer
+   * add up to `capturedAmount`.
    */
-  markPaymentCollectionAsPaid(id: string, context?: Context): Promise<PaymentCollectionDTO>
+  cancelPaymentCollection(
+    paymentCollectionId: string,
+    data: CancelPaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentCollectionDTO>
+  /** Takes the cancel mark off, for an Order cancel that rolled back. What was voided stays voided. */
+  reopenPaymentCollection(paymentCollectionId: string, context?: Context): Promise<PaymentCollectionDTO>
+  /**
+   * Records a payment of an amount against a collection, under its row lock: opens and authorizes
+   * a manual session for what is outstanding when the collection holds no live authorization, then
+   * captures the amount. Refused above what is outstanding, net of refunds. A capture already recorded under
+   * `idempotencyKey` is answered with rather than taken again.
+   */
+  capturePaymentCollection(
+    paymentCollectionId: string,
+    data: CapturePaymentCollectionDTO,
+    context?: Context,
+  ): Promise<PaymentDTO>
 
   // Providers
   listPaymentProviders(

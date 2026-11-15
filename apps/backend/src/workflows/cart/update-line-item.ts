@@ -4,6 +4,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { confirmVariantInventoryStep, confirmVariantInventoryThrows } from './steps/confirm-variant-inventory.js'
+import { refreshCartShippingMethodsStep } from './steps/refresh-cart-shipping-methods.js'
 
 export type UpdateLineItemInput = {
   cartId: string
@@ -59,10 +60,25 @@ export const updateLineItemWorkflow = createWorkflow<UpdateLineItemInput, CartLi
 
     await confirmVariantInventoryStep(ctx, demands)
 
-    /** One row in one module, so the write is a single service call with nothing to compensate. */
-    return ctx.step('write-line-item', async ({ container }) => {
-      const cartService = container.resolve(Modules.CART)
-      return cartService.updateLineItem(input.lineItemId, { quantity: input.quantity })
-    })
+    /**
+     * One row in one module. Its compensation puts the quantity back if the shipping refresh after
+     * it fails, so a cart never holds a quantity its shipping was not priced for.
+     */
+    const written = await ctx.step(
+      'write-line-item',
+      async ({ container }) => {
+        const cartService = container.resolve(Modules.CART)
+        const [previous] = await cartService.listLineItems({ id: input.lineItemId, cartId: input.cartId })
+        const lineItem = await cartService.updateLineItem(input.lineItemId, { quantity: input.quantity })
+        return { lineItem, previousQuantity: previous?.quantity ?? lineItem.quantity }
+      },
+      async ({ previousQuantity }, { container }) => {
+        await container.resolve(Modules.CART).updateLineItem(input.lineItemId, { quantity: previousQuantity })
+      },
+    )
+
+    await refreshCartShippingMethodsStep(ctx, { cartId: input.cartId })
+
+    return written.lineItem
   },
 )

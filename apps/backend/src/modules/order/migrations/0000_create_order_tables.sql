@@ -1,5 +1,5 @@
 CREATE TYPE "public"."order_address_type" AS ENUM('shipping', 'billing');--> statement-breakpoint
-CREATE TYPE "public"."order_status" AS ENUM('pending', 'completed', 'canceled', 'archived');--> statement-breakpoint
+CREATE TYPE "public"."order_status" AS ENUM('draft', 'pending', 'completed', 'canceled', 'archived');--> statement-breakpoint
 CREATE TABLE "order_address" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ordaddr_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"order_id" text NOT NULL,
@@ -39,6 +39,7 @@ CREATE TABLE "order_line_item" (
 	"variant_barcode" text,
 	"variant_title" text,
 	"variant_option_values" text,
+	"variant_options" jsonb DEFAULT '[]' NOT NULL,
 	"requires_shipping" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -49,8 +50,11 @@ CREATE TABLE "order" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ord_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"display_id" serial NOT NULL,
 	"status" "order_status" DEFAULT 'pending' NOT NULL,
-	"email" text NOT NULL,
+	"is_draft_order" boolean DEFAULT false NOT NULL,
+	"email" text,
 	"customer_id" text,
+	"region_id" text,
+	"sales_channel_id" text,
 	"currency_code" text NOT NULL,
 	"canceled_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -64,8 +68,10 @@ CREATE TABLE "order_shipping_method" (
 	"name" text NOT NULL,
 	"description" text,
 	"amount" numeric NOT NULL,
+	"is_tax_inclusive" boolean DEFAULT false NOT NULL,
 	"shipping_option_id" text,
 	"data" jsonb,
+	"is_custom_amount" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone
@@ -98,4 +104,4 @@ CREATE INDEX "idx_order_status" ON "order" USING btree ("status") WHERE deleted_
 CREATE INDEX "idx_order_shipping_method_order_id" ON "order_shipping_method" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_shipping_method_option_id" ON "order_shipping_method" USING btree ("shipping_option_id") WHERE shipping_option_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_transaction_order_id" ON "order_transaction" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_order_transaction_reference" ON "order_transaction" USING btree ("reference","reference_id") WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX "idx_order_transaction_reference" ON "order_transaction" USING btree ("reference","reference_id") WHERE deleted_at IS NULL;

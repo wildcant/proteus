@@ -14,17 +14,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/container.ts:167
+#: src/container.ts:174
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 
 #. js-lingui-explicit-id
-#: src/container.ts:201
+#: src/container.ts:208
 msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 msgstr "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 
 #. js-lingui-explicit-id
-#: src/routes.ts:159
+#: src/routes.ts:161
 msgid "Routes with auth: 'required' must declare permissions. Missing on:\n"
 "  {routes}"
 msgstr "Routes with auth: 'required' must declare permissions. Missing on:\n"
@@ -76,10 +76,19 @@ msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its s
 msgstr "Variant \"{variantId}\" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:63
-#: src/workflows/cart/complete-cart.ts:296
-#: src/workflows/cart/update-cart.ts:161
-#: src/workflows/cart/update-line-item.ts:51
+#: src/workflows/payment/capture-payment.ts:59
+#: src/workflows/payment/steps/record-order-payment.ts:156
+msgid "Payment \"{id}\" holds no capture recorded under this request."
+msgstr "Payment \"{id}\" holds no capture recorded under this request."
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-shipping-method-to-cart.ts:43
+#: src/workflows/cart/add-to-cart.ts:66
+#: src/workflows/cart/complete-cart.ts:302
+#: src/workflows/cart/transfer-cart-customer.ts:36
+#: src/workflows/cart/update-cart.ts:155
+#: src/workflows/cart/update-line-item.ts:52
+#: src/workflows/draft-order/create-draft-order-from-cart.ts:68
 #: src/workflows/payment/create-payment-collection-for-cart.ts:30
 #: src/workflows/payment/reprice-payment-session.ts:57
 msgid "Cart \"{cartId}\" is already completed"
@@ -89,6 +98,11 @@ msgstr "Cart \"{cartId}\" is already completed"
 #: src/workflows/payment/create-payment-collection-for-cart.ts:50
 msgid "Cart \"{cartId}\" has no items or zero total"
 msgstr "Cart \"{cartId}\" has no items or zero total"
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/refund-payment.ts:46
+msgid "Refund amount {amount} must be more than zero and at most the {received} received."
+msgstr "Refund amount {amount} must be more than zero and at most the {received} received."
 
 #. js-lingui-explicit-id
 #: src/workflows/payment/reprice-payment-session.ts:37
@@ -101,9 +115,44 @@ msgid "Payment collection \"{collectionId}\" is not linked to a cart, so it has 
 msgstr "Payment collection \"{collectionId}\" is not linked to a cart, so it has no total to re-price against"
 
 #. js-lingui-explicit-id
-#: src/workflows/order/cancel-order.ts:26
+#: src/workflows/payment/steps/record-order-payment.ts:62
+msgid "Payment amount must be greater than zero."
+msgstr "Payment amount must be greater than zero."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:72
+msgid "Order with id \"{id}\" not found"
+msgstr "Order with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:79
+msgid "Cannot record a payment on order {orderId}: it is canceled."
+msgstr "Cannot record a payment on order {orderId}: it is canceled."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:87
+msgid "Cannot record a payment on order {orderId}: it is a draft — convert it to record its deposit."
+msgstr "Cannot record a payment on order {orderId}: it is a draft — convert it to record its deposit."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/record-order-payment.ts:105
+msgid "Payment amount {amount} exceeds the {outstanding} outstanding on order {orderId}."
+msgstr "Payment amount {amount} exceeds the {outstanding} outstanding on order {orderId}."
+
+#. js-lingui-explicit-id
+#: src/workflows/payment/steps/refund-payments.ts:65
+msgid "Payment \"{id}\" holds no refund recorded under this request."
+msgstr "Payment \"{id}\" holds no refund recorded under this request."
+
+#. js-lingui-explicit-id
+#: src/workflows/order/cancel-order.ts:42
 msgid "Cannot cancel order {orderId}: fulfillment status is \"{status}\", expected \"unfulfilled\""
 msgstr "Cannot cancel order {orderId}: fulfillment status is \"{status}\", expected \"unfulfilled\""
+
+#. js-lingui-explicit-id
+#: src/workflows/order/cancel-order.ts:65
+msgid "Cannot cancel order {orderId}: a refund of {amount} is not between 0 and the {received} received."
+msgstr "Cannot cancel order {orderId}: a refund of {amount} is not between 0 and the {received} received."
 
 #. js-lingui-explicit-id
 #: src/workflows/order/create-order-fulfillment.ts:34
@@ -192,6 +241,34 @@ msgid "Reservation quantity ({quantity}) is insufficient for item {lineItemId}: 
 msgstr "Reservation quantity ({quantity}) is insufficient for item {lineItemId}: requires {required}"
 
 #. js-lingui-explicit-id
+#: src/workflows/order/steps/reserve-order-inventory.ts:76
+msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
+msgstr "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
+
+#. js-lingui-explicit-id
+#: src/workflows/draft-order/convert-draft-order.ts:56
+msgid "Draft order \"{orderId}\" has no items"
+msgstr "Draft order \"{orderId}\" has no items"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:82
+#: src/workflows/draft-order/create-draft-order-from-cart.ts:50
+msgid "Cart \"{cartId}\" is already being completed"
+msgstr "Cart \"{cartId}\" is already being completed"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/complete-cart.ts:115
+#: src/workflows/draft-order/create-draft-order-from-cart.ts:77
+msgid "Cart \"{cartId}\" has no items"
+msgstr "Cart \"{cartId}\" has no items"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/add-shipping-method-to-cart.ts:62
+#: src/workflows/draft-order/set-draft-order-shipping-method.ts:70
+msgid "Shipping option \"{shippingOptionId}\" is not available"
+msgstr "Shipping option \"{shippingOptionId}\" is not available"
+
+#. js-lingui-explicit-id
 #: src/core/auth/utils/validate-verification.ts:42
 #: src/workflows/customer/complete-customer-auth.ts:64
 msgid "Provider identity for \"{authProvider}\" not found on auth identity \"{authIdentityId}\""
@@ -203,117 +280,87 @@ msgid "No customer data available for auth identity \"{authIdentityId}\". Expect
 msgstr "No customer data available for auth identity \"{authIdentityId}\". Expected either input.customerData or appMetadata.pending."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:53
+#: src/workflows/cart/add-to-cart.ts:56
 msgid "No items to add to the cart"
 msgstr "No items to add to the cart"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:92
-msgid "Variant(s) not found: {missing}"
-msgstr "Variant(s) not found: {missing}"
-
-#. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:145
-msgid "Variant \"{variantId}\" has no product"
-msgstr "Variant \"{variantId}\" has no product"
-
-#. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:155
-msgid "Product \"{productId}\" is not available for sale"
-msgstr "Product \"{productId}\" is not available for sale"
-
-#. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:164
-msgid "Variant \"{variantId}\" has no price in {currencyCode}"
-msgstr "Variant \"{variantId}\" has no price in {currencyCode}"
-
-#. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:48
+#: src/workflows/cart/complete-cart.ts:38
 msgid "The payment was declined. Please try another payment method."
 msgstr "The payment was declined. Please try another payment method."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:52
+#: src/workflows/cart/complete-cart.ts:42
 msgid "The payment has not been confirmed yet."
 msgstr "The payment has not been confirmed yet."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:57
+#: src/workflows/cart/complete-cart.ts:47
 msgid "The payment needs to be confirmed with your bank before the order can be placed."
 msgstr "The payment needs to be confirmed with your bank before the order can be placed."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:61
+#: src/workflows/cart/complete-cart.ts:51
 msgid "The payment was cancelled. Please start the payment again."
 msgstr "The payment was cancelled. Please start the payment again."
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:89
-msgid "Cart \"{cartId}\" is already being completed"
-msgstr "Cart \"{cartId}\" is already being completed"
+#: src/workflows/cart/complete-cart.ts:96
+msgid "Cart \"{cartId}\" was sent to the shop as a draft order, so it cannot be checked out"
+msgstr "Cart \"{cartId}\" was sent to the shop as a draft order, so it cannot be checked out"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:109
-msgid "Cart \"{cartId}\" has no items"
-msgstr "Cart \"{cartId}\" has no items"
-
-#. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:118
+#: src/workflows/cart/complete-cart.ts:124
 msgid "Cart item \"{itemId}\" has no variant"
 msgstr "Cart item \"{itemId}\" has no variant"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:125
+#: src/workflows/cart/complete-cart.ts:131
 msgid "Cart item \"{itemId}\" has invalid quantity: {quantity}"
 msgstr "Cart item \"{itemId}\" has invalid quantity: {quantity}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:142
+#: src/workflows/cart/complete-cart.ts:148
 msgid "Cart \"{cartId}\" has no payment collection"
 msgstr "Cart \"{cartId}\" has no payment collection"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:158
+#: src/workflows/cart/complete-cart.ts:164
 msgid "Payment collection \"{collectionId}\" has no payment session — call POST /store/payment-collections/:id/payment-sessions first"
 msgstr "Payment collection \"{collectionId}\" has no payment session — call POST /store/payment-collections/:id/payment-sessions first"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:170
+#: src/workflows/cart/complete-cart.ts:176
 msgid "Payment session \"{newestId}\" is not processable (status: {status})"
 msgstr "Payment session \"{newestId}\" is not processable (status: {status})"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:189
+#: src/workflows/cart/complete-cart.ts:195
 msgid "Payment session \"{sessionId}\" was opened for {sessionAmount} {sessionCurrency} but this cart is now {cartAmount} {cartCurrency} — reopen the payment session to pay what the cart now says"
 msgstr "Payment session \"{sessionId}\" was opened for {sessionAmount} {sessionCurrency} but this cart is now {cartAmount} {cartCurrency} — reopen the payment session to pay what the cart now says"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:220
+#: src/workflows/cart/complete-cart.ts:226
 msgid "Cart \"{cartId}\" has no shipping method — call POST /store/carts/:id/shipping-methods first"
 msgstr "Cart \"{cartId}\" has no shipping method — call POST /store/carts/:id/shipping-methods first"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:232
+#: src/workflows/cart/complete-cart.ts:238
 msgid "Shipping option \"{shippingOptionId}\" is no longer available"
 msgstr "Shipping option \"{shippingOptionId}\" is no longer available"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:281
+#: src/workflows/cart/complete-cart.ts:287
 msgid "This cart is priced for \"{regionName}\", which does not ship to \"{countryCode}\" — switch back to that market, or take out what this one cannot sell so the cart can move here"
 msgstr "This cart is priced for \"{regionName}\", which does not ship to \"{countryCode}\" — switch back to that market, or take out what this one cannot sell so the cart can move here"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:312
+#: src/workflows/cart/complete-cart.ts:318
 msgid "Cart \"{cartId}\" has no email — an email is required to complete checkout"
 msgstr "Cart \"{cartId}\" has no email — an email is required to complete checkout"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:481
-msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
-msgstr "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
-
-#. js-lingui-explicit-id
-#: src/workflows/cart/complete-cart.ts:575
+#: src/workflows/cart/complete-cart.ts:436
 msgid "Payment for session \"{sessionId}\" has not been authorized yet"
 msgstr "Payment for session \"{sessionId}\" has not been authorized yet"
 
@@ -329,12 +376,12 @@ msgstr "Customer with id \"{customerId}\" not found"
 
 #. js-lingui-explicit-id
 #: src/api/store/middlewares.ts:31
-#: src/workflows/cart/update-cart.ts:139
+#: src/workflows/cart/update-cart.ts:133
 msgid "No region sells to country \"{countryCode}\""
 msgstr "No region sells to country \"{countryCode}\""
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/update-cart.ts:211
+#: src/workflows/cart/update-cart.ts:205
 msgid "\"{name}\" does not ship to \"{enteredCountry}\""
 msgstr "\"{name}\" does not ship to \"{enteredCountry}\""
 
@@ -344,8 +391,8 @@ msgid "\"{title}\" is not sold in {currencyCode}"
 msgstr "\"{title}\" is not sold in {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:244
-#: src/workflows/cart/update-line-item.ts:43
+#: src/modules/cart/services/cart-module-service.ts:245
+#: src/workflows/cart/update-line-item.ts:44
 msgid "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
 msgstr "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
 
@@ -360,9 +407,39 @@ msgid "Variants {variantIds} are tracked, but no inventory item is linked to the
 msgstr "Variants {variantIds} are tracked, but no inventory item is linked to them"
 
 #. js-lingui-explicit-id
+#: src/workflows/cart/steps/confirm-line-items-sellable.ts:45
+msgid "\"{item}\" is no longer sold — remove it to continue"
+msgstr "\"{item}\" is no longer sold — remove it to continue"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/steps/confirm-line-items-sellable.ts:77
+msgid "\"{item}\" is sold out in the quantity asked for — remove it or lower its quantity"
+msgstr "\"{item}\" is sold out in the quantity asked for — remove it or lower its quantity"
+
+#. js-lingui-explicit-id
 #: src/workflows/cart/steps/confirm-variant-inventory.ts:64
 msgid "Not enough stock for the requested quantity"
 msgstr "Not enough stock for the requested quantity"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/steps/prepare-line-items.ts:49
+msgid "Variant(s) not found: {missing}"
+msgstr "Variant(s) not found: {missing}"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/steps/prepare-line-items.ts:102
+msgid "Variant \"{variantId}\" has no product"
+msgstr "Variant \"{variantId}\" has no product"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/steps/prepare-line-items.ts:112
+msgid "Product \"{productId}\" is not available for sale"
+msgstr "Product \"{productId}\" is not available for sale"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/steps/prepare-line-items.ts:121
+msgid "Variant \"{variantId}\" has no price in {currencyCode}"
+msgstr "Variant \"{variantId}\" has no price in {currencyCode}"
 
 #. js-lingui-explicit-id
 #: src/workflows/auth/steps/set-auth-app-metadata.ts:34
@@ -375,7 +452,7 @@ msgid "Payment session \"{sessionId}\" is still settling, so the \"{action}\" th
 msgstr "Payment session \"{sessionId}\" is still settling, so the \"{action}\" the provider reported cannot be recorded yet"
 
 #. js-lingui-explicit-id
-#: src/subscribers/send-order-confirmation.ts:73
+#: src/subscribers/send-order-confirmation.ts:81
 msgid "The order confirmation for order \"{orderId}\" was not sent — provider \"{providerId}\" refused it"
 msgstr "The order confirmation for order \"{orderId}\" was not sent — provider \"{providerId}\" refused it"
 
@@ -387,7 +464,7 @@ msgstr "The payment gateway is temporarily unavailable. Please try again."
 
 #. js-lingui-explicit-id
 #: src/api/store/payment-collections/[id]/payment-sessions/route.ts:62
-#: src/modules/payment/services/payment-module-service.ts:928
+#: src/modules/payment/services/payment-module-service.ts:978
 #: src/providers/payment-stripe/errors.ts:145
 msgid "That payment method is no longer available."
 msgstr "That payment method is no longer available."
@@ -398,7 +475,7 @@ msgid "The card could not be charged."
 msgstr "The card could not be charged."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:253
+#: src/modules/payment/services/payment-module-service.ts:256
 #: src/providers/payment-stripe/errors.ts:157
 msgid "The payment could not be processed."
 msgstr "The payment could not be processed."
@@ -706,24 +783,64 @@ msgid "Cannot remove option value(s) that are currently used by products. Remove
 msgstr "Cannot remove option value(s) that are currently used by products. Remove them from all products first."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:515
-msgid "Payment \"{id}\" has been canceled and cannot be captured."
-msgstr "Payment \"{id}\" has been canceled and cannot be captured."
+#: src/modules/payment/services/payment-module-service.ts:566
+msgid "Payment amount {amount} exceeds the {outstanding} outstanding on payment collection \"{id}\"."
+msgstr "Payment amount {amount} exceeds the {outstanding} outstanding on payment collection \"{id}\"."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:532
-msgid "Payment \"{id}\" has already been fully captured."
-msgstr "Payment \"{id}\" has already been fully captured."
-
-#. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:584
+#: src/modules/payment/services/payment-module-service.ts:614
 msgid "Payment \"{id}\" has no refundable amount remaining."
 msgstr "Payment \"{id}\" has no refundable amount remaining."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/services/payment-module-service.ts:592
+#: src/modules/payment/services/payment-module-service.ts:622
 msgid "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
 msgstr "Refund amount {refundAmount} exceeds refundable amount {refundableAmount}."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:712
+msgid "Payment collection \"{id}\" cannot be canceled: a payment of {amount} was recorded on it meanwhile."
+msgstr "Payment collection \"{id}\" cannot be canceled: a payment of {amount} was recorded on it meanwhile."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1049
+msgid "Payment collection \"{id}\" has been canceled: no payment can be recorded on it."
+msgstr "Payment collection \"{id}\" has been canceled: no payment can be recorded on it."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1057
+msgid "Payment \"{id}\" has been canceled and cannot be captured."
+msgstr "Payment \"{id}\" has been canceled and cannot be captured."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1072
+msgid "Payment \"{id}\" has already been fully captured."
+msgstr "Payment \"{id}\" has already been fully captured."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1082
+msgid "Capture amount must be greater than zero."
+msgstr "Capture amount must be greater than zero."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1089
+msgid "Capture amount {amount} exceeds the {remaining} still authorized on payment \"{id}\"."
+msgstr "Capture amount {amount} exceeds the {remaining} still authorized on payment \"{id}\"."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1097
+msgid "Payment \"{id}\" can only be captured in full: its provider cannot take part of an authorization."
+msgstr "Payment \"{id}\" can only be captured in full: its provider cannot take part of an authorization."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1170
+msgid "Payment amount {amount} cannot be recorded on payment collection \"{id}\": {held} of it is held by an open authorization at another provider. Capture or cancel that payment first."
+msgstr "Payment amount {amount} cannot be recorded on payment collection \"{id}\": {held} of it is held by an open authorization at another provider. Capture or cancel that payment first."
+
+#. js-lingui-explicit-id
+#: src/modules/payment/services/payment-module-service.ts:1189
+msgid "The manual payment for collection \"{id}\" was not authorized."
+msgstr "The manual payment for collection \"{id}\" was not authorized."
 
 #. js-lingui-explicit-id
 #: src/modules/payment/services/payment-provider-service.ts:68
@@ -731,24 +848,67 @@ msgid "Payment provider \"{providerId}\" is not registered."
 msgstr "Payment provider \"{providerId}\" is not registered."
 
 #. js-lingui-explicit-id
-#: src/modules/payment/providers/system.ts:63
+#: src/modules/payment/repositories/payment-collection.ts:23
+msgid "Locking payment collection \"{id}\" needs a transaction."
+msgstr "Locking payment collection \"{id}\" needs a transaction."
+
+#. js-lingui-explicit-id
+#: src/core/utils/base-repository.ts:139
+#: src/core/utils/base-repository.ts:206
+#: src/modules/payment/repositories/payment-collection.ts:37
+msgid "Entity with id \"{id}\" not found"
+msgstr "Entity with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/modules/payment/providers/system.ts:69
 msgid "Method not implemented."
 msgstr "Method not implemented."
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:301
+#: src/modules/order/services/order-module-service.ts:346
+msgid "Draft order with id \"{id}\" not found"
+msgstr "Draft order with id \"{id}\" not found"
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:464
+msgid "Order \"{id}\" is not a draft order, so it cannot be deleted"
+msgstr "Order \"{id}\" is not a draft order, so it cannot be deleted"
+
+#. js-lingui-explicit-id
+#: src/core/utils/base-repository.ts:179
+#: src/modules/order/services/order-module-service.ts:481
+msgid "Expected row to be created"
+msgstr "Expected row to be created"
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:538
 msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 msgstr "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:317
-msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
-msgstr "Cannot cancel order {id}: status is \"{status}\", expected \"pending\""
+#: src/modules/order/services/order-module-service.ts:554
+msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
+msgstr "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:333
+#: src/modules/order/services/order-module-service.ts:570
 msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 msgstr "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:617
+msgid "Order \"{id}\" is not a draft order"
+msgstr "Order \"{id}\" is not a draft order"
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:624
+msgid "Draft order \"{id}\" is {status}, so it can no longer be changed"
+msgstr "Draft order \"{id}\" is {status}, so it can no longer be changed"
+
+#. js-lingui-explicit-id
+#: src/modules/order/services/order-module-service.ts:640
+msgid "Line item \"{lineItemId}\" not found in draft order \"{orderId}\""
+msgstr "Line item \"{lineItemId}\" not found in draft order \"{orderId}\""
 
 #. js-lingui-explicit-id
 #: src/modules/notification/services/notification-module-service.ts:68
@@ -798,23 +958,33 @@ msgid "Inventory level with id \"{id}\" not found"
 msgstr "Inventory level with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:244
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:271
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:257
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:286
 msgid "serviceZoneId is required when creating geo zones directly"
 msgstr "serviceZoneId is required when creating geo zones directly"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:549
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:314
+msgid "A {type} geo zone needs {field}"
+msgstr "A {type} geo zone needs {field}"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:593
+msgid "Fulfillment provider \"{providerId}\" cannot calculate shipping prices"
+msgstr "Fulfillment provider \"{providerId}\" cannot calculate shipping prices"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:721
 msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
 msgstr "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:557
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:729
 msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
 msgstr "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-provider-service.ts:42
+#: src/modules/fulfillment/services/fulfillment-provider-service.ts:45
 msgid "Fulfillment provider \"{providerId}\" is not registered."
 msgstr "Fulfillment provider \"{providerId}\" is not registered."
 
@@ -855,12 +1025,12 @@ msgid "The configured file provider does not support presigned upload URLs."
 msgstr "The configured file provider does not support presigned upload URLs."
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:312
+#: src/modules/cart/services/cart-module-service.ts:319
 msgid "Shipping method not returned after create"
 msgstr "Shipping method not returned after create"
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:392
+#: src/modules/cart/services/cart-module-service.ts:408
 msgid "Cart {id} is already completed"
 msgstr "Cart {id} is already completed"
 
@@ -1106,7 +1276,7 @@ msgid "[events-worker] Temporal namespace \"{namespace}\" has standalone activit
 msgstr "[events-worker] Temporal namespace \"{namespace}\" has standalone activities disabled, so every event this deployment publishes would be dropped with only a log line — including the order confirmation a shopper is waiting for. Set `activity.enableStandalone: true` in the server's dynamic config (temporal/dynamicconfig/development-sql.yaml is this repo's own copy) and restart this Worker. The server answered: \"{answer}\"."
 
 #. js-lingui-explicit-id
-#: src/core/workflows/hooks.ts:198
+#: src/core/workflows/hooks.ts:201
 msgid "The handler for hook \"{hook}\" from extension \"{extension}\" failed: {reason}"
 msgstr "The handler for hook \"{hook}\" from extension \"{extension}\" failed: {reason}"
 
@@ -1136,17 +1306,6 @@ msgid "This authentication provider does not support validateCallback"
 msgstr "This authentication provider does not support validateCallback"
 
 #. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:139
-#: src/core/utils/base-repository.ts:206
-msgid "Entity with id \"{id}\" not found"
-msgstr "Entity with id \"{id}\" not found"
-
-#. js-lingui-explicit-id
-#: src/core/utils/base-repository.ts:179
-msgid "Expected row to be created"
-msgstr "Expected row to be created"
-
-#. js-lingui-explicit-id
 #: src/core/utils/validate-body.ts:15
 msgid "Invalid request body"
 msgstr "Invalid request body"
@@ -1155,6 +1314,11 @@ msgstr "Invalid request body"
 #: src/core/utils/validate-query.ts:12
 msgid "Invalid query params"
 msgstr "Invalid query params"
+
+#. js-lingui-explicit-id
+#: src/core/extensions/extension.ts:65
+msgid "An extension provider may resolve module services only, not \"{key}\""
+msgstr "An extension provider may resolve module services only, not \"{key}\""
 
 #. js-lingui-explicit-id
 #: src/core/errors/db-error-mapper.ts:88
@@ -1247,7 +1411,7 @@ msgstr "Cannot price this request: no countryCode was given and the store has no
 #: src/api/store/customers/me/addresses/route.ts:33
 #: src/api/store/customers/me/route.ts:13
 #: src/api/store/middlewares.ts:106
-#: src/api/store/orders/route.ts:16
+#: src/api/store/orders/route.ts:17
 msgid "Not authenticated"
 msgstr "Not authenticated"
 
@@ -1262,9 +1426,9 @@ msgid "Product with handle \"{handle}\" has no price in {currencyCode}"
 msgstr "Product with handle \"{handle}\" has no price in {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/api/store/orders/[id]/route.ts:28
-msgid "Order with id \"{id}\" not found"
-msgstr "Order with id \"{id}\" not found"
+#: src/api/store/orders/lookup/route.ts:22
+msgid "No order matches that number and phone"
+msgstr "No order matches that number and phone"
 
 #. js-lingui-explicit-id
 #: src/api/store/customers/middlewares.ts:28
@@ -1272,14 +1436,14 @@ msgid "Address with id \"{id}\" not found"
 msgstr "Address with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/api/store/carts/[id]/shipping-methods/route.ts:23
-msgid "Shipping option \"{shippingOptionId}\" is not available"
-msgstr "Shipping option \"{shippingOptionId}\" is not available"
-
-#. js-lingui-explicit-id
 #: src/api/store/carts/[id]/line-items/route.ts:19
 msgid "Line item not returned after add"
 msgstr "Line item not returned after add"
+
+#. js-lingui-explicit-id
+#: src/api/store/carts/[id]/draft-order/route.ts:23
+msgid "This store does not take draft orders"
+msgstr "This store does not take draft orders"
 
 #. js-lingui-explicit-id
 #: src/api/store/carts/[id]/customer/route.ts:14

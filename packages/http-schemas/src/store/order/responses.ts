@@ -1,13 +1,6 @@
 import { z } from 'zod'
 import { bigNumberToString, PaginatedResponse } from '../../common.js'
-import {
-  StoreOrder,
-  StoreOrderAddress,
-  StoreOrderItemSummary,
-  StoreOrderLineItem,
-  StoreOrderShippingMethod,
-  StoreOrderTotals,
-} from './entities.js'
+import { StoreOrder, StoreOrderDetail, StoreOrderItemSummary } from './entities.js'
 
 const StoreOrderListItem = StoreOrder.extend({
   items: z.array(StoreOrderItemSummary),
@@ -19,13 +12,9 @@ export const StoreOrderListResponse = PaginatedResponse.extend({
 }).openapi('StoreOrderListResponse')
 export type StoreOrderListResponse = z.input<typeof StoreOrderListResponse>
 
-const StoreOrderWithDetails = StoreOrder.extend({
-  lineItems: z.array(StoreOrderLineItem),
-  shippingAddress: StoreOrderAddress.nullable(),
-  shippingMethods: z.array(StoreOrderShippingMethod),
-  totals: StoreOrderTotals,
-  paymentStatus: z.enum(['awaiting', 'authorized', 'captured']),
-})
-
-export const StoreOrderResponse = z.object({ order: StoreOrderWithDetails }).openapi('StoreOrderResponse')
+export const StoreOrderResponse = z.object({ order: StoreOrderDetail }).openapi('StoreOrderResponse')
 export type StoreOrderResponse = z.input<typeof StoreOrderResponse>
+
+/** Only the id: the Order itself is read through its link, like any other shopper's. */
+export const StoreOrderLookupResponse = z.object({ id: z.string() }).openapi('StoreOrderLookupResponse')
+export type StoreOrderLookupResponse = z.input<typeof StoreOrderLookupResponse>

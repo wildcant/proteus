@@ -34,7 +34,13 @@ const MAIN_SIDEBAR: InternalSidebarGroup[] = [
   {
     label: 'Store',
     items: [
-      { label: 'Orders', to: '/orders', icon: 'shopping-cart', permission: 'order.read' },
+      {
+        label: 'Orders',
+        to: '/orders',
+        icon: 'shopping-cart',
+        permission: 'order.read',
+        children: [{ label: 'Draft orders', to: '/draft-orders', permission: 'order.read' }],
+      },
       {
         label: 'Products',
         to: '/products',

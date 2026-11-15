@@ -1,3 +1,5 @@
+import { ErrorTypes } from '@core/errors/app-error.js'
+import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
 import { transferCartCustomerWorkflow } from '../transfer-cart-customer.js'
@@ -32,6 +34,17 @@ test.describe('transferCartCustomerWorkflow', () => {
 
     expect(result.email).toBe(email)
     expect(await service.read.cart(container, cartId)).toMatchObject({ customerId: customer.id, email })
+  })
+
+  test('refuses to move a completed cart to another customer', async ({ service, expect }) => {
+    const customer = await service.create.customer(container, { hasAccount: true })
+    const { id: cartId } = await service.create.cart(container, { customerId: null })
+    await container.resolve(Modules.CART).updateCart(cartId, { completedAt: new Date() })
+
+    await expect(transferCartCustomerWorkflow.run({ cartId, customerId: customer.id })).rejects.toMatchObject({
+      cause: { type: ErrorTypes.NOT_ALLOWED },
+    })
+    expect(await service.read.cart(container, cartId)).toMatchObject({ customerId: null })
   })
 
   test('rejects a customer that does not exist', async ({ service, expect }) => {

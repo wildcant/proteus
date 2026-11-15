@@ -9,7 +9,9 @@ export const paymentCollectionStatusEnum = pgEnum('payment_collection_status', [
   'awaiting',
   'authorized',
   'partially_authorized',
+  'partially_captured',
   'completed',
+  'canceled',
 ])
 
 export const paymentCollectionTable = pgTable(
@@ -19,6 +21,8 @@ export const paymentCollectionTable = pgTable(
     amount: bignum().notNull(),
     authorizedAmount: bignum(),
     capturedAmount: bignum(),
+    /** Set when the Order holding the collection is canceled: no capture or authorization lands on it after. */
+    canceledAt: timestamp({ withTimezone: true }),
     completedAt: timestamp({ withTimezone: true }),
     currencyCode: text().notNull().default('usd'),
     metadata: jsonb().$type<Record<string, unknown> | null>(),

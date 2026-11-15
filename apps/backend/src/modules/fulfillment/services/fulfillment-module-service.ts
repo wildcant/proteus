@@ -16,11 +16,13 @@ import type {
   FulfillmentProviderDTO,
   FulfillmentSetDTO,
   GeoZoneDTO,
+  GeoZoneType,
   ServiceZoneDTO,
   ShippingOptionDTO,
   ShippingOptionTypeDTO,
   ShippingProfileDTO,
 } from '../../../core/types/fulfillment/common.js'
+import { FulfillmentErrorCodes, isCannotCalculateShippingPrice } from '../../../core/types/fulfillment/errors.js'
 import type {
   CreateFulfillmentDTO,
   CreateFulfillmentSetDTO,
@@ -37,7 +39,14 @@ import type {
   UpdateShippingOptionTypeDTO,
   UpdateShippingProfileDTO,
 } from '../../../core/types/fulfillment/mutations.js'
-import type { IFulfillmentModuleService, ShippingAddressContext } from '../../../core/types/fulfillment/service.js'
+import type { CalculateShippingPriceContext } from '../../../core/types/fulfillment/provider.js'
+import type {
+  IFulfillmentModuleService,
+  PricedShippingOptionDTO,
+  QuotedShippingOptionDTO,
+  ShippingAddressContext,
+  ShippingOptionToPrice,
+} from '../../../core/types/fulfillment/service.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { FulfillmentRepository } from '../repositories/fulfillment.js'
@@ -49,6 +58,7 @@ import type { ServiceZoneRepository } from '../repositories/service-zone.js'
 import type { ShippingOptionRepository } from '../repositories/shipping-option.js'
 import type { ShippingOptionTypeRepository } from '../repositories/shipping-option-type.js'
 import type { ShippingProfileRepository } from '../repositories/shipping-profile.js'
+import { missingGeoZoneField, serviceZonesServingAddress } from '../utils/geo-zone-match.js'
 import type { FulfillmentProviderService } from './fulfillment-provider-service.js'
 
 type InjectedDependencies = {
@@ -161,6 +171,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createServiceZones(data: CreateServiceZoneDTO[], context?: Context): Promise<ServiceZoneDTO[]> {
     this.logger.debug(`Creating ${data.length} service zone(s)`)
+    this.assertGeoZonesMatchable(data.flatMap((zone) => zone.geoZones ?? []))
     return this.withTransaction(context, async (ctx) => {
       const zones = await this.serviceZoneRepository.createMany(
         data.map(({ geoZones: _, ...zone }) => zone),
@@ -205,6 +216,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
   }
 
   async createServiceZone(data: CreateServiceZoneDTO, context?: Context): Promise<ServiceZoneDTO> {
+    this.assertGeoZonesMatchable(data.geoZones ?? [])
     return this.withTransaction(context, async (ctx) => {
       const { geoZones: geoZoneInputs, ...zoneData } = data
       const zone = await this.serviceZoneRepository.create(zoneData, ctx)
@@ -236,6 +248,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createGeoZones(data: CreateGeoZoneDTO[], context?: Context): Promise<GeoZoneDTO[]> {
     this.logger.debug(`Creating ${data.length} geo zone(s)`)
+    this.assertGeoZonesMatchable(data)
     return this.geoZoneRepository.createMany(
       data.map((gz) => {
         if (!gz.serviceZoneId) {
@@ -260,6 +273,8 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async updateGeoZones(ids: string[], data: UpdateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO[]> {
     return this.withTransaction(context, async (ctx) => {
+      const existing = await this.geoZoneRepository.find({ id: ids }, undefined, ctx)
+      this.assertGeoZonesMatchable(existing.map((zone) => ({ ...zone, type: zone.type as GeoZoneType, ...data })))
       return this.geoZoneRepository.updateMany(ids, data, ctx) as Promise<GeoZoneDTO[]>
     })
   }
@@ -271,11 +286,14 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
         message: i18n.t('serviceZoneId is required when creating geo zones directly'),
       })
     }
+    this.assertGeoZonesMatchable([data])
     return this.geoZoneRepository.create({ ...data, serviceZoneId: data.serviceZoneId }, context) as Promise<GeoZoneDTO>
   }
 
   async updateGeoZone(id: string, data: UpdateGeoZoneDTO, context?: Context): Promise<GeoZoneDTO> {
     return this.withTransaction(context, async (ctx) => {
+      const existing = await this.geoZoneRepository.findByIdOrFail(id, undefined, ctx)
+      this.assertGeoZonesMatchable([{ ...existing, type: existing.type as GeoZoneType, ...data }])
       return this.geoZoneRepository.update(id, data, ctx) as Promise<GeoZoneDTO>
     })
   }
@@ -284,6 +302,19 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     return this.withTransaction(context, async (ctx) => {
       await this.geoZoneRepository.softDelete(ids, ctx)
     })
+  }
+
+  /** Medusa's `validateGeoZones`: a zone lacking a field its type needs could never match an address. */
+  private assertGeoZonesMatchable(zones: CreateGeoZoneDTO[]): void {
+    for (const zone of zones) {
+      const field = missingGeoZoneField(zone)
+      if (!field) continue
+      throw new AppError({
+        type: ErrorTypes.INVALID_DATA,
+        message: i18n.t('A {type} geo zone needs {field}'),
+        values: { type: zone.type, field },
+      })
+    }
   }
 
   // -- ShippingProfile --
@@ -383,6 +414,7 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
 
   async createShippingOptions(data: CreateShippingOptionDTO[], context?: Context): Promise<ShippingOptionDTO[]> {
     this.logger.debug(`Creating ${data.length} shipping option(s)`)
+    await Promise.all(data.map((option) => this.assertProviderPricesOption(option)))
     return this.shippingOptionRepository.createMany(data, context) as Promise<ShippingOptionDTO[]>
   }
 
@@ -420,22 +452,86 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     return options as ShippingOptionDTO[]
   }
 
+  async listPricedShippingOptionsForContext(
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<PricedShippingOptionDTO[]> {
+    const options = await this.listShippingOptionsForContext(pricingContext.shippingAddress, context)
+    return this.priceOptions(
+      options.map((option) => ({ option, data: {} })),
+      pricingContext,
+    )
+  }
+
+  async quoteShippingOptionsForContext(
+    options: ShippingOptionToPrice[],
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<QuotedShippingOptionDTO[]> {
+    if (options.length === 0) return []
+
+    const rows = (await this.shippingOptionRepository.find(
+      { id: options.map((option) => option.id), isEnabled: true },
+      undefined,
+      context,
+    )) as ShippingOptionDTO[]
+    const geoZones = await this.geoZoneRepository.findByServiceZoneIds(
+      [...new Set(rows.map((row) => row.serviceZoneId))],
+      context,
+    )
+    const serving = serviceZonesServingAddress(
+      geoZones.map((zone) => ({ ...zone, type: zone.type as GeoZoneDTO['type'] })),
+      pricingContext.shippingAddress,
+    )
+    const rowById = new Map(rows.filter((row) => serving.has(row.serviceZoneId)).map((row) => [row.id, row]))
+    const dataByOptionId = new Map(options.map(({ id, data }) => [id, data ?? {}]))
+
+    const priced = await this.priceOptions(
+      options.flatMap(({ id, data }) => {
+        const option = rowById.get(id)
+        return option ? [{ option, data: data ?? {} }] : []
+      }),
+      pricingContext,
+    )
+    const quoted = await Promise.all(
+      priced.map(async (option): Promise<QuotedShippingOptionDTO | null> => {
+        try {
+          const fulfillmentData = await this.fulfillmentProviderService.validateFulfillmentData(
+            option.providerId,
+            option.data ?? {},
+            dataByOptionId.get(option.id) ?? {},
+            pricingContext,
+          )
+          return { ...option, fulfillmentData }
+        } catch (error) {
+          // Any other refusal is the provider rejecting the data it was sent, which the caller hears.
+          if (isCannotCalculateShippingPrice(error)) return null
+          throw error
+        }
+      }),
+    )
+    return quoted.filter((option): option is QuotedShippingOptionDTO => option !== null)
+  }
+
   async updateShippingOptions(
     ids: string[],
     data: UpdateShippingOptionDTO,
     context?: Context,
   ): Promise<ShippingOptionDTO[]> {
     return this.withTransaction(context, async (ctx) => {
+      await this.assertProviderPricesUpdatedOptions(ids, data, ctx)
       return this.shippingOptionRepository.updateMany(ids, data, ctx) as Promise<ShippingOptionDTO[]>
     })
   }
 
   async createShippingOption(data: CreateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO> {
+    await this.assertProviderPricesOption(data)
     return this.shippingOptionRepository.create(data, context) as Promise<ShippingOptionDTO>
   }
 
   async updateShippingOption(id: string, data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO> {
     return this.withTransaction(context, async (ctx) => {
+      await this.assertProviderPricesUpdatedOptions([id], data, ctx)
       return this.shippingOptionRepository.update(id, data, ctx) as Promise<ShippingOptionDTO>
     })
   }
@@ -444,6 +540,82 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     return this.withTransaction(context, async (ctx) => {
       await this.shippingOptionRepository.softDelete(ids, ctx)
     })
+  }
+
+  /**
+   * A flat option costs its own amount; a calculated one what its provider answers for the context.
+   * A provider that cannot price the context drops the option (`cannotCalculateShippingPrice`).
+   * Any other error drops it too, logged, rather than failing the call: one courier being down
+   * should leave the shopper the others, not an empty checkout. (Medusa fails the whole list.)
+   */
+  private async priceOptions(
+    options: { option: ShippingOptionDTO; data: Record<string, unknown> }[],
+    pricingContext: CalculateShippingPriceContext,
+  ): Promise<PricedShippingOptionDTO[]> {
+    const priced = await Promise.all(
+      options.map(async ({ option, data }): Promise<PricedShippingOptionDTO | null> => {
+        if (option.priceType !== 'calculated') {
+          return {
+            ...option,
+            calculatedPrice: { calculatedAmount: option.amount ?? 0, isCalculatedPriceTaxInclusive: false },
+          }
+        }
+
+        const calculatedPrice = await this.fulfillmentProviderService
+          .calculatePrice(option.providerId, option.data ?? {}, data, pricingContext)
+          .catch((error) => {
+            if (!isCannotCalculateShippingPrice(error)) this.logger.error(error)
+            return null
+          })
+        return calculatedPrice ? { ...option, calculatedPrice } : null
+      }),
+    )
+
+    return priced.filter((option): option is PricedShippingOptionDTO => option !== null)
+  }
+
+  /**
+   * Medusa refuses a calculated option whose provider cannot calculate, at creation rather than at
+   * the first cart that lists it: such an option would never be offered, and nothing would say why.
+   * An unregistered provider fails here too, as `retrieveProvider`'s not-found.
+   */
+  private async assertProviderPricesOption(
+    option: Pick<CreateShippingOptionDTO, 'priceType' | 'providerId' | 'data'>,
+  ): Promise<void> {
+    if (option.priceType !== 'calculated') return
+
+    const canCalculate = await this.fulfillmentProviderService.canCalculate(option.providerId, option.data ?? {})
+    if (canCalculate) return
+
+    throw new AppError({
+      type: ErrorTypes.INVALID_DATA,
+      code: FulfillmentErrorCodes.CANNOT_CALCULATE,
+      message: i18n.t('Fulfillment provider "{providerId}" cannot calculate shipping prices'),
+      values: { providerId: option.providerId },
+    })
+  }
+
+  /**
+   * An update can't change an option's price type or provider, but it can change the data its
+   * provider's `canCalculate` reads, so a calculated option is checked again with the data it will
+   * hold.
+   */
+  private async assertProviderPricesUpdatedOptions(
+    ids: string[],
+    data: UpdateShippingOptionDTO,
+    context: Context,
+  ): Promise<void> {
+    if (data.data === undefined) return
+    const options = await this.shippingOptionRepository.find({ id: ids }, undefined, context)
+    await Promise.all(
+      options.map((option) =>
+        this.assertProviderPricesOption({
+          ...option,
+          priceType: option.priceType as ShippingOptionDTO['priceType'],
+          data: data.data,
+        }),
+      ),
+    )
   }
 
   // -- FulfillmentProvider --

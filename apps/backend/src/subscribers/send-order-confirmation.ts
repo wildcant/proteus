@@ -46,6 +46,14 @@ async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order
   // The event carries an id, never a DTO, so the confirmation is built from the order as it is now
   // rather than as it was when checkout published — which is what makes a late delivery correct.
   const order = await orderService.retrieveOrder(orderId)
+  const { email } = order
+  // Email is optional on an Order, so a shopper who ordered through a chat gets no confirmation;
+  // there is nothing to retry, so this returns rather than throws.
+  if (!email) {
+    logger.info(`[send-order-confirmation] Order "${orderId}" has no email, so no confirmation is sent`)
+    return
+  }
+
   const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
     orderService.listOrderLineItems({ orderId: order.id }),
     orderService.listOrderShippingMethods({ orderId: order.id }),
@@ -55,7 +63,7 @@ async function sendOrderConfirmation({ event, container }: SubscriberArgs<'order
 
   const notification = await notificationService.createNotification(
     buildOrderConfirmationNotification({
-      order,
+      order: { ...order, email },
       lineItems: orderService.enrichLineItems(lineItems),
       totals: orderService.computeOrderTotals({ lineItems, shippingMethods, transactions }),
       shippingAddress,

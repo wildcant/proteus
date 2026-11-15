@@ -24,16 +24,4 @@ export const getPaymentCollection = (
     },
       );
     }
-  /**
- * @summary Mark a payment collection as paid
- */
-export const markPaymentCollectionAsPaid = (
-    id: string,
- ) => {
-      return fetcher<AdminPaymentCollectionResponse>(
-      {url: `/admin/payment-collections/${id}/mark-as-paid`, method: 'POST'
-    },
-      );
-    }
   export type GetPaymentCollectionResult = NonNullable<Awaited<ReturnType<typeof getPaymentCollection>>>
-export type MarkPaymentCollectionAsPaidResult = NonNullable<Awaited<ReturnType<typeof markPaymentCollectionAsPaid>>>

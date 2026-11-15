@@ -48,7 +48,7 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
           <span className="shrink-0 text-muted-foreground text-sm">
             {formatPrice(item.unitPrice, currency, activeLocale())}
           </span>
-          <span className="shrink-0 text-muted-foreground text-sm">\u00d7{item.quantity}</span>
+          <span className="shrink-0 text-muted-foreground text-sm">×{item.quantity}</span>
           <span className="shrink-0 font-medium text-sm tabular-nums">
             {formatPrice(item.lineTotal, currency, activeLocale())}
           </span>

@@ -1,6 +1,6 @@
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
-import type { StoreOrderFulfillmentStatus, StoreOrderResponseOrder } from '#/api/generated/model'
+import type { StoreOrderDetail, StoreOrderFulfillmentStatus } from '#/api/generated/model'
 import { fulfillmentLabels } from '#/entities/order/lib/fulfillment-labels'
 
 /**
@@ -41,7 +41,7 @@ export type OrderProgress = StoppedProgress | RunningProgress
  * `archived` is deliberately not terminal here. It is a merchant's filing action on a finished
  * order, and it says nothing to the person who bought it.
  */
-export function orderProgress(order: StoreOrderResponseOrder): OrderProgress {
+export function orderProgress(order: StoreOrderDetail): OrderProgress {
   if (order.status === 'canceled') {
     return {
       kind: 'stopped',

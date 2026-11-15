@@ -7,7 +7,7 @@ export const Route = createFileRoute('/_authed/_shell/orders/$id')({
       context.queryClient.ensureQueryData(orderQueryOptions(params.id)),
       context.queryClient.ensureQueryData(fulfillmentProvidersQueryOptions()),
     ])
-    return { breadcrumb: `#${data.order.displayId}` }
+    return { breadcrumb: data.order.reference }
   },
   component: () => <Outlet />,
 })

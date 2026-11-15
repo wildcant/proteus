@@ -10,13 +10,13 @@ export type FindOrCreateCustomerInput = {
   lastName?: string | null
 }
 
-export type FindOrCreateCustomerResult = {
+export type FoundOrCreatedCustomer = {
   customer: CustomerDTO | null
   created: boolean
   previousName: { firstName: string | null; lastName: string | null } | null
 }
 
-const NOT_FOUND: FindOrCreateCustomerResult = { customer: null, created: false, previousName: null }
+const NOT_FOUND: FoundOrCreatedCustomer = { customer: null, created: false, previousName: null }
 
 /**
  * Registered customers own their identity — we must never create a duplicate guest
@@ -46,7 +46,7 @@ async function findRegisteredCustomer(
 async function findOrCreateGuest(
   customerService: ICustomerModuleService,
   input: FindOrCreateCustomerInput & { email: string },
-): Promise<FindOrCreateCustomerResult> {
+): Promise<FoundOrCreatedCustomer> {
   const [existingGuest] = await customerService.listCustomers({ email: input.email, hasAccount: false })
 
   if (existingGuest) {
@@ -82,8 +82,8 @@ async function findOrCreateGuest(
 export async function findOrCreateCustomerStep(
   ctx: WorkflowContext,
   input: FindOrCreateCustomerInput,
-): Promise<FindOrCreateCustomerResult> {
-  return ctx.step<FindOrCreateCustomerResult>(
+): Promise<FoundOrCreatedCustomer> {
+  return ctx.step<FoundOrCreatedCustomer>(
     'find-or-create-customer',
     async ({ container }) => {
       if (!input.customerId && !input.email) return NOT_FOUND

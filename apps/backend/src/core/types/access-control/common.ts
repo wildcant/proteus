@@ -11,7 +11,7 @@ type CrudAction = 'read' | 'create' | 'update' | 'delete'
  */
 type ModuleActions = {
   [Modules.PRODUCT]: CrudAction
-  [Modules.ORDER]: 'read' | 'complete' | 'cancel' | 'archive' | 'fulfill' | 'ship' | 'deliver'
+  [Modules.ORDER]: 'read' | 'complete' | 'edit' | 'cancel' | 'archive' | 'fulfill' | 'ship' | 'deliver'
   [Modules.CUSTOMER]: CrudAction
   [Modules.PAYMENT]: 'read' | 'capture' | 'refund'
   [Modules.FULFILLMENT]: CrudAction

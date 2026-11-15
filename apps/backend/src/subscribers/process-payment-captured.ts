@@ -80,11 +80,13 @@ async function processPaymentCaptured({ event, container }: SubscriberArgs<'paym
        * it would raise — turning a delivery that already worked into one that failed. A capture
        * takes the whole authorization, so `capturedAt` settles it.
        */
-      if (action === 'captured' && !authorization.payment.capturedAt) {
-        await paymentService.capturePayment({ paymentId: authorization.payment.id })
-      }
+      const payment =
+        action === 'captured' && !authorization.payment.capturedAt
+          ? await paymentService.capturePayment({ paymentId: authorization.payment.id })
+          : authorization.payment
 
-      await completeCartBehind(authorization.payment, container)
+      await completeCartBehind(payment, container)
+      await recordCapturesOnOrder(payment, container)
       return
     }
   }
@@ -139,6 +141,37 @@ async function completeCartBehind(payment: PaymentDTO, container: AppContainer):
 
     throw error
   }
+}
+
+/**
+ * Writes the Order transaction for each of the payment's captures, so the Order's Paid Total
+ * counts money a gateway took after the Order was placed (a card captured from the provider's
+ * dashboard). Checkout records the captures it saw when it made the Order; a capture after that
+ * reaches the Order only through here.
+ *
+ * Safe to run twice and alongside checkout's own record: the order module answers a transaction
+ * already recorded for the same capture row with the existing one. A payment no Order holds yet
+ * records nothing.
+ */
+async function recordCapturesOnOrder(payment: PaymentDTO, container: AppContainer): Promise<void> {
+  const captures = payment.captures ?? []
+  if (captures.length === 0) return
+
+  const link = await container
+    .resolve(ContainerRegistrationKeys.LINK)
+    .repo('orderPaymentCollection')
+    .findByPaymentCollectionId(payment.paymentCollectionId)
+  if (!link) return
+
+  await container.resolve(Modules.ORDER).addOrderTransactions(
+    captures.map((capture) => ({
+      orderId: link.orderId,
+      amount: capture.amount,
+      currencyCode: payment.currencyCode,
+      reference: 'capture',
+      referenceId: capture.id,
+    })),
+  )
 }
 
 /**

@@ -1,4 +1,4 @@
-CREATE TYPE "public"."payment_collection_status" AS ENUM('not_paid', 'awaiting', 'authorized', 'partially_authorized', 'completed');--> statement-breakpoint
+CREATE TYPE "public"."payment_collection_status" AS ENUM('not_paid', 'awaiting', 'authorized', 'partially_authorized', 'partially_captured', 'completed', 'canceled');--> statement-breakpoint
 CREATE TYPE "public"."payment_session_status" AS ENUM('pending', 'authorized', 'captured', 'requires_more', 'error', 'canceled', 'pending_authorization');--> statement-breakpoint
 CREATE TABLE "account_holder" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('acchld_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
@@ -17,6 +17,7 @@ CREATE TABLE "capture" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('capt_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"amount" numeric NOT NULL,
 	"created_by" text,
+	"idempotency_key" text,
 	"metadata" jsonb,
 	"payment_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -29,6 +30,7 @@ CREATE TABLE "payment_collection" (
 	"amount" numeric NOT NULL,
 	"authorized_amount" numeric,
 	"captured_amount" numeric,
+	"canceled_at" timestamp with time zone,
 	"completed_at" timestamp with time zone,
 	"currency_code" text DEFAULT 'usd' NOT NULL,
 	"metadata" jsonb,
@@ -94,6 +96,7 @@ CREATE TABLE "refund" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('ref_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"amount" numeric NOT NULL,
 	"created_by" text,
+	"idempotency_key" text,
 	"metadata" jsonb,
 	"note" text,
 	"payment_id" text NOT NULL,
@@ -112,9 +115,11 @@ ALTER TABLE "refund" ADD CONSTRAINT "refund_refund_reason_id_refund_reason_id_fk
 CREATE UNIQUE INDEX "idx_account_holder_provider_external" ON "account_holder" USING btree ("provider_id","external_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_account_holder_provider_customer" ON "account_holder" USING btree ("provider_id","customer_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_capture_payment_id" ON "capture" USING btree ("payment_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_capture_idempotency_key" ON "capture" USING btree ("idempotency_key") WHERE idempotency_key IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_collection_status" ON "payment_collection" USING btree ("status") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_session_collection_id" ON "payment_session" USING btree ("payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_provider_id" ON "payment" USING btree ("provider_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_payment_collection_id" ON "payment" USING btree ("payment_collection_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_payment_session_id" ON "payment" USING btree ("payment_session_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_refund_payment_id" ON "refund" USING btree ("payment_id") WHERE deleted_at IS NULL;
+CREATE INDEX "idx_refund_payment_id" ON "refund" USING btree ("payment_id") WHERE deleted_at IS NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_refund_idempotency_key" ON "refund" USING btree ("idempotency_key") WHERE idempotency_key IS NOT NULL AND deleted_at IS NULL;

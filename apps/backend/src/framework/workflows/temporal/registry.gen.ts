@@ -6,21 +6,34 @@
 
 import type { WorkflowDefinition } from '../../../core/workflows/types.js'
 import { requestPasswordResetWorkflow } from '../../../workflows/auth/request-password-reset.js'
+import { addShippingMethodToCartWorkflow } from '../../../workflows/cart/add-shipping-method-to-cart.js'
 import { addToCartWorkflow } from '../../../workflows/cart/add-to-cart.js'
 import { completeCartWorkflow } from '../../../workflows/cart/complete-cart.js'
 import { confirmInventoryWorkflow } from '../../../workflows/cart/confirm-inventory-workflow.js'
+import { deleteLineItemWorkflow } from '../../../workflows/cart/delete-line-item.js'
 import { transferCartCustomerWorkflow } from '../../../workflows/cart/transfer-cart-customer.js'
 import { updateCartWorkflow } from '../../../workflows/cart/update-cart.js'
 import { updateLineItemWorkflow } from '../../../workflows/cart/update-line-item.js'
 import { completeCustomerAuthWorkflow } from '../../../workflows/customer/complete-customer-auth.js'
 import { createCustomerAccountWorkflow } from '../../../workflows/customer/create-customer-account.js'
+import { addDraftOrderItemsWorkflow } from '../../../workflows/draft-order/add-draft-order-items.js'
+import { convertDraftOrderWorkflow } from '../../../workflows/draft-order/convert-draft-order.js'
+import { createDraftOrderFromCartWorkflow } from '../../../workflows/draft-order/create-draft-order-from-cart.js'
+import { deleteDraftOrderWorkflow } from '../../../workflows/draft-order/delete-draft-order.js'
+import { removeDraftOrderItemWorkflow } from '../../../workflows/draft-order/remove-draft-order-item.js'
+import { setDraftOrderShippingMethodWorkflow } from '../../../workflows/draft-order/set-draft-order-shipping-method.js'
+import { updateDraftOrderItemWorkflow } from '../../../workflows/draft-order/update-draft-order-item.js'
+import { updateDraftOrderWorkflow } from '../../../workflows/draft-order/update-draft-order.js'
 import { deleteFilesWorkflow } from '../../../workflows/file/delete-files.js'
 import { uploadFilesWorkflow } from '../../../workflows/file/upload-files.js'
 import { cancelOrderWorkflow } from '../../../workflows/order/cancel-order.js'
 import { createOrderFulfillmentWorkflow } from '../../../workflows/order/create-order-fulfillment.js'
 import { createOrderShipmentWorkflow } from '../../../workflows/order/create-order-shipment.js'
 import { markOrderDeliveredWorkflow } from '../../../workflows/order/mark-order-delivered.js'
+import { capturePaymentWorkflow } from '../../../workflows/payment/capture-payment.js'
 import { createPaymentCollectionForCartWorkflow } from '../../../workflows/payment/create-payment-collection-for-cart.js'
+import { recordOrderPaymentWorkflow } from '../../../workflows/payment/record-order-payment.js'
+import { refundPaymentWorkflow } from '../../../workflows/payment/refund-payment.js'
 import { repricePaymentSessionWorkflow } from '../../../workflows/payment/reprice-payment-session.js'
 import { applyCatalogStructureWorkflow } from '../../../workflows/product/apply-catalog-structure.js'
 import { batchImageVariantsWorkflow } from '../../../workflows/product/batch-image-variants.js'
@@ -42,21 +55,34 @@ import { resendInviteWorkflow } from '../../../workflows/user/resend-invite.js'
 
 export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
   requestPasswordResetWorkflow,
+  addShippingMethodToCartWorkflow,
   addToCartWorkflow,
   completeCartWorkflow,
   confirmInventoryWorkflow,
+  deleteLineItemWorkflow,
   transferCartCustomerWorkflow,
   updateCartWorkflow,
   updateLineItemWorkflow,
   completeCustomerAuthWorkflow,
   createCustomerAccountWorkflow,
+  addDraftOrderItemsWorkflow,
+  convertDraftOrderWorkflow,
+  createDraftOrderFromCartWorkflow,
+  deleteDraftOrderWorkflow,
+  removeDraftOrderItemWorkflow,
+  setDraftOrderShippingMethodWorkflow,
+  updateDraftOrderItemWorkflow,
+  updateDraftOrderWorkflow,
   deleteFilesWorkflow,
   uploadFilesWorkflow,
   cancelOrderWorkflow,
   createOrderFulfillmentWorkflow,
   createOrderShipmentWorkflow,
   markOrderDeliveredWorkflow,
+  capturePaymentWorkflow,
   createPaymentCollectionForCartWorkflow,
+  recordOrderPaymentWorkflow,
+  refundPaymentWorkflow,
   repricePaymentSessionWorkflow,
   applyCatalogStructureWorkflow,
   batchImageVariantsWorkflow,

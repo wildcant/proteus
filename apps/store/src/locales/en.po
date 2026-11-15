@@ -44,23 +44,23 @@ msgstr "{count} card networks accepted"
 msgid "{label} will be removed from your address book. This cannot be undone."
 msgstr "{label} will be removed from your address book. This cannot be undone."
 
+#: src/features/orders/components/payment-details/payment-details.tsx:93
+msgid "{outstanding} due"
+msgstr "{outstanding} due"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:92
+msgid "{paid} paid"
+msgstr "{paid} paid"
+
 #: src/features/products/components/variant-stock/variant-stock.tsx:36
 msgid "{remaining, plural, one {Only # left} other {Only # left}}"
 msgstr "{remaining, plural, one {Only # left} other {Only # left}}"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:67
-msgid "{total} due"
-msgstr "{total} due"
-
-#: src/features/orders/components/payment-details/payment-details.tsx:57
-msgid "{total} on {paidAt}"
-msgstr "{total} on {paidAt}"
-
-#: src/features/orders/components/payment-details/payment-details.tsx:64
+#: src/features/orders/components/payment-details/payment-details.tsx:87
 msgid "{total} reserved by your bank, charged when your order ships"
 msgstr "{total} reserved by your bank, charged when your order ships"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:60
+#: src/features/orders/components/payment-details/payment-details.tsx:82
 msgid "{total} was not charged"
 msgstr "{total} was not charged"
 
@@ -154,7 +154,7 @@ msgstr "Are you sure you want to leave? Your unsaved changes will be lost."
 msgid "Auto"
 msgstr "Auto"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:67
+#: src/features/orders/components/payment-details/payment-details.tsx:54
 msgid "Awaiting payment"
 msgstr "Awaiting payment"
 
@@ -312,7 +312,7 @@ msgstr "Company"
 msgid "Completing your order…"
 msgstr "Completing your order…"
 
-#: src/features/orders/components/delivery-details/delivery-details.tsx:73
+#: src/features/orders/components/delivery-details/delivery-details.tsx:77
 msgid "Confirmation sent to"
 msgstr "Confirmation sent to"
 
@@ -373,7 +373,7 @@ msgid "Delivered"
 msgstr "Delivered"
 
 #: src/features/checkout/components/delivery/delivery-section.tsx:48
-#: src/features/orders/components/delivery-details/delivery-details.tsx:39
+#: src/features/orders/components/delivery-details/delivery-details.tsx:42
 msgid "Delivery"
 msgstr "Delivery"
 
@@ -549,6 +549,10 @@ msgstr "Hold on while we confirm your email."
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "If an account exists with that email, we've sent a link to reset your password."
 
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:57
+msgid "If you gave us an email address, we have sent the order confirmation details to it."
+msgstr "If you gave us an email address, we have sent the order confirmation details to it."
+
 #: src/components/ui/quantity-stepper/quantity-stepper.tsx:82
 msgid "Increase quantity for {label}"
 msgstr "Increase quantity for {label}"
@@ -647,7 +651,7 @@ msgstr "Newest"
 msgid "Next"
 msgstr "Next"
 
-#: src/features/orders/components/delivery-details/delivery-details.tsx:51
+#: src/features/orders/components/delivery-details/delivery-details.tsx:54
 msgid "No address provided"
 msgstr "No address provided"
 
@@ -664,7 +668,7 @@ msgstr "No cart exists"
 msgid "No payment providers available."
 msgstr "No payment providers available."
 
-#: src/features/orders/components/payment-details/payment-details.tsx:60
+#: src/features/orders/components/payment-details/payment-details.tsx:82
 msgid "No payment taken"
 msgstr "No payment taken"
 
@@ -704,10 +708,10 @@ msgstr "Open menu"
 msgid "Open this link in the same browser you signed up with."
 msgstr "Open this link in the same browser you signed up with."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:59
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:66
 #: src/features/orders/components/order-content/order-content.tsx:56
-msgid "Order #{displayId}"
-msgstr "Order #{displayId}"
+msgid "Order {reference}"
+msgstr "Order {reference}"
 
 #: src/features/orders/components/order-progress-track/order-progress-track.tsx:40
 msgid "Order progress"
@@ -726,6 +730,14 @@ msgstr "Orders"
 #: src/components/store/pagination/pagination.tsx:35
 msgid "Pagination"
 msgstr "Pagination"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:46
+msgid "Partly paid"
+msgstr "Partly paid"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:50
+msgid "Partly refunded"
+msgstr "Partly refunded"
 
 #: src/features/account/components/password-panel/password-panel.tsx:24
 #: src/features/auth/components/login-form/login-form.tsx:47
@@ -747,7 +759,7 @@ msgstr "Pay with {0}"
 msgid "Payment"
 msgstr "Payment"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:63
+#: src/features/orders/components/payment-details/payment-details.tsx:44
 msgid "Payment authorized"
 msgstr "Payment authorized"
 
@@ -763,9 +775,13 @@ msgstr "Payment methods"
 msgid "Payment Methods"
 msgstr "Payment Methods"
 
-#: src/features/orders/components/payment-details/payment-details.tsx:57
+#: src/features/orders/components/payment-details/payment-details.tsx:48
 msgid "Payment received"
 msgstr "Payment received"
+
+#: src/features/orders/components/payment-details/payment-details.tsx:52
+msgid "Payment refunded"
+msgstr "Payment refunded"
 
 #: src/features/address/components/address-form/address-form.tsx:146
 #: src/features/checkout/components/shipping-address-form/shipping-address-form.tsx:139
@@ -776,7 +792,7 @@ msgstr "Phone"
 msgid "Place order"
 msgstr "Place order"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:62
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:69
 #: src/features/orders/components/order-content/order-content.tsx:59
 msgid "Placed {placedAt}"
 msgstr "Placed {placedAt}"
@@ -1060,7 +1076,7 @@ msgstr "Subtotal"
 msgid "Summary"
 msgstr "Summary"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:41
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:42
 msgid "Thank you!"
 msgstr "Thank you!"
 
@@ -1239,7 +1255,7 @@ msgstr "We couldn't show this product"
 msgid "We email you a link rather than asking for your current password."
 msgstr "We email you a link rather than asking for your current password."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:49
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:53
 msgid "We have sent the order confirmation details to <0>{email}</0>."
 msgstr "We have sent the order confirmation details to <0>{email}</0>."
 
@@ -1299,7 +1315,7 @@ msgstr "Your default card is the one your next checkout starts on. Cards are sav
 msgid "Your email is confirmed. Sign in to pick up where you left off."
 msgstr "Your email is confirmed. Sign in to pick up where you left off."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:45
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:46
 msgid "Your order was placed successfully."
 msgstr "Your order was placed successfully."
 

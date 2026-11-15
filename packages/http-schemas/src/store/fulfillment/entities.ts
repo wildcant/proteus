@@ -4,7 +4,11 @@ export const StoreShippingOption = z
   .object({
     id: z.string(),
     name: z.string(),
-    amount: z.number().nullable(),
+    /** `flat` costs the option's own amount; `calculated` is priced by its provider for the cart. */
+    priceType: z.enum(['flat', 'calculated']),
+    /** What the option costs this cart, in the cart's currency: the flat amount, or the calculated price. */
+    amount: z.number(),
+    isTaxInclusive: z.boolean(),
     serviceZoneId: z.string(),
     shippingProfileId: z.string(),
     shippingOptionTypeId: z.string().nullable(),

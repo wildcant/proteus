@@ -15,26 +15,6 @@ Fixes and improvements
 - display_id is a serial (order/models/order.ts:19), so every rolled-back order burns an order number. Gaps are
   visible to shoppers once a race discards five in a row. Only fixable by changing how the number is assigned.
 
-- STALE SHIPPING METHOD SURVIVES AN ADDRESS CHANGE WITHIN ONE MARKET: updateCartWorkflow now has
-  `refresh-shipping-methods` and `refresh-payment-collection` steps, but both sit behind
-  `if (!regionChange) return updatedCart` (update-cart.ts:313) — they fire only on a market switch. A shipping
-  address changed inside one market leaves the previously chosen method on the cart, quoted against the address
-  that is gone.
-  - Two ways in, both still open. "Use a different address" at the delivery step, and signing out mid-checkout:
-    useCheckoutForm.signOut resets the form so the shopper must re-enter an address, but the cart keeps the
-    shipping method row. The address seam is the real one; sign-out is a route into it.
-  - WRONG RATE CAN SHIP. complete-cart.ts `validate-shipping` re-fetches each method's option and asserts
-    option.isEnabled, nothing more. A method quoted for the previous address — different country, different
-    zone — passes. `refresh-shipping-methods` already has the shape of the missing check:
-    listShippingOptionsForContext({ countryCode }) and drop what no longer resolves.
-  - Fix is to widen the seam, not add one: run the refresh steps when the shipping address country changes, not
-    only when the region does. Covers both routes in, no new endpoints. This is what Medusa does, via
-    refreshCartShippingMethodsWorkflow. Leaves a window at sign-out where the cart is untouched until the guest
-    types an address.
-  - ALREADY CLOSED, do not re-solve: the wrong-amount hole. `validate-cart-payments` now picks the session whose
-    amount and currencyCode equal the collection's and refuses otherwise, and handles a collection carrying
-    several sessions explicitly.
-
 - CART OWNERSHIP IS UNGUARDED: any request holding a cart id can read and mutate that cart, including one
   belonging to a registered customer — so the cart carries their email, phone and full postal address to whoever
   has the id. `validateCartOwnership` used to reject this; it was deleted deliberately, because with it in place
@@ -95,6 +75,13 @@ Fixes and improvements
     joins break module isolation, ADR 0001). This will recur for any property that moves from stored to computed.
 
 Future features TODOs
+- ARCHIVE STALE DRAFT ORDERS: a Draft Order reserves nothing and holds no payment collection, so an abandoned
+  chat costs no stock, but drafts pile up in the admin's drafts list. A job (ADR 0029) that archives drafts older
+  than a set age. Deferred by ADR 0039.
+- ATTEMPT LIMITING ON THE ORDER LOOKUP: the store lookup by display id and the last 4 phone digits answers the
+  same 404 for every failure, but nothing limits how many digit guesses one display id takes (10,000 at most).
+  Limit attempts per display id and per client before a store with real traffic relies on it. Accepted for the
+  MVP in ADR 0039.
 - ON SALE FROM COMPARE-AT PRICE: a product is on sale when a variant's compare-at price is above its price. Today
   nothing knows that: the CSV import ignores `Compare-at price` (still under "Ignored columns").
   - The import reads and stores compare-at price.

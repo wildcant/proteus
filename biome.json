@@ -182,6 +182,7 @@
         "apps/backend/{src/extensions,tests/extension-fixture}/*/api/**/definitions.ts",
         "apps/backend/{src/extensions,tests/extension-fixture}/*/modules/*/index.ts",
         "apps/backend/{src/extensions,tests/extension-fixture}/*/seeds/*.ts",
+        "apps/backend/{src/extensions,tests/extension-fixture}/*/providers/fulfillment/*.ts",
         "apps/store/src/server.ts",
         "packages/testing/**"
       ],

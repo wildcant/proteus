@@ -2,6 +2,7 @@ import type { RouteDefinition } from '@framework/http/types.js'
 import { Tags } from '@framework/http/types.js'
 import * as completeRoutes from './[id]/complete/route.js'
 import * as customerRoutes from './[id]/customer/route.js'
+import * as draftOrderRoutes from './[id]/draft-order/route.js'
 import * as lineItemByIdRoutes from './[id]/line-items/[lineId]/route.js'
 import * as lineItemRoutes from './[id]/line-items/route.js'
 import * as paymentProviderRoutes from './[id]/payment-providers/route.js'
@@ -131,6 +132,18 @@ export default [
     summary: 'Complete a cart (authorize payment and mark as completed)',
     tags: [Tags.CARTS],
     output: completeRoutes.PostOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/store/carts/:id/draft-order',
+    handler: draftOrderRoutes.POST,
+    throws: draftOrderRoutes.PostThrows,
+    auth: 'optional',
+    input: draftOrderRoutes.PostInput,
+    operationId: 'createStoreCartDraftOrder',
+    summary: 'Send a cart to the shop as a draft order (closes the cart)',
+    tags: [Tags.CARTS],
+    output: draftOrderRoutes.PostOutput,
   },
   {
     method: 'POST',

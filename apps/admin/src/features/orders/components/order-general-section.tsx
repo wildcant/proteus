@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { Card, CardAction, CardHeader, CardTitle, StatusBadge, usePrompt } from '@proteus/ui'
 import { formatDatetime } from '@proteus/utils'
+import { useNavigate } from '@tanstack/react-router'
+import BigNumber from 'bignumber.js'
 import { ArchiveIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
@@ -10,6 +12,8 @@ import {
   fulfillmentStatusLabels,
   orderStatusColors,
   orderStatusLabels,
+  paymentStatusColors,
+  paymentStatusLabels,
 } from '#/features/orders/utils/order-status'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 import { dateLocale } from '#/lib/i18n/locale'
@@ -21,6 +25,7 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
   const prompt = usePrompt()
   const { t, i18n } = useLingui()
   const { cancel: cancelText } = useUiCopy()
+  const navigate = useNavigate()
 
   const handleComplete = async () => {
     const confirmed = await prompt({
@@ -35,6 +40,11 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
   }
 
   const handleCancel = async () => {
+    // Money received turns the cancel into a refund decision, which needs a form rather than a yes.
+    if (new BigNumber(order.totals.paidTotal).isGreaterThan(0)) {
+      await navigate({ to: '/orders/$id/cancel', params: { id: order.id } })
+      return
+    }
     const confirmed = await prompt({
       title: t`Cancel order`,
       description: t`Are you sure you want to cancel this order? This will release all inventory reservations.`,
@@ -43,7 +53,7 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
       variant: 'danger',
     })
     if (confirmed) {
-      await cancel()
+      await cancel({})
     }
   }
 
@@ -71,13 +81,16 @@ export function OrderGeneralSection({ order }: { order: AdminOrderResponseOrder 
     <Card className="gap-0 divide-y py-0">
       <CardHeader>
         <div>
-          <CardTitle>#{order.displayId}</CardTitle>
+          <CardTitle>{order.reference}</CardTitle>
           <p className="text-muted-foreground text-sm">{formatDatetime(order.createdAt, dateLocale())}</p>
         </div>
         <CardAction className="flex items-center gap-x-3">
           <StatusBadge color={orderStatusColors[order.status]}>{i18n._(orderStatusLabels[order.status])}</StatusBadge>
           <StatusBadge color={fulfillmentStatusColors[order.fulfillmentStatus]}>
             {i18n._(fulfillmentStatusLabels[order.fulfillmentStatus])}
+          </StatusBadge>
+          <StatusBadge color={paymentStatusColors[order.paymentStatus]}>
+            {i18n._(paymentStatusLabels[order.paymentStatus])}
           </StatusBadge>
           {actions.length > 0 && <ActionMenu groups={[{ actions }]} />}
         </CardAction>

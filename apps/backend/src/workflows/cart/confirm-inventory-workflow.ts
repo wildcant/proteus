@@ -3,12 +3,12 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
-import { type ConfirmInventoryResult, prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
+import { type CartInventoryChecks, prepareConfirmInventoryInput } from './utils/prepare-confirm-inventory-input.js'
 import { missingInventoryItemMessage } from './utils/variant-inventory.js'
 
 type ConfirmInventoryInput = { cartId: string }
 
-export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, ConfirmInventoryResult>(
+export const confirmInventoryWorkflow = createWorkflow<ConfirmInventoryInput, CartInventoryChecks>(
   { name: 'confirm-inventory', throws: [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA] },
   async (ctx, input) => {
     const confirmInput = await ctx.step('prepare-confirm-inventory-input', async ({ container }) => {

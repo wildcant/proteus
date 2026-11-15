@@ -41,6 +41,7 @@ Decisions made during the grilling session. Each major decision has a dedicated 
 | [0036](adr/0036-the-structure-file-has-english-keys.md) | The structure file has English keys | Keys are English (`fields`, `categories`, `rule`), values stay in the shop's language; no Spanish aliases |
 | [0037](adr/0037-option-roles-buckets-and-collection-badges.md) | Option roles, filter buckets and collection badges | An option's `listingRole` (`grouping` / `availability`) drives the list card; buckets assigned at write time (a value in every bucket its words name) group filter values; Collections carry badges |
 | [0038](adr/0038-extensions-are-a-forks-backend-code-beside-proteus.md) | Extensions are a fork's backend code beside Proteus | `src/extensions/<ext>/` holds a store's own modules, routes, workflows and more, wired in through a generated registry; prefixed names, add never replace; hooks are the only way into core behaviour |
+| [0039](adr/0039-draft-orders-and-manual-payments.md) | Draft orders and manual payments | A draft is an Order with the `draft` status, created from a Cart through an opt-in store route that closes the Cart; one payment collection per Order, paid by partial captures, each writing an Order Transaction; refund amount chosen at cancel; public order link and number-plus-phone-digits lookup; extensions may bring fulfillment providers |
 
 ---
 

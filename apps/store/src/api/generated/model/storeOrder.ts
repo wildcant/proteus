@@ -11,9 +11,11 @@ import type { StoreOrderStatus } from './storeOrderStatus.ts';
 export interface StoreOrder {
   id: string;
   displayId: number;
+  reference: string;
   status: StoreOrderStatus;
   fulfillmentStatus: StoreOrderFulfillmentStatus;
-  email: string;
+  /** @nullable */
+  email: string | null;
   currencyCode: string;
   createdAt: string;
   updatedAt: string;

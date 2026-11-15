@@ -35,13 +35,28 @@ import type {
   UpdateShippingOptionTypeDTO,
   UpdateShippingProfileDTO,
 } from './mutations.js'
+import type { CalculatedShippingPrice, CalculateShippingPriceContext } from './provider.js'
 
+/** The part of an address geo-zone matching reads. */
 export type ShippingAddressContext = {
   countryCode: string
-  province?: string
-  city?: string
-  postalCode?: string
+  province?: string | null | undefined
+  city?: string | null | undefined
+  postalCode?: string | null | undefined
 }
+
+/**
+ * A shipping option that serves the context's address, with the price it costs there, Medusa's
+ * `calculated_price`: the option's own amount when it is flat, its provider's answer when it is
+ * calculated.
+ */
+export type PricedShippingOptionDTO = ShippingOptionDTO & { calculatedPrice: CalculatedShippingPrice }
+
+/** A priced option with what its provider validated for a shipping method: the method's `data`. */
+export type QuotedShippingOptionDTO = PricedShippingOptionDTO & { fulfillmentData: Record<string, unknown> }
+
+/** One option to price, with the data a shipping method carries for it (the shopper's, or what it stored). */
+export type ShippingOptionToPrice = { id: string; data?: Record<string, unknown> | null | undefined }
 
 export type IFulfillmentModuleService = {
   // FulfillmentSet
@@ -135,6 +150,26 @@ export type IFulfillmentModuleService = {
     context?: Context,
   ): Promise<ShippingOptionDTO[]>
   listShippingOptionsForContext(address: ShippingAddressContext, context?: Context): Promise<ShippingOptionDTO[]>
+  /**
+   * Every enabled option serving the context's address, priced for it. A calculated option its
+   * provider cannot price there is left out, as one outside the address's zones is.
+   */
+  listPricedShippingOptionsForContext(
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<PricedShippingOptionDTO[]>
+  /**
+   * The named options as a shipping method for each would store them, for a plain context (an
+   * address, items and a currency — no cart required): priced, and with the provider's
+   * `validateFulfillmentData` answer for the data given. An option that is disabled, does not serve
+   * the address, or that its provider cannot price or validate there is missing from the answer:
+   * that absence is how a caller learns a shipping method no longer applies.
+   */
+  quoteShippingOptionsForContext(
+    options: ShippingOptionToPrice[],
+    pricingContext: CalculateShippingPriceContext,
+    context?: Context,
+  ): Promise<QuotedShippingOptionDTO[]>
   updateShippingOptions(ids: string[], data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO[]>
   createShippingOption(data: CreateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO>
   updateShippingOption(id: string, data: UpdateShippingOptionDTO, context?: Context): Promise<ShippingOptionDTO>

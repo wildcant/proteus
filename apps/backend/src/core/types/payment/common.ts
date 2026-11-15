@@ -5,7 +5,20 @@ import type { BaseFilterable } from '../common.js'
 // Status enums
 // ---------------------------------------------------------------------------
 
-export type PaymentCollectionStatus = 'not_paid' | 'awaiting' | 'authorized' | 'partially_authorized' | 'completed'
+/**
+ * Derived from the collection's sessions, payments, captures and refunds on every write that moves
+ * them (see `maybeUpdatePaymentCollection_`). `partially_captured` is a deposit taken against a
+ * larger authorization; `canceled` is a collection whose every payment was voided before any money
+ * was taken, or one canceled with its Order before any money was taken.
+ */
+export type PaymentCollectionStatus =
+  | 'not_paid'
+  | 'awaiting'
+  | 'authorized'
+  | 'partially_authorized'
+  | 'partially_captured'
+  | 'completed'
+  | 'canceled'
 
 export type PaymentSessionStatus =
   | 'pending'
@@ -47,6 +60,8 @@ export type PaymentCollectionDTO = {
   capturedAmount: BigNumber | null
   refundedAmount: BigNumber | null
   completedAt: Date | null
+  /** Set by `cancelPaymentCollection`: no payment can be recorded on, or captured against, it. */
+  canceledAt: Date | null
   status: PaymentCollectionStatus
   metadata: Record<string, unknown> | null
   createdAt: Date
@@ -103,7 +118,7 @@ export type PaymentDTO = {
  * The payment hangs off the `authorized` member alone, so there is no branch in which a caller
  * can read one that does not exist.
  */
-export type AuthorizePaymentSessionResult =
+export type PaymentSessionAuthorization =
   | { outcome: 'authorized'; payment: PaymentDTO }
   /** Confirmed at the provider and still settling. No payment yet; the webhook brings one. */
   | { outcome: 'pending_authorization' }
@@ -115,6 +130,7 @@ type CaptureDTO = {
   paymentId: string
   amount: BigNumber
   createdBy: string | null
+  idempotencyKey: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
 }
@@ -126,6 +142,7 @@ type RefundDTO = {
   amount: BigNumber
   note: string | null
   createdBy: string | null
+  idempotencyKey: string | null
   metadata: Record<string, unknown> | null
   createdAt: Date
 }

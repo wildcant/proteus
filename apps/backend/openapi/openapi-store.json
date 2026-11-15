@@ -869,11 +869,18 @@
           "name": {
             "type": "string"
           },
-          "amount": {
-            "type": [
-              "number",
-              "null"
+          "priceType": {
+            "type": "string",
+            "enum": [
+              "flat",
+              "calculated"
             ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "isTaxInclusive": {
+            "type": "boolean"
           },
           "serviceZoneId": {
             "type": "string"
@@ -901,7 +908,9 @@
         "required": [
           "id",
           "name",
+          "priceType",
           "amount",
+          "isTaxInclusive",
           "serviceZoneId",
           "shippingProfileId",
           "shippingOptionTypeId",
@@ -971,6 +980,21 @@
         },
         "required": [
           "orderId"
+        ]
+      },
+      "StoreCreateDraftOrderResponse": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId",
+          "reference"
         ]
       },
       "StoreCartResponse": {
@@ -1773,9 +1797,13 @@
           "displayId": {
             "type": "number"
           },
+          "reference": {
+            "type": "string"
+          },
           "status": {
             "type": "string",
             "enum": [
+              "draft",
               "pending",
               "completed",
               "canceled",
@@ -1792,7 +1820,10 @@
             ]
           },
           "email": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "currencyCode": {
             "type": "string"
@@ -1809,6 +1840,7 @@
         "required": [
           "id",
           "displayId",
+          "reference",
           "status",
           "fulfillmentStatus",
           "email",
@@ -1821,53 +1853,119 @@
         "type": "object",
         "properties": {
           "order": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/StoreOrder"
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "lineItems": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/StoreOrderLineItem"
-                    }
-                  },
-                  "shippingAddress": {
-                    "$ref": "#/components/schemas/StoreOrderAddress"
-                  },
-                  "shippingMethods": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/StoreOrderShippingMethod"
-                    }
-                  },
-                  "totals": {
-                    "$ref": "#/components/schemas/StoreOrderTotals"
-                  },
-                  "paymentStatus": {
-                    "type": "string",
-                    "enum": [
-                      "awaiting",
-                      "authorized",
-                      "captured"
-                    ]
-                  }
-                },
-                "required": [
-                  "lineItems",
-                  "shippingAddress",
-                  "shippingMethods",
-                  "totals",
-                  "paymentStatus"
-                ]
-              }
-            ]
+            "$ref": "#/components/schemas/StoreOrderDetail"
           }
         },
         "required": [
           "order"
+        ]
+      },
+      "StoreOrderDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayId": {
+            "type": "number"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending",
+              "completed",
+              "canceled",
+              "archived"
+            ]
+          },
+          "paymentStatus": {
+            "$ref": "#/components/schemas/OrderPaymentStatus"
+          },
+          "fulfillmentStatus": {
+            "type": "string",
+            "enum": [
+              "unfulfilled",
+              "fulfilled",
+              "shipped",
+              "delivered"
+            ]
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "canceledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreOrderLineItem"
+            }
+          },
+          "shippingAddress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreOrderLocality"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shippingMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreOrderShippingMethod"
+            }
+          },
+          "totals": {
+            "$ref": "#/components/schemas/StoreOrderTotals"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/StoreOrderOwnerDetails"
+          }
+        },
+        "required": [
+          "id",
+          "displayId",
+          "reference",
+          "status",
+          "paymentStatus",
+          "fulfillmentStatus",
+          "currencyCode",
+          "createdAt",
+          "canceledAt",
+          "lineItems",
+          "shippingAddress",
+          "shippingMethods",
+          "totals"
+        ]
+      },
+      "OrderPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "not_paid",
+          "awaiting",
+          "authorized",
+          "partially_authorized",
+          "partially_captured",
+          "captured",
+          "partially_refunded",
+          "refunded",
+          "canceled",
+          "requires_action"
         ]
       },
       "StoreOrderLineItem": {
@@ -1890,6 +1988,12 @@
               "string",
               "null"
             ]
+          },
+          "variantOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreOrderLineItemOption"
+            }
           },
           "thumbnail": {
             "type": [
@@ -1914,10 +2018,121 @@
           "title",
           "variantTitle",
           "variantOptionValues",
+          "variantOptions",
           "thumbnail",
           "quantity",
           "unitPrice",
           "lineTotal"
+        ]
+      },
+      "StoreOrderLineItemOption": {
+        "type": "object",
+        "properties": {
+          "optionTitle": {
+            "type": "string"
+          },
+          "renderAs": {
+            "type": "string",
+            "enum": [
+              "text",
+              "swatch"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionTitle",
+          "renderAs",
+          "value"
+        ]
+      },
+      "StoreOrderLocality": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "city",
+          "province"
+        ]
+      },
+      "StoreOrderShippingMethod": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": [
+          "name",
+          "amount"
+        ]
+      },
+      "StoreOrderTotals": {
+        "type": "object",
+        "properties": {
+          "itemsTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "shippingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "orderTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "paidTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          },
+          "outstandingTotal": {
+            "type": "string",
+            "description": "Numeric string (arbitrary precision)"
+          }
+        },
+        "required": [
+          "itemsTotal",
+          "shippingTotal",
+          "orderTotal",
+          "paidTotal",
+          "outstandingTotal"
+        ]
+      },
+      "StoreOrderOwnerDetails": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/StoreOrderAddress"
+          }
+        },
+        "required": [
+          "email",
+          "shippingAddress"
         ]
       },
       "StoreOrderAddress": {
@@ -2000,42 +2215,15 @@
           "phone"
         ]
       },
-      "StoreOrderShippingMethod": {
+      "StoreOrderLookupResponse": {
         "type": "object",
         "properties": {
-          "name": {
+          "id": {
             "type": "string"
-          },
-          "amount": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
           }
         },
         "required": [
-          "name",
-          "amount"
-        ]
-      },
-      "StoreOrderTotals": {
-        "type": "object",
-        "properties": {
-          "itemsTotal": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "shippingTotal": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          },
-          "orderTotal": {
-            "type": "string",
-            "description": "Numeric string (arbitrary precision)"
-          }
-        },
-        "required": [
-          "itemsTotal",
-          "shippingTotal",
-          "orderTotal"
+          "id"
         ]
       },
       "StoreCreatePaymentCollectionResponse": {
@@ -2097,7 +2285,9 @@
               "awaiting",
               "authorized",
               "partially_authorized",
-              "completed"
+              "partially_captured",
+              "completed",
+              "canceled"
             ]
           },
           "metadata": {
@@ -4062,6 +4252,55 @@
         }
       }
     },
+    "/store/carts/{id}/draft-order": {
+      "post": {
+        "operationId": "createStoreCartDraftOrder",
+        "summary": "Send a cart to the shop as a draft order (closes the cart)",
+        "tags": [
+          "Carts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCreateDraftOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
     "/store/carts/{id}/customer": {
       "post": {
         "operationId": "transferStoreCartCustomer",
@@ -4551,7 +4790,7 @@
     "/store/orders/{id}": {
       "get": {
         "operationId": "getStoreOrder",
-        "summary": "Retrieve a customer order",
+        "summary": "Retrieve an order by its id",
         "tags": [
           "Orders"
         ],
@@ -4587,6 +4826,57 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/store/orders/lookup": {
+      "post": {
+        "operationId": "lookupStoreOrder",
+        "summary": "Find an order by its number and phone digits",
+        "tags": [
+          "Orders"
+        ],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayId": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "phoneLastDigits": {
+                    "type": "string",
+                    "maxLength": 32
+                  }
+                },
+                "required": [
+                  "displayId",
+                  "phoneLastDigits"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrderLookupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
           },
           "404": {
             "description": "Not found"

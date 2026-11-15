@@ -18,6 +18,7 @@ export const testExtensions: ExtensionRegistry = {
   },
   hookHandlers: [...generatedRegistry.hookHandlers, ...fixtureRegistry.hookHandlers],
   catalogs: [...generatedRegistry.catalogs, ...fixtureRegistry.catalogs],
+  fulfillmentProviders: [...generatedRegistry.fulfillmentProviders, ...fixtureRegistry.fulfillmentProviders],
 }
 
 /** Core's catalogs with the test extensions' merged after them, what a test app translates with. */
