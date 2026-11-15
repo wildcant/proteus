@@ -44,7 +44,7 @@ export const MARKETS: [Market, ...Market[]] = [
 export const DEPOSIT_PERCENTAGE: number | undefined = undefined
 
 /**
- * What an Order's reference starts with, separator included (`'PDJ-'` reads «PDJ-1042»). Unset, the
+ * What an Order's reference starts with, separator included (`'ORD-'` reads «ORD-1042»). Unset, the
  * reference is the bare display id.
  */
 export const ORDER_REFERENCE_PREFIX: string | undefined = undefined
