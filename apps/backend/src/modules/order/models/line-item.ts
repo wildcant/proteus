@@ -1,8 +1,9 @@
 import { sql } from 'drizzle-orm'
-import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, integer, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveIndex } from '../../../core/db/indexes.js'
+import type { OrderLineItemOptionDTO } from '../../../core/types/order/common.js'
 import { orderTable } from './order.js'
 
 export const orderLineItemTable = pgTable(
@@ -29,6 +30,8 @@ export const orderLineItemTable = pgTable(
     variantBarcode: text(),
     variantTitle: text(),
     variantOptionValues: text(),
+    /** The variant's options beside their titles, in the product's option order, copied from the Cart line. */
+    variantOptions: jsonb().$type<OrderLineItemOptionDTO[]>().default(sql`'[]'`).notNull(),
     requiresShipping: boolean().default(true).notNull(),
     ...timestamps,
   },

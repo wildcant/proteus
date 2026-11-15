@@ -147,6 +147,8 @@ import {
 import { linkRepo } from '../factories/services/link.js'
 import { listNotifications } from '../factories/services/notification.js'
 import {
+  addOrderTransaction,
+  createDraftOrder,
   createOrder,
   fulfillOrder,
   listOrderAddresses,
@@ -381,6 +383,8 @@ export type Fixtures = {
       checkoutReadyCart: typeof createCheckoutReadyCart
       sellableVariant: typeof createSellableVariant
       order: typeof createOrder
+      draftOrder: typeof createDraftOrder
+      orderTransaction: typeof addOrderTransaction
       fulfilledOrder: typeof fulfillOrder
       shippedOrder: typeof shipOrder
       product: typeof createProduct
@@ -617,6 +621,8 @@ export const test = testBase.extend<Fixtures>({
         checkoutReadyCart: createCheckoutReadyCart,
         sellableVariant: createSellableVariant,
         order: createOrder,
+        draftOrder: createDraftOrder,
+        orderTransaction: addOrderTransaction,
         fulfilledOrder: fulfillOrder,
         shippedOrder: shipOrder,
         product: createProduct,

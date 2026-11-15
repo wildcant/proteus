@@ -1,15 +1,19 @@
 import type { BigNumber } from '../../bignumber.js'
 import type { BaseFilterable, OperatorMap } from '../common.js'
+import type { ProductOptionRenderAs } from '../product/common.js'
 
-export type OrderStatus = 'pending' | 'completed' | 'canceled' | 'archived'
+export type OrderStatus = 'draft' | 'pending' | 'completed' | 'canceled' | 'archived'
 export type OrderFulfillmentStatus = 'unfulfilled' | 'fulfilled' | 'shipped' | 'delivered'
 
 export type OrderDTO = {
   id: string
   displayId: number
   status: OrderStatus
-  email: string
+  isDraftOrder: boolean
+  email: string | null
   customerId: string | null
+  regionId: string | null
+  salesChannelId: string | null
   currencyCode: string
   canceledAt: Date | null
   createdAt: Date
@@ -20,7 +24,8 @@ export type OrderDTO = {
 export interface FilterableOrderProps extends BaseFilterable<FilterableOrderProps> {
   id?: string | string[]
   displayId?: number | OperatorMap<number>
-  status?: OrderStatus | OrderStatus[]
+  status?: OrderStatus | OrderStatus[] | OperatorMap<OrderStatus>
+  isDraftOrder?: boolean
   customerId?: string | string[]
   email?: string | OperatorMap<string>
   currencyCode?: string | string[]
@@ -55,6 +60,14 @@ export interface FilterableOrderAddressProps extends BaseFilterable<FilterableOr
   type?: OrderAddressType | OrderAddressType[]
 }
 
+/** One entry of the line's Option Combination, copied from the Cart line it was ordered from. */
+export type OrderLineItemOptionDTO = {
+  optionTitle: string
+  /** How the option draws its values: a `swatch` value reads alone, a `text` one beside its title. */
+  renderAs: ProductOptionRenderAs
+  value: string
+}
+
 export type OrderLineItemDTO = {
   id: string
   orderId: string
@@ -75,6 +88,7 @@ export type OrderLineItemDTO = {
   variantBarcode: string | null
   variantTitle: string | null
   variantOptionValues: string | null
+  variantOptions: OrderLineItemOptionDTO[]
   requiresShipping: boolean
   createdAt: Date
   updatedAt: Date
