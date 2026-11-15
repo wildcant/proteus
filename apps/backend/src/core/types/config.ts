@@ -64,6 +64,11 @@ type StoreConfig = {
    * own container without touching the store's setting.
    */
   draftOrders: boolean
+  /**
+   * Whether converting a Draft Order needs its email or its shipping address's phone first, so the guest
+   * Customer it is for exists before stock is held. Off, a draft with neither converts with no Customer.
+   */
+  draftOrderConvertRequiresContact: boolean
 }
 
 type ProjectConfig = {

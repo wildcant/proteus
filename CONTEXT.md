@@ -186,6 +186,7 @@ country and phone. It takes three forms, and they are three different records: a
 a Cart's address, its own copy per type, shipping and billing; and an Order's address, copied from
 the Cart when it is placed and never touched by the address book again. Picking a saved address at
 checkout copies it onto the Cart, so editing the saved address later changes neither Cart nor Order.
+Converting a Draft Order copies the other way, once: its shipping address is saved on its Customer.
 _Avoid_: location (reserved for Stock Location), destination, contact
 
 **Order**:
@@ -208,8 +209,9 @@ _Avoid_: purchase, receipt (for the record), transaction (for the Order itself),
 An Order the shop hasn't confirmed: its status is draft. It reserves no stock and holds no payment
 collection, so an abandoned one costs nothing. A shopper creates one by sending a Cart to the shop,
 which closes the Cart; sending the same Cart again returns the same draft. The admin edits its
-items, address and shipping, then converts it to a pending Order — reserving stock and creating its
-payment collection, usually while recording the deposit — or cancels it. Kept out of the admin's
+items, address and shipping, then converts it to a pending Order — reserving stock, creating its
+payment collection, usually while recording the deposit, and linking it to the guest Customer its
+email or phone finds or makes — or cancels it. Kept out of the admin's
 orders list, a Customer's order history and order counts; the admin lists drafts on their own.
 _Avoid_: quote, pending order, saved cart, order request
 

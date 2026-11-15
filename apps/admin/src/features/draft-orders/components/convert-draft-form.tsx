@@ -1,4 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
+import { DRAFT_ORDER_CONVERT_REQUIRES_CONTACT } from '@proteus/store-config'
 import { Button, KeyboundForm, RouteDrawer, useRouteModal } from '@proteus/ui'
 import { formatPrice } from '@proteus/utils'
 import { CircleAlertIcon } from 'lucide-react'
@@ -33,7 +34,14 @@ export function ConvertDraftForm({ draftOrder }: { draftOrder: AdminDraftOrderRe
               <Trans>
                 Converting holds the stock and turns the draft into a pending order. Record the deposit in the same
                 step, or convert without a payment and record it later.
-              </Trans>
+              </Trans>{' '}
+              <Trans>The shopper's email or phone becomes their customer, with this address saved on it.</Trans>
+              {DRAFT_ORDER_CONVERT_REQUIRES_CONTACT ? (
+                <>
+                  {' '}
+                  <Trans>This store needs one of them before converting.</Trans>
+                </>
+              ) : null}
             </RouteDrawer.Description>
           </RouteDrawer.Header>
           <RouteDrawer.Body className="flex flex-col gap-y-6">

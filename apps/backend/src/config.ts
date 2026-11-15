@@ -1,6 +1,6 @@
 import type { InputConfig } from '@core/types/config.js'
 import { defineAppConfig } from '@framework/config/index.js'
-import { STORE_DRAFT_ORDERS_ENABLED } from '@proteus/store-config'
+import { DRAFT_ORDER_CONVERT_REQUIRES_CONTACT, STORE_DRAFT_ORDERS_ENABLED } from '@proteus/store-config'
 
 /**
  * The raw input, exported alongside the loaded config so a second composition root can start from
@@ -43,6 +43,7 @@ export const appConfigInput: InputConfig = {
     /** The storefront features this store sells with, from the store settings package. */
     store: {
       draftOrders: STORE_DRAFT_ORDERS_ENABLED,
+      draftOrderConvertRequiresContact: DRAFT_ORDER_CONVERT_REQUIRES_CONTACT,
     },
   },
 }

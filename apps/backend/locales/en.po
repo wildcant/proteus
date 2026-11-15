@@ -14,6 +14,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/workflows/draft-order/steps/draft-customer.ts:34
+msgid "Draft order \"{orderId}\" needs an email or a phone before it converts"
+msgstr "Draft order \"{orderId}\" needs an email or a phone before it converts"
+
+#. js-lingui-explicit-id
 #: src/container.ts:174
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
@@ -246,7 +251,7 @@ msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryIt
 msgstr "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
 
 #. js-lingui-explicit-id
-#: src/workflows/draft-order/convert-draft-order.ts:56
+#: src/workflows/draft-order/convert-draft-order.ts:70
 msgid "Draft order \"{orderId}\" has no items"
 msgstr "Draft order \"{orderId}\" has no items"
 

@@ -286,7 +286,7 @@ msgstr "Permitir pedidos sin stock"
 #. placeholder {0}: draftOrder.currencyCode.toUpperCase()
 #. placeholder {0}: order.currencyCode.toUpperCase()
 #. placeholder {0}: payment.currencyCode.toUpperCase()
-#: src/features/draft-orders/components/convert-draft-form.tsx:49
+#: src/features/draft-orders/components/convert-draft-form.tsx:57
 #: src/features/orders/components/record-payment-form.tsx:32
 #: src/features/orders/components/refund-payment-form.tsx:33
 msgid "Amount ({0})"
@@ -456,7 +456,7 @@ msgstr "bytes"
 #: src/features/collections/components/edit-collection-form.tsx:35
 #: src/features/customers/components/update-customer-form.tsx:53
 #: src/features/draft-orders/components/add-draft-item-form.tsx:59
-#: src/features/draft-orders/components/convert-draft-form.tsx:68
+#: src/features/draft-orders/components/convert-draft-form.tsx:76
 #: src/features/draft-orders/components/draft-general-section.tsx:52
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:62
 #: src/features/draft-orders/components/edit-draft-shipping-form.tsx:60
@@ -673,16 +673,16 @@ msgstr "Confirmar contraseña"
 msgid "Continue"
 msgstr "Continuar"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:71
+#: src/features/draft-orders/components/convert-draft-form.tsx:79
 msgid "Convert"
 msgstr "Convertir"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:30
+#: src/features/draft-orders/components/convert-draft-form.tsx:31
 #: src/features/draft-orders/components/draft-general-section.tsx:47
 msgid "Convert to order"
 msgstr "Convertir en pedido"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:33
+#: src/features/draft-orders/components/convert-draft-form.tsx:34
 msgid "Converting holds the stock and turns the draft into a pending order. Record the deposit in the same step, or convert without a payment and record it later."
 msgstr "Al convertir se reserva el stock y el borrador pasa a ser un pedido pendiente. Registra el anticipo en el mismo paso, o convierte sin pago y regístralo más tarde."
 
@@ -1450,7 +1450,7 @@ msgstr "No se pudo eliminar la categoría"
 msgid "Failed to delete collection"
 msgstr "No se pudo eliminar la colección"
 
-#: src/features/customers/api/customers.ts:88
+#: src/features/customers/api/customers.ts:87
 msgid "Failed to delete customer"
 msgstr "No se pudo eliminar el cliente"
 
@@ -1550,7 +1550,7 @@ msgstr "No se pudo actualizar la categoría"
 msgid "Failed to update collection"
 msgstr "No se pudo actualizar la colección"
 
-#: src/features/customers/api/customers.ts:68
+#: src/features/customers/api/customers.ts:67
 msgid "Failed to update customer"
 msgstr "No se pudo actualizar el cliente"
 
@@ -2508,7 +2508,7 @@ msgstr "Pedido"
 msgid "Order Total"
 msgstr "Total del pedido"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:50
+#: src/features/draft-orders/components/convert-draft-form.tsx:58
 msgid "Order total: {total}"
 msgstr "Total del pedido: {total}"
 
@@ -2796,7 +2796,7 @@ msgstr "Recibido"
 msgid "Received: {received}"
 msgstr "Recibido: {received}"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:41
+#: src/features/draft-orders/components/convert-draft-form.tsx:49
 msgid "Record a payment"
 msgstr "Registrar un pago"
 
@@ -3334,6 +3334,10 @@ msgstr "El artículo se cobra al precio de la región del borrador."
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "El mercado —y por tanto la moneda— con el que se muestran los precios a un comprador antes de que elija uno."
 
+#: src/features/draft-orders/components/convert-draft-form.tsx:38
+msgid "The shopper's email or phone becomes their customer, with this address saved on it."
+msgstr "El correo o el teléfono del comprador se convierte en su cliente, con esta dirección guardada."
+
 #: src/features/products/components/import-structure/structure-preview-step.tsx:100
 msgid "The store already has this structure. Applying it changes nothing."
 msgstr "La tienda ya tiene esta estructura. Aplicarla no cambia nada."
@@ -3401,6 +3405,10 @@ msgstr "Este producto no se vende en variaciones. Se creará una sola variante p
 #: src/features/products/components/create-product-form/product-create-variants-section.tsx:68
 msgid "This ranking will affect the variants' order in your storefront."
 msgstr "Este orden afectará el orden de las variantes en tu tienda."
+
+#: src/features/draft-orders/components/convert-draft-form.tsx:42
+msgid "This store needs one of them before converting."
+msgstr "Esta tienda necesita uno de los dos antes de convertir."
 
 #: src/features/collections/components/collection-thumbnail-picker.tsx:43
 #: src/features/products/components/media/product-media-grid.tsx:202

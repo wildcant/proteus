@@ -9,14 +9,23 @@ import {
   confirmLineItemsSellableThrows,
   type SellableLineItem,
 } from '../cart/steps/confirm-line-items-sellable.js'
+import { findOrCreateCustomerStep } from '../cart/steps/find-or-create-customer.js'
 import { publishOrderPlacedStep } from '../order/steps/publish-order-placed.js'
 import { reserveOrderInventoryStep, reserveOrderInventoryThrows } from '../order/steps/reserve-order-inventory.js'
 import { recordOrderPaymentStep, recordOrderPaymentThrows } from '../payment/steps/record-order-payment.js'
+import {
+  linkOrderCustomerStep,
+  readDraftContactStep,
+  readDraftContactThrows,
+  saveCustomerAddressStep,
+} from './steps/draft-customer.js'
 
 export type ConvertDraftOrderInput = {
   orderId: string
   /** The deposit the shop received, recorded in the same run. Omitted, the draft converts unpaid. */
   paymentAmount?: BigNumber | undefined
+  /** The store's `draftOrderConvertRequiresContact`, read by the caller: a draft with no email or phone is refused. */
+  requireContact?: boolean | undefined
 }
 
 /**
@@ -28,6 +37,10 @@ export type ConvertDraftOrderInput = {
  * is the deposit recorded (a Proteus departure: Medusa converts and takes payment separately), so a
  * conversion that can't hold the stock takes no money, and a store that takes deposits holds stock
  * exactly once the deposit is in. `order.placed` goes out last, as from checkout.
+ *
+ * The draft's contact becomes its Customer (another Proteus addition): the guest its email or phone
+ * already is, or a new one, linked to the Order with the confirmed address saved on it. A store can
+ * require that contact before converting (`draftOrderConvertRequiresContact`).
  */
 export const convertDraftOrderWorkflow = createWorkflow<ConvertDraftOrderInput, OrderDTO>(
   {
@@ -36,6 +49,7 @@ export const convertDraftOrderWorkflow = createWorkflow<ConvertDraftOrderInput, 
       ...confirmLineItemsSellableThrows,
       ...reserveOrderInventoryThrows,
       ...recordOrderPaymentThrows,
+      ...readDraftContactThrows,
       ErrorTypes.INVALID_DATA,
       // a draft no longer open is the order module's refusal, in `retrieveOpenDraftOrder`
       // ast-grep-ignore: workflow-declares-unthrown-error
@@ -67,6 +81,8 @@ export const convertDraftOrderWorkflow = createWorkflow<ConvertDraftOrderInput, 
       }))
     })
 
+    const contact = await readDraftContactStep(ctx, { orderId: input.orderId, requireContact: input.requireContact })
+
     await confirmLineItemsSellableStep(ctx, lineItems)
 
     const reserved = await reserveOrderInventoryStep(ctx, { orderId: input.orderId })
@@ -78,6 +94,10 @@ export const convertDraftOrderWorkflow = createWorkflow<ConvertDraftOrderInput, 
         await container.resolve(Modules.ORDER).updateOrder(input.orderId, { status: 'draft', isDraftOrder: true })
       },
     )
+
+    const found = await findOrCreateCustomerStep(ctx, contact)
+    await linkOrderCustomerStep(ctx, { orderId: input.orderId, contact, found })
+    await saveCustomerAddressStep(ctx, { contact, found })
 
     /** Opens the Order's payment collection for its total, and captures the deposit against it when
      *  one was given. After the conversion, because a payment is recorded on an Order, not a draft. */

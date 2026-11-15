@@ -165,6 +165,26 @@ carries the extension's prefix and doesn't collide with core's.
 Draft orders need no hook. Shipping is priced by a fulfillment provider, and deposits are payments,
 so nothing about an order's charges is left for a store to compute.
 
+### Converting makes the draft's guest Customer
+
+A shopper who buys through a chat is known by what the shop records on the draft: an email, or a
+phone on its shipping address, often only the phone. Converting turns that contact into the
+Order's Customer. The guest it already is is found by email first, then by phone (digits only,
+unique among guests like the email), and is created when there is none. A guest found by one
+gains the other when it lacked it. The Order is linked to that Customer, and the confirmed shipping
+address is saved on it unless an identical one is already saved, becoming the Customer's default
+when it has none. A draft from a signed-in shopper's Cart keeps its Customer.
+
+The Customer is made at conversion, not when the store creates the draft, because the store route
+is public and the shopper's contact is unconfirmed until the shop has spoken with them: a draft
+nobody confirms leaves no Customer behind, and nobody can attach an order to someone else's history
+by typing their number.
+
+A store can require the contact before converting (`DRAFT_ORDER_CONVERT_REQUIRES_CONTACT`, read as
+`projectConfig.store.draftOrderConvertRequiresContact` and passed to the workflow by the route).
+With it on, a draft with neither an email nor a phone is refused (`draft_order_contact_required`).
+Off, as Proteus ships it, such a draft converts with no Customer, as in Medusa.
+
 ### Store settings
 
 The store settings package (`packages/store-config`) gains an optional deposit percentage, an
@@ -211,6 +231,12 @@ recording a payment or a refund takes `payment.capture` or `payment.refund`.
    `province`, `city` and `postalCode` query values that stand in for the saved ones, so a
    storefront can quote calculated shipping for a city the shopper is still typing, before the
    address is saved.
+8. **Converting a draft makes its Customer and saves its address.** Medusa's conversion touches
+   neither the Customer nor its addresses, and never copies an Order's address to a Customer.
+   Proteus finds or creates the guest from the draft's email or phone at conversion, links the
+   Order to it, and saves the confirmed address on it.
+9. **A Customer may have a phone and no email, and a guest is matched by phone.** Medusa's Customer
+   has a nullable email and a phone, but its guest lookup matches the email only.
 
 Recording a capture of any amount from the admin also goes beyond Medusa's dashboard, which captures
 only the full amount; its workflows already take an amount.

@@ -286,7 +286,7 @@ msgstr "Allow backorders"
 #. placeholder {0}: draftOrder.currencyCode.toUpperCase()
 #. placeholder {0}: order.currencyCode.toUpperCase()
 #. placeholder {0}: payment.currencyCode.toUpperCase()
-#: src/features/draft-orders/components/convert-draft-form.tsx:49
+#: src/features/draft-orders/components/convert-draft-form.tsx:57
 #: src/features/orders/components/record-payment-form.tsx:32
 #: src/features/orders/components/refund-payment-form.tsx:33
 msgid "Amount ({0})"
@@ -456,7 +456,7 @@ msgstr "Bytes"
 #: src/features/collections/components/edit-collection-form.tsx:35
 #: src/features/customers/components/update-customer-form.tsx:53
 #: src/features/draft-orders/components/add-draft-item-form.tsx:59
-#: src/features/draft-orders/components/convert-draft-form.tsx:68
+#: src/features/draft-orders/components/convert-draft-form.tsx:76
 #: src/features/draft-orders/components/draft-general-section.tsx:52
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:62
 #: src/features/draft-orders/components/edit-draft-shipping-form.tsx:60
@@ -673,16 +673,16 @@ msgstr "Confirm password"
 msgid "Continue"
 msgstr "Continue"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:71
+#: src/features/draft-orders/components/convert-draft-form.tsx:79
 msgid "Convert"
 msgstr "Convert"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:30
+#: src/features/draft-orders/components/convert-draft-form.tsx:31
 #: src/features/draft-orders/components/draft-general-section.tsx:47
 msgid "Convert to order"
 msgstr "Convert to order"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:33
+#: src/features/draft-orders/components/convert-draft-form.tsx:34
 msgid "Converting holds the stock and turns the draft into a pending order. Record the deposit in the same step, or convert without a payment and record it later."
 msgstr "Converting holds the stock and turns the draft into a pending order. Record the deposit in the same step, or convert without a payment and record it later."
 
@@ -1450,7 +1450,7 @@ msgstr "Failed to delete category"
 msgid "Failed to delete collection"
 msgstr "Failed to delete collection"
 
-#: src/features/customers/api/customers.ts:88
+#: src/features/customers/api/customers.ts:87
 msgid "Failed to delete customer"
 msgstr "Failed to delete customer"
 
@@ -1550,7 +1550,7 @@ msgstr "Failed to update category"
 msgid "Failed to update collection"
 msgstr "Failed to update collection"
 
-#: src/features/customers/api/customers.ts:68
+#: src/features/customers/api/customers.ts:67
 msgid "Failed to update customer"
 msgstr "Failed to update customer"
 
@@ -2508,7 +2508,7 @@ msgstr "Order"
 msgid "Order Total"
 msgstr "Order Total"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:50
+#: src/features/draft-orders/components/convert-draft-form.tsx:58
 msgid "Order total: {total}"
 msgstr "Order total: {total}"
 
@@ -2796,7 +2796,7 @@ msgstr "Received"
 msgid "Received: {received}"
 msgstr "Received: {received}"
 
-#: src/features/draft-orders/components/convert-draft-form.tsx:41
+#: src/features/draft-orders/components/convert-draft-form.tsx:49
 msgid "Record a payment"
 msgstr "Record a payment"
 
@@ -3334,6 +3334,10 @@ msgstr "The item is priced in the draft's region."
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "The market — and so the currency — a shopper is priced in before they pick one."
 
+#: src/features/draft-orders/components/convert-draft-form.tsx:38
+msgid "The shopper's email or phone becomes their customer, with this address saved on it."
+msgstr "The shopper's email or phone becomes their customer, with this address saved on it."
+
 #: src/features/products/components/import-structure/structure-preview-step.tsx:100
 msgid "The store already has this structure. Applying it changes nothing."
 msgstr "The store already has this structure. Applying it changes nothing."
@@ -3401,6 +3405,10 @@ msgstr "This product is not sold in variations. A single variant will be created
 #: src/features/products/components/create-product-form/product-create-variants-section.tsx:68
 msgid "This ranking will affect the variants' order in your storefront."
 msgstr "This ranking will affect the variants' order in your storefront."
+
+#: src/features/draft-orders/components/convert-draft-form.tsx:42
+msgid "This store needs one of them before converting."
+msgstr "This store needs one of them before converting."
 
 #: src/features/collections/components/collection-thumbnail-picker.tsx:43
 #: src/features/products/components/media/product-media-grid.tsx:202
