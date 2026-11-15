@@ -550,10 +550,19 @@ export class PaymentModuleService implements IPaymentModuleService {
       const collection = await this.retrievePaymentCollection(paymentCollectionId, undefined, ctx)
       const payments = collection.payments ?? []
 
+      // Net of refunds, the Order's own definition: Outstanding Amount is the total less the Paid
+      // Total, and a refund takes money back out of the Paid Total. After paying 100 and refunding
+      // 25, 25 is outstanding again. The authorization was fully captured, so no open payment holds
+      // it and a new manual one is authorized below — Medusa's way of collecting again, a new session.
+      // An open authorization holding less than the amount asked is not topped up: `capture_`
+      // refuses it with what it still holds, and the admin records that first.
       const captured = payments
         .flatMap((payment) => payment.captures ?? [])
         .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
-      const outstanding = collection.amount.minus(captured)
+      const refunded = payments
+        .flatMap((payment) => payment.refunds ?? [])
+        .reduce((sum, refund) => sum.plus(refund.amount), new BigNumber(0))
+      const outstanding = collection.amount.minus(captured.minus(refunded))
 
       if (data.amount.isGreaterThan(outstanding)) {
         throw new AppError({

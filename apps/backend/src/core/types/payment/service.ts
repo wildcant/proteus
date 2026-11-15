@@ -94,7 +94,7 @@ export type IPaymentModuleService = {
   /**
    * Records a payment of an amount against a collection, under its row lock: opens and authorizes
    * a manual session for what is outstanding when the collection holds no live authorization, then
-   * captures the amount. Refused above what is outstanding. A capture already recorded under
+   * captures the amount. Refused above what is outstanding, net of refunds. A capture already recorded under
    * `idempotencyKey` is answered with rather than taken again.
    */
   capturePaymentCollection(

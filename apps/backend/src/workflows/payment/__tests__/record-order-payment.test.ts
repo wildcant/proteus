@@ -182,6 +182,22 @@ test.describe('record-order-payment', () => {
     expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-10', '30'])
   })
 
+  /** Outstanding is the total less the Paid Total, on the Order and on its collection alike. */
+  test('what a refund returned can be recorded again', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await orderForAHundred(service)
+    const paid = await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(100) })
+    await refundPaymentWorkflow.run({ paymentId: paid.paymentId, amount: new BigNumber(25) })
+
+    const recollected = await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(25) })
+
+    expect(recollected.paymentCollectionId).toBe(paymentCollectionId)
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-25', '100', '25'])
+    await expect(recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(1) })).rejects.toThrow(
+      'exceeds the 0 outstanding on order',
+    )
+  })
+
   test('refund-payment refuses more than was received, and records nothing', async ({ service, expect }) => {
     const { orderId, paymentCollectionId } = await orderForAHundred(service)
     await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
