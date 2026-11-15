@@ -20,6 +20,7 @@ import type {
   CreateCartDTO,
   CreateLineItemDTO,
   CreateShippingMethodDTO,
+  ShippingMethodRefreshDTO,
   UpdateCartDTO,
   UpdateCartWithAddressesDTO,
   UpdateLineItemDTO,
@@ -61,6 +62,8 @@ export type ICartModuleService = {
    * found. Refused once the cart is completed, as every other write to its lines is.
    */
   removeLineItem(cartId: string, lineItemId: string, context?: Context): Promise<void>
+  /** Brings back lines a soft delete hid — the undo half of removing one in a workflow. */
+  restoreLineItems(lineItemIds: string[], context?: Context): Promise<void>
   listShippingMethods(
     filters?: FilterableCartShippingMethodProps,
     config?: FindConfig<CartShippingMethodDTO>,
@@ -84,6 +87,11 @@ export type ICartModuleService = {
   /** Brings back exactly the methods the matching soft delete hid — the undo half of a refresh
    *  that dropped the ones a new market does not offer. */
   restoreShippingMethods(shippingMethodIds: string[], context?: Context): Promise<void>
+  /**
+   * Re-prices and drops shipping methods in one transaction, so a refresh never leaves the cart
+   * with one half applied. Both lists are rows of one table in this module.
+   */
+  applyShippingMethodRefresh(refresh: ShippingMethodRefreshDTO, context?: Context): Promise<void>
 
   // Addresses — owned by the cart, so reads and writes are scoped to a parent
   listCartAddresses(

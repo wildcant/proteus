@@ -126,6 +126,7 @@ export * from './storeSearchTrendingLink.ts';
 export * from './storeShippingOption.ts';
 export * from './storeShippingOptionData.ts';
 export * from './storeShippingOptionListResponse.ts';
+export * from './storeShippingOptionPriceType.ts';
 export * from './storeSignupBody.ts';
 export * from './storeUpdateAddress.ts';
 export * from './storeUpdateCartLineItemResponse.ts';

@@ -7,6 +7,7 @@ import { i18n } from '@proteus/utils'
 import { buildListingSublines } from '../product/utils/build-listing-subline.js'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { confirmVariantInventoryStep, confirmVariantInventoryThrows } from './steps/confirm-variant-inventory.js'
+import { refreshCartShippingMethodsStep } from './steps/refresh-cart-shipping-methods.js'
 import { lineItemPlanDemands, planLineItemActions } from './utils/plan-line-item-actions.js'
 import { prepareLineItemData } from './utils/prepare-line-item-data.js'
 
@@ -194,13 +195,37 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
     await confirmVariantInventoryStep(ctx, planned.demands)
 
     /**
-     * No compensation, and none needed: the lines started and the lines raised are rows of one
-     * table in one module, so the cart module writes them in a single transaction and the
-     * database is what puts a failure back. A compensating write could fail on its own.
+     * The lines started and the lines raised are rows of one table in one module, so the cart module
+     * writes them in a single transaction and the database puts a failure of this step back. The
+     * compensation is for the shipping refresh after it: the started lines are removed and the raised
+     * ones return to the quantity they held.
      */
-    return ctx.step('write-line-items', async ({ container }) => {
-      const cartService = container.resolve(Modules.CART)
-      return cartService.applyLineItemPlan(cart.id, planned.plan)
-    })
+    const written = await ctx.step(
+      'write-line-items',
+      async ({ container }) => {
+        const cartService = container.resolve(Modules.CART)
+        const mergedIds = planned.plan.merge.map((merge) => merge.id)
+        const previous = mergedIds.length > 0 ? await cartService.listLineItems({ id: mergedIds, cartId: cart.id }) : []
+        const lineItems = await cartService.applyLineItemPlan(cart.id, planned.plan)
+        const mergedIdSet = new Set(mergedIds)
+
+        return {
+          lineItems,
+          createdIds: lineItems.filter((item) => !mergedIdSet.has(item.id)).map((item) => item.id),
+          previousQuantities: previous.map((item) => ({ id: item.id, data: { quantity: item.quantity } })),
+        }
+      },
+      async ({ createdIds, previousQuantities }, { container }) => {
+        const cartService = container.resolve(Modules.CART)
+        if (createdIds.length > 0) await cartService.softDeleteLineItems(createdIds)
+        if (previousQuantities.length > 0) {
+          await cartService.applyLineItemPlan(cart.id, { create: [], merge: previousQuantities })
+        }
+      },
+    )
+
+    await refreshCartShippingMethodsStep(ctx, { cartId: input.cartId })
+
+    return written.lineItems
   },
 )

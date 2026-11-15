@@ -56,6 +56,7 @@ import {
 import { generateAdminCreateOrderFulfillmentBody } from '../factories/http/admin-order.js'
 import { generateAdminCreateProductCategoryBody } from '../factories/http/admin-product-category.js'
 import { generateAdminCreateProductCollectionBody } from '../factories/http/admin-product-collection.js'
+import { generateStoreCartAddressBody } from '../factories/http/store-cart.js'
 import { generateStoreCreateAddressBody } from '../factories/http/store-customer.js'
 import {
   generateCreateInventoryItemDTO,
@@ -278,6 +279,7 @@ export type Fixtures = {
     }
     store: {
       createAddress: typeof generateStoreCreateAddressBody
+      cartAddress: typeof generateStoreCartAddressBody
     }
   }
   dto: {
@@ -513,6 +515,7 @@ export const test = testBase.extend<Fixtures>({
       },
       store: {
         createAddress: generateStoreCreateAddressBody,
+        cartAddress: generateStoreCartAddressBody,
       },
     })
   },

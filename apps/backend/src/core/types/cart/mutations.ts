@@ -67,6 +67,22 @@ export type CreateShippingMethodDTO = {
   data?: Record<string, unknown> | null | undefined
 }
 
+/** A shipping method's price as a refresh re-states it. */
+export type ShippingMethodPriceUpdateDTO = {
+  id: string
+  amount: BigNumber
+  isTaxInclusive: boolean
+}
+
+/**
+ * What a shipping method refresh writes: the methods it re-prices and the ones it drops because
+ * their option no longer serves the cart.
+ */
+export type ShippingMethodRefreshDTO = {
+  update: ShippingMethodPriceUpdateDTO[]
+  remove: string[]
+}
+
 export type UpdateCartDTO = {
   regionId?: string | null | undefined
   customerId?: string | null | undefined
