@@ -19,8 +19,11 @@ export interface AdminOrderLineItem {
   unitPrice: string;
   /** Numeric string (arbitrary precision) */
   lineTotal: string;
-  /** Numeric string (arbitrary precision) */
-  compareAtUnitPrice: string;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  compareAtUnitPrice: string | null;
   /** @nullable */
   variantId: string | null;
   /** @nullable */

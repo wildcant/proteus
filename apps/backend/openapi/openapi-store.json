@@ -436,7 +436,10 @@
             "type": "boolean"
           },
           "compareAtUnitPrice": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Numeric string (arbitrary precision)"
           },
           "unitPrice": {
@@ -1962,15 +1965,24 @@
             "description": "Numeric string (arbitrary precision)"
           },
           "authorizedAmount": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Numeric string (arbitrary precision)"
           },
           "capturedAmount": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Numeric string (arbitrary precision)"
           },
           "refundedAmount": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "Numeric string (arbitrary precision)"
           },
           "completedAt": {

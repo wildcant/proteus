@@ -13,12 +13,21 @@ export interface StorePaymentCollection {
   currencyCode: string;
   /** Numeric string (arbitrary precision) */
   amount: string;
-  /** Numeric string (arbitrary precision) */
-  authorizedAmount: string;
-  /** Numeric string (arbitrary precision) */
-  capturedAmount: string;
-  /** Numeric string (arbitrary precision) */
-  refundedAmount: string;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  authorizedAmount: string | null;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  capturedAmount: string | null;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  refundedAmount: string | null;
   /** @nullable */
   completedAt: string | null;
   status: StorePaymentCollectionStatus;

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { bigNumberToString, dateToIso, timestamps } from '../../common.js'
+import { bigNumberToString, dateToIso, nullableBigNumberToString, timestamps } from '../../common.js'
 
 export const StorePaymentProvider = z
   .object({
@@ -71,9 +71,9 @@ export const StorePaymentCollection = z
     id: z.string(),
     currencyCode: z.string(),
     amount: bigNumberToString,
-    authorizedAmount: bigNumberToString.nullable(),
-    capturedAmount: bigNumberToString.nullable(),
-    refundedAmount: bigNumberToString.nullable(),
+    authorizedAmount: nullableBigNumberToString,
+    capturedAmount: nullableBigNumberToString,
+    refundedAmount: nullableBigNumberToString,
     completedAt: dateToIso.nullable(),
     status: z.enum(['not_paid', 'awaiting', 'authorized', 'partially_authorized', 'completed']),
     metadata: z.record(z.string(), z.unknown()).nullable(),

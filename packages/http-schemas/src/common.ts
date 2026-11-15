@@ -24,6 +24,13 @@ export const bigNumberToString = z
   .pipe(z.string())
 
 /**
+ * `bigNumberToString.nullable()` is not enough on its own: the generator copies the inner
+ * `.openapi({ type: 'string' })` verbatim and drops the null, so the spec and every generated
+ * client would call the field a non-null string. Restating the type here is what keeps it nullable.
+ */
+export const nullableBigNumberToString = bigNumberToString.nullable().openapi({ type: ['string', 'null'] })
+
+/**
  * Reads back anything `BigNumber.toFixed()` can write, `'Infinity'` included. Deliberately
  * unbounded: its other caller is the Temporal payload converter, which decodes values this
  * process itself encoded and must round-trip them exactly. Use `amountToBigNumber` for a

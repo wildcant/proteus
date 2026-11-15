@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { bigNumberToString, dateToIso, timestamps } from '../../common.js'
+import { bigNumberToString, dateToIso, nullableBigNumberToString, timestamps } from '../../common.js'
 
 export const OrderStatus = z.enum(['pending', 'completed', 'canceled', 'archived'])
 
@@ -15,7 +15,7 @@ export const AdminOrderLineItem = z
     quantity: z.number(),
     unitPrice: bigNumberToString,
     lineTotal: bigNumberToString,
-    compareAtUnitPrice: bigNumberToString.nullable(),
+    compareAtUnitPrice: nullableBigNumberToString,
     variantId: z.string().nullable(),
     productId: z.string().nullable(),
     productTitle: z.string().nullable(),

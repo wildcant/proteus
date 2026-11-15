@@ -41,8 +41,11 @@ export interface StoreCartLineItem {
   isDiscountable: boolean;
   isGiftcard: boolean;
   isTaxInclusive: boolean;
-  /** Numeric string (arbitrary precision) */
-  compareAtUnitPrice: string;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  compareAtUnitPrice: string | null;
   /** Numeric string (arbitrary precision) */
   unitPrice: string;
   /** Numeric string (arbitrary precision) */
