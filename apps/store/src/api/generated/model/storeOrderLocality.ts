@@ -6,12 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-/**
- * @nullable
- */
-export type StoreOrderLocality = {
+export interface StoreOrderLocality {
   /** @nullable */
   city: string | null;
   /** @nullable */
   province: string | null;
-} | null;
+}

@@ -130,7 +130,7 @@ export const StoreOrderDetail = z
     createdAt: dateToIso,
     canceledAt: dateToIso.nullable(),
     lineItems: z.array(StoreOrderLineItem),
-    shippingAddress: StoreOrderLocality.nullable(),
+    shippingAddress: z.union([StoreOrderLocality, z.null()]),
     shippingMethods: z.array(StoreOrderShippingMethod),
     totals: StoreOrderTotals,
     /** Absent unless the reader is the signed-in customer the Order belongs to. */
