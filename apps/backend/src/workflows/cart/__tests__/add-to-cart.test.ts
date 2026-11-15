@@ -43,9 +43,15 @@ test.describe('addToCartWorkflow', () => {
     expect(lineItem?.unitPrice.toString()).toBe('149.5')
   })
 
-  test('names the variant’s option values on the line', async ({ service, expect }) => {
+  test('names the variant’s option values on the line', async ({ factories, service, expect }) => {
+    await using _store = await factories.create.store({ card: { subline: '{type} · {brand}', listSeparator: ', ' } })
     const cart = await usdCart(service)
-    const { product } = await service.create.product(container, { status: 'published' })
+    const sneakers = await service.create.productType(container, { value: 'Tenis' })
+    const { product } = await service.create.product(container, {
+      status: 'published',
+      typeId: sneakers.id,
+      brand: 'Retro',
+    })
     const size = await service.create.productOption(container, {
       title: `Size-${product.id}`,
       renderAs: 'text',
@@ -78,9 +84,11 @@ test.describe('addToCartWorkflow', () => {
     expect(lineItem?.variantOptionValues).toBe('M · Olive')
     // The same values beside their option's title, so a surface can say which one is the size.
     expect(lineItem?.variantOptions).toEqual([
-      { optionTitle: size.title, value: 'M' },
-      { optionTitle: colour.title, value: 'Olive' },
+      { optionTitle: size.title, renderAs: 'text', value: 'M' },
+      { optionTitle: colour.title, renderAs: 'swatch', value: 'Olive' },
     ])
+    // The list card's subline, from the store's template, as the card renders it.
+    expect(lineItem?.productSubline).toBe('Tenis · Retro')
     // And the variant's own name beside it, which the module derives from the same combination.
     expect(lineItem?.variantTitle).toBe('M / Olive')
   })

@@ -62,6 +62,7 @@ export function generateCartLineItemDTO(overrides?: Partial<CartLineItemDTO>): C
     productDescription: null,
     productSubtitle: null,
     productType: null,
+    productSubline: null,
     productHandle: null,
     variantSku: null,
     variantBarcode: null,

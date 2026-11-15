@@ -5,8 +5,10 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
+import type { StoreCartLineItemOptionRenderAs } from './storeCartLineItemOptionRenderAs.ts';
 
 export interface StoreCartLineItemOption {
   optionTitle: string;
+  renderAs: StoreCartLineItemOptionRenderAs;
   value: string;
 }

@@ -43,6 +43,7 @@ const lineItem: CartLineItemDTO = {
   productDescription: null,
   productSubtitle: null,
   productType: null,
+  productSubline: null,
   productHandle: 'hoodie',
   variantSku: 'HOOD-01',
   variantBarcode: null,

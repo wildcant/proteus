@@ -1,5 +1,5 @@
 {
-  "id": "e0eba304-8318-4661-9930-c88439041a48",
+  "id": "540964be-98a3-433b-9fdb-6f1094d79790",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -364,6 +364,12 @@
         },
         "product_type": {
           "name": "product_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "product_subline": {
+          "name": "product_subline",
           "type": "text",
           "primaryKey": false,
           "notNull": false

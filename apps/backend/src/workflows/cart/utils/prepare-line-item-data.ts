@@ -10,6 +10,8 @@ export type PrepareLineItemDataInput = {
   product: ProductDTO
   /** The value of the product's live Product Type, or `null` when it has none. */
   productType: string | null
+  /** The product card's subline as the store's template renders it, or `null` when it renders none. */
+  productSubline: string | null
   variant: EnrichedProductVariantDTO
   unitPrice: BigNumber
   thumbnail: string | null
@@ -43,13 +45,14 @@ export function prepareLineItemData(input: PrepareLineItemDataInput): CreateLine
       variant.optionValues.map((optionValue) => optionValue.value).join(OPTION_VALUE_SEPARATOR) || null,
     // The same values with their option's title, for a surface that has to say which value is the
     // size — the cart line's «Talla 41 · Negro y Crema», and the order message built from it.
-    variantOptions: variant.optionValues.map(({ optionTitle, value }) => ({ optionTitle, value })),
+    variantOptions: variant.optionValues.map(({ optionTitle, renderAs, value }) => ({ optionTitle, renderAs, value })),
     productId: product.id,
     productTitle: product.title,
     productDescription: product.description,
     productSubtitle: product.subtitle,
     productHandle: product.handle,
     productType: input.productType,
+    productSubline: input.productSubline,
     isGiftcard: product.isGiftcard,
     isDiscountable: product.discountable,
   }

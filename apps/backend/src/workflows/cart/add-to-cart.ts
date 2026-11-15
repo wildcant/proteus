@@ -4,6 +4,7 @@ import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
+import { buildListingSublines } from '../product/utils/build-listing-subline.js'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
 import { confirmVariantInventoryStep, confirmVariantInventoryThrows } from './steps/confirm-variant-inventory.js'
 import { lineItemPlanDemands, planLineItemActions } from './utils/plan-line-item-actions.js'
@@ -78,6 +79,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       const productService = container.resolve(Modules.PRODUCT)
       const pricingService = container.resolve(Modules.PRICING)
       const linkService = container.resolve(ContainerRegistrationKeys.LINK)
+      const storeService = container.resolve(Modules.STORE)
 
       const variantIds = [...new Set(input.items.map((item) => item.variantId))]
       const variants = await productService.enrichVariants(await productService.listProductVariants({ id: variantIds }))
@@ -94,11 +96,28 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
 
       const productIds = [...new Set(variants.map((variant) => variant.productId))]
       // The product rows are flat, so the Type's value comes through the batched groupings read.
-      const [products, groupings] = await Promise.all([
+      const [products, groupings, store] = await Promise.all([
         productService.listProducts({ id: productIds }),
         productService.listProductGroupings(productIds),
+        storeService.resolveStore(),
       ])
       const productById = new Map(products.map((product) => [product.id, product]))
+
+      // The card's subline, from the template the list and the product page render it with — and
+      // its fields only when the store has a template at all, as the list reads them.
+      const card = store?.card ?? { subline: null, listSeparator: ', ' }
+      const [fieldValuesByProductId, categories] = await Promise.all([
+        card.subline ? productService.listFieldValuesOfProducts(productIds) : {},
+        card.subline ? productService.listCategories() : [],
+      ])
+      const sublineByProductId = buildListingSublines(products, {
+        card,
+        typeByProductId: new Map(
+          Object.entries(groupings).flatMap(([id, grouping]) => (grouping.type ? [[id, grouping.type.value]] : [])),
+        ),
+        fieldValuesByProductId,
+        categories,
+      })
 
       const links = await linkService.repo('productVariantPriceSet').findByVariantIds(variantIds)
       const priceSetIds = [...new Set(links.map((link) => link.priceSetId))]
@@ -151,6 +170,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
           quantity: item.quantity,
           product,
           productType: groupings[product.id]?.type?.value ?? null,
+          productSubline: sublineByProductId.get(product.id) ?? null,
           variant,
           unitPrice: price.calculatedAmount,
           thumbnail: thumbnails.get(variant.id) ?? null,

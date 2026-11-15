@@ -551,8 +551,20 @@ test.describe('ProductModuleService variant options', () => {
     // Resolved and in the product's option order, so the admin renders it without joining back
     // against the product.
     expect(enriched[0]?.optionValues).toEqual([
-      { optionId: size.id, optionTitle: size.title, valueId: combination('S', 'Red')[size.id], value: 'S' },
-      { optionId: colour.id, optionTitle: colour.title, valueId: combination('S', 'Red')[colour.id], value: 'Red' },
+      {
+        optionId: size.id,
+        optionTitle: size.title,
+        renderAs: 'text',
+        valueId: combination('S', 'Red')[size.id],
+        value: 'S',
+      },
+      {
+        optionId: colour.id,
+        optionTitle: colour.title,
+        renderAs: 'swatch',
+        valueId: combination('S', 'Red')[colour.id],
+        value: 'Red',
+      },
     ])
     // A variant carrying nothing gets an empty list rather than a missing key.
     expect(enriched[1]?.optionValues).toEqual([])

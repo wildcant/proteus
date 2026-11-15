@@ -23,6 +23,7 @@ export const cartLineItemTable = pgTable(
     productDescription: text(),
     productSubtitle: text(),
     productType: text(),
+    productSubline: text(),
     productHandle: text(),
     variantSku: text(),
     variantBarcode: text(),

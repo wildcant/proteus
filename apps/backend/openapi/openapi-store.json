@@ -393,6 +393,12 @@
               "null"
             ]
           },
+          "productSubline": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "productHandle": {
             "type": [
               "string",
@@ -494,6 +500,7 @@
           "productDescription",
           "productSubtitle",
           "productType",
+          "productSubline",
           "productHandle",
           "variantSku",
           "variantBarcode",
@@ -520,12 +527,20 @@
           "optionTitle": {
             "type": "string"
           },
+          "renderAs": {
+            "type": "string",
+            "enum": [
+              "text",
+              "swatch"
+            ]
+          },
           "value": {
             "type": "string"
           }
         },
         "required": [
           "optionTitle",
+          "renderAs",
           "value"
         ]
       },

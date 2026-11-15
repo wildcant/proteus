@@ -30,6 +30,8 @@ export interface StoreCartLineItem {
   /** @nullable */
   productType: string | null;
   /** @nullable */
+  productSubline: string | null;
+  /** @nullable */
   productHandle: string | null;
   /** @nullable */
   variantSku: string | null;

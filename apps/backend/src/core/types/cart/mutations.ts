@@ -12,6 +12,7 @@ export type CreateLineItemDTO = {
   productDescription?: string | null | undefined
   productSubtitle?: string | null | undefined
   productType?: string | null | undefined
+  productSubline?: string | null | undefined
   productHandle?: string | null | undefined
   variantSku?: string | null | undefined
   variantBarcode?: string | null | undefined

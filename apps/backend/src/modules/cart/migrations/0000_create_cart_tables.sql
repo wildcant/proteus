@@ -44,6 +44,7 @@ CREATE TABLE "cart_line_item" (
 	"product_description" text,
 	"product_subtitle" text,
 	"product_type" text,
+	"product_subline" text,
 	"product_handle" text,
 	"variant_sku" text,
 	"variant_barcode" text,

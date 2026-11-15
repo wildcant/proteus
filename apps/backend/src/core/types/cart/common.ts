@@ -1,5 +1,6 @@
 import type { BigNumber } from '../../bignumber.js'
 import type { BaseFilterable, OperatorMap } from '../common.js'
+import type { ProductOptionRenderAs } from '../product/common.js'
 
 export type CartDTO = {
   id: string
@@ -28,6 +29,8 @@ export interface FilterableCartProps extends BaseFilterable<FilterableCartProps>
 /** One entry of the variant's Option Combination as it stood when the line was added. */
 export type CartLineItemOptionDTO = {
   optionTitle: string
+  /** How the option draws its values: a `swatch` value reads alone, a `text` one beside its title. */
+  renderAs: ProductOptionRenderAs
   value: string
 }
 
@@ -44,6 +47,8 @@ export type CartLineItemDTO = {
   productDescription: string | null
   productSubtitle: string | null
   productType: string | null
+  /** The product card's subline when the line was added («Tenis para hombre · Altos»), `null` for none. */
+  productSubline: string | null
   productHandle: string | null
   variantSku: string | null
   variantBarcode: string | null

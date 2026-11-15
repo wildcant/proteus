@@ -18,7 +18,12 @@ export type StoreCart = z.input<typeof StoreCart>
 
 /** One entry of the line's Option Combination, as it stood when the line was added. */
 export const StoreCartLineItemOption = z
-  .object({ optionTitle: z.string(), value: z.string() })
+  .object({
+    optionTitle: z.string(),
+    /** How the product draws this option: a `swatch` value reads alone («Negro y Crema»), a `text` one beside its title («Talla 41»). */
+    renderAs: z.enum(['text', 'swatch']),
+    value: z.string(),
+  })
   .openapi('StoreCartLineItemOption')
 export type StoreCartLineItemOption = z.input<typeof StoreCartLineItemOption>
 
@@ -36,6 +41,8 @@ export const StoreCartLineItem = z
     productDescription: z.string().nullable(),
     productSubtitle: z.string().nullable(),
     productType: z.string().nullable(),
+    /** The product card's subline when the line was added («Tenis para hombre · Altos»); `null` for none. */
+    productSubline: z.string().nullable(),
     productHandle: z.string().nullable(),
     variantSku: z.string().nullable(),
     variantBarcode: z.string().nullable(),
