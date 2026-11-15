@@ -1,3 +1,5 @@
+import { i18n } from '@proteus/utils'
+import { AppError, ErrorTypes } from '../errors/app-error.js'
 import type { AppContainer, ModuleServiceContracts } from '../types/container.js'
 import type { Logger } from '../types/logger.js'
 import { ContainerRegistrationKeys } from '../utils/container.js'
@@ -58,8 +60,14 @@ export function extensionProviderDependencies(container: {
   function resolve<TService>(key: ModuleKey<TService>): TService
   function resolve(key: string): unknown {
     if (registrationKeys.has(key)) {
-      throw new Error(`An extension provider may resolve module services only, not "${key}".`)
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t('An extension provider may resolve module services only, not "{key}"'),
+        values: { key },
+      })
     }
+    // The key is the provider's own, a `Modules` or extension key member; this only forwards it.
+    // ast-grep-ignore: resolves-an-unlisted-container-key
     return container.resolve(key as ModuleKey<unknown>)
   }
   return { resolve }
