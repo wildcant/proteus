@@ -2350,8 +2350,8 @@ msgid "No roles found."
 msgstr "No roles found."
 
 #: src/features/draft-orders/components/draft-shipping-section.tsx:27
-msgid "No shipping method yet. Set one, at the amount agreed in the chat if need be."
-msgstr "No shipping method yet. Set one, at the amount agreed in the chat if need be."
+msgid "No shipping method yet. Set one, at the amount agreed with the shopper if need be."
+msgstr "No shipping method yet. Set one, at the amount agreed with the shopper if need be."
 
 #: src/features/draft-orders/components/edit-draft-shipping-form.tsx:43
 msgid "No shipping options."
@@ -2642,8 +2642,8 @@ msgid "Pick a variant."
 msgstr "Pick a variant."
 
 #: src/features/draft-orders/components/edit-draft-shipping-form.tsx:33
-msgid "Pick how the order ships, and override its price with what you agreed in the chat."
-msgstr "Pick how the order ships, and override its price with what you agreed in the chat."
+msgid "Pick how the order ships, and override its price with what you agreed with the shopper."
+msgstr "Pick how the order ships, and override its price with what you agreed with the shopper."
 
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:59
 msgid "Pick options and values on the Details step to generate the variants."
@@ -2805,8 +2805,8 @@ msgid "Record payment"
 msgstr "Record payment"
 
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:22
-msgid "Record what the shopper told you in the chat."
-msgstr "Record what the shopper told you in the chat."
+msgid "Record the contact details and address the shopper gave you."
+msgstr "Record the contact details and address the shopper gave you."
 
 #: src/features/orders/components/order-payment-section.tsx:78
 #: src/features/orders/components/refund-payment-form.tsx:47

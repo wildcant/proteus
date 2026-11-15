@@ -24,7 +24,7 @@ export function DraftShippingSection({ draftOrder, actions }: DraftOrderData) {
 
       {draftOrder.shippingMethods.length === 0 && (
         <p className="px-6 py-4 text-muted-foreground text-sm">
-          <Trans>No shipping method yet. Set one, at the amount agreed in the chat if need be.</Trans>
+          <Trans>No shipping method yet. Set one, at the amount agreed with the shopper if need be.</Trans>
         </p>
       )}
 

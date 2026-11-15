@@ -5,7 +5,7 @@ import { ActionMenu } from '#/components/common/action-menu'
 import { SectionRow } from '#/components/common/section-row'
 import type { DraftOrderData } from '#/features/draft-orders/hooks/use-draft-order-data'
 
-/** What the shop confirms in the chat: who the shopper is, how to reach them, where the pairs go. */
+/** What the shop confirms with the shopper: who they are, how to reach them, where the items go. */
 export function DraftCustomerSection({ draftOrder, actions }: DraftOrderData) {
   const { t } = useLingui()
   const address = draftOrder.shippingAddress

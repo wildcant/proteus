@@ -6,9 +6,11 @@ import { buildComponents, type ComponentsContext } from '../components/build.ts'
 import {
   type ComponentSet,
   chooseExports,
+  effectiveOverrides,
   exportCandidates,
   type Layer,
   setOfComponents,
+  unchangedOverrides,
 } from '../components/snapshot.ts'
 import { formatTs } from '../files.ts'
 import { componentsConfig, fill, frame, text, tokenSnapshot } from './fixtures.ts'
@@ -949,6 +951,52 @@ describe('components', () => {
     expect(
       buildComponents([bar], context).files.get('/shop/src/features/shop/components/bar/bar.variants.ts'),
     ).toContain("export const barField = cva('flex-1')")
+  })
+
+  it('sizes a nested instance only on the axis the caller resized, and leaves the other to the child', () => {
+    // The caller set the field's width; FigCraft records `size`, and its height is still the Input's own 44.
+    const form = (overrides: string[]) =>
+      single('Form', 'features/shop', {
+        variants: [
+          {
+            ...frame('Form', 'horizontal'),
+            type: 'COMPONENT',
+            children: [
+              {
+                name: 'input',
+                type: 'INSTANCE',
+                mainSet: 'Input',
+                overrides,
+                sizing: { horizontal: 'fixed', vertical: 'fixed' },
+                width: 224,
+                height: 44,
+                boundVariables: { width: 's:56' },
+              },
+            ],
+          },
+        ],
+      })
+    const path = '/shop/src/features/shop/components/form/form.variants.ts'
+    expect(buildComponents([form(['name', 'width'])], context).files.get(path)).toContain(
+      "export const formInput = cva('w-56')",
+    )
+    expect(() => buildComponents([form(['name', 'size'])], context)).toThrow(
+      'input: fixed height 44 is not bound to a space token',
+    )
+  })
+
+  it('drops the overrides FigCraft records that leave an instance as its source draws it in code', () => {
+    // A responsive text style resolves to another size in a mobile variant, and FigCraft records that as an override.
+    const label = { overrides: ['textStyle', 'characters'], styles: { text: 'S:wordmark' } }
+    expect(unchangedOverrides(label, { styles: { text: 'S:wordmark' } })).toEqual(['textStyle'])
+    expect(unchangedOverrides(label, { styles: { text: 'S:body' } })).toEqual([])
+
+    const input = { overrides: ['name', 'size'], width: 160, height: 44 }
+    expect(unchangedOverrides(input, { width: 240, height: 44 })).toEqual(['height'])
+    expect(effectiveOverrides(input.overrides, ['height'])).toEqual(['name', 'width'])
+    expect(effectiveOverrides(input.overrides, ['width', 'height'])).toEqual(['name'])
+    expect(effectiveOverrides(input.overrides, [])).toEqual(['name', 'size'])
+    expect(effectiveOverrides(label.overrides, ['textStyle'])).toEqual(['characters'])
   })
 
   it('sizes a layer bound to a responsive size with its CSS variable, and stops on a binding it cannot map', () => {

@@ -1,6 +1,9 @@
 import { env } from '@env'
 import { asFunction, asValue } from 'awilix'
-import type { ExtensionProviderDependencies } from '../../../core/extensions/extension.js'
+import {
+  type ExtensionProviderDependencies,
+  extensionProviderDependencies,
+} from '../../../core/extensions/extension.js'
 import type { ModuleContainer } from '../../../core/types/container.js'
 import type { AbstractFulfillmentProvider } from '../../../core/utils/abstract-fulfillment-provider.js'
 import { ContainerRegistrationKeys } from '../../../core/utils/container.js'
@@ -23,8 +26,9 @@ export type FulfillmentModuleOptions = {
    */
   extensionProviders?: ModuleProviderExports[]
   /**
-   * What an extension provider is constructed with: the shared container's resolver, so it can
-   * depend on its extension's modules. Core's providers keep the module's own container.
+   * The shared container's resolver, narrowed to module services before an extension provider is
+   * constructed with it, so it can depend on its extension's modules. Core's providers keep the
+   * module's own container.
    */
   sharedContainer?: ExtensionProviderDependencies
 }
@@ -96,12 +100,11 @@ export async function loadProviders({
   // is on the shared container.
   const sharedContainer = opts?.sharedContainer
   if (sharedContainer) {
+    const dependencies = extensionProviderDependencies(sharedContainer)
     for (const ServiceClass of (opts?.extensionProviders ?? []).flatMap((exports) => exports.services)) {
       const Klass = ServiceClass as ProviderConstructor
       container.register({
-        [`fp_${identifierOf(Klass)}_${EXTENSION_PROVIDER_ID}`]: asFunction(
-          () => new Klass(sharedContainer),
-        ).singleton(),
+        [`fp_${identifierOf(Klass)}_${EXTENSION_PROVIDER_ID}`]: asFunction(() => new Klass(dependencies)).singleton(),
       })
     }
   }

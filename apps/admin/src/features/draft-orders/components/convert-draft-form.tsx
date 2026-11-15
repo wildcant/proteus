@@ -12,8 +12,8 @@ export function ConvertDraftForm({ draftOrder }: { draftOrder: AdminDraftOrderRe
   const { t } = useLingui()
   const { closeLabel, unsavedChanges } = useUiCopy()
   const { handleSuccess } = useRouteModal()
-  // A refusal (a pair sold out since the draft was made) stays on screen beside the action it
-  // refused, so the admin can tell the shopper which pair before closing the drawer.
+  // A refusal (an item sold out since the draft was made) stays on screen beside the action it
+  // refused, so the admin can tell the shopper which item before closing the drawer.
   const [refusal, setRefusal] = useState<string | null>(null)
   const { form } = useConvertDraftForm(draftOrder, {
     onSuccess: ({ order }) => handleSuccess(`/orders/${order.id}`),

@@ -30,7 +30,7 @@ import { useFormatters } from '#/hooks/use-formatters'
 export function OrderConfirmedContent({ orderId }: { orderId: string }) {
   const { order } = useSuspenseOrder(orderId)
   const { formatDate } = useFormatters()
-  const { displayId } = order
+  const { reference } = order
   const email = order.owner?.email
   const placedAt = formatDate(order.createdAt)
 
@@ -46,14 +46,15 @@ export function OrderConfirmedContent({ orderId }: { orderId: string }) {
               <Trans>Your order was placed successfully.</Trans>
             </p>
             {/* The address is ink inside the muted line: rich text the drawing keeps on one style. */}
-            {/* A guest's order link carries no email, so only a signed-in customer reads it back. */}
+            {/* A guest's order link carries no email, so only a signed-in customer reads it back. An
+                Order may have no email at all, and then nothing was sent: the guest line can't say it was. */}
             <p className={orderConfirmedContentSentMessage()}>
               {email ? (
                 <Trans>
                   We have sent the order confirmation details to <span className="text-ink">{email}</span>.
                 </Trans>
               ) : (
-                <Trans>We have sent the order confirmation details to your email.</Trans>
+                <Trans>If you gave us an email address, we have sent the order confirmation details to it.</Trans>
               )}
             </p>
           </div>
@@ -62,7 +63,7 @@ export function OrderConfirmedContent({ orderId }: { orderId: string }) {
         <div className={orderConfirmedContentOrder()}>
           <div className={orderConfirmedContentTitleGroup()}>
             <h2 className={orderConfirmedContentOrderTitle()}>
-              <Trans>Order #{displayId}</Trans>
+              <Trans>Order {reference}</Trans>
             </h2>
             <p className={orderConfirmedContentPlaced()}>
               <Trans>Placed {placedAt}</Trans>

@@ -1310,6 +1310,11 @@ msgid "Invalid query params"
 msgstr "Invalid query params"
 
 #. js-lingui-explicit-id
+#: src/core/extensions/extension.ts:65
+msgid "An extension provider may resolve module services only, not \"{key}\""
+msgstr "An extension provider may resolve module services only, not \"{key}\""
+
+#. js-lingui-explicit-id
 #: src/core/errors/db-error-mapper.ts:88
 msgid "{table}: {fields} already exists"
 msgstr "{table}: {fields} already exists"

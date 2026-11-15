@@ -10,7 +10,7 @@ import type { ComboboxOption } from '#/components/form/single-combobox-field'
 
 export type DraftShippingValues = {
   shippingOption: ComboboxOption | null
-  /** Empty leaves the price to the option; anything else is what the shop agreed in the chat. */
+  /** Empty leaves the price to the option; anything else is what the shop agreed with the shopper. */
   customAmount: string
 }
 

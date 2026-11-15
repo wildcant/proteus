@@ -549,6 +549,10 @@ msgstr "Hold on while we confirm your email."
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "If an account exists with that email, we've sent a link to reset your password."
 
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:57
+msgid "If you gave us an email address, we have sent the order confirmation details to it."
+msgstr "If you gave us an email address, we have sent the order confirmation details to it."
+
 #: src/components/ui/quantity-stepper/quantity-stepper.tsx:82
 msgid "Increase quantity for {label}"
 msgstr "Increase quantity for {label}"
@@ -704,10 +708,10 @@ msgstr "Open menu"
 msgid "Open this link in the same browser you signed up with."
 msgstr "Open this link in the same browser you signed up with."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:65
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:66
 #: src/features/orders/components/order-content/order-content.tsx:56
-msgid "Order #{displayId}"
-msgstr "Order #{displayId}"
+msgid "Order {reference}"
+msgstr "Order {reference}"
 
 #: src/features/orders/components/order-progress-track/order-progress-track.tsx:40
 msgid "Order progress"
@@ -788,7 +792,7 @@ msgstr "Phone"
 msgid "Place order"
 msgstr "Place order"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:68
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:69
 #: src/features/orders/components/order-content/order-content.tsx:59
 msgid "Placed {placedAt}"
 msgstr "Placed {placedAt}"
@@ -1251,13 +1255,9 @@ msgstr "We couldn't show this product"
 msgid "We email you a link rather than asking for your current password."
 msgstr "We email you a link rather than asking for your current password."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:52
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:53
 msgid "We have sent the order confirmation details to <0>{email}</0>."
 msgstr "We have sent the order confirmation details to <0>{email}</0>."
-
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:56
-msgid "We have sent the order confirmation details to your email."
-msgstr "We have sent the order confirmation details to your email."
 
 #: src/features/auth/components/verify-pending/verify-pending.tsx:24
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."

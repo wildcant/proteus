@@ -32,7 +32,7 @@ export function OrderContent({
 }) {
   const { order } = useSuspenseOrder(orderId)
   const { formatDate } = useFormatters()
-  const { displayId } = order
+  const { reference } = order
   const placedAt = formatDate(order.createdAt)
 
   return (
@@ -53,7 +53,7 @@ export function OrderContent({
             was a separate paragraph and the number alone is not a name for anything. */}
         <div className={orderContentTitleGroup()}>
           <h1 className={orderContentTitle()}>
-            <Trans>Order #{displayId}</Trans>
+            <Trans>Order {reference}</Trans>
           </h1>
           <p className={orderContentPlaced()}>
             <Trans>Placed {placedAt}</Trans>
