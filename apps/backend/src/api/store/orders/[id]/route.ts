@@ -1,9 +1,8 @@
-import { AppError, ErrorTypes } from '@core/errors/app-error.js'
+import { ErrorTypes } from '@core/errors/app-error.js'
 import { ContainerRegistrationKeys } from '@core/utils/container.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { IdParams, StoreOrderResponse } from '@proteus/http-schemas/store'
-import { i18n } from '@proteus/utils'
 import { computeFulfillmentStatus } from '@workflows/order/utils/compute-fulfillment-status.js'
 import { computePaymentStatus } from '@workflows/order/utils/compute-payment-status.js'
 import { orderReference } from '@workflows/order/utils/order-reference.js'
@@ -25,13 +24,8 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const paymentService = req.scope.resolve(Modules.PAYMENT)
   const order = await orderService.retrieveOrder(req.params.id)
 
-  if (customerId && order.customerId !== customerId) {
-    throw new AppError({
-      type: ErrorTypes.NOT_FOUND,
-      message: i18n.t('Order with id "{id}" not found'),
-      values: { id: req.params.id },
-    })
-  }
+  // A signed-in reader who did not place it is one more holder of the link: the public view, no `owner`.
+  const isOwner = order.customerId !== null && order.customerId === customerId
 
   const [lineItems, shippingMethods, transactions, shippingAddress] = await Promise.all([
     orderService.listOrderLineItems({ orderId: order.id }),
@@ -66,8 +60,7 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
         shippingAddress: shippingAddress && { city: shippingAddress.city, province: shippingAddress.province },
         shippingMethods,
         totals,
-        // The check above has already refused a signed-in customer who is not the owner.
-        ...(customerId ? { owner: { email: order.email, shippingAddress } } : {}),
+        ...(isOwner ? { owner: { email: order.email, shippingAddress } } : {}),
       },
     },
   }

@@ -15,7 +15,7 @@ let api: TestApi
 
 // `namespaceAuth` is what puts the real `authenticate` middleware in front of these routes, and
 // it is the whole subject of half this file: the list route refuses a guest, and the detail route
-// admits one but hides an order belonging to somebody else.
+// admits anyone, and adds the owner details only for the customer who placed the order.
 test.beforeEach(async ({ createApi }) => {
   api = await createApi({ definitions: orderDefinitions, namespaceAuth: true })
 })
@@ -129,16 +129,21 @@ test.describe('GET /store/orders/:id', () => {
     })
   })
 
-  test('hides an order that belongs to another customer', async ({ service, expect }) => {
+  test('another signed-in customer reads the public view, without the owner details', async ({ service, expect }) => {
     const customer = await service.create.customer(api.container)
     const other = await service.create.customer(api.container)
     const { order } = await service.create.order(api.container, { cart: { customerId: customer.id } })
 
     const { status, body } = await retrieve(order.id, authHeader('customer', other.id))
 
-    // Deliberately 404 rather than 403: a customer probing ids learns nothing about which of them exist.
-    expect(status).toBe(404)
-    expect(body).toMatchObject({ type: 'not_found' })
+    // Signing in does not take the link away: anyone holding it reads the order, and only the
+    // customer who placed it gets `owner` beside it.
+    expect(status).toBe(200)
+    const read = 'order' in body ? body.order : undefined
+    assertDefined(read)
+    expect(read.id).toBe(order.id)
+    expect(read).not.toHaveProperty('owner')
+    expect(JSON.stringify(body)).not.toContain(order.email ?? 'an email')
   })
 
   test('returns 404 for an order that does not exist', async ({ expect }) => {
