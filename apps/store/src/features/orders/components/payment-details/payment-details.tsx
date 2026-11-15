@@ -2,7 +2,7 @@ import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
-import type { StoreOrderDetail } from '#/api/generated/model'
+import type { OrderPaymentStatus, StoreOrderDetail } from '#/api/generated/model'
 import { Panel } from '#/components/store/panel/panel'
 import {
   paymentDetails,
@@ -14,55 +14,82 @@ import {
 import { useFormatters } from '#/hooks/use-formatters'
 
 /**
- * What was paid and when, and nothing that implies how. The order module stores no card brand
- * or last four — `transaction` records amounts, not instruments — so a "Payment method" heading
- * over a status was a lie of placement.
+ * What was paid and what is still owed, and nothing that implies how. The order module stores no
+ * card brand or last four — its transactions record amounts, not instruments — so a "Payment
+ * method" heading over a status was a lie of placement.
  */
 export function PaymentDetails({ order, className }: { order: StoreOrderDetail; className?: string }) {
   const { t } = useLingui()
-  const formatters = useFormatters()
-  const { headline, detail } = paymentLines(order, formatters)
+  const { formatPrice } = useFormatters()
+  const { headline, details } = paymentLines(order, formatPrice)
 
   return (
     <Panel title={t`Payment`} className={cn(paymentDetails(), paymentDetailsPanel(), className)}>
       <div className={paymentDetailsStatus()}>
         <p className={paymentDetailsHeadline()}>{t(headline)}</p>
-        <p className={paymentDetailsDetail()}>{t(detail)}</p>
+        {details.map((detail) => (
+          <p key={detail.id} className={paymentDetailsDetail()}>
+            {t(detail)}
+          </p>
+        ))}
       </div>
     </Panel>
   )
 }
 
+function headlineFor(status: OrderPaymentStatus): MessageDescriptor {
+  switch (status) {
+    case 'authorized':
+    case 'partially_authorized':
+      return msg`Payment authorized`
+    case 'partially_captured':
+      return msg`Partly paid`
+    case 'captured':
+      return msg`Payment received`
+    case 'partially_refunded':
+      return msg`Partly refunded`
+    case 'refunded':
+      return msg`Payment refunded`
+    default:
+      return msg`Awaiting payment`
+  }
+}
+
 /**
- * `paymentStatus` has three values and this panel used to render two, folding `authorized` in
- * with `awaiting`. An authorized payment is money the bank has already reserved; telling that
- * shopper their order is awaiting payment, on a page that simultaneously says it is being
- * prepared, is the page contradicting itself.
+ * The headline names the payment status; the lines under it are the response's Paid Total and
+ * Outstanding Amount, so a shopper who paid a deposit sees what they paid and what they still owe
+ * rather than the whole total due.
  *
- * A canceled order is read first, for the same reason: "$92,500.00 due" under a heading that
- * says the order was called off is the same contradiction wearing different words. A captured
- * payment on a canceled order still reads as captured — refunds are not modelled on this
- * response, and inventing one here would be worse than saying nothing about it.
+ * A canceled order is read first. With nothing paid, "$92,500.00 due" under a heading that says the
+ * order was called off would contradict it, so it says nothing was charged. With money kept, it
+ * prints what was paid and no amount due: a canceled order owes nothing.
  *
- * The date is the order's, not the payment's — the store response carries no transaction
- * timestamp — so it is only printed where the two coincide. An order still awaiting payment has
- * no moment to name, and printing the amount "on" the day it was placed would read as paid.
+ * An authorization with nothing captured is money the bank has reserved, not money owed, so it
+ * says that instead of "due".
  */
 function paymentLines(
   order: StoreOrderDetail,
-  { formatPrice, formatDatetime }: ReturnType<typeof useFormatters>,
-): { headline: MessageDescriptor; detail: MessageDescriptor } {
-  const total = formatPrice(order.totals.orderTotal, order.currencyCode)
-  const paidAt = formatDatetime(order.createdAt)
-  const captured = { headline: msg`Payment received`, detail: msg`${total} on ${paidAt}` }
+  formatPrice: ReturnType<typeof useFormatters>['formatPrice'],
+): { headline: MessageDescriptor; details: MessageDescriptor[] } {
+  const { orderTotal, paidTotal, outstandingTotal } = order.totals
+  const total = formatPrice(orderTotal, order.currencyCode)
+  const paid = formatPrice(paidTotal, order.currencyCode)
+  const outstanding = formatPrice(outstandingTotal, order.currencyCode)
+  const hasPaid = Number(paidTotal) > 0
+  const isCanceled = order.status === 'canceled'
 
-  if (order.paymentStatus === 'captured') return captured
-  if (order.status === 'canceled') return { headline: msg`No payment taken`, detail: msg`${total} was not charged` }
+  if (isCanceled && !hasPaid && order.paymentStatus !== 'refunded') {
+    return { headline: msg`No payment taken`, details: [msg`${total} was not charged`] }
+  }
   if (order.paymentStatus === 'authorized') {
     return {
-      headline: msg`Payment authorized`,
-      detail: msg`${total} reserved by your bank, charged when your order ships`,
+      headline: headlineFor(order.paymentStatus),
+      details: [msg`${total} reserved by your bank, charged when your order ships`],
     }
   }
-  return { headline: msg`Awaiting payment`, detail: msg`${total} due` }
+
+  const details: MessageDescriptor[] = []
+  if (hasPaid) details.push(msg`${paid} paid`)
+  if (!isCanceled && Number(outstandingTotal) > 0) details.push(msg`${outstanding} due`)
+  return { headline: headlineFor(order.paymentStatus), details }
 }
