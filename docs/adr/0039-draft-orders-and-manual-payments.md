@@ -124,7 +124,9 @@ The store's order read by Order id answers anyone holding the id, drafts include
 random UUID with a prefix (ADR-0003), so it can't be guessed. The read returns an allowlisted set of
 fields: the three statuses, the reference, the lines with their options, the shipping address's
 city and province, the shipping methods, and the totals with Paid Total and Outstanding Amount. It
-returns no email, no street and no full phone. A signed-in Customer's reads are unchanged.
+returns no email, no street and no full phone. When the reader is the signed-in Customer who
+placed the Order, the read adds an `owner` block with the email and the full shipping address; any
+other reader, signed in or not, gets the public view.
 
 A shopper who lost the link looks the Order up by its display id and the last 4 digits of the phone
 on its shipping address, compared after stripping everything but digits. A match answers the Order
@@ -173,10 +175,14 @@ route answers 404.
 
 ### Events and permissions
 
-No event is added. A draft's conversion publishes the existing `order.placed`, as a checkout does,
-and nothing is published when a draft is created, edited or canceled, or when a payment or refund
-is recorded. The event map adds an event only together with the subscriber that consumes it, and
-none consumes these yet.
+No event is added. The working spec planned events for a recorded capture, a recorded refund, a
+converted draft and a canceled draft. None ships, because the event map adds an event only together
+with the subscriber that consumes it (`apps/backend/src/core/event-bus/events.ts`,
+`standards/rules/backend/subscribers/__docs__/events.md`), and nothing consumes these yet. A
+draft's conversion publishes the existing `order.placed`, as a checkout does. Nothing is published
+when a draft is created, edited or canceled, or when the admin records a payment or a refund; the
+existing `payment.captured` stays the gateway webhook's event. The first subscriber that needs one
+of these adds the event with it.
 
 One permission key is added, `order.edit`, for editing and deleting drafts. Listing and reading
 drafts take `order.read`, converting takes `order.complete`, canceling takes `order.cancel`, and
@@ -192,6 +198,19 @@ recording a payment or a refund takes `payment.capture` or `payment.refund`.
 3. **The refund amount is chosen at cancel.** Medusa's cancel refunds every captured payment.
    Proteus asks the admin how much to return, from nothing to all of it.
 4. **A guest looks an Order up by its number and phone digits.** Medusa has no such lookup.
+5. **The store's order read depends on who reads it.** Medusa's store order read answers one shape.
+   Proteus answers an allowlisted public view to anyone holding the id, and adds the `owner` block
+   (email, full shipping address) only for the signed-in Customer who placed the Order. A signed-in
+   reader who didn't place it gets the public view.
+6. **Payments are recorded on the Order, and mark-as-paid is gone.** Medusa's admin marks a payment
+   collection paid in full (`POST /admin/payment-collections/:id/mark-as-paid`). Proteus deletes
+   that route and records a payment of any amount with `POST /admin/orders/:id/payments`, which
+   authorizes the Order's one collection on the first payment and captures each amount against it.
+7. **The store's shipping options read takes the address in the query.** Medusa prices a Cart's
+   shipping options from the address saved on the Cart. Proteus's store read also accepts
+   `province`, `city` and `postalCode` query values that stand in for the saved ones, so a
+   storefront can quote calculated shipping for a city the shopper is still typing, before the
+   address is saved.
 
 Recording a capture of any amount from the admin also goes beyond Medusa's dashboard, which captures
 only the full amount; its workflows already take an amount.
