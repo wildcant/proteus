@@ -148,7 +148,7 @@ export type VariantOptionLabelDTO = {
  * One entry of a variant's Option Combination, resolved for display: both the ids a client posts
  * back and the labels it renders. Always in the product's option order.
  */
-export type VariantOptionValueDTO = {
+type VariantOptionValueDTO = {
   optionId: string
   optionTitle: string
   valueId: string
