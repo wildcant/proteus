@@ -105,6 +105,8 @@ export type IOrderModuleService = {
 
   /** A Draft Order and what the shop confirms it by; NOT_FOUND for an Order that was never a draft. */
   retrieveDraftOrder(id: string, context?: Context): Promise<DraftOrderDetailDTO>
+  /** A Draft Order still open for edits; refuses (NOT_ALLOWED) one converted, canceled or never a draft. */
+  retrieveOpenDraftOrder(id: string, context?: Context): Promise<OrderDTO>
   // Draft orders — every mutation below refuses an Order that is not a draft still open for edits
   updateDraftOrder(id: string, data: UpdateDraftOrderDTO, context?: Context): Promise<OrderDTO>
   /** Adds priced lines, merging each into the line the draft already holds for its variant. */

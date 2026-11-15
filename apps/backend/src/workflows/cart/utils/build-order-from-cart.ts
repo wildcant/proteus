@@ -1,5 +1,5 @@
 import type { CartAddressDTO, CartDTO, CartLineItemDTO, CartShippingMethodDTO } from '@core/types/cart/common.js'
-import type { CreateOrderAddressDTO, CreateOrderDTO } from '@core/types/order/mutations.js'
+import type { CreateOrderAddressDTO, CreateOrderDTO, CreateOrderLineItemDTO } from '@core/types/order/mutations.js'
 
 type OrderFromCartSources = {
   cart: Pick<CartDTO, 'customerId' | 'regionId' | 'salesChannelId' | 'currencyCode'>
@@ -18,6 +18,35 @@ function snapshotAddress(source: CartAddressDTO | undefined): CreateOrderAddress
   if (!source) return undefined
   const { id, cartId, type, createdAt, updatedAt, deletedAt, ...fields } = source
   return fields
+}
+
+/**
+ * A line as the Order stores it, field by field: a Cart's line at checkout or when it becomes a
+ * Draft Order, and a line built for a draft the way add-to-cart builds one. What the Order doesn't
+ * keep (the Cart's own ids, the gift-card and discount flags) stays behind.
+ */
+export function toOrderLineItem(line: CreateOrderLineItemDTO): CreateOrderLineItemDTO {
+  return {
+    title: line.title,
+    subtitle: line.subtitle,
+    thumbnail: line.thumbnail,
+    quantity: line.quantity,
+    unitPrice: line.unitPrice,
+    compareAtUnitPrice: line.compareAtUnitPrice,
+    variantId: line.variantId,
+    productId: line.productId,
+    productTitle: line.productTitle,
+    productDescription: line.productDescription,
+    productSubtitle: line.productSubtitle,
+    productType: line.productType,
+    productHandle: line.productHandle,
+    variantSku: line.variantSku,
+    variantBarcode: line.variantBarcode,
+    variantTitle: line.variantTitle,
+    variantOptionValues: line.variantOptionValues,
+    variantOptions: line.variantOptions,
+    requiresShipping: line.requiresShipping,
+  }
 }
 
 /**
@@ -41,27 +70,7 @@ export function buildOrderFromCart({
     currencyCode: cart.currencyCode,
     shippingAddress: snapshotAddress(addresses.find((address) => address.type === 'shipping')),
     billingAddress: snapshotAddress(addresses.find((address) => address.type === 'billing')),
-    items: lineItems.map((item) => ({
-      title: item.title,
-      subtitle: item.subtitle,
-      thumbnail: item.thumbnail,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-      compareAtUnitPrice: item.compareAtUnitPrice,
-      variantId: item.variantId,
-      productId: item.productId,
-      productTitle: item.productTitle,
-      productDescription: item.productDescription,
-      productSubtitle: item.productSubtitle,
-      productType: item.productType,
-      productHandle: item.productHandle,
-      variantSku: item.variantSku,
-      variantBarcode: item.variantBarcode,
-      variantTitle: item.variantTitle,
-      variantOptionValues: item.variantOptionValues,
-      variantOptions: item.variantOptions,
-      requiresShipping: item.requiresShipping,
-    })),
+    items: lineItems.map(toOrderLineItem),
     shippingMethods: shippingMethods.map((method) => ({
       name: method.name,
       description: method.description,
