@@ -41,9 +41,10 @@ const createMarket = async ({ factories, service }: Pick<Fixtures, 'factories' |
     geoZone: { type: 'country', countryCode: 'co' },
     shippingOption: { name: 'Courier', priceType: 'calculated', amount: null, providerId: CITY_RATES_PROVIDER },
   })
-  await api.container
-    .resolve(FixtureModules.SHIPPING_RATES)
-    .createShippingRates([{ city: 'Bogotá', baseAmount: 8000, perItemAmount: 2000, deliveryDays: 2 }])
+  await api.container.resolve(FixtureModules.SHIPPING_RATES).createShippingRates([
+    { city: 'Bogotá', baseAmount: 8000, perItemAmount: 2000, deliveryDays: 2 },
+    { city: 'Cali', baseAmount: 9000, perItemAmount: 1000, deliveryDays: 4 },
+  ])
 
   const sneaker = await service.create.sellableVariant(api.container, {
     product: { title: 'Runner' },
@@ -192,6 +193,16 @@ test.describe('draft orders, from the store Cart to a confirmed Order', () => {
     })
     expect(phoned.status).toBe(200)
     expect(phoned.body.draftOrder.shippingAddress).toMatchObject({ city: 'Bogotá', phone: '+57 311 000 0000' })
+
+    // Moved to Cali, the courier re-quotes the draft and its delivery estimate with it; back to Bogotá.
+    const moved = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}`, {
+      shippingAddress: { city: 'Cali', province: 'Valle del Cauca' },
+    })
+    expect(moved.body.draftOrder.shippingMethods).toMatchObject([{ amount: '10000', data: { deliveryDays: 4 } }])
+    const back = await api.post<AdminDraftOrderResponse>(`/admin/draft-orders/${draftId}`, {
+      shippingAddress: { city: 'Bogotá', province: 'Cundinamarca' },
+    })
+    expect(back.body.draftOrder.shippingMethods).toMatchObject([{ amount: '10000', data: { deliveryDays: 2 } }])
 
     // Sending the same Cart again answers the same draft and overwrites none of the shop's edit.
     const again = await api.post<StoreCreateDraftOrderResponse>(`/store/carts/${cart.id}/draft-order`)

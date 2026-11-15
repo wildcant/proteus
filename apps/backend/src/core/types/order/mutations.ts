@@ -101,8 +101,13 @@ export type DraftOrderShippingMethodReplacement = {
   replacedIds: string[]
 }
 
-/** A shipping method's amount as a refresh re-states it. */
-export type OrderShippingMethodPriceUpdateDTO = { id: string; amount: BigNumber }
+/** A shipping method's price, and the provider's data that price was based on, as a refresh re-states them. */
+export type OrderShippingMethodPriceUpdateDTO = {
+  id: string
+  amount: BigNumber
+  isTaxInclusive: boolean
+  data: Record<string, unknown> | null
+}
 
 /** What a draft's shipping refresh writes: the methods re-priced, and the ones no longer available. */
 export type OrderShippingMethodRefreshDTO = {

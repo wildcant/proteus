@@ -327,7 +327,9 @@ export class OrderModuleService implements IOrderModuleService {
     context?: Context,
   ): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
-      await Promise.all(update.map(({ id, amount }) => this.orderShippingMethodRepository.update(id, { amount }, ctx)))
+      await Promise.all(
+        update.map(({ id, ...requoted }) => this.orderShippingMethodRepository.update(id, requoted, ctx)),
+      )
       if (remove.length > 0) await this.orderShippingMethodRepository.softDelete(remove, ctx)
     })
   }

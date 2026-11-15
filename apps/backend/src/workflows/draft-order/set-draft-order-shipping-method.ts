@@ -60,10 +60,10 @@ export const setDraftOrderShippingMethodWorkflow = createWorkflow<
     }
 
     const pricingContext = await loadDraftOrderShippingPricingContext(container, input.orderId)
-    const [priced] = pricingContext
-      ? await fulfillmentService.priceShippingOptionsForContext([{ id: input.shippingOptionId, data }], pricingContext)
+    const [quoted] = pricingContext
+      ? await fulfillmentService.quoteShippingOptionsForContext([{ id: input.shippingOptionId, data }], pricingContext)
       : []
-    if (!priced || !pricingContext) {
+    if (!quoted) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.NOT_ALLOWED,
         code: FulfillmentErrorCodes.OPTION_UNAVAILABLE,
@@ -73,11 +73,11 @@ export const setDraftOrderShippingMethodWorkflow = createWorkflow<
     }
 
     return {
-      name: priced.name,
-      amount: String(priced.calculatedPrice.calculatedAmount),
-      isTaxInclusive: priced.calculatedPrice.isCalculatedPriceTaxInclusive,
-      shippingOptionId: priced.id,
-      data: await fulfillmentService.validateShippingOptionFulfillmentData(priced.id, data, pricingContext),
+      name: quoted.name,
+      amount: String(quoted.calculatedPrice.calculatedAmount),
+      isTaxInclusive: quoted.calculatedPrice.isCalculatedPriceTaxInclusive,
+      shippingOptionId: quoted.id,
+      data: quoted.fulfillmentData,
       isCustomAmount: false,
     }
   })

@@ -333,9 +333,7 @@ export class CartModuleService implements ICartModuleService {
   async applyShippingMethodRefresh({ update, remove }: ShippingMethodRefreshDTO, context?: Context): Promise<void> {
     return this.withTransaction(context, async (ctx) => {
       await Promise.all(
-        update.map(({ id, amount, isTaxInclusive }) =>
-          this.cartShippingMethodRepository.update(id, { amount, isTaxInclusive }, ctx),
-        ),
+        update.map(({ id, ...requoted }) => this.cartShippingMethodRepository.update(id, requoted, ctx)),
       )
       if (remove.length > 0) await this.cartShippingMethodRepository.softDelete(remove, ctx)
     })

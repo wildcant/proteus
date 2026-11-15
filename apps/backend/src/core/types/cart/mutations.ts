@@ -67,11 +67,12 @@ export type CreateShippingMethodDTO = {
   data?: Record<string, unknown> | null | undefined
 }
 
-/** A shipping method's price as a refresh re-states it. */
+/** A shipping method's price, and the provider's data that price was based on, as a refresh re-states them. */
 export type ShippingMethodPriceUpdateDTO = {
   id: string
   amount: BigNumber
   isTaxInclusive: boolean
+  data: Record<string, unknown> | null
 }
 
 /**

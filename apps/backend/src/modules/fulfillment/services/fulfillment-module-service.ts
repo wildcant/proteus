@@ -42,6 +42,7 @@ import type { CalculateShippingPriceContext } from '../../../core/types/fulfillm
 import type {
   IFulfillmentModuleService,
   PricedShippingOptionDTO,
+  QuotedShippingOptionDTO,
   ShippingAddressContext,
   ShippingOptionToPrice,
 } from '../../../core/types/fulfillment/service.js'
@@ -440,11 +441,11 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
     )
   }
 
-  async priceShippingOptionsForContext(
+  async quoteShippingOptionsForContext(
     options: ShippingOptionToPrice[],
     pricingContext: CalculateShippingPriceContext,
     context?: Context,
-  ): Promise<PricedShippingOptionDTO[]> {
+  ): Promise<QuotedShippingOptionDTO[]> {
     if (options.length === 0) return []
 
     const rows = (await this.shippingOptionRepository.find(
@@ -461,29 +462,33 @@ export class FulfillmentModuleService implements IFulfillmentModuleService {
       pricingContext.shippingAddress,
     )
     const rowById = new Map(rows.filter((row) => serving.has(row.serviceZoneId)).map((row) => [row.id, row]))
+    const dataByOptionId = new Map(options.map(({ id, data }) => [id, data ?? {}]))
 
-    return this.priceOptions(
+    const priced = await this.priceOptions(
       options.flatMap(({ id, data }) => {
         const option = rowById.get(id)
         return option ? [{ option, data: data ?? {} }] : []
       }),
       pricingContext,
     )
-  }
-
-  async validateShippingOptionFulfillmentData(
-    shippingOptionId: string,
-    data: Record<string, unknown>,
-    pricingContext: CalculateShippingPriceContext,
-    context?: Context,
-  ): Promise<Record<string, unknown>> {
-    const option = await this.shippingOptionRepository.findByIdOrFail(shippingOptionId, undefined, context)
-    return this.fulfillmentProviderService.validateFulfillmentData(
-      option.providerId,
-      option.data ?? {},
-      data,
-      pricingContext,
+    const quoted = await Promise.all(
+      priced.map(async (option): Promise<QuotedShippingOptionDTO | null> => {
+        try {
+          const fulfillmentData = await this.fulfillmentProviderService.validateFulfillmentData(
+            option.providerId,
+            option.data ?? {},
+            dataByOptionId.get(option.id) ?? {},
+            pricingContext,
+          )
+          return { ...option, fulfillmentData }
+        } catch (error) {
+          // Any other refusal is the provider rejecting the data it was sent, which the caller hears.
+          if (isCannotCalculateShippingPrice(error)) return null
+          throw error
+        }
+      }),
     )
+    return quoted.filter((option): option is QuotedShippingOptionDTO => option !== null)
   }
 
   async updateShippingOptions(

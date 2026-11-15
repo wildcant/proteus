@@ -83,8 +83,10 @@ for one.
 ### Refreshing when the Cart changes
 
 When a Cart's items or shipping address change, the Cart workflows refresh its shipping methods, as
-Medusa's `refreshCartShippingMethodsWorkflow` does: a calculated method is re-priced, and a method
-whose option no longer serves the address, or that its provider can no longer price, is removed.
-Completing a Cart and creating a Draft Order copy the method as stored, amount and `data` together.
-On a Draft Order, an item or address edit re-prices a calculated method the same way, unless the
-admin set a custom amount.
+Medusa's `refreshCartShippingMethodsWorkflow` does: each method is quoted again, its price and its
+provider's `validateFulfillmentData` answer together, so a delivery estimate follows the address
+the price did. A method whose option no longer serves the address, or that its provider can no
+longer price, is removed. Completing a Cart and creating a Draft Order copy the method as stored:
+amount, tax flag and `data`. On a Draft Order, an item or address edit refreshes a method the same
+way, unless the admin set a custom amount: that method keeps its amount and its data as the admin
+set them.
