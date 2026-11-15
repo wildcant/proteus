@@ -25,6 +25,7 @@ src/extensions/<ext>/
   api/hooks/<domain>/     # webhook routes, matchers under /hooks/
   workflows/              # createWorkflow({ name: '<ext>.<workflow>' }, …)
   hooks/<hook>.ts         # export const handler = defineHookHandler(someCoreHook, { run })
+  providers/fulfillment/  # fulfillment providers: AbstractFulfillmentProvider subclasses and their declarations
   subscribers/            # export const config: SubscriberConfig<…> = { name: '<ext>.<subscriber>', … }
   jobs/                   # export const config: JobDefinition = { name: '<ext>.<job>', … }
   seeds/<step>.ts         # export default step, typed ExtensionSeedStep
@@ -52,6 +53,7 @@ prefix, in that namespace's form. A name core adds in a later release then canno
 | Module keys, event names | dot prefix | `pisos-dj.shipping`, `pisos-dj.quote_requested` | `extensions:generate` |
 | Workflow, subscriber and job names | dot prefix | `pisos-dj.quote-shipping` | `workflows:generate`, `subscribers:generate`, `jobs:generate` |
 | Operation ids | camel prefix | `pisosDjListShippingCities` | `extensions:generate` |
+| Fulfillment provider identifiers | snake prefix | `pisos_dj_courier`, registered as `fp_pisos_dj_courier_default` | `extensions:generate` |
 | OpenAPI component names | Pascal prefix | `PisosDjShippingCity` | `extensions:generate` |
 | Exported model identifiers | camel prefix | `pisosDjShippingRateTable` | `typecheck`, on the `export *` in `src/schema.gen.ts` |
 
@@ -89,8 +91,10 @@ upstream one: core adds a hook only together with the workflow that needs it.
 - **Add a table to a core module.** Give the extension its own module.
 - **Declare an admin route, or `features` on a module.** Both need permission keys, which are a
   closed core list, and extension permissions do not exist yet.
-- **Bring a provider.** Extension-owned providers are deferred: on workerd, provider rows come from
-  a seed script that lists core modules only.
+- **Bring a payment or notification provider, or any provider that needs a secret.** Only
+  fulfillment providers are supported (see [a fulfillment provider](#a-fulfillment-provider)). A
+  secret goes through `src/env.ts`, a Proteus file, and extension payment and notification
+  providers are deferred.
 - **Link an extension module with a core module.** Links between them are not supported yet.
   Store the core id instead (next rule).
 
@@ -207,6 +211,29 @@ run it at start) and commit the generated files. `pnpm run verify` fails on a st
 5. If `pnpm run dev:translations` is running, restart it after the extension's first message. It
    reads the list of catalogs only when it starts.
 
+### A fulfillment provider
+
+1. A class in `providers/fulfillment/` extending `AbstractFulfillmentProvider`, with a static
+   `identifier` carrying the snake prefix (`pisos_dj_courier`). A core identifier, or another
+   extension's, fails generation.
+2. Its declaration beside it, as core's are in the fulfillment module's `provider-declarations.ts`.
+   The fixture extension has the worked example.
+3. It may depend on its own extension's module services (its rate table), resolved from the shared
+   container by the extension's module key. It may not reach a core module's repositories or models;
+   a core module is read through its service, like anywhere else in the extension.
+4. For a calculated option, `calculatePrice(optionData, data, context)` receives the option's
+   `data`, the method's `data` and the Cart (its items with variant weight and dimensions, and its
+   shipping address), and returns the calculated amount and whether it includes tax. When it can't
+   price this address or these items, it throws the port's typed "can't calculate" error, and the
+   option is left out of the Cart's options. Anything it needs later, such as a delivery estimate,
+   goes in what `validateFulfillmentData` returns, which is stored on the shipping method. The
+   fulfillment module's [README](../../../../../apps/backend/src/modules/fulfillment/README.md#the-calculateprice-contract)
+   has the whole contract.
+5. `extensions:generate`. The fulfillment module registers the provider at bootstrap, and the
+   provider sync writes its row: at boot on Node, and through `scripts/seed-providers.ts` before a
+   workerd deploy.
+6. The admin creates a shipping option that uses it, with the price type `calculated`.
+
 ### A hook handler
 
 1. `hooks/<hook>.ts`: `export const handler = defineHookHandler(someCoreHook, { run, compensate? })`.
@@ -218,7 +245,7 @@ run it at start) and commit the generated files. `pnpm run verify` fails on a st
 
 | Check | What it enforces |
 |---|---|
-| `extensions:generate` / `check:extension-registry` | the extension name; prefixes on module keys, events, operation ids and component names; no collision with core or another extension; route prefixes, no admin route, no core route matched or shadowed; one handler per hook; no catalog translating a message differently from another; that the committed registries are current |
+| `extensions:generate` / `check:extension-registry` | the extension name; prefixes on module keys, events, operation ids and component names; no collision with core or another extension; route prefixes, no admin route, no core route matched or shadowed; prefixed fulfillment provider identifiers that collide with no core provider; one handler per hook; no catalog translating a message differently from another; that the committed registries are current |
 | `workflows:generate`, `subscribers:generate`, `jobs:generate` (and their `check:` scripts) | the dot prefix on workflow, subscriber and job names, and no duplicate with core |
 | `check:workerd-crons` | that `wrangler.jsonc` lists every enabled job's schedule |
 | `check:schema` (`extension-database-names`, `extension-foreign-keys`) | prefixed tables, indexes, constraints, enums and migrations tables; no foreign key out of the extension |

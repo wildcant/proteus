@@ -165,7 +165,8 @@ What a shopper is collecting to buy: line items priced in one Region's currency,
 addresses and shipping method that will become an Order. A Cart may have no Customer — a guest Cart,
 remembered by its id in the browser — and signing in transfers it to the Customer. Switching Market
 moves it to the new Region when every item can be sold there. A Cart is never reserved against
-stock; it becomes exactly one Order when completed, and `completedAt` is stamped then. Store Copy
+stock; it becomes exactly one Order when completed — by checkout, or by sending it to the shop as a
+Draft Order — and `completedAt` is stamped then, after which it can't change. Store Copy
 calls it the **bag** ("Your Bag"); the code, the API and this glossary say Cart.
 _Avoid_: bag (in code and docs — Store Copy only), basket, checkout (for the thing itself), session
 
@@ -187,14 +188,53 @@ checkout copies it onto the Cart, so editing the saved address later changes nei
 _Avoid_: location (reserved for Stock Location), destination, contact
 
 **Order**:
-A completed Cart, made permanent: the line items with their Variant Titles and prices copied at that
-moment, the addresses and shipping method copied from the Cart, the email the confirmation went to,
-and a shopper-facing number (`displayId`). Its status (pending, completed, canceled, archived) is
-separate from its fulfillment status (preparing, ready to ship, shipped, delivered) and from its
-payment status (awaiting, authorized, captured), and the storefront shows each on its own. A
-guest's Order has no account to be listed under and is reached only from the confirmation page.
-_Avoid_: purchase, receipt (for the record), transaction (reserved for the payment module's rows),
-checkout
+What a shopper bought or asked the shop for, made permanent: the line items with their Variant
+Titles, options and prices copied from the Cart, the addresses and shipping method copied from it,
+the Region and sales channel it was priced in, an optional email (the confirmation goes to it when
+there is one), and a shopper-facing number (`displayId`). It comes from a Cart, either completed at
+checkout or sent to the shop as a Draft Order. An Order has three statuses, each independent of the
+others, and every read returns them separately for the storefront to word on its own: its **status**
+(draft, pending, completed, canceled, archived), its **payment status** (not paid, awaiting,
+authorized, partially authorized, partially captured, captured, partially refunded, refunded,
+canceled, requires action), aggregated from its payment collection and payments, and its
+**fulfillment status** (preparing, ready to ship, shipped, delivered), computed from its
+fulfillments. Once confirmed, an Order has one payment collection for its total. Anyone holding an
+Order's id can read it through its link, drafts included; a guest who lost the link finds it by its
+number and the last 4 digits of the phone on its shipping address.
+_Avoid_: purchase, receipt (for the record), transaction (for the Order itself), checkout
+
+**Draft Order**:
+An Order the shop hasn't confirmed: its status is draft. It reserves no stock and holds no payment
+collection, so an abandoned one costs nothing. A shopper creates one by sending a Cart to the shop,
+which closes the Cart; sending the same Cart again returns the same draft. The admin edits its
+items, address and shipping, then converts it to a pending Order — reserving stock and creating its
+payment collection, usually while recording the deposit — or cancels it. Kept out of the admin's
+orders list, a Customer's order history and order counts; the admin lists drafts on their own.
+_Avoid_: quote, pending order, saved cart, order request
+
+**Order Transaction**:
+The Order's record of money that moved: one per capture (positive) and one per refund (negative),
+each pointing at the payment module's row it records. The Order's ledger, from which Paid Total is
+summed. Always qualified as Order Transaction, so it is never confused with the payment module's
+rows — the payments, captures and refunds it records.
+_Avoid_: transaction (unqualified), payment (reserved for the payment module's record), ledger entry,
+charge
+
+**Paid Total**:
+What the shop has actually received for an Order: the sum of its Order Transactions, so captures
+less refunds. Zero for a Draft Order.
+_Avoid_: amount paid, captured total, deposit (a deposit is one payment, not the total)
+
+**Outstanding Amount**:
+An Order's total minus its Paid Total: what the shopper still owes. A recorded payment may not exceed
+it.
+_Avoid_: balance, amount due, remaining, rest
+
+**Reference**:
+How an Order is named to a shopper and in the chat: the store's optional prefix followed by the
+Order's `displayId` (`PDJ-1042`), or the bare `displayId` when the store sets no prefix. Derived,
+never stored.
+_Avoid_: order id (the internal id), order number (for the prefixed form), code
 
 **Payment Method**:
 A card or digital wallet a Customer with an account has stored at a payment gateway, so a later
@@ -202,7 +242,7 @@ checkout can pay with it without typing it again. The storefront knows only its 
 digits, expiry and whether it is the default; the gateway holds the method and the default, and
 Proteus stores neither — only the account holder that links the Customer to the gateway. Distinct
 from a **payment provider**, which is a way to pay that a Region offers at checkout (a card gateway,
-a test-only provider): a shopper picks a provider, then may pick one of their Payment Methods within
+the manual provider): a shopper picks a provider, then may pick one of their Payment Methods within
 it. A card past its expiry month is still listed but cannot be chosen. The Customer's list of
 Payment Methods is their **wallet**.
 _Avoid_: saved card (in code — Store Copy may say "card"), wallet (for one method, even a stored

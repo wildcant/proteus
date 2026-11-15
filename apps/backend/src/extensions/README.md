@@ -29,7 +29,7 @@ runtime, and the Temporal Worker runs steps in its own process, so both need sta
 
 | Written by | File | Holds | Read by |
 |---|---|---|---|
-| `extensions:generate` | `src/extensions/registry.gen.ts` | manifests, modules, store and webhook routes, hook handlers, compiled catalogs | the container bootstrap, route preparation, and the catalogs the composition roots hand the HTTP app |
+| `extensions:generate` | `src/extensions/registry.gen.ts` | manifests, modules, store and webhook routes, hook handlers, fulfillment provider declarations, compiled catalogs | the container bootstrap, route preparation, the provider sync in `scripts/seed-providers.ts`, and the catalogs the composition roots hand the HTTP app |
 | `extensions:generate` | `src/extensions/seeds.gen.ts` | seed steps | `scripts/seed-dev.ts` only |
 | `workflows:generate` | `src/framework/workflows/temporal/registry.gen.ts` | core's and the extensions' workflows | the Temporal Worker |
 | `subscribers:generate` | `src/subscribers/registry.gen.ts` | core's and the extensions' subscribers | the event bus adapters |
@@ -41,8 +41,8 @@ generated gate (`check:extension-registry`, `check:workflow-registry`, `check:su
 `check:job-registry`, `check:workerd-crons`, `check:schema-registry`).
 
 `extensions:generate` also refuses what would let an extension replace core: an unprefixed or
-duplicate name, a route that matches or shadows a core route, an admin route, and a second handler
-for one hook. It reads every name as a string literal without running the code, so a name built at
+duplicate name (a fulfillment provider identifier included), a route that matches or shadows a core
+route, an admin route, and a second handler for one hook. It reads every name as a string literal without running the code, so a name built at
 runtime is rejected because it cannot be checked.
 
 The container bootstrap (`src/container.ts`) and route preparation (`src/routes.ts`) take the
@@ -58,6 +58,13 @@ extension's registry instead.
   extension. At runtime the key is just the string Awilix registers.
 - **Hook handlers** go on every container `bootstrapContainer` builds, keyed by hook name.
   `hookStep` and `runHook` read them back from whichever container they are handed.
+- **Fulfillment providers** are registered into the fulfillment module. Its bootstrap merges every
+  extension's declarations after core's, so an extension provider resolves from the module's
+  container under `fp_<identifier>_<id>` exactly as core's do, and a shipping option names it the
+  same way. The provider is constructed with the shared container's services, its own extension's
+  modules included. Its row in `fulfillment_provider` is synced with core's: by the module's loader
+  at boot on Node, and by `scripts/seed-providers.ts` before a workerd deploy, since workerd skips
+  the loader's upsert. Payment and notification providers are not taken from extensions.
 - **Routes** join route preparation's store and webhook arrays, so namespace auth, validation,
   error mapping, OpenAPI registration and sorting treat them exactly as core's. The generated
   OpenAPI documents and clients include them under the core tag they reuse.
@@ -124,7 +131,8 @@ configuration to change. What it leaves behind:
 
 Upstream ships no extension, so the test suite runs one:
 [`tests/extension-fixture/fixture/`](../../tests/extension-fixture/fixture/), named `fixture`. It has a
-module, a migration, routes, a workflow, an event, a subscriber, a seed, a schema and a catalog.
+module, a migration, routes, a workflow, an event, a subscriber, a seed, a schema, a catalog and a
+fulfillment provider that prices by city from the fixture's own module.
 `extensions:generate:fixture` writes its registries beside it, and `check:extension-registry` checks
 them. `tests/extension-fixture/__tests__/fixture.api.test.ts` runs the whole journey through HTTP.
 It is the worked example to copy from.
