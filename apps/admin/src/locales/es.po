@@ -21,6 +21,11 @@ msgstr "(pie: {footerNames})"
 msgid "(sections: {sectionNames})"
 msgstr "(secciones: {sectionNames})"
 
+#. placeholder {0}: option.name
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:20
+msgid "{0} (calculated)"
+msgstr "{0} (calculado)"
+
 #: src/features/regions/components/region-countries-card.tsx:30
 msgid "{count, plural, one {# country will stop being sold to, and their storefronts will no longer resolve.} other {# countries will stop being sold to, and their storefronts will no longer resolve.}}"
 msgstr "{count, plural, one {Se dejará de vender en # país y su tienda dejará de estar disponible.} other {Se dejará de vender en # países y sus tiendas dejarán de estar disponibles.}}"
@@ -164,6 +169,7 @@ msgstr "Acciones"
 msgid "Active"
 msgstr "Activa"
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:62
 #: src/features/regions/components/region-countries-card.tsx:49
 #: src/features/store/components/store-currencies-card.tsx:51
 msgid "Add"
@@ -201,6 +207,11 @@ msgstr "Agregar filtro"
 #: src/features/products/components/variant/edit-variant-media-form.tsx:214
 msgid "Add image to variant"
 msgstr "Agregar imagen a la variante"
+
+#: src/features/draft-orders/components/add-draft-item-form.tsx:28
+#: src/features/draft-orders/components/draft-summary-section.tsx:25
+msgid "Add item"
+msgstr "Añadir artículo"
 
 #: src/features/products/components/media/product-media-section.tsx:150
 msgid "Add media"
@@ -246,6 +257,11 @@ msgstr "Agrega los proveedores de pago disponibles en esta región."
 msgid "Adding a currency is what gives every product a price column in it. Only currencies the store does not already sell in are offered."
 msgstr "Al agregar una moneda, cada producto obtiene una columna de precio en ella. Solo se ofrecen las monedas en las que la tienda aún no vende."
 
+#: src/features/draft-orders/components/draft-customer-section.tsx:32
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:41
+msgid "Address"
+msgstr "Dirección"
+
 #: src/components/layout/shell.tsx:105
 msgid "Admin"
 msgstr "Admin"
@@ -266,12 +282,18 @@ msgstr "Permitir pedidos sin stock"
 msgid "Allow backorders"
 msgstr "Permitir pedidos sin stock"
 
+#. placeholder {0}: draftOrder.currencyCode.toUpperCase()
 #. placeholder {0}: order.currencyCode.toUpperCase()
 #. placeholder {0}: payment.currencyCode.toUpperCase()
+#: src/features/draft-orders/components/convert-draft-form.tsx:49
 #: src/features/orders/components/record-payment-form.tsx:32
 #: src/features/orders/components/refund-payment-form.tsx:33
 msgid "Amount ({0})"
 msgstr "Monto ({0})"
+
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:43
+msgid "Apartment, suite, etc."
+msgstr "Apartamento, oficina, etc."
 
 #: src/features/products/components/import-structure/structure-preview-step.tsx:162
 msgid "Apply structure"
@@ -432,6 +454,11 @@ msgstr "bytes"
 #: src/features/categories/components/edit-category-form.tsx:45
 #: src/features/collections/components/edit-collection-form.tsx:35
 #: src/features/customers/components/update-customer-form.tsx:49
+#: src/features/draft-orders/components/add-draft-item-form.tsx:59
+#: src/features/draft-orders/components/convert-draft-form.tsx:68
+#: src/features/draft-orders/components/draft-general-section.tsx:52
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:62
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:60
 #: src/features/orders/components/order-general-section.tsx:76
 #: src/features/orders/components/record-payment-form.tsx:42
 #: src/features/orders/components/refund-payment-form.tsx:44
@@ -463,6 +490,18 @@ msgstr "bytes"
 msgid "Cancel"
 msgstr "Cancelar"
 
+#: src/features/draft-orders/components/draft-general-section.tsx:25
+msgid "Cancel {reference}? The shopper's order link will show it canceled, and it can no longer be edited or converted."
+msgstr "¿Cancelar {reference}? El enlace del pedido del comprador lo mostrará cancelado, y ya no se podrá editar ni convertir."
+
+#: src/features/draft-orders/components/draft-general-section.tsx:26
+msgid "Cancel draft"
+msgstr "Cancelar borrador"
+
+#: src/features/draft-orders/components/draft-general-section.tsx:24
+msgid "Cancel draft order"
+msgstr "Cancelar pedido borrador"
+
 #: src/features/orders/components/cancel-order-form.tsx:23
 #: src/features/orders/components/cancel-order-form.tsx:49
 #: src/features/orders/components/order-general-section.tsx:49
@@ -491,7 +530,7 @@ msgstr "Capturar pagos"
 msgid "captured"
 msgstr "cobrado"
 
-#: src/components/layout/use-sidebar-label.ts:14
+#: src/components/layout/use-sidebar-label.ts:15
 #: src/features/categories/components/category-tree-list.tsx:19
 #: src/features/categories/components/product-categories-picker.tsx:21
 #: src/features/products/components/product-organization-section.tsx:32
@@ -551,6 +590,11 @@ msgstr "Elegir categorías"
 msgid "Choose collections"
 msgstr "Elige colecciones"
 
+#: src/features/draft-orders/components/draft-customer-section.tsx:33
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:46
+msgid "City"
+msgstr "Ciudad"
+
 #: src/components/data-table/data-table-ui/filter-bar.tsx:55
 msgid "Clear all"
 msgstr "Borrar todo"
@@ -568,7 +612,7 @@ msgstr "Cerrar notificación"
 msgid "Code"
 msgstr "Código"
 
-#: src/components/layout/use-sidebar-label.ts:15
+#: src/components/layout/use-sidebar-label.ts:16
 #: src/features/collections/components/collections-combobox.tsx:16
 #: src/features/products/components/product-organization-section.tsx:33
 #: src/routes/_authed/_shell/collections/index.tsx:24
@@ -592,6 +636,11 @@ msgstr "Colecciones por actualizar"
 #: src/features/products/components/variant/edit-variant-form.tsx:61
 msgid "Combination"
 msgstr "Combinación"
+
+#: src/features/draft-orders/components/draft-customer-section.tsx:31
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:39
+msgid "Company"
+msgstr "Empresa"
 
 #: src/features/orders/components/order-general-section.tsx:34
 #: src/features/orders/components/order-general-section.tsx:75
@@ -623,6 +672,19 @@ msgstr "Confirmar contraseña"
 msgid "Continue"
 msgstr "Continuar"
 
+#: src/features/draft-orders/components/convert-draft-form.tsx:71
+msgid "Convert"
+msgstr "Convertir"
+
+#: src/features/draft-orders/components/convert-draft-form.tsx:30
+#: src/features/draft-orders/components/draft-general-section.tsx:47
+msgid "Convert to order"
+msgstr "Convertir en pedido"
+
+#: src/features/draft-orders/components/convert-draft-form.tsx:33
+msgid "Converting holds the stock and turns the draft into a pending order. Record the deposit in the same step, or convert without a payment and record it later."
+msgstr "Al convertir se reserva el stock y el borrador pasa a ser un pedido pendiente. Registra el anticipo en el mismo paso, o convierte sin pago y regístralo más tarde."
+
 #: src/features/users/components/invite-row-actions.tsx:64
 msgid "Copy invite link"
 msgstr "Copiar enlace de invitación"
@@ -632,6 +694,14 @@ msgstr "Copiar enlace de invitación"
 #: src/features/regions/hooks/use-region-table.tsx:26
 msgid "Countries"
 msgstr "Países"
+
+#: src/features/draft-orders/components/draft-customer-section.tsx:34
+msgid "Country"
+msgstr "País"
+
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:55
+msgid "Country code"
+msgstr "Código de país"
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:29
 #: src/features/products/components/product-attribute-section.tsx:33
@@ -785,6 +855,16 @@ msgstr "Monedas"
 msgid "Currency"
 msgstr "Moneda"
 
+#: src/features/draft-orders/components/draft-shipping-section.tsx:36
+msgid "custom amount"
+msgstr "importe personalizado"
+
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:50
+msgid "Custom amount ({currency})"
+msgstr "Importe personalizado ({currency})"
+
+#: src/features/draft-orders/components/draft-customer-section.tsx:20
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:25
 #: src/features/orders/components/order-customer-section.tsx:12
 #: src/features/orders/hooks/use-order-table.tsx:30
 msgid "Customer"
@@ -794,7 +874,7 @@ msgstr "Cliente"
 msgid "Customer ID"
 msgstr "ID de cliente"
 
-#: src/components/layout/use-sidebar-label.ts:19
+#: src/components/layout/use-sidebar-label.ts:20
 #: src/routes/_authed/_shell/customers/index.tsx:21
 #: src/routes/_authed/_shell/customers/route.tsx:5
 msgid "Customers"
@@ -808,11 +888,17 @@ msgstr "Oscuro"
 msgid "Dashboard"
 msgstr "Panel"
 
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:33
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:39
 #: src/features/inventory/hooks/use-reservation-table.tsx:33
 #: src/features/orders/hooks/use-order-table.tsx:45
 #: src/features/orders/hooks/use-order-table.tsx:61
 msgid "Date"
 msgstr "Fecha"
+
+#: src/features/draft-orders/components/draft-summary-section.tsx:110
+msgid "Decrease quantity"
+msgstr "Reducir cantidad"
 
 #: src/features/products/components/import-products/import-preview-step.tsx:231
 #: src/features/store/hooks/use-store-currency-table.tsx:52
@@ -834,6 +920,8 @@ msgstr "Región predeterminada"
 #: src/features/access-control/components/role-row-actions.tsx:36
 #: src/features/access-control/components/role-row-actions.tsx:56
 #: src/features/customers/components/customer-row-actions.tsx:22
+#: src/features/draft-orders/components/draft-general-section.tsx:37
+#: src/features/draft-orders/components/draft-general-section.tsx:53
 #: src/features/product-options/components/option-row-actions.tsx:29
 #: src/features/product-options/components/option-row-actions.tsx:51
 #: src/features/product-options/components/value-row-actions.tsx:49
@@ -857,6 +945,10 @@ msgstr "Región predeterminada"
 msgid "Delete"
 msgstr "Eliminar"
 
+#: src/features/draft-orders/components/draft-general-section.tsx:36
+msgid "Delete {reference}? It leaves the drafts list for good."
+msgstr "¿Eliminar {reference}? Saldrá de la lista de borradores para siempre."
+
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:52
 msgid "Delete category"
 msgstr "Eliminar categoría"
@@ -868,6 +960,10 @@ msgstr "Eliminar colección"
 #: src/features/access-control/utils/permission-titles.ts:17
 msgid "Delete customers"
 msgstr "Eliminar clientes"
+
+#: src/features/draft-orders/components/draft-general-section.tsx:35
+msgid "Delete draft order"
+msgstr "Eliminar pedido borrador"
 
 #: src/features/access-control/utils/permission-titles.ts:24
 msgid "Delete fulfillments"
@@ -972,9 +1068,20 @@ msgstr "Descargar CSV de ejemplo"
 msgid "draft"
 msgstr "borrador"
 
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:24
 #: src/features/products/hooks/use-product-table.tsx:44
 msgid "Draft"
 msgstr "Borrador"
+
+#: src/components/layout/use-sidebar-label.ts:13
+#: src/routes/_authed/_shell/draft-orders/index.tsx:21
+#: src/routes/_authed/_shell/draft-orders/route.tsx:5
+msgid "Draft orders"
+msgstr "Pedidos borrador"
+
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:54
+msgid "Draft orders appear here when shoppers send their cart to the shop."
+msgstr "Los pedidos borrador aparecen aquí cuando los compradores envían su carrito a la tienda."
 
 #: src/features/categories/components/category-organize-tree.tsx:103
 msgid "Drag a category up or down to reorder it, or right and left to move it under another category or out of one. Each move is saved at once."
@@ -1050,6 +1157,8 @@ msgstr "La configuración regional de cada país es el segmento de URL de su tie
 #: src/components/value-entity/value-entity-card.tsx:39
 #: src/features/access-control/components/role-row-actions.tsx:52
 #: src/features/customers/components/customer-row-actions.tsx:19
+#: src/features/draft-orders/components/draft-customer-section.tsx:24
+#: src/features/draft-orders/components/draft-shipping-section.tsx:20
 #: src/features/product-options/components/option-row-actions.tsx:48
 #: src/features/products/components/product-attribute-section.tsx:21
 #: src/features/products/components/product-general-section.tsx:44
@@ -1077,6 +1186,10 @@ msgstr "Editar categoría"
 #: src/features/collections/components/edit-collection-form.tsx:23
 msgid "Edit Collection"
 msgstr "Editar colección"
+
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:19
+msgid "Edit customer"
+msgstr "Editar cliente"
 
 #: src/features/customers/components/update-customer-form.tsx:31
 msgid "Edit Customer"
@@ -1132,6 +1245,10 @@ msgstr "Editar región"
 msgid "Edit regions"
 msgstr "Editar regiones"
 
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:30
+msgid "Edit shipping"
+msgstr "Editar envío"
+
 #: src/features/products/components/variant/variant-stock-edit-form.tsx:33
 #: src/features/products/components/variant/variant-stock-section.tsx:40
 msgid "Edit stock"
@@ -1176,6 +1293,8 @@ msgstr "Cuadrícula de datos editable"
 #: src/features/auth/components/login-form.tsx:14
 #: src/features/customers/components/update-customer-form.tsx:43
 #: src/features/customers/hooks/use-customer-table.tsx:26
+#: src/features/draft-orders/components/draft-customer-section.tsx:29
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:36
 #: src/features/orders/components/order-customer-section.tsx:15
 #: src/features/users/components/create-account-form.tsx:36
 #: src/features/users/components/invite-form.tsx:33
@@ -1189,10 +1308,15 @@ msgstr "Correo electrónico"
 msgid "Empty"
 msgstr "Vacío"
 
+#: src/features/draft-orders/hooks/use-add-draft-item-form.ts:16
+msgid "Enter a quantity of 1 or more."
+msgstr "Introduce una cantidad de 1 o más."
+
 #: src/features/orders/utils/payment-amounts.ts:46
 msgid "Enter an amount greater than zero."
 msgstr "Ingresa un monto mayor que cero."
 
+#: src/features/draft-orders/utils/draft-shipping.ts:18
 #: src/features/orders/utils/payment-amounts.ts:47
 msgid "Enter an amount of zero or more."
 msgstr "Ingresa un monto de cero o más."
@@ -1229,6 +1353,10 @@ msgstr "No se pudieron agregar los países"
 msgid "Failed to add currencies"
 msgstr "No se pudieron agregar las monedas"
 
+#: src/features/draft-orders/api/draft-orders.ts:111
+msgid "Failed to add item"
+msgstr "No se pudo añadir el artículo"
+
 #: src/features/products/api/catalog-structure.ts:41
 msgid "Failed to apply the structure file"
 msgstr "No se pudo aplicar el archivo de estructura"
@@ -1237,6 +1365,10 @@ msgstr "No se pudo aplicar el archivo de estructura"
 msgid "Failed to archive order"
 msgstr "No se pudo archivar el pedido"
 
+#: src/features/draft-orders/api/draft-orders.ts:222
+msgid "Failed to cancel draft order"
+msgstr "No se pudo cancelar el pedido borrador"
+
 #: src/features/orders/api/orders.ts:92
 msgid "Failed to cancel order"
 msgstr "No se pudo cancelar el pedido"
@@ -1244,6 +1376,10 @@ msgstr "No se pudo cancelar el pedido"
 #: src/features/products/api/product-imports.ts:110
 msgid "Failed to cancel the import"
 msgstr "No se pudo cancelar la importación"
+
+#: src/features/draft-orders/api/draft-orders.ts:133
+msgid "Failed to change quantity"
+msgstr "No se pudo cambiar la cantidad"
 
 #: src/features/store/api/store.ts:107
 msgid "Failed to change the default currency"
@@ -1256,6 +1392,10 @@ msgstr "No se pudo cambiar el idioma"
 #: src/features/orders/api/orders.ts:70
 msgid "Failed to complete order"
 msgstr "No se pudo completar el pedido"
+
+#: src/features/draft-orders/api/draft-orders.ts:200
+msgid "Failed to convert draft order"
+msgstr "No se pudo convertir el pedido borrador"
 
 #: src/features/categories/api/categories.ts:59
 msgid "Failed to create category"
@@ -1297,7 +1437,7 @@ msgstr "No se pudo crear la etiqueta"
 msgid "Failed to create type"
 msgstr "No se pudo crear el tipo"
 
-#: src/features/products/api/product-variants.ts:119
+#: src/features/products/api/product-variants.ts:133
 msgid "Failed to create variant"
 msgstr "No se pudo crear la variante"
 
@@ -1312,6 +1452,10 @@ msgstr "No se pudo eliminar la colección"
 #: src/features/customers/api/customers.ts:84
 msgid "Failed to delete customer"
 msgstr "No se pudo eliminar el cliente"
+
+#: src/features/draft-orders/api/draft-orders.ts:90
+msgid "Failed to delete draft order"
+msgstr "No se pudo eliminar el pedido borrador"
 
 #: src/features/users/api/invites.ts:58
 msgid "Failed to delete invite"
@@ -1337,7 +1481,7 @@ msgstr "No se pudo eliminar la etiqueta"
 msgid "Failed to delete type"
 msgstr "No se pudo eliminar el tipo"
 
-#: src/features/products/api/product-variants.ts:170
+#: src/features/products/api/product-variants.ts:184
 msgid "Failed to delete variant"
 msgstr "No se pudo eliminar la variante"
 
@@ -1373,6 +1517,10 @@ msgstr "No se pudieron quitar los países"
 msgid "Failed to remove currencies"
 msgstr "No se pudieron quitar las monedas"
 
+#: src/features/draft-orders/api/draft-orders.ts:155
+msgid "Failed to remove item"
+msgstr "No se pudo quitar el artículo"
+
 #: src/features/users/api/invites.ts:76
 msgid "Failed to resend invite"
 msgstr "No se pudo reenviar la invitación"
@@ -1384,6 +1532,10 @@ msgstr "No se pudo enviar la invitación"
 #: src/features/product-options/api/product-options.ts:172
 msgid "Failed to set product options"
 msgstr "No se pudieron configurar las opciones del producto"
+
+#: src/features/draft-orders/api/draft-orders.ts:176
+msgid "Failed to set shipping method"
+msgstr "No se pudo establecer el método de envío"
 
 #: src/features/products/api/product-imports.ts:89
 msgid "Failed to start the import"
@@ -1401,7 +1553,11 @@ msgstr "No se pudo actualizar la colección"
 msgid "Failed to update customer"
 msgstr "No se pudo actualizar el cliente"
 
-#: src/features/products/api/product-variants.ts:272
+#: src/features/draft-orders/api/draft-orders.ts:72
+msgid "Failed to update draft order"
+msgstr "No se pudo actualizar el pedido borrador"
+
+#: src/features/products/api/product-variants.ts:286
 msgid "Failed to update image variants"
 msgstr "No se pudieron actualizar las variantes de la imagen"
 
@@ -1449,19 +1605,19 @@ msgstr "No se pudieron actualizar los productos de la colección"
 msgid "Failed to update type"
 msgstr "No se pudo actualizar el tipo"
 
-#: src/features/products/api/product-variants.ts:145
+#: src/features/products/api/product-variants.ts:159
 msgid "Failed to update variant"
 msgstr "No se pudo actualizar la variante"
 
-#: src/features/products/api/product-variants.ts:242
+#: src/features/products/api/product-variants.ts:256
 msgid "Failed to update variant images"
 msgstr "No se pudieron actualizar las imágenes de la variante"
 
-#: src/features/products/api/product-variants.ts:194
+#: src/features/products/api/product-variants.ts:208
 msgid "Failed to update variant prices"
 msgstr "No se pudieron actualizar los precios de la variante"
 
-#: src/features/products/api/product-variants.ts:218
+#: src/features/products/api/product-variants.ts:232
 msgid "Failed to update variant stock"
 msgstr "No se pudo actualizar el stock de la variante"
 
@@ -1487,6 +1643,7 @@ msgid "filter"
 msgstr "filtro"
 
 #: src/features/customers/components/update-customer-form.tsx:36
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:28
 msgid "First name"
 msgstr "Nombre"
 
@@ -1520,7 +1677,7 @@ msgstr "Preparación"
 msgid "GB"
 msgstr "GB"
 
-#: src/components/layout/use-sidebar-label.ts:22
+#: src/components/layout/use-sidebar-label.ts:23
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:23
 msgid "General"
 msgstr "General"
@@ -1652,6 +1809,10 @@ msgstr "en {ancestors}"
 msgid "Inactive"
 msgstr "Inactiva"
 
+#: src/features/draft-orders/components/draft-summary-section.tsx:120
+msgid "Increase quantity"
+msgstr "Aumentar cantidad"
+
 #: src/features/categories/components/category-tree-list.tsx:60
 #: src/features/categories/components/create-category-form.tsx:69
 #: src/features/categories/components/edit-category-form.tsx:37
@@ -1659,7 +1820,7 @@ msgstr "Inactiva"
 msgid "Internal"
 msgstr "Interna"
 
-#: src/components/layout/use-sidebar-label.ts:20
+#: src/components/layout/use-sidebar-label.ts:21
 #: src/routes/_authed/_shell/inventory/index.tsx:21
 #: src/routes/_authed/_shell/inventory/route.tsx:5
 msgid "Inventory"
@@ -1693,6 +1854,7 @@ msgstr "Invitar usuarios"
 msgid "is"
 msgstr "es"
 
+#: src/features/draft-orders/components/draft-summary-section.tsx:47
 #: src/features/orders/components/order-summary-section.tsx:59
 msgid "Item Subtotal"
 msgstr "Subtotal de artículos"
@@ -1718,30 +1880,38 @@ msgid "Language"
 msgstr "Idioma"
 
 #: src/features/customers/hooks/use-customer-table.tsx:42
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:44
 #: src/features/orders/hooks/use-order-table.tsx:66
 #: src/features/products/hooks/use-product-table.tsx:57
 msgid "Last 12 months"
 msgstr "Últimos 12 meses"
 
 #: src/features/customers/hooks/use-customer-table.tsx:41
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:43
 #: src/features/orders/hooks/use-order-table.tsx:65
 #: src/features/products/hooks/use-product-table.tsx:56
 msgid "Last 30 days"
 msgstr "Últimos 30 días"
 
 #: src/features/customers/hooks/use-customer-table.tsx:40
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:42
 #: src/features/orders/hooks/use-order-table.tsx:64
 #: src/features/products/hooks/use-product-table.tsx:55
 msgid "Last 7 days"
 msgstr "Últimos 7 días"
 
 #: src/features/customers/components/update-customer-form.tsx:39
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:30
 msgid "Last name"
 msgstr "Apellido"
 
 #: src/routes/_authed/settings/store/route.tsx:73
 msgid "Leads the currency columns when you price a product. It is not what shoppers are quoted."
 msgstr "Encabeza las columnas de moneda al fijar el precio de un producto. No es la moneda en la que se cotiza a los compradores."
+
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:51
+msgid "Leave empty to use the option's price."
+msgstr "Déjalo vacío para usar el precio de la opción."
 
 #: src/features/products/components/create-product-form/product-create-attributes-form.tsx:45
 #: src/features/products/components/product-attribute-section.tsx:29
@@ -1930,6 +2100,7 @@ msgstr "Se canceló el movimiento de {name}."
 #: src/features/categories/components/create-category-form.tsx:36
 #: src/features/categories/components/edit-category-form.tsx:26
 #: src/features/customers/hooks/use-customer-table.tsx:25
+#: src/features/draft-orders/components/draft-customer-section.tsx:28
 #: src/features/regions/components/create-region-form.tsx:37
 #: src/features/regions/components/edit-region-form.tsx:29
 #: src/features/regions/hooks/use-region-country-table.tsx:34
@@ -2036,6 +2207,14 @@ msgstr "Aún no hay clientes"
 msgid "No data"
 msgstr "Sin datos"
 
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:57
+msgid "No draft orders found"
+msgstr "No se encontraron pedidos borrador"
+
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:53
+msgid "No draft orders yet"
+msgstr "Aún no hay pedidos borrador"
+
 #: src/features/products/components/variant/edit-variant-media-form.tsx:97
 msgid "No images assigned to this variant yet."
 msgstr "Aún no hay imágenes asignadas a esta variante."
@@ -2124,6 +2303,10 @@ msgstr "Aún no hay productos que usen esta opción."
 msgid "No products found"
 msgstr "No se encontraron productos"
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:46
+msgid "No products found."
+msgstr "No se encontraron productos."
+
 #: src/features/products/components/product-picker.tsx:26
 #: src/features/products/hooks/use-product-table.tsx:67
 msgid "No products yet"
@@ -2165,6 +2348,14 @@ msgstr "No se encontraron roles"
 #: src/features/users/components/user-role-assignment.tsx:52
 msgid "No roles found."
 msgstr "No se encontraron roles."
+
+#: src/features/draft-orders/components/draft-shipping-section.tsx:27
+msgid "No shipping method yet. Set one, at the amount agreed in the chat if need be."
+msgstr "Aún no hay método de envío. Establece uno, con el importe acordado en el chat si hace falta."
+
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:43
+msgid "No shipping options."
+msgstr "No hay opciones de envío."
 
 #: src/features/product-tags/hooks/use-product-tag-table.tsx:23
 msgid "No tags found"
@@ -2211,6 +2402,10 @@ msgstr "No se encontraron variantes"
 #: src/features/products/hooks/use-variant-table.tsx:69
 msgid "No variants yet"
 msgstr "Aún no hay variantes"
+
+#: src/features/draft-orders/components/add-draft-item-form.tsx:88
+msgid "No variants."
+msgstr "No hay variantes."
 
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:47
 msgid "None — top-level"
@@ -2276,6 +2471,11 @@ msgstr "Una muestra por valor, con su foto (color)"
 msgid "Option \"{title}\" deleted"
 msgstr "Opción \"{title}\" eliminada"
 
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:36
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:39
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:43
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:51
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:53
 #: src/features/products/components/variant/create-variant-form.tsx:103
 #: src/features/products/components/variant/edit-variant-form.tsx:54
 #: src/features/products/components/variant/edit-variant-form.tsx:77
@@ -2288,7 +2488,7 @@ msgstr "Opcional"
 msgid "Optional description"
 msgstr "Descripción opcional"
 
-#: src/components/layout/use-sidebar-label.ts:18
+#: src/components/layout/use-sidebar-label.ts:19
 #: src/features/product-options/components/product-option-section.tsx:16
 #: src/routes/_authed/_shell/product-options/index.tsx:24
 #: src/routes/_authed/_shell/product-options/route.tsx:5
@@ -2300,9 +2500,14 @@ msgstr "Opciones"
 msgid "Order"
 msgstr "Pedido"
 
+#: src/features/draft-orders/components/draft-summary-section.tsx:49
 #: src/features/orders/components/order-summary-section.tsx:64
 msgid "Order Total"
 msgstr "Total del pedido"
+
+#: src/features/draft-orders/components/convert-draft-form.tsx:50
+msgid "Order total: {total}"
+msgstr "Total del pedido: {total}"
 
 #: src/components/layout/use-sidebar-label.ts:12
 #: src/routes/_authed/_shell/orders/index.tsx:21
@@ -2407,6 +2612,11 @@ msgstr "Invitaciones pendientes"
 msgid "Permissions"
 msgstr "Permisos"
 
+#: src/features/draft-orders/components/draft-customer-section.tsx:30
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:33
+msgid "Phone"
+msgstr "Teléfono"
+
 #: src/features/products/components/variant/create-variant-form.tsx:97
 msgid "Pick a combination to see the title."
 msgstr "Elige una combinación para ver el título."
@@ -2414,6 +2624,26 @@ msgstr "Elige una combinación para ver el título."
 #: src/features/products/hooks/use-create-variant-form.ts:23
 msgid "Pick a combination."
 msgstr "Elige una combinación."
+
+#: src/features/draft-orders/components/add-draft-item-form.tsx:87
+msgid "Pick a product first"
+msgstr "Elige primero un producto"
+
+#: src/features/draft-orders/hooks/use-add-draft-item-form.ts:21
+msgid "Pick a product."
+msgstr "Elige un producto."
+
+#: src/features/draft-orders/utils/draft-shipping.ts:17
+msgid "Pick a shipping option."
+msgstr "Elige una opción de envío."
+
+#: src/features/draft-orders/hooks/use-add-draft-item-form.ts:22
+msgid "Pick a variant."
+msgstr "Elige una variante."
+
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:33
+msgid "Pick how the order ships, and override its price with what you agreed in the chat."
+msgstr "Elige cómo se envía el pedido y sustituye su precio por lo que acordaste en el chat."
 
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:59
 msgid "Pick options and values on the Details step to generate the variants."
@@ -2426,6 +2656,10 @@ msgstr "{name} seleccionada."
 #: src/features/inventory/hooks/use-reservation-table.tsx:45
 msgid "Placing an order holds its stock, and the hold shows up here."
 msgstr "Al realizar un pedido se reserva su stock, y la reserva aparece aquí."
+
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:51
+msgid "Postal code"
+msgstr "Código postal"
 
 #: src/components/data-table/data-table-ui/pagination.tsx:47
 msgid "Prev"
@@ -2451,6 +2685,7 @@ msgstr "Precio {code}"
 msgid "Prices"
 msgstr "Precios"
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:42
 #: src/features/inventory/hooks/use-inventory-table.tsx:33
 #: src/features/inventory/hooks/use-reservation-table.tsx:29
 #: src/features/product-options/hooks/use-option-products-table.tsx:22
@@ -2481,7 +2716,7 @@ msgstr "Variante de producto"
 msgid "Product variants"
 msgstr "Variantes del producto"
 
-#: src/components/layout/use-sidebar-label.ts:13
+#: src/components/layout/use-sidebar-label.ts:14
 #: src/features/products/components/product-group-section.tsx:39
 #: src/features/products/components/product-picker.tsx:30
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:76
@@ -2523,6 +2758,10 @@ msgstr "Rol protegido"
 msgid "Providers"
 msgstr "Proveedores"
 
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:47
+msgid "Province"
+msgstr "Provincia"
+
 #: src/features/products/components/create-product-form/create-product-form.tsx:87
 msgid "Publish"
 msgstr "Publicar"
@@ -2539,6 +2778,10 @@ msgstr "publicado"
 msgid "Published"
 msgstr "Publicado"
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:55
+msgid "Quantity"
+msgstr "Cantidad"
+
 #: src/features/orders/components/order-payment-section.tsx:87
 msgid "Received"
 msgstr "Recibido"
@@ -2546,6 +2789,10 @@ msgstr "Recibido"
 #: src/features/orders/components/cancel-order-form.tsx:37
 msgid "Received: {received}"
 msgstr "Recibido: {received}"
+
+#: src/features/draft-orders/components/convert-draft-form.tsx:41
+msgid "Record a payment"
+msgstr "Registrar un pago"
 
 #: src/features/orders/components/refund-payment-form.tsx:26
 msgid "Record money returned to the customer from this payment."
@@ -2556,6 +2803,10 @@ msgstr "Registra el dinero devuelto al cliente de este pago."
 #: src/features/orders/components/record-payment-form.tsx:45
 msgid "Record payment"
 msgstr "Registrar pago"
+
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:22
+msgid "Record what the shopper told you in the chat."
+msgstr "Registra lo que el comprador te dijo en el chat."
 
 #: src/features/orders/components/order-payment-section.tsx:78
 #: src/features/orders/components/refund-payment-form.tsx:47
@@ -2587,7 +2838,7 @@ msgstr "reembolsado"
 msgid "Refunded"
 msgstr "Reembolsado"
 
-#: src/components/layout/use-sidebar-label.ts:25
+#: src/components/layout/use-sidebar-label.ts:26
 #: src/routes/_authed/settings/regions/index.tsx:24
 #: src/routes/_authed/settings/regions/route.tsx:5
 msgid "Regions"
@@ -2606,6 +2857,7 @@ msgid "Rejected"
 msgstr "Rechazado"
 
 #: src/features/collections/components/collection-thumbnail-picker.tsx:53
+#: src/features/draft-orders/components/draft-summary-section.tsx:77
 #: src/features/product-options/components/value-row-actions.tsx:28
 #: src/features/regions/components/region-countries-card.tsx:34
 #: src/features/regions/components/region-countries-card.tsx:56
@@ -2617,6 +2869,10 @@ msgstr "Rechazado"
 #: src/features/store/components/store-currency-row-actions.tsx:65
 msgid "Remove"
 msgstr "Quitar"
+
+#: src/features/draft-orders/components/draft-summary-section.tsx:76
+msgid "Remove \"{title}\" from this draft?"
+msgstr "¿Quitar \"{title}\" de este borrador?"
 
 #: src/components/multi-select-combobox.tsx:80
 #: src/features/categories/components/category-picker.tsx:87
@@ -2646,6 +2902,11 @@ msgstr "Quitar de la categoría"
 #: src/routes/_authed/_shell/collections/$id/_detail/route.tsx:99
 msgid "Remove from collection"
 msgstr "Quitar de la colección"
+
+#: src/features/draft-orders/components/draft-summary-section.tsx:75
+#: src/features/draft-orders/components/draft-summary-section.tsx:134
+msgid "Remove item"
+msgstr "Quitar artículo"
 
 #: src/features/products/components/variant/edit-variant-media-form.tsx:134
 msgid "Remove Selected"
@@ -2684,7 +2945,7 @@ msgstr "Reenviar invitación"
 msgid "Resend invites"
 msgstr "Reenviar invitaciones"
 
-#: src/components/layout/use-sidebar-label.ts:21
+#: src/components/layout/use-sidebar-label.ts:22
 #: src/routes/_authed/_shell/reservations/index.tsx:21
 #: src/routes/_authed/_shell/reservations/route.tsx:5
 msgid "Reservations"
@@ -2703,7 +2964,7 @@ msgstr "Cantidad reservada"
 msgid "Role \"{name}\" deleted"
 msgstr "Rol \"{name}\" eliminado"
 
-#: src/components/layout/use-sidebar-label.ts:24
+#: src/components/layout/use-sidebar-label.ts:25
 #: src/features/users/components/invite-form.tsx:42
 #: src/features/users/components/user-role-assignment.tsx:43
 #: src/features/users/hooks/use-user-table.tsx:23
@@ -2734,6 +2995,8 @@ msgstr "Regla"
 #: src/features/collections/components/create-collection-form.tsx:44
 #: src/features/collections/components/edit-collection-form.tsx:38
 #: src/features/customers/components/update-customer-form.tsx:52
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:65
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:63
 #: src/features/product-options/components/create-product-option-form.tsx:55
 #: src/features/product-options/components/edit-product-option-form.tsx:53
 #: src/features/product-options/components/manage-product-options-form.tsx:67
@@ -2804,14 +3067,26 @@ msgstr "Busca o añade etiquetas"
 msgid "Search payment providers..."
 msgstr "Buscar proveedores de pago..."
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:45
+msgid "Search products..."
+msgstr "Buscar productos..."
+
 #: src/features/users/components/invite-form.tsx:50
 #: src/features/users/components/user-role-assignment.tsx:51
 msgid "Search roles..."
 msgstr "Buscar roles..."
 
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:42
+msgid "Search shipping options..."
+msgstr "Buscar opciones de envío..."
+
 #: src/features/product-options/components/option-value-selector.tsx:102
 msgid "Search values..."
 msgstr "Buscar valores..."
+
+#: src/features/draft-orders/components/add-draft-item-form.tsx:87
+msgid "Search variants..."
+msgstr "Buscar variantes..."
 
 #: src/components/data-table/data-table-ui/search.tsx:22
 #: src/components/data-table/filters/multiselect-filter.tsx:29
@@ -2887,6 +3162,15 @@ msgstr "Enviar pedidos"
 msgid "shipped"
 msgstr "enviado"
 
+#: src/features/draft-orders/components/draft-shipping-section.tsx:16
+msgid "Shipping"
+msgstr "Envío"
+
+#: src/features/draft-orders/components/edit-draft-shipping-form.tsx:40
+msgid "Shipping option"
+msgstr "Opción de envío"
+
+#: src/features/draft-orders/components/draft-summary-section.tsx:48
 #: src/features/orders/components/order-summary-section.tsx:61
 msgid "Shipping Subtotal"
 msgstr "Subtotal de envío"
@@ -2933,6 +3217,7 @@ msgstr "Omitidos"
 msgid "SKU"
 msgstr "SKU"
 
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:27
 #: src/features/orders/hooks/use-order-table.tsx:32
 #: src/features/orders/hooks/use-order-table.tsx:51
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
@@ -2979,6 +3264,7 @@ msgstr "Estructura aplicada"
 msgid "Subtitle"
 msgstr "Subtítulo"
 
+#: src/features/draft-orders/components/draft-summary-section.tsx:21
 #: src/features/orders/components/order-summary-section.tsx:16
 msgid "Summary"
 msgstr "Resumen"
@@ -2991,7 +3277,7 @@ msgstr "Superadministrador"
 msgid "System"
 msgstr "Sistema"
 
-#: src/components/layout/use-sidebar-label.ts:16
+#: src/components/layout/use-sidebar-label.ts:17
 #: src/features/product-tags/components/product-tags-combobox.tsx:17
 #: src/features/products/components/import-products/import-preview-step.tsx:153
 #: src/features/products/components/import-products/import-preview-step.tsx:202
@@ -3033,6 +3319,10 @@ msgstr "El archivo enumera los metacampos de producto como <0>fields</0>, luego 
 msgid "The image exceeds the maximum file size of {maxSize}."
 msgstr "La imagen supera el tamaño máximo de archivo de {maxSize}."
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:31
+msgid "The item is priced in the draft's region."
+msgstr "El artículo se cobra al precio de la región del borrador."
+
 #: src/routes/_authed/settings/store/route.tsx:87
 msgid "The market — and so the currency — a shopper is priced in before they pick one."
 msgstr "El mercado —y por tanto la moneda— con el que se muestran los precios a un comprador antes de que elija uno."
@@ -3072,6 +3362,10 @@ msgstr "Estos productos no se importaron"
 #: src/features/regions/components/edit-country-locale-form.tsx:46
 msgid "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
 msgstr "Esto cambia las URL activas de la tienda para {countryName}. Los enlaces a las actuales dejarán de funcionar: nada los redirige."
+
+#: src/features/draft-orders/components/draft-summary-section.tsx:32
+msgid "This draft has no items."
+msgstr "Este borrador no tiene artículos."
 
 #: src/features/products/components/import-products/import-preview-step.tsx:162
 msgid "This import will create"
@@ -3142,6 +3436,7 @@ msgid "To pick up a category, press space or enter. Use the up and down arrow ke
 msgstr "Para tomar una categoría, pulsa espacio o intro. Usa las flechas arriba y abajo para moverla, y las flechas izquierda y derecha para cambiar su nivel. Pulsa espacio o intro de nuevo para soltarla, o escape para cancelar."
 
 #: src/features/customers/hooks/use-customer-table.tsx:39
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:41
 #: src/features/orders/hooks/use-order-table.tsx:63
 #: src/features/products/hooks/use-product-table.tsx:54
 msgid "Today"
@@ -3164,6 +3459,7 @@ msgstr "Sí"
 
 #: src/components/data-table/data-table.tsx:82
 #: src/features/customers/hooks/use-customer-table.tsx:56
+#: src/features/draft-orders/hooks/use-draft-order-table.tsx:58
 #: src/features/orders/hooks/use-order-table.tsx:80
 #: src/features/products/hooks/use-product-table.tsx:72
 #: src/features/products/hooks/use-variant-table.tsx:74
@@ -3194,6 +3490,10 @@ msgstr "Intenta cambiar el término de búsqueda."
 msgid "Try requesting a new invite link."
 msgstr "Intenta solicitar un nuevo enlace de invitación."
 
+#: src/features/draft-orders/components/edit-draft-contact-form.tsx:55
+msgid "Two letters, e.g. CO"
+msgstr "Dos letras, p. ej. CO"
+
 #: src/features/product-types/components/product-type-combobox.tsx:17
 #: src/features/products/components/import-products/import-preview-step.tsx:200
 #: src/features/products/components/product-organization-section.tsx:29
@@ -3214,7 +3514,7 @@ msgstr "Escribe para añadir una etiqueta."
 msgid "Type to add one."
 msgstr "Escribe para añadir uno."
 
-#: src/components/layout/use-sidebar-label.ts:17
+#: src/components/layout/use-sidebar-label.ts:18
 #: src/features/products/components/import-products/import-preview-step.tsx:154
 #: src/routes/_authed/_shell/product-types/index.tsx:21
 #: src/routes/_authed/_shell/product-types/route.tsx:5
@@ -3258,7 +3558,7 @@ msgstr "Las imágenes subidas aparecerán aquí."
 msgid "User"
 msgstr "Usuario"
 
-#: src/components/layout/use-sidebar-label.ts:23
+#: src/components/layout/use-sidebar-label.ts:24
 #: src/features/access-control/hooks/use-role-table.tsx:35
 #: src/routes/_authed/settings/users/index.tsx:22
 #: src/routes/_authed/settings/users/route.tsx:5
@@ -3285,6 +3585,7 @@ msgstr "Valor \"{valueName}\" quitado"
 msgid "Values"
 msgstr "Valores"
 
+#: src/features/draft-orders/components/add-draft-item-form.tsx:84
 #: src/features/inventory/hooks/use-inventory-table.tsx:34
 #: src/features/inventory/hooks/use-reservation-table.tsx:30
 #: src/features/products/components/create-product-form/product-create-variants-form.tsx:26

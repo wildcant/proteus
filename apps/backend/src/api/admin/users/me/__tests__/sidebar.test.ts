@@ -54,6 +54,13 @@ describe('sidebar response contract', () => {
     ])
   })
 
+  test('lists draft orders under Orders for anyone who can read orders', () => {
+    const groups = buildSidebar(new Set<PermissionKey>(['order.read']))
+    expect(groups.at(0)?.items.map((item) => [item.to, item.children?.map((child) => child.to)])).toEqual([
+      ['/orders', ['/draft-orders']],
+    ])
+  })
+
   test('emits known admin-app route targets', () => {
     const all = new Set<PermissionKey>(['product.read', 'order.read', 'customer.read', 'inventory.read'])
     const groups = buildSidebar(all)
