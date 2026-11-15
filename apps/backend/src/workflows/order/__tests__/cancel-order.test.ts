@@ -148,6 +148,32 @@ test.describe('cancelOrderWorkflow', () => {
   })
 
   /**
+   * A payment recorded after the cancel planned its refund, before it voided the authorization:
+   * canceling anyway would leave that money on a canceled Order, neither refunded nor voided.
+   */
+  test('refuses to cancel when a payment is recorded while it runs', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+    const payment = await authorizedPayment(service, paymentCollectionId)
+
+    const orderService = container.resolve(Modules.ORDER)
+    const cancelOrder = orderService.cancelOrder.bind(orderService)
+    vi.spyOn(orderService, 'cancelOrder').mockImplementationOnce(async (id) => {
+      await container
+        .resolve(Modules.PAYMENT)
+        .capturePaymentCollection(paymentCollectionId, { amount: new BigNumber(20), idempotencyKey: 'meanwhile' })
+      return cancelOrder(id)
+    })
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(0) })).rejects.toThrow(
+      'was recorded on its collection meanwhile',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending', canceledAt: null })
+    expect(await service.read.payment(container, payment.id)).toMatchObject({ canceledAt: null })
+  })
+
+  /**
    * The refund has no compensation — the money is back with the shopper — so a failure after it
    * must leave its Order transaction standing too, or the Paid Total would count returned money.
    */

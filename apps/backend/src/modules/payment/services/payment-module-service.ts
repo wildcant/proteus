@@ -21,6 +21,7 @@ import type {
 } from '../../../core/types/payment/common.js'
 import { PaymentErrorCodes } from '../../../core/types/payment/errors.js'
 import type {
+  CancelPaymentDTO,
   CapturePaymentCollectionDTO,
   CreateAccountHolderDTO,
   CreateCaptureDTO,
@@ -664,13 +665,36 @@ export class PaymentModuleService implements IPaymentModuleService {
     })
   }
 
-  async cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO> {
+  /**
+   * Voids what the authorization still holds, under the collection's row lock so a capture cannot
+   * land on it halfway. With `capturedAmount`, refused when the collection's captures no longer add
+   * up to what the caller saw: the caller planned around that figure (cancel-order's refund), and a
+   * capture recorded since would otherwise stay on a canceled Order, neither refunded nor voided.
+   */
+  async cancelPayment(paymentId: string, options?: CancelPaymentDTO, context?: Context): Promise<PaymentDTO> {
     this.logger.debug(`Canceling payment "${paymentId}"`)
     return this.withTransaction(context, async (ctx) => {
       const payment = await this.paymentRepository.findByIdOrFail(paymentId, undefined, ctx)
+      await this.paymentCollectionRepository.lockForUpdate(payment.paymentCollectionId, ctx)
 
       if (payment.canceledAt) {
         return this.retrievePayment(payment.id, ctx)
+      }
+
+      if (options?.capturedAmount) {
+        const collection = await this.retrievePaymentCollection(payment.paymentCollectionId, undefined, ctx)
+        const captured = (collection.payments ?? [])
+          .flatMap((row) => row.captures ?? [])
+          .reduce((sum, capture) => sum.plus(capture.amount), new BigNumber(0))
+        if (!captured.isEqualTo(options.capturedAmount)) {
+          throw new AppError({
+            type: ErrorTypes.NOT_ALLOWED,
+            message: i18n.t(
+              'Payment "{id}" cannot be canceled: a payment of {amount} was recorded on its collection meanwhile.',
+            ),
+            values: { id: payment.id, amount: captured.minus(options.capturedAmount).toFixed() },
+          })
+        }
       }
 
       await this.paymentProviderService.cancelPayment(payment.providerId, {
