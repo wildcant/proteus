@@ -135,14 +135,25 @@ export const cancelOrderWorkflow = createWorkflow<CancelOrderInput, OrderDTO>(
      *  authorizations still hold, so no money can be captured against a canceled Order. The void
      *  checks, under the collection's lock, that nothing was captured since the plan: a payment
      *  recorded meanwhile refuses the cancel before anything is refunded, so the rollback leaves
-     *  nothing done. */
-    await ctx.step('cancel-payment-collection', async ({ container }) => {
-      if (!refundPlan.collection) return
-      const paymentService = container.resolve(Modules.PAYMENT)
-      const { id, capturedAmount } = refundPlan.collection
+     *  nothing done. The collection is marked canceled too, so a payment that started before the
+     *  cancel and reaches the lock after it is refused instead of capturing onto a canceled Order.
+     *  The compensation takes the mark off again; the voids cannot be undone, and a payment recorded
+     *  on the reopened Order authorizes anew. */
+    await ctx.step(
+      'cancel-payment-collection',
+      async ({ container }) => {
+        if (!refundPlan.collection) return { paymentCollectionId: null }
+        const paymentService = container.resolve(Modules.PAYMENT)
+        const { id, capturedAmount } = refundPlan.collection
 
-      await paymentService.cancelPaymentCollection(id, { capturedAmount }).catch(asTerminalRefusal)
-    })
+        await paymentService.cancelPaymentCollection(id, { capturedAmount }).catch(asTerminalRefusal)
+        return { paymentCollectionId: id }
+      },
+      async ({ paymentCollectionId }, { container }) => {
+        if (!paymentCollectionId) return
+        await container.resolve(Modules.PAYMENT).reopenPaymentCollection(paymentCollectionId)
+      },
+    )
 
     /** Then the refund the admin chose, each written as an Order transaction so the Paid Total
      *  shows what was kept. Last, because it has no compensation: the money is with the shopper. */

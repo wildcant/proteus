@@ -109,6 +109,11 @@ test.describe('cancelOrderWorkflow', () => {
     // Nothing was ever taken, so there is nothing to give back — a refund here would move money
     // out of the merchant's account against a capture that never happened.
     expect(afterwards.refunds ?? []).toEqual([])
+    expect(await service.read.paymentCollection(container, paymentCollectionId)).toMatchObject({
+      status: 'canceled',
+      canceledAt: expect.any(Date),
+      authorizedAmount: null,
+    })
   })
 
   test('refunds a captured payment rather than voiding it', async ({ service, expect }) => {
@@ -161,8 +166,81 @@ test.describe('cancelOrderWorkflow', () => {
     const afterwards = await service.read.payment(container, payment.id)
     expect(afterwards.canceledAt).toBeInstanceOf(Date)
     expect(afterwards.refunds?.map((refund) => refund.amount.toFixed())).toEqual(['10'])
+    // The 70 the deposit left authorized is released, and the collection still reads what it took.
+    expect(await service.read.paymentCollection(container, paymentCollectionId)).toMatchObject({
+      status: 'partially_captured',
+      canceledAt: expect.any(Date),
+      authorizedAmount: null,
+      capturedAmount: new BigNumber(30),
+      refundedAmount: new BigNumber(10),
+    })
     const transactions = await service.read.orderTransactions(container, orderId)
     expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-10', '30'])
+  })
+
+  /**
+   * A payment that passed its "is the Order canceled?" check before the cancel, and reaches the
+   * collection's lock after it. With nothing left authorized it would open a new manual
+   * authorization and capture onto the canceled Order; the collection's cancel mark refuses it.
+   */
+  test('refuses a payment that reaches the collection after the cancel', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+
+    const paymentService = container.resolve(Modules.PAYMENT)
+    const capturePaymentCollection = paymentService.capturePaymentCollection.bind(paymentService)
+    let reachedCapture: () => void = () => undefined
+    const atCapture = new Promise<void>((resolve) => {
+      reachedCapture = resolve
+    })
+    let releaseCapture: () => void = () => undefined
+    const canceledMeanwhile = new Promise<void>((resolve) => {
+      releaseCapture = resolve
+    })
+    vi.spyOn(paymentService, 'capturePaymentCollection').mockImplementationOnce(async (...args) => {
+      reachedCapture()
+      await canceledMeanwhile
+      return capturePaymentCollection(...args)
+    })
+
+    const recording = recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(20) })
+    await atCapture
+    await cancelOrderWorkflow.run({ orderId })
+    releaseCapture()
+
+    await expect(recording).rejects.toThrow('has been canceled: no payment can be recorded on it')
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'canceled' })
+    expect(await service.read.paymentCollection(container, paymentCollectionId)).toMatchObject({
+      status: 'canceled',
+      capturedAmount: null,
+    })
+    expect(await service.read.orderTransactions(container, orderId)).toEqual([])
+  })
+
+  /**
+   * The refund is the last step, so a failure there unwinds the rest. The void cannot be undone,
+   * but the collection's cancel mark is: the Order is open again and can still be paid.
+   */
+  test('rollback after the void reopens the collection for payment', async ({ service, expect }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+
+    vi.spyOn(container.resolve(Modules.PAYMENT), 'refundPayment').mockRejectedValueOnce(
+      new Error('provider unavailable'),
+    )
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(10) })).rejects.toThrow(
+      'provider unavailable',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending', canceledAt: null })
+    expect(await service.read.paymentCollection(container, paymentCollectionId)).toMatchObject({
+      canceledAt: null,
+      refundedAmount: null,
+    })
+
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(20) })
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['20', '30'])
   })
 
   test('refuses a refund above what the order received, and leaves it standing', async ({ service, expect }) => {

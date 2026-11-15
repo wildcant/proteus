@@ -93,15 +93,18 @@ export type IPaymentModuleService = {
   refundPayment(data: CreateRefundDTO, context?: Context): Promise<PaymentDTO>
   cancelPayment(paymentId: string, context?: Context): Promise<PaymentDTO>
   /**
-   * Voids every authorization on the collection still holding money, under its row lock: what an
-   * Order's cancel does before it refunds anything. Refused, with nothing voided, when the
-   * collection's captures no longer add up to `capturedAmount`.
+   * Voids every authorization on the collection still holding money and marks it canceled, under
+   * its row lock: what an Order's cancel does before it refunds anything. No capture lands on a
+   * canceled collection. Refused, with nothing voided, when the collection's captures no longer
+   * add up to `capturedAmount`.
    */
   cancelPaymentCollection(
     paymentCollectionId: string,
     data: CancelPaymentCollectionDTO,
     context?: Context,
   ): Promise<PaymentCollectionDTO>
+  /** Takes the cancel mark off, for an Order cancel that rolled back. What was voided stays voided. */
+  reopenPaymentCollection(paymentCollectionId: string, context?: Context): Promise<PaymentCollectionDTO>
   /**
    * Records a payment of an amount against a collection, under its row lock: opens and authorizes
    * a manual session for what is outstanding when the collection holds no live authorization, then

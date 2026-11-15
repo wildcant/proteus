@@ -82,3 +82,10 @@ Canceling an Order cancels the Order, then voids what remains authorized on its 
 The void runs under the collection's lock and is refused if a payment was recorded since the cancel
 looked, so a refusal comes before any refund and leaves nothing done. The refund goes last because
 it has no compensation.
+
+The void also marks the collection canceled (`canceledAt`). Every capture reads that mark under the
+same lock, so a payment the admin started before the cancel and that reaches the collection after
+it is refused, rather than opening a new manual authorization and capturing onto a canceled Order.
+A canceled collection with nothing captured reads `canceled`; one that took money keeps the status
+that shows what it received. If the cancel rolls back after the void, the mark comes off again
+(`reopenPaymentCollection`): the void stays, and the next payment recorded authorizes anew.

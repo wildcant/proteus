@@ -30,6 +30,7 @@ CREATE TABLE "payment_collection" (
 	"amount" numeric NOT NULL,
 	"authorized_amount" numeric,
 	"captured_amount" numeric,
+	"canceled_at" timestamp with time zone,
 	"completed_at" timestamp with time zone,
 	"currency_code" text DEFAULT 'usd' NOT NULL,
 	"metadata" jsonb,

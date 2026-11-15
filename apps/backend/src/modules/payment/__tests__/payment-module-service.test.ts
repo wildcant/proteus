@@ -534,6 +534,28 @@ test.describe('PaymentModuleService', () => {
       expect(after.capturedAmount).toBeNull()
     })
 
+    test('a canceled collection takes no capture until it is reopened', async ({ expect, dto }) => {
+      const collection = await service.createPaymentCollection(
+        dto.generate.createPaymentCollection({ amount: new BigNumber(100) }),
+      )
+      const deposit = await service.capturePaymentCollection(collection.id, { amount: new BigNumber(30) })
+
+      const canceled = await service.cancelPaymentCollection(collection.id, { capturedAmount: new BigNumber(30) })
+
+      expect(canceled).toMatchObject({ canceledAt: expect.any(Date), authorizedAmount: null })
+      expect(canceled.payments?.map((payment) => payment.canceledAt)).toEqual([expect.any(Date)])
+      await expect(
+        service.capturePaymentCollection(collection.id, { amount: new BigNumber(20) }),
+      ).rejects.toMatchObject({ type: ErrorTypes.NOT_ALLOWED })
+      expect((await service.retrievePaymentCollection(collection.id)).payments).toHaveLength(1)
+
+      await service.reopenPaymentCollection(collection.id)
+      const rest = await service.capturePaymentCollection(collection.id, { amount: new BigNumber(20) })
+
+      expect(rest.id).not.toBe(deposit.id)
+      expect((await service.retrievePaymentCollection(collection.id)).capturedAmount).toEqual(new BigNumber(50))
+    })
+
     test('refuses a partial capture against a provider that cannot take one', async ({ expect, dto }) => {
       mockProvider.canCapturePartially.mockReturnValue(false)
       const collection = await service.createPaymentCollection(dto.generate.createPaymentCollection())

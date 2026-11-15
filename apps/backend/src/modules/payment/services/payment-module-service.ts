@@ -718,9 +718,31 @@ export class PaymentModuleService implements IPaymentModuleService {
 
       const holding = payments.filter((payment) => !payment.canceledAt && remainingToCapture(payment).isGreaterThan(0))
       await Promise.all(holding.map((payment) => this.void_(payment, ctx)))
+      // Marked, not only voided: a payment recorded after this would otherwise open a new manual
+      // authorization and capture onto the canceled Order. `capture_` reads the mark under the
+      // same lock, so whichever of the two takes the lock first, the other is refused.
+      if (!collection.canceledAt) {
+        await this.paymentCollectionRepository.update(collection.id, { canceledAt: new Date() }, ctx)
+      }
       await this.maybeUpdatePaymentCollection_(collection.id, ctx)
 
       return this.retrievePaymentCollection(collection.id, undefined, ctx)
+    })
+  }
+
+  /**
+   * Takes the cancel mark off a collection, for an Order cancel that rolled back after the void:
+   * the Order is open again and can be paid. What was voided stays voided; a payment recorded
+   * after this authorizes anew.
+   */
+  async reopenPaymentCollection(paymentCollectionId: string, context?: Context): Promise<PaymentCollectionDTO> {
+    this.logger.debug(`Reopening payment collection "${paymentCollectionId}"`)
+    return this.withTransaction(context, async (ctx) => {
+      await this.paymentCollectionRepository.lockForUpdate(paymentCollectionId, ctx)
+      await this.paymentCollectionRepository.update(paymentCollectionId, { canceledAt: null }, ctx)
+      await this.maybeUpdatePaymentCollection_(paymentCollectionId, ctx)
+
+      return this.retrievePaymentCollection(paymentCollectionId, undefined, ctx)
     })
   }
 
@@ -1012,6 +1034,20 @@ export class PaymentModuleService implements IPaymentModuleService {
     if (await this.findCaptureByKey_(data.idempotencyKey, ctx)) return
 
     const payment = await this.retrievePayment(paymentId, ctx)
+    // Under the lock the caller holds, so a cancel that took it first is seen here.
+    const collection = await this.paymentCollectionRepository.findByIdOrFail(
+      payment.paymentCollectionId,
+      undefined,
+      ctx,
+    )
+
+    if (collection.canceledAt) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t('Payment collection "{id}" has been canceled: no payment can be recorded on it.'),
+        values: { id: collection.id },
+      })
+    }
 
     if (payment.canceledAt) {
       throw new AppError({
@@ -1190,6 +1226,10 @@ export class PaymentModuleService implements IPaymentModuleService {
       completedAt = completedAt ?? new Date()
     } else if (capturedAmount.isGreaterThan(0)) {
       status = 'partially_captured'
+    } else if (collection.canceledAt) {
+      // Only once nothing was captured: money taken keeps the status that reads it, so the Order's
+      // payment status still shows what it received and returned.
+      status = 'canceled'
     } else if (authorizedAmount.isGreaterThanOrEqualTo(collection.amount)) {
       status = 'authorized'
     } else if (authorizedAmount.isGreaterThan(0)) {
