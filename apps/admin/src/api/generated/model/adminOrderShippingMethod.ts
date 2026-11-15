@@ -19,6 +19,7 @@ export interface AdminOrderShippingMethod {
   shippingOptionId: string | null;
   /** @nullable */
   data: AdminOrderShippingMethodData;
+  isCustomAmount: boolean;
   createdAt: string;
   updatedAt: string;
   /** @nullable */

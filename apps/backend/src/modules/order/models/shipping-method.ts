@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { jsonb, pgTable, text } from 'drizzle-orm/pg-core'
+import { boolean, jsonb, pgTable, text } from 'drizzle-orm/pg-core'
 import { bignum } from '../../../core/db/bignum.js'
 import { timestamps } from '../../../core/db/columns.js'
 import { liveIndex } from '../../../core/db/indexes.js'
@@ -17,6 +17,9 @@ export const orderShippingMethodTable = pgTable(
     amount: bignum().notNull(),
     shippingOptionId: text(),
     data: jsonb().$type<Record<string, unknown> | null>(),
+    /** Set when the shop agreed this amount by hand (Medusa's `is_custom_amount`), so re-pricing a
+     *  draft after an item or address edit leaves it as it is. */
+    isCustomAmount: boolean().default(false).notNull(),
     ...timestamps,
   },
   (table) => [

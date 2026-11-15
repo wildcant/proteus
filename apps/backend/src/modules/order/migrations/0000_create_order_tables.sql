@@ -70,6 +70,7 @@ CREATE TABLE "order_shipping_method" (
 	"amount" numeric NOT NULL,
 	"shipping_option_id" text,
 	"data" jsonb,
+	"is_custom_amount" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"deleted_at" timestamp with time zone

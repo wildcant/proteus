@@ -26,6 +26,7 @@ export const PERMISSION_TITLES: Record<string, MessageDescriptor> = {
   'notification.read': msg`View notifications`,
   'order.read': msg`View orders`,
   'order.complete': msg`Complete orders`,
+  'order.edit': msg`Edit and delete draft orders`,
   'order.cancel': msg`Cancel orders`,
   'order.archive': msg`Archive orders`,
   'order.fulfill': msg`Fulfill orders`,

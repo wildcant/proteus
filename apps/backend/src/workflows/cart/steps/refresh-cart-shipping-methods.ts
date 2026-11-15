@@ -34,7 +34,8 @@ export async function loadCartShippingPricingContext(
   ])
 
   return buildShippingPricingContext({
-    cart,
+    cartId: cart.id,
+    currencyCode: cart.currencyCode,
     shippingAddress: shippingAddress ?? null,
     regionCountryCode: regionCountries[0]?.id ?? null,
     lineItems,

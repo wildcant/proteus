@@ -11,11 +11,20 @@ import { asTerminalRefusal } from '../utils/as-terminal-refusal.js'
 /** A step in its own file still owns its failure contract; the workflow calling it spreads this. */
 export const recordOrderPaymentThrows = [ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED] as const
 
-type RecordOrderPaymentInput = { orderId: string; amount: BigNumber }
+type RecordOrderPaymentInput = {
+  orderId: string
+  /**
+   * What was received. Omitted records nothing and only gives the Order its collection — converting
+   * a draft without a payment — so a workflow that may or may not record one still runs the same
+   * steps every time.
+   */
+  amount?: BigNumber | null | undefined
+}
 
 type PreparedOrderPayment = {
   orderId: string
-  amount: BigNumber
+  /** Null when nothing is recorded. */
+  amount: BigNumber | null
   /**
    * Minted here, one step before the capture, so it is recorded before any money moves: a capture
    * step that runs again after it committed presents the same key and is answered with the capture
@@ -26,8 +35,9 @@ type PreparedOrderPayment = {
 
 export type CapturedOrderPayment = {
   paymentCollectionId: string
-  paymentId: string
-  captureId: string
+  /** Null, with the capture's, when no amount was recorded. */
+  paymentId: string | null
+  captureId: string | null
   /** The one Order transaction this capture is recorded as, keyed by the capture row. */
   transactions: CreateOrderTransactionDTO[]
 }
@@ -46,7 +56,7 @@ async function prepareOrderPaymentStep(
   return ctx.step<PreparedOrderPayment>('prepare-order-payment', async ({ container }) => {
     const orderService = container.resolve(Modules.ORDER)
 
-    if (!input.amount.isGreaterThan(0)) {
+    if (input.amount && !input.amount.isGreaterThan(0)) {
       throw new WorkflowTerminalError({
         type: ErrorTypes.INVALID_DATA,
         message: i18n.t('Payment amount must be greater than zero.'),
@@ -61,6 +71,17 @@ async function prepareOrderPaymentStep(
         values: { orderId: order.id },
       })
     }
+    /** A Draft Order holds no payment collection: the shop records the deposit by converting it. */
+    if (order.status === 'draft') {
+      throw new WorkflowTerminalError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t(
+          'Cannot record a payment on order {orderId}: it is a draft — convert it to record its deposit.',
+        ),
+        values: { orderId: order.id },
+      })
+    }
+    if (!input.amount) return { orderId: order.id, amount: null, idempotencyKey: '' }
 
     const [lineItems, shippingMethods, transactions] = await Promise.all([
       orderService.listOrderLineItems({ orderId: order.id }),
@@ -102,6 +123,14 @@ async function captureOrderPaymentStep(
   return ctx.step<CapturedOrderPayment>(
     'capture-order-payment',
     async ({ container }) => {
+      if (!input.amount) {
+        return {
+          paymentCollectionId: collection.paymentCollectionId,
+          paymentId: null,
+          captureId: null,
+          transactions: [],
+        }
+      }
       const paymentService = container.resolve(Modules.PAYMENT)
 
       const payment = await paymentService
@@ -136,6 +165,7 @@ async function captureOrderPaymentStep(
       }
     },
     async (captured, { container }) => {
+      if (!captured.paymentId || !input.amount) return
       const paymentService = container.resolve(Modules.PAYMENT)
       await paymentService.refundPayment({
         paymentId: captured.paymentId,
