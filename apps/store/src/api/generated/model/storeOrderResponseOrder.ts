@@ -5,10 +5,10 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
+import type { OrderPaymentStatus } from './orderPaymentStatus.ts';
 import type { StoreOrder } from './storeOrder.ts';
 import type { StoreOrderAddress } from './storeOrderAddress.ts';
 import type { StoreOrderLineItem } from './storeOrderLineItem.ts';
-import type { StoreOrderResponseOrderPaymentStatus } from './storeOrderResponseOrderPaymentStatus.ts';
 import type { StoreOrderShippingMethod } from './storeOrderShippingMethod.ts';
 import type { StoreOrderTotals } from './storeOrderTotals.ts';
 
@@ -17,5 +17,5 @@ export type StoreOrderResponseOrder = StoreOrder & ({
   shippingAddress: StoreOrderAddress | null;
   shippingMethods: StoreOrderShippingMethod[];
   totals: StoreOrderTotals;
-  paymentStatus: StoreOrderResponseOrderPaymentStatus;
+  paymentStatus: OrderPaymentStatus;
 });

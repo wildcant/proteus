@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { PaginatedResponse } from '../../common.js'
+import { OrderPaymentStatus, PaginatedResponse } from '../../common.js'
+import { AdminPaymentCollection } from '../payment/entities.js'
 import {
   AdminOrder,
   AdminOrderAddress,
@@ -11,17 +12,17 @@ import {
   AdminOrderTransaction,
 } from './entities.js'
 
-export const PaymentStatus = z.enum(['awaiting', 'authorized', 'captured'])
-
 const AdminOrderWithDetails = AdminOrder.extend({
   lineItems: z.array(AdminOrderLineItem),
   shippingMethods: z.array(AdminOrderShippingMethod),
   transactions: z.array(AdminOrderTransaction),
   totals: AdminOrderTotals,
-  paymentStatus: PaymentStatus,
+  paymentStatus: OrderPaymentStatus,
   allowedActions: AdminOrderAllowedActions,
   shippingAddress: AdminOrderAddress.nullable(),
   fulfillments: z.array(AdminOrderFulfillment),
+  /** One per Order in Proteus, with its payments, their captures and refunds. */
+  paymentCollections: z.array(AdminPaymentCollection),
 })
 
 export const AdminOrderResponse = z.object({ order: AdminOrderWithDetails }).openapi('AdminOrderResponse')

@@ -7,6 +7,7 @@ import * as completeRoutes from './[id]/complete/route.js'
 import * as markAsDeliveredRoutes from './[id]/fulfillments/[fulfillmentId]/mark-as-delivered/route.js'
 import * as shipmentRoutes from './[id]/fulfillments/[fulfillmentId]/shipments/route.js'
 import * as fulfillmentRoutes from './[id]/fulfillments/route.js'
+import * as paymentRoutes from './[id]/payments/route.js'
 import * as orderByIdRoutes from './[id]/route.js'
 import * as orderRoutes from './route.js'
 
@@ -56,6 +57,18 @@ export default [
     summary: 'Cancel an order',
     tags: [Tags.ORDERS],
     output: cancelRoutes.PostOutput,
+  },
+  {
+    method: 'POST',
+    matcher: '/admin/orders/:id/payments',
+    handler: paymentRoutes.POST,
+    throws: paymentRoutes.PostThrows,
+    input: paymentRoutes.PostInput,
+    permissions: ['payment.capture'],
+    operationId: 'recordOrderPayment',
+    summary: 'Record a payment on an order',
+    tags: [Tags.ORDERS],
+    output: paymentRoutes.PostOutput,
   },
   {
     method: 'POST',

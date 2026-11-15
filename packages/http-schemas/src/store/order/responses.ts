@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { bigNumberToString, PaginatedResponse } from '../../common.js'
+import { bigNumberToString, OrderPaymentStatus, PaginatedResponse } from '../../common.js'
 import {
   StoreOrder,
   StoreOrderAddress,
@@ -24,7 +24,7 @@ const StoreOrderWithDetails = StoreOrder.extend({
   shippingAddress: StoreOrderAddress.nullable(),
   shippingMethods: z.array(StoreOrderShippingMethod),
   totals: StoreOrderTotals,
-  paymentStatus: z.enum(['awaiting', 'authorized', 'captured']),
+  paymentStatus: OrderPaymentStatus,
 })
 
 export const StoreOrderResponse = z.object({ order: StoreOrderWithDetails }).openapi('StoreOrderResponse')

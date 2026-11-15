@@ -1847,12 +1847,7 @@
                     "$ref": "#/components/schemas/StoreOrderTotals"
                   },
                   "paymentStatus": {
-                    "type": "string",
-                    "enum": [
-                      "awaiting",
-                      "authorized",
-                      "captured"
-                    ]
+                    "$ref": "#/components/schemas/OrderPaymentStatus"
                   }
                 },
                 "required": [
@@ -2038,6 +2033,21 @@
           "orderTotal"
         ]
       },
+      "OrderPaymentStatus": {
+        "type": "string",
+        "enum": [
+          "not_paid",
+          "awaiting",
+          "authorized",
+          "partially_authorized",
+          "partially_captured",
+          "captured",
+          "partially_refunded",
+          "refunded",
+          "canceled",
+          "requires_action"
+        ]
+      },
       "StoreCreatePaymentCollectionResponse": {
         "type": "object",
         "properties": {
@@ -2097,7 +2107,9 @@
               "awaiting",
               "authorized",
               "partially_authorized",
-              "completed"
+              "partially_captured",
+              "completed",
+              "canceled"
             ]
           },
           "metadata": {

@@ -39,11 +39,15 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
 
   const link = await linkService.repo('orderFulfillment').findByOrderId(order.id)
   const fulfillments = link ? [await fulfillmentService.retrieveFulfillment(link.fulfillmentId)] : []
+  const paymentLink = await linkService.repo('orderPaymentCollection').findByOrderId(order.id)
+  const paymentCollections = paymentLink
+    ? [await req.scope.resolve(Modules.PAYMENT).retrievePaymentCollection(paymentLink.paymentCollectionId)]
+    : []
 
   const enrichedLineItems = orderService.enrichLineItems(lineItems)
   const totals = orderService.computeOrderTotals({ lineItems, shippingMethods, transactions })
   const fulfillmentStatus = computeFulfillmentStatus(fulfillments)
-  const paymentStatus = computePaymentStatus(totals)
+  const paymentStatus = computePaymentStatus(paymentCollections)
 
   return {
     status: 200,
