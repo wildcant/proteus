@@ -147,6 +147,36 @@ test.describe('cancelOrderWorkflow', () => {
     expect(await service.read.reservationItems(container, { lineItemId: lineItem.id })).toHaveLength(1)
   })
 
+  test('refunds the part of a deposit the admin chose and voids what is still authorized', async ({
+    service,
+    expect,
+  }) => {
+    const { orderId, paymentCollectionId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+    const payment = await authorizedPayment(service, paymentCollectionId)
+
+    const canceled = await cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(10) })
+
+    expect(canceled.status).toBe('canceled')
+    const afterwards = await service.read.payment(container, payment.id)
+    expect(afterwards.canceledAt).toBeInstanceOf(Date)
+    expect(afterwards.refunds?.map((refund) => refund.amount.toFixed())).toEqual(['10'])
+    const transactions = await service.read.orderTransactions(container, orderId)
+    expect(transactions.map((transaction) => transaction.amount.toFixed()).sort()).toEqual(['-10', '30'])
+  })
+
+  test('refuses a refund above what the order received, and leaves it standing', async ({ service, expect }) => {
+    const { orderId } = await placedOrder(service)
+    await recordOrderPaymentWorkflow.run({ orderId, amount: new BigNumber(30) })
+
+    await expect(cancelOrderWorkflow.run({ orderId, refundAmount: new BigNumber(31) })).rejects.toThrow(
+      'a refund of 31 is not between 0 and the 30 received',
+    )
+
+    expect(await service.read.order(container, orderId)).toMatchObject({ status: 'pending' })
+    expect(await service.read.orderTransactions(container, orderId)).toHaveLength(1)
+  })
+
   /**
    * A payment recorded after the cancel planned its refund, before it voided the authorization:
    * canceling anyway would leave that money on a canceled Order, neither refunded nor voided.
