@@ -31,9 +31,8 @@ const LAYER_GRAPH = {
   framework: ['core', 'i18n', 'workflowRegistry', 'subscriberRegistry'],
   api: ['core', 'framework', 'workflows'],
 
-  // The translator merges every extension's catalogs into core's, so it is the one part of
-  // framework/ that names the extension registry.
-  i18n: ['core', 'framework', 'extensionRegistry'],
+  // Its own node so its test may reach the fixture extension's catalogs and schemas (below).
+  i18n: ['core', 'framework'],
 
   // An extension's manifest, module keys, events and settings: its own vocabulary, beside core's.
   extensionVocabulary: ['core', 'extensionTypes'],

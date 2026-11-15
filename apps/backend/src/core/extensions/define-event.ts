@@ -24,6 +24,14 @@ type KeyOption<TPayload> = TPayload extends { id: string }
   : { key: (data: TPayload) => string }
 
 /**
+ * The resource key an event gets when it declares none, core's or an extension's: the payload's
+ * `id`, so *once per resource*.
+ */
+export function keyById(data: unknown): string {
+  return (data as { id: string }).id
+}
+
+/**
  * Declared in the extension's `events.ts`. The name carries the extension's runtime prefix
  * (`pisos-dj.quote_requested`), which `extensions:generate` checks. A payload without an `id` must
  * say how it is keyed.
@@ -35,6 +43,6 @@ export function defineEvent<TPayload>(config: { name: string } & KeyOption<TPayl
   const { name, key } = config
   return {
     name,
-    key: key ?? ((data) => (data as { id: string }).id),
+    key: key ?? keyById,
   }
 }

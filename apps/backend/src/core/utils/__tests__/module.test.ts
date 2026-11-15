@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { test } from '@tests/setup/test-extend.js'
 import { defineModuleKey } from '../../extensions/module-key.js'
 import { Module } from '../module.js'
 
@@ -21,7 +21,7 @@ class GrownNotesService extends NotesService {
  * compiles. An extension module is checked against the service type its key carries, as a core one
  * is against `ModuleServiceContracts`, and declares no features, which are core permission keys.
  */
-test('an extension module is checked against its key and declares no features', () => {
+test('an extension module is checked against its key and declares no features', ({ expect }) => {
   const NotesKey = defineModuleKey<INotesService>('fixture.notes')
 
   const definition = Module(NotesKey, { service: NotesService, repositories: {}, models: {} })

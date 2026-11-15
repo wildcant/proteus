@@ -1,6 +1,7 @@
 import type { PreparedRoute, RouteHandler } from '@framework/http/ports.js'
 import type { TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
+import { testCatalogs } from '@tests/setup/test-extensions.js'
 import request from 'supertest'
 import { createExpressApp } from '../express/app.js'
 import { createHonoApp } from '../hono/app.js'
@@ -33,7 +34,7 @@ test.beforeEach(async ({ createApi }) => {
 
 test.describe('multipart file parsing', () => {
   test('express adapter only accepts the files field', async ({ logger, expect }) => {
-    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [] })
+    const app = createExpressApp({ routes, container: api.container, logger, corsOrigins: [], catalogs: testCatalogs })
 
     const webRequest = new Request('http://localhost/uploads', { method: 'POST', body: formDataWithMixedFields() })
     const body = Buffer.from(await webRequest.arrayBuffer())
@@ -47,7 +48,7 @@ test.describe('multipart file parsing', () => {
   })
 
   test('hono adapter only accepts the files field', async ({ logger, expect }) => {
-    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [] })
+    const app = createHonoApp({ routes, container: api.container, logger, corsOrigins: [], catalogs: testCatalogs })
 
     const response = await app.fetch(
       new Request('http://localhost/uploads', { method: 'POST', body: formDataWithMixedFields() }),

@@ -1,4 +1,4 @@
-import { buildEvent, type PaymentCapturedAction } from '@core/event-bus/events.js'
+import { buildDelivery, type PaymentCapturedAction } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { UserDTO } from '@core/types/user/common.js'
 import { Modules } from '@core/utils/modules-definition.js'
@@ -38,7 +38,7 @@ test.beforeEach(async ({ createTestContainer, service }) => {
 /** One delivery, identical to what an adapter would hand the handler. */
 function deliver(sessionId: string, action: PaymentCapturedAction = 'captured'): Promise<void> {
   return defineSubscriber(config).handler({
-    event: buildEvent('payment.captured', { id: sessionId, action }, config.name),
+    event: buildDelivery('payment.captured', { id: sessionId, action }, config),
     container,
   })
 }

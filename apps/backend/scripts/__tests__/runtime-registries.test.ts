@@ -1,7 +1,8 @@
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { test } from '@tests/setup/test-extend.js'
+import { vi } from 'vitest'
 import { generateJobRegistry } from '../generate-job-registry.js'
 import { generateSubscriberRegistry } from '../generate-subscriber-registry.js'
 import { generateWorkerdCrons, run } from '../generate-workerd-crons.js'
@@ -29,7 +30,7 @@ function backendWith(files: Record<string, string>): string {
 }
 
 const created: string[] = []
-afterEach(() => {
+test.afterEach(() => {
   for (const directory of created.splice(0)) rmSync(directory, { recursive: true, force: true })
 })
 
@@ -41,8 +42,10 @@ const job = (name: string, schedule: string, extra = '') =>
 
 const messages = (result: { problems: { message: string }[] }) => result.problems.map((problem) => problem.message)
 
-describe('the runtime registries read extensions', () => {
-  test('workflows: an extension workflow is imported by a computed path, and must be prefixed and unique', () => {
+test.describe('the runtime registries read extensions', () => {
+  test('workflows: an extension workflow is imported by a computed path, and must be prefixed and unique', ({
+    expect,
+  }) => {
     const valid = generateWorkflowRegistry(
       backendWith({
         'src/workflows/cart/add.ts': workflow('addWorkflow', 'add'),
@@ -71,7 +74,9 @@ describe('the runtime registries read extensions', () => {
     ])
   })
 
-  test('subscribers: an extension subscriber is imported by a computed path, and must be prefixed and unique', () => {
+  test('subscribers: an extension subscriber is imported by a computed path, and must be prefixed and unique', ({
+    expect,
+  }) => {
     const valid = generateSubscriberRegistry(
       backendWith({
         'src/subscribers/send-mail.ts': subscriber('send-mail'),
@@ -98,7 +103,7 @@ describe('the runtime registries read extensions', () => {
     ])
   })
 
-  test('jobs: an extension job is imported by a computed path, and must be prefixed and unique', () => {
+  test('jobs: an extension job is imported by a computed path, and must be prefixed and unique', ({ expect }) => {
     const valid = generateJobRegistry(
       backendWith({
         'src/jobs/census.ts': job('census', 'CronExpression.EVERY_HOUR'),
@@ -124,7 +129,7 @@ describe('the runtime registries read extensions', () => {
   })
 })
 
-describe('workerd cron triggers', () => {
+test.describe('workerd cron triggers', () => {
   const Wrangler = `{
   "name": "proteus-backend",
   // A comment outside the triggers, kept.
@@ -139,7 +144,7 @@ describe('workerd cron triggers', () => {
 }
 `
 
-  test('lists each enabled schedule once, core and extensions, and leaves the rest of the file alone', () => {
+  test('lists each enabled schedule once, core and extensions, and leaves the rest of the file alone', ({ expect }) => {
     const backend = backendWith({
       'src/jobs/census.ts': job('census', 'CronExpression.EVERY_10_MINUTES'),
       'src/jobs/heartbeat.ts': job('heartbeat', 'CronExpression.EVERY_MINUTE', ', disabled: true'),
@@ -170,7 +175,7 @@ describe('workerd cron triggers', () => {
     expect(generateWorkerdCrons(backend, rendered).rendered).toBe(rendered)
   })
 
-  test('the check fails on a stale cron list without writing, and a schedule it cannot read fails', () => {
+  test('the check fails on a stale cron list without writing, and a schedule it cannot read fails', ({ expect }) => {
     vi.spyOn(console, 'info').mockImplementation(() => undefined)
     const backend = backendWith({
       'src/jobs/census.ts': job('census', 'CronExpression.EVERY_10_MINUTES'),

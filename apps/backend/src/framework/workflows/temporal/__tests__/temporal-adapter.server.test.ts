@@ -2,6 +2,7 @@ import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
 import { noopLogger } from '@core/logger/noop-logger.js'
 import { createWorkflow, type WorkflowDefinition, WorkflowTerminalError } from '@core/workflows/types.js'
+import { mergeCatalogs } from '@framework/i18n/lingui-translator.js'
 import { createExpressApp } from '@framework/runtime/express/app.js'
 import { createTemporalWorkflowEngine, type TemporalWorkflowEngine } from '@framework/workflows/temporal-adapter.js'
 import type { Msgid } from '@proteus/utils'
@@ -466,6 +467,7 @@ describe('temporal workflow engine', () => {
         container,
         logger: noopLogger,
         corsOrigins: [],
+        catalogs: mergeCatalogs([]),
       })
 
       const response = await request(app).post('/store/names').set('x-proteus-locale', 'es-CO').send({})

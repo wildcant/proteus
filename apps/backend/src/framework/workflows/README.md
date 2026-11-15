@@ -323,7 +323,9 @@ why it behaves as it does; adding one is
   the extension whose handler ran or `null` for the fallback; `hookStep` returns `value`. Compensation
   calls the registered handler's `compensate` only when that handler's extension is `handledBy`, so a
   handler replaced or removed before the rollback never undoes work it did not do, and the fallback
-  has nothing to undo.
+  has nothing to undo. The comparison is by extension name, not handler code: a handler the same
+  extension changed between the step and the rollback still compensates, so the new code undoes the
+  old work.
 - **Errors.** A handler error whose `AppError` type is on the hook's `throws` is rethrown as a
   `WorkflowTerminalError`, so it is never retried and keeps its type through the Temporal failure
   details. Anything else becomes an `UNEXPECTED_STATE` `AppError` naming the hook and the extension.
@@ -332,7 +334,7 @@ why it behaves as it does; adding one is
 - **Handlers live on the container, the engine holds one global container.** `registerHookHandlers`
   puts the map on every container `bootstrapContainer` builds, but `.run()` uses whichever container
   `setWorkflowEngine` saw last. A test that needs a different handler builds its container last with
-  `createTestContainer({ hookHandlers })`.
+  `createTestContainer({ extensions: { ...testExtensions, hookHandlers } })`.
 - **The Temporal Worker is its own process.** It imported its handlers at start, so a changed handler
   needs the Worker restarted; the API and the Worker deploy together, or one runs a handler the other
   has not got.

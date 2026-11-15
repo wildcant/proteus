@@ -1,7 +1,7 @@
+import { timestamps } from '@core/db/columns.js'
+import { liveIndex } from '@core/db/indexes.js'
 import { sql } from 'drizzle-orm'
 import { pgTable, text } from 'drizzle-orm/pg-core'
-import { timestamps } from '../../../../../../src/core/db/columns.js'
-import { liveIndex } from '../../../../../../src/core/db/indexes.js'
 
 export const fixtureNoteTable = pgTable(
   'fixture_notes',

@@ -4,6 +4,11 @@ import { FixtureEvents } from '../events.js'
 import { FixtureModules } from '../keys.js'
 import type { CreateFixtureNoteDTO, FixtureNoteDTO } from '../types/notes.js'
 
+/**
+ * A workflow though it touches one module, which the workflow standard would make a service method:
+ * it publishes `NOTE_CREATED`, and an event is published only from a workflow's final step
+ * (ADR-0024), so the fixture needs one to cover an extension's event end to end.
+ */
 export const createFixtureNoteWorkflow = createWorkflow<CreateFixtureNoteDTO, FixtureNoteDTO>(
   { name: 'fixture.create-note' },
   async (ctx, input) => {

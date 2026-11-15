@@ -6,6 +6,7 @@ import { defineHook, defineHookHandler, hookStep, runHook } from '@core/workflow
 import { createWorkflow, type WorkflowContext } from '@core/workflows/types.js'
 import type { Msgid } from '@proteus/utils'
 import { test } from '@tests/setup/test-extend.js'
+import { testExtensions } from '@tests/setup/test-extensions.js'
 import { registerHookHandlers } from '../hook-handlers.js'
 
 /**
@@ -91,6 +92,9 @@ async function stepNames(container: AppContainer, input: { amount: number; fail:
   return names
 }
 
+/** A test container's extensions with these hook handlers in place of the registry's. */
+const handledBy = (hookHandlers: HookHandlerDefinition[]) => ({ extensions: { ...testExtensions, hookHandlers } })
+
 const conflict = () => new AppError({ type: ErrorTypes.CONFLICT, message: 'The quote is no longer available' as Msgid })
 
 test.describe('workflow hooks', () => {
@@ -103,7 +107,7 @@ test.describe('workflow hooks', () => {
     createTestContainer,
     expect,
   }) => {
-    const bare = await createTestContainer({ hookHandlers: [] })
+    const bare = await createTestContainer(handledBy([]))
     const fallback = await quoteWorkflow.run({ amount: 5, fail: false })
     expect(fallback.source).toBe('core')
     // A BigNumber, after crossing the payload converter on Temporal.
@@ -111,7 +115,7 @@ test.describe('workflow hooks', () => {
     const withoutHandler = await stepNames(bare, { amount: 5, fail: false })
 
     // Built last, so the engine runs on it: the replaced handler map is this container's own.
-    const handled = await createTestContainer({ hookHandlers: [doubling('alpha')] })
+    const handled = await createTestContainer(handledBy([doubling('alpha')]))
     const quote = await quoteWorkflow.run({ amount: 5, fail: false })
     expect(quote.source).toBe('alpha')
     expect(quote.total.toFixed()).toBe('10')
@@ -128,14 +132,14 @@ test.describe('workflow hooks', () => {
     createTestContainer,
     expect,
   }) => {
-    await createTestContainer({ hookHandlers: [failing(conflict())] })
+    await createTestContainer(handledBy([failing(conflict())]))
     await expect(quoteWorkflow.run({ amount: 5, fail: false })).rejects.toMatchObject({
       cause: { type: ErrorTypes.CONFLICT },
     })
     expect(journal).toEqual(['reserve undone'])
 
     journal = []
-    const container = await createTestContainer({ hookHandlers: [failing(new Error('socket hang up'))] })
+    const container = await createTestContainer(handledBy([failing(new Error('socket hang up'))]))
     await expect(quoteWorkflow.run({ amount: 5, fail: false })).rejects.toMatchObject({
       type: ErrorTypes.UNEXPECTED_STATE,
       message: expect.stringContaining('socket hang up'),
@@ -153,7 +157,7 @@ test.describe('workflow hooks', () => {
   }) => {
     const alpha = doubling('alpha')
 
-    await createTestContainer({ hookHandlers: [alpha] })
+    await createTestContainer(handledBy([alpha]))
     deployedNext = [alpha]
     await expect(redeployWorkflow.run({ amount: 5, fail: true })).rejects.toThrow('deliberate failure')
     expect(journal).toEqual(['alpha undid 10'])
@@ -161,7 +165,7 @@ test.describe('workflow hooks', () => {
     // Replaced by another extension's handler, then removed: neither undoes alpha's output.
     for (const next of [[doubling('beta')], []]) {
       journal = []
-      await createTestContainer({ hookHandlers: [alpha] })
+      await createTestContainer(handledBy([alpha]))
       deployedNext = next
       await expect(redeployWorkflow.run({ amount: 5, fail: true })).rejects.toThrow('deliberate failure')
       expect(journal).toEqual([])
@@ -171,16 +175,9 @@ test.describe('workflow hooks', () => {
   test('keep the recorded output when a handler is registered mid-run', async ({ createTestContainer, expect }) => {
     // On Temporal every later step replays the handler from the top; a hook step whose name or
     // presence depended on the handler would fail that replay as a changed step sequence.
-    await createTestContainer({ hookHandlers: [] })
+    await createTestContainer(handledBy([]))
     deployedNext = [doubling('alpha')]
     const quote = await redeployWorkflow.run({ amount: 5, fail: false })
     expect(quote).toMatchObject({ source: 'core' })
-  })
-
-  test('reject a second handler for one hook', async ({ createTestContainer, expect }) => {
-    await expect(createTestContainer({ hookHandlers: [doubling('alpha'), doubling('beta')] })).rejects.toMatchObject({
-      type: ErrorTypes.UNEXPECTED_STATE,
-      message: expect.stringContaining('"alpha" and "beta"'),
-    })
   })
 })

@@ -1,4 +1,4 @@
-import type { ExtensionEvent } from '../extensions/define-event.js'
+import { type ExtensionEvent, keyById } from '../extensions/define-event.js'
 import type { PaymentActions } from '../types/payment/common.js'
 
 /**
@@ -156,8 +156,8 @@ const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
 }
 
 /**
- * The resource key for one event. `data.id` unless the map overrides it — and `data.id` only
- * compiles because every payload above carries one, which is how that requirement is enforced.
+ * The resource key for one event: `keyById` unless the map overrides it. Every payload in
+ * `EventPayloads` carries an `id`, so the default always has one to read.
  *
  * An extension event brings its own key with it (`defineEvent`), passed in as `key`; core's map is
  * not consulted for a name it cannot hold.
@@ -165,7 +165,7 @@ const EVENT_KEYS: { [N in EventName]?: (data: EventPayloads[N]) => string } = {
 function eventKey(name: string, data: unknown, key: ((data: unknown) => string) | undefined): string {
   if (key) return key(data)
   const custom = (EVENT_KEYS as Partial<Record<string, (data: unknown) => string>>)[name]
-  return custom ? custom(data) : (data as { id: string }).id
+  return custom ? custom(data) : keyById(data)
 }
 
 /**
@@ -189,22 +189,13 @@ function dispatchIdentity(
 }
 
 /**
- * The event object handed to one subscriber, for a core event or an extension one.
+ * The event object handed to one subscriber, for a core event or an extension one. Read back by
+ * name — off a queue, or out of the registry — so an extension event's declaration arrives as the
+ * subscriber's `keys` rather than as a value.
  *
- * The cast is the one place the generic is widened back to the `Event` union. TypeScript cannot
- * prove `{ name: N; data: EventPayloads[N] }` is a member of a union it distributed over `N`, even
- * though every instantiation is; keeping the widening here means no adapter and no call site has to
- * repeat it.
- */
-export function buildEvent<R extends EventRef>(event: R, data: EventPayload<R>, subscriber: string): Event {
-  const name = eventNameOf(event)
-  const key = typeof event === 'string' ? undefined : (value: unknown) => event.key(value)
-  return { name, data, dispatchId: dispatchIdentity(name, data, subscriber, key) } as Event
-}
-
-/**
- * The same, for a delivery read back by name — off a queue, or out of the registry — where the
- * event's declaration arrives as the subscriber's `keys` rather than as a value.
+ * The cast is the one place the payload is widened back to the `Event` union. TypeScript cannot
+ * prove `{ name; data }` is a member of a union it distributed over every event, even though every
+ * delivery is; keeping the widening here means no adapter and no call site has to repeat it.
  */
 export function buildDelivery(
   name: string,

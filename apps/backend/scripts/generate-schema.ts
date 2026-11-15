@@ -19,9 +19,9 @@
 
 import type { Dirent } from 'node:fs'
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join, relative } from 'node:path'
 import { EXTENSIONS_ROOT, extensionModules } from './extension-modules.js'
+import { BACKEND } from './runtime-sources.js'
 
 const RED = '\x1b[0;31m'
 const GREEN = '\x1b[0;32m'
@@ -30,8 +30,7 @@ const DIM = '\x1b[2m'
 const BOLD = '\x1b[1m'
 const RESET = '\x1b[0m'
 
-const BACKEND_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const SRC_DIR = join(BACKEND_ROOT, 'src')
+const SRC_DIR = join(BACKEND, 'src')
 const MODULES_DIR = join(SRC_DIR, 'modules')
 const LINK_DEFINITIONS_DIR = join(SRC_DIR, 'link-modules/definitions')
 const OUTPUT = join(SRC_DIR, 'schema.gen.ts')

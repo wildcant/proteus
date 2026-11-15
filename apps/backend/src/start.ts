@@ -6,6 +6,7 @@ import { ContainerRegistrationKeys } from './core/utils/container.js'
 import { env } from './env.js'
 import { extensionRegistry } from './extensions/registry.gen.js'
 import { createRegistry, documentInfo, generateDocument } from './framework/http/openapi/registry.js'
+import { mergeCatalogs } from './framework/i18n/lingui-translator.js'
 import { closeWorkflowEngine, container } from './framework/runtime/container.node.js'
 import { createExpressApp } from './framework/runtime/express/app.js'
 import { assertTemporalFrontendReachable, probeTemporalFrontend } from './framework/temporal/preflight.js'
@@ -48,6 +49,7 @@ export async function start(options?: StartOptions): Promise<StartResult> {
     container,
     logger,
     corsOrigins: env.CORS_ORIGIN,
+    catalogs: mergeCatalogs(extensionRegistry.catalogs),
   })
 
   // ---- Swagger UI ----

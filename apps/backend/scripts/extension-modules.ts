@@ -8,15 +8,12 @@
  * checks and `db:generate` read the fixture root — production code never sees it.
  */
 
-import type { Dirent } from 'node:fs'
-import { existsSync, readdirSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { BACKEND, directoriesIn } from './runtime-sources.js'
 
-const BACKEND_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-
-export const EXTENSIONS_ROOT = join(BACKEND_ROOT, 'src/extensions')
-export const FIXTURE_EXTENSIONS_ROOT = join(BACKEND_ROOT, 'tests/extension-fixture')
+export const EXTENSIONS_ROOT = join(BACKEND, 'src/extensions')
+export const FIXTURE_EXTENSIONS_ROOT = join(BACKEND, 'tests/extension-fixture')
 
 export type ExtensionModule = {
   /** The extension's folder name, which is its name (`pisos-dj`). */
@@ -29,26 +26,16 @@ export type ExtensionModule = {
   databaseConfig: string | undefined
 }
 
-function directoriesIn(directory: string): Dirent[] {
-  try {
-    return readdirSync(directory, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .sort((a, b) => a.name.localeCompare(b.name))
-  } catch {
-    // Upstream ships no extension, and a fork may have none either: an absent root is no modules.
-    return []
-  }
-}
-
 /** Every module of every extension under `root`, sorted by extension then module. */
 export function extensionModules(root: string = EXTENSIONS_ROOT): ExtensionModule[] {
+  // Upstream ships no extension, and a fork may have none either: an absent root is no modules.
   return directoriesIn(root).flatMap((extension) =>
-    directoriesIn(join(root, extension.name, 'modules')).map((module) => {
-      const directory = join(root, extension.name, 'modules', module.name)
+    directoriesIn(join(root, extension, 'modules')).map((module) => {
+      const directory = join(root, extension, 'modules', module)
       const databaseConfig = join(directory, 'database.config.ts')
       return {
-        extension: extension.name,
-        module: module.name,
+        extension,
+        module,
         directory,
         databaseConfig: existsSync(databaseConfig) ? databaseConfig : undefined,
       }

@@ -14,12 +14,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/container.ts:171
+#: src/container.ts:167
 msgid "The temporal workflow engine was selected but no factory was injected. The entry point building this container must pass `createTemporalWorkflowEngine`, or pin `projectConfig.workflows.engine` to \"simple\"."
 msgstr "Se seleccionó el motor de flujos de trabajo temporal, pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createTemporalWorkflowEngine`, o fijar `projectConfig.workflows.engine` en \"simple\"."
 
 #. js-lingui-explicit-id
-#: src/container.ts:205
+#: src/container.ts:201
 msgid "The \"{adapter}\" event bus adapter was selected but no factory was injected. The entry point building this container must pass `createEventBusAdapter`, or pin `projectConfig.eventBus.adapter` to \"inline\"."
 msgstr "Se seleccionó el adaptador de bus de eventos \"{adapter}\", pero no se inyectó ninguna fábrica. El punto de entrada que construye este contenedor debe pasar `createEventBusAdapter`, o fijar `projectConfig.eventBus.adapter` en \"inline\"."
 
@@ -953,11 +953,6 @@ msgstr "Comodín de módulo desconocido: {grant}"
 #: src/modules/access-control/services/access-control-module-service.ts:513
 msgid "Unknown permission key: {grant}"
 msgstr "Clave de permiso desconocida: {grant}"
-
-#. js-lingui-explicit-id
-#: src/framework/workflows/hook-handlers.ts:24
-msgid "Hook \"{hook}\" has two handlers, from extensions \"{first}\" and \"{second}\". A hook takes one."
-msgstr "El hook \"{hook}\" tiene dos handlers, de las extensiones \"{first}\" y \"{second}\". Un hook admite uno."
 
 #. js-lingui-explicit-id
 #: src/framework/workflows/temporal-adapter.ts:180

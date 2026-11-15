@@ -5,7 +5,6 @@ import { messages as schemasEs } from '@proteus/http-schemas/locales/es'
 import { messages as backendEn } from '../../../locales/en.js'
 import { messages as backendEs } from '../../../locales/es.js'
 import type { Translator } from '../../core/i18n/types.js'
-import { extensionRegistry } from '../../extensions/registry.gen.js'
 import type { ExtensionRegistry } from '../extensions/types.js'
 
 /** The request header that names the shopper's Locale, `es-CO` say. */
@@ -39,8 +38,8 @@ function compareNames(a: string, b: string): number {
  * two catalogs translate differently fails the extension generator, so the order decides nothing a
  * fork can see; it is fixed so that it never depends on how the registry was written.
  *
- * @testSeam Production merges once, from the generated registry, just below. The export is for the
- * translator test and the test API, which merge the fixture extension's catalogs instead.
+ * Called by the composition roots, each over the registry it built its container from, so the
+ * catalogs a request translates with are always that registry's.
  */
 export function mergeCatalogs(extensionCatalogs: ExtensionRegistry['catalogs']): Catalogs {
   // Stable, so an extension's two catalogs (its schemas' then its own) keep the registry's order.
@@ -52,9 +51,6 @@ export function mergeCatalogs(extensionCatalogs: ExtensionRegistry['catalogs']):
     ]),
   )
 }
-
-/** What the composition roots translate with: core's and the generated registry's extensions'. */
-const defaultCatalogs = mergeCatalogs(extensionRegistry.catalogs)
 
 /** `es` for `es-CO`; the Locale's language is all a catalog is keyed by. */
 export function languageOf(locale: string): string {
@@ -82,14 +78,11 @@ async function resolveLanguage(
 /**
  * A fresh Lingui instance per call, never a shared global one: requests interleave on one server
  * instance, and a global `i18n.activate()` would bleed one request's language into another's.
- *
- * `catalogs` is `mergeCatalogs` of a registry's; the default is the generated registry's, and a test
- * passes the fixture registry's.
  */
 export async function createLinguiTranslator(
+  catalogs: Catalogs,
   locale: string | undefined,
   fallbackLanguage: () => Promise<string>,
-  catalogs: Catalogs = defaultCatalogs,
 ): Promise<Translator> {
   const language = await resolveLanguage(catalogs, locale, fallbackLanguage)
   const messages = catalogs[language] ?? {}

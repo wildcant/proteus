@@ -32,8 +32,8 @@ type CreateHonoAppOptions = {
   container: AppContainer
   logger: Logger
   corsOrigins: string[]
-  /** `mergeCatalogs` of the registry the routes came from; the generated registry's when omitted. */
-  catalogs?: Catalogs
+  /** `mergeCatalogs` of the registry the routes came from. */
+  catalogs: Catalogs
 }
 
 export function createHonoApp({ routes, container, logger, corsOrigins, catalogs }: CreateHonoAppOptions) {
@@ -101,7 +101,7 @@ export function createHonoApp({ routes, container, logger, corsOrigins, catalogs
         return c.json(result.json, result.status as ContentfulStatusCode)
       } catch (error) {
         // Built here, per request, and never registered in the container: only the response translates.
-        const translator = await createLinguiTranslator(c.req.header(LOCALE_HEADER), defaultLanguage.get, catalogs)
+        const translator = await createLinguiTranslator(catalogs, c.req.header(LOCALE_HEADER), defaultLanguage.get)
         const { status, json } = errorHandler(error, logger, translator)
         return c.json(json, status as ContentfulStatusCode)
       }

@@ -6,9 +6,9 @@ import * as ts from 'typescript'
 import type { ExtensionModule } from '../extension-modules.js'
 import { EXTENSIONS_ROOT, extensionModules, FIXTURE_EXTENSIONS_ROOT } from '../extension-modules.js'
 import { databasePrefix } from '../extension-names.js'
+import { BACKEND } from '../runtime-sources.js'
 import { parse } from '../ts-source.js'
 import { locate } from './metadata.js'
-import { BACKEND_ROOT } from './models.js'
 import type { Check, Model, Violation } from './types.js'
 
 /**
@@ -70,7 +70,7 @@ export async function databaseNameViolations(models: Model[]): Promise<Violation
   // An exported enum no column uses still becomes a type in the migration.
   for (const { extension, file } of uniqueFiles(models)) {
     const prefix = databasePrefix(extension)
-    const exports: Record<string, unknown> = await import(pathToFileURL(join(BACKEND_ROOT, file)).href)
+    const exports: Record<string, unknown> = await import(pathToFileURL(join(BACKEND, file)).href)
     for (const value of Object.values(exports)) {
       if (!isPgEnum(value) || value.enumName.startsWith(prefix) || columnEnums.has(value.enumName)) continue
       violations.push({
@@ -97,14 +97,14 @@ export function migrationsTableViolations(modules: ExtensionModule[]): Violation
     if (!databaseConfig) {
       if (!hasModels(directory)) continue
       violations.push({
-        location: relative(BACKEND_ROOT, directory),
+        location: relative(BACKEND, directory),
         message: `${extension}'s ${module} module declares models but has no database.config.ts`,
         remedy: `add database.config.ts beside its index.ts, with migrations: { table: '${expected}' }`,
       })
       continue
     }
 
-    const file = relative(BACKEND_ROOT, databaseConfig)
+    const file = relative(BACKEND, databaseConfig)
     const table = migrationsTableIn(databaseConfig)
     if (table === expected) continue
 

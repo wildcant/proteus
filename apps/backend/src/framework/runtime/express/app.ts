@@ -18,8 +18,8 @@ type CreateExpressAppOptions = {
   container: AppContainer
   logger: Logger
   corsOrigins: string[]
-  /** `mergeCatalogs` of the registry the routes came from; the generated registry's when omitted. */
-  catalogs?: Catalogs
+  /** `mergeCatalogs` of the registry the routes came from. */
+  catalogs: Catalogs
 }
 
 async function toWebRequest(req: express.Request): Promise<Request> {
@@ -110,7 +110,7 @@ export function createExpressApp({ routes, container, logger, corsOrigins, catal
         res.status(result.status).json(result.json)
       } catch (error) {
         // Built here, per request, and never registered in the container: only the response translates.
-        const translator = await createLinguiTranslator(req.get(LOCALE_HEADER), defaultLanguage.get, catalogs)
+        const translator = await createLinguiTranslator(catalogs, req.get(LOCALE_HEADER), defaultLanguage.get)
         const { status, json } = errorHandler(error, logger, translator)
         res.status(status).json(json)
       }

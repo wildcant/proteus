@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { MARKETS } from '@proteus/store-config'
 import { BigNumber } from '../src/core/bignumber.js'
-import { buildEvent } from '../src/core/event-bus/events.js'
+import { buildDelivery } from '../src/core/event-bus/events.js'
 import { defineSubscriber } from '../src/core/event-bus/types.js'
 import type { IAuthModuleService } from '../src/core/types/auth/service.js'
 import type { ICartModuleService } from '../src/core/types/cart/service.js'
@@ -357,7 +357,7 @@ if (existingProducts.length > 0) {
   if (!lowStockLevel) throw new Error(`Expected product-import.csv to stock ${LOW_STOCK_SKU}`)
 
   await defineSubscriber(alertLowStock).handler({
-    event: buildEvent(
+    event: buildDelivery(
       'inventory.available_decreased',
       {
         id: lowStockLevel.id,
@@ -365,7 +365,7 @@ if (existingProducts.length > 0) {
         stockedQuantity: lowStockLevel.stockedQuantity,
         reservedQuantity: lowStockLevel.reservedQuantity,
       },
-      alertLowStock.name,
+      alertLowStock,
     ),
     container,
   })

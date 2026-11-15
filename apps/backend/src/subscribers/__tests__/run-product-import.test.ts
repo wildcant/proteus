@@ -1,4 +1,4 @@
-import { buildEvent } from '@core/event-bus/events.js'
+import { buildDelivery } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -18,7 +18,7 @@ test.beforeEach(async ({ createTestContainer }) => {
 
 function deliver(id: string): Promise<void> {
   return defineSubscriber(config).handler({
-    event: buildEvent('product.import_confirmed', { id }, config.name),
+    event: buildDelivery('product.import_confirmed', { id }, config),
     container,
   })
 }

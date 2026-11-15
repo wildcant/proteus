@@ -1,4 +1,4 @@
-import { buildEvent } from '@core/event-bus/events.js'
+import { buildDelivery } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { NotificationDTO } from '@core/types/notification/common.js'
 import { Modules } from '@core/utils/modules-definition.js'
@@ -31,7 +31,7 @@ test.beforeEach(async ({ createTestContainer }) => {
  */
 function deliver(orderId: string): Promise<void> {
   return defineSubscriber(config).handler({
-    event: buildEvent('order.placed', { id: orderId }, config.name),
+    event: buildDelivery('order.placed', { id: orderId }, config),
     container,
   })
 }

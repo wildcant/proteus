@@ -14,7 +14,6 @@ import type { InputConfig } from './core/types/config.js'
 import type { AppContainer } from './core/types/container.js'
 import type { Logger } from './core/types/logger.js'
 import { ContainerRegistrationKeys } from './core/utils/container.js'
-import type { HookHandlerDefinition } from './core/workflows/hook-handler.js'
 import { setWorkflowEngine, type WorkflowEngine } from './core/workflows/types.js'
 import { env } from './env.js'
 import { bootstrapModule } from './framework/bootstrap/index.js'
@@ -85,18 +84,15 @@ export type BootstrapContainerDeps = {
   /**
    * The extensions this container runs: their modules, bootstrapped after core's, and their hook
    * handlers. A dependency rather than an import of `src/extensions/registry.gen.ts`, so the test
-   * suite passes the fixture extension's registry instead; every runtime root passes the generated one.
+   * suite passes the fixture extension's registry instead, or one with its own `hookHandlers`; every
+   * runtime root passes the generated one.
    */
   extensions: ExtensionRegistry
   /**
-   * The workflow hook handlers this container runs, in place of `extensions.hookHandlers`. A test
-   * container passes its own — or none, and gets every hook's fallback.
-   */
-  hookHandlers?: readonly HookHandlerDefinition[]
-  /**
-   * The subscribers the in-process bus dispatches to, in place of the generated list. The test
-   * suite adds the fixture extension's; the other adapters are built by their roots, which pass the
-   * registry to them directly.
+   * The subscribers the in-process bus dispatches to, in place of the generated list. Not part of
+   * `extensions`: an extension's subscribers already ship in `src/subscribers/registry.gen.ts` beside
+   * core's, which the runtime roots hand to their transports. Only the test suite passes this, to
+   * add the fixture extension's, which live outside `src/` and so outside that generated list.
    */
   subscribers?: SubscriberRegistry
 }
@@ -142,7 +138,7 @@ export async function bootstrapContainer(deps: BootstrapContainerDeps) {
   }
 
   registerLinkService(container)
-  registerHookHandlers(container, deps.hookHandlers ?? deps.extensions.hookHandlers)
+  registerHookHandlers(container, deps.extensions.hookHandlers)
   setWorkflowEngine(selectWorkflowEngine(deps, configModule.projectConfig.workflows.engine), container)
 
   // The bus is a container registration rather than a module global like the workflow engine,

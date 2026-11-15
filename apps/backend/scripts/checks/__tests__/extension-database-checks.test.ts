@@ -1,7 +1,7 @@
 import { join } from 'node:path'
+import { test } from '@tests/setup/test-extend.js'
 import { is } from 'drizzle-orm'
 import { PgTable } from 'drizzle-orm/pg-core'
-import { describe, expect, test } from 'vitest'
 import { productTable } from '../../../src/modules/product/models/product.js'
 import { databaseNameViolations, migrationsTableViolations } from '../extension-database-names.js'
 import { extensionForeignKeys } from '../extension-foreign-keys.js'
@@ -19,8 +19,8 @@ const models: Model[] = [
   { module: 'product', file: 'src/modules/product/models/product.ts', table: productTable },
 ]
 
-describe('extension-database-names', () => {
-  test('flags every unprefixed table, index, constraint and enum, and nothing prefixed or core', async () => {
+test.describe('extension-database-names', () => {
+  test('flags every unprefixed table, index, constraint and enum, and nothing prefixed or core', async ({ expect }) => {
     const messages = (await databaseNameViolations(models)).map((violation) => violation.message)
 
     expect(messages.sort()).toEqual(
@@ -36,7 +36,9 @@ describe('extension-database-names', () => {
     )
   })
 
-  test('each extension module records migrations in its own prefixed table, and has a config when it has models', () => {
+  test('each extension module records migrations in its own prefixed table, and has a config when it has models', ({
+    expect,
+  }) => {
     const module = (name: string, databaseConfig?: string) => ({
       extension: 'acme-shop',
       module: name,
@@ -64,8 +66,8 @@ describe('extension-database-names', () => {
   })
 })
 
-describe('extension-foreign-keys', () => {
-  test('flags a foreign key into core, and not one inside the extension', async () => {
+test.describe('extension-foreign-keys', () => {
+  test('flags a foreign key into core, and not one inside the extension', async ({ expect }) => {
     const violations = await extensionForeignKeys.run(models)
 
     expect(violations.map((violation) => violation.message)).toEqual(['notes.productId references core table product'])

@@ -83,19 +83,21 @@ hook's `throws` is everything a handler may say.
 - **Never another workflow's `.run()`.** That nests a second workflow inside one step, with none of
   its steps journaled.
 - **Compensation undoes only what `run` did.** It runs only for the handler that produced the
-  output; a handler with nothing to undo leaves `compensate` out.
+  output; a handler with nothing to undo leaves `compensate` out. "Produced" compares the
+  extension's name, not the handler's code: if the same extension ships a changed handler between a
+  step and its rollback, the new `compensate` undoes the old `run`'s work, so keep it able to.
 - **Free of side effects when the hook runs outside a workflow.** `runHook` never compensates.
 
 ### One handler per hook
 
-The extension generator rejects a second handler for the same hook, and `registerHookHandlers`
-rejects one handed to a test container. There are no chains.
+The extension generator rejects a second handler for the same hook. There are no chains.
 
 ### A test that needs a different handler builds its container last
 
 Handlers live on the container, but the workflow engine holds one global container, so `.run()` uses
-the last one built. Build the container with `createTestContainer({ hookHandlers: [...] })` —
-`[]` for the fallback — after any other container in the test, and run the workflow then.
+the last one built. Build the container with
+`createTestContainer({ extensions: { ...testExtensions, hookHandlers: [...] } })` — `[]` for the
+fallback — after any other container in the test, and run the workflow then.
 
 ## Enforcement
 

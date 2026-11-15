@@ -18,15 +18,19 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as ts from 'typescript'
 import { type DiscoveredJob, discover } from './generate-job-registry.js'
-import { BACKEND, isEntryPoint, type Problem } from './runtime-sources.js'
+import {
+  BACKEND,
+  DIM,
+  GREEN,
+  heading,
+  isEntryPoint,
+  type Problem,
+  RED,
+  RESET,
+  report,
+  YELLOW,
+} from './runtime-sources.js'
 import { parse } from './ts-source.js'
-
-const RED = '\x1b[0;31m'
-const GREEN = '\x1b[0;32m'
-const YELLOW = '\x1b[0;33m'
-const DIM = '\x1b[2m'
-const BOLD = '\x1b[1m'
-const RESET = '\x1b[0m'
 
 /** One trigger: a schedule, and the enabled jobs that run on it. */
 export type Cron = { schedule: string; jobs: string[] }
@@ -246,12 +250,6 @@ export function generateWorkerdCrons(
   return { rendered, crons, problems: [...jobProblems, ...problems] }
 }
 
-function heading(title: string): void {
-  console.info('')
-  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
-  console.info('')
-}
-
 /** Writes, or with `checking` only compares, `backend`'s `wrangler.jsonc`. The exit code; exported for the tests. */
 export function run(backend: string, { checking }: { checking: boolean }): 0 | 1 {
   const path = wranglerOf(backend)
@@ -259,13 +257,7 @@ export function run(backend: string, { checking }: { checking: boolean }): 0 | 1
   const { rendered, crons, problems } = generateWorkerdCrons(backend, existing)
 
   if (problems.length > 0) {
-    heading('workerd-crons')
-    for (const problem of problems) {
-      console.info(`  ${DIM}${problem.location}${RESET}`)
-      console.info(`    ${problem.message}`)
-      console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
-      console.info('')
-    }
+    report('workerd-crons', problems)
     return 1
   }
 

@@ -2,6 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { Messages } from '@lingui/core'
+import { BACKEND } from './runtime-sources.js'
 
 /**
  * The message catalogs the backend translator merges: core's (the backend's own and
@@ -13,8 +14,6 @@ import type { Messages } from '@lingui/core'
 
 /** One catalog, by language, and where it came from for the finding. */
 export type NamedCatalog = { source: string; messages: Record<string, Messages> }
-
-const BACKEND_ROOT = resolve(import.meta.dirname, '..')
 
 /**
  * The compiled catalogs (`{language}.ts`, what the runtime imports) in a `locales/` folder, or
@@ -36,8 +35,8 @@ export async function readCatalog(localesDirectory: string): Promise<Record<stri
 /** Core's catalog, merged as the translator merges it: the schemas' messages under the backend's. */
 export async function readCoreCatalog(): Promise<NamedCatalog> {
   const [schemas = {}, backend = {}] = await Promise.all([
-    readCatalog(resolve(BACKEND_ROOT, '../../packages/http-schemas/locales')),
-    readCatalog(resolve(BACKEND_ROOT, 'locales')),
+    readCatalog(resolve(BACKEND, '../../packages/http-schemas/locales')),
+    readCatalog(resolve(BACKEND, 'locales')),
   ])
   const languages = [...new Set([...Object.keys(schemas), ...Object.keys(backend)])]
   const messages = Object.fromEntries(
@@ -76,7 +75,7 @@ export function catalogConflicts(catalogs: NamedCatalog[]): string[] {
 
 /** Where an extension's HTTP schemas catalog lives, when it has one. */
 export function httpSchemasLocales(extension: string): string {
-  return resolve(BACKEND_ROOT, '../../packages/http-schemas/src/extensions', extension, 'locales')
+  return resolve(BACKEND, '../../packages/http-schemas/src/extensions', extension, 'locales')
 }
 
 /**

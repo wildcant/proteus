@@ -29,7 +29,7 @@ runtime, and the Temporal Worker runs steps in its own process, so both need sta
 
 | Written by | File | Holds | Read by |
 |---|---|---|---|
-| `extensions:generate` | `src/extensions/registry.gen.ts` | manifests, modules, store and webhook routes, hook handlers, compiled catalogs | the container bootstrap, route preparation, the translator |
+| `extensions:generate` | `src/extensions/registry.gen.ts` | manifests, modules, store and webhook routes, hook handlers, compiled catalogs | the container bootstrap, route preparation, and the catalogs the composition roots hand the HTTP app |
 | `extensions:generate` | `src/extensions/seeds.gen.ts` | seed steps | `scripts/seed-dev.ts` only |
 | `workflows:generate` | `src/framework/workflows/temporal/registry.gen.ts` | core's and the extensions' workflows | the Temporal Worker |
 | `subscribers:generate` | `src/subscribers/registry.gen.ts` | core's and the extensions' subscribers | the event bus adapters |
@@ -112,7 +112,8 @@ configuration to change. What it leaves behind:
 - **A hook test runs the handler of the last container built.** Handlers live on the container, but
   the workflow engine holds one global container, so a workflow's `.run()` uses whichever container
   was built last. A test that needs a different handler builds its container last with
-  `createTestContainer({ hookHandlers: [...] })`, or `[]` for the fallback, and then runs the
+  `createTestContainer({ extensions: { ...testExtensions, hookHandlers: [...] } })`, or `[]` for the
+  fallback, and then runs the
   workflow.
 - **A new catalog needs the Lingui watcher restarted.** `pnpm run dev:translations` reads the list of
   catalogs when it starts, so an extension's first message is not extracted until you restart it.

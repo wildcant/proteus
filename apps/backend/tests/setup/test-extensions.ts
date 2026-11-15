@@ -6,6 +6,7 @@
 
 import { extensionRegistry as generatedRegistry } from '../../src/extensions/registry.gen.js'
 import type { ExtensionRegistry } from '../../src/framework/extensions/types.js'
+import { mergeCatalogs } from '../../src/framework/i18n/lingui-translator.js'
 import { extensionRegistry as fixtureRegistry } from '../extension-fixture/registry.gen.js'
 
 export const testExtensions: ExtensionRegistry = {
@@ -18,3 +19,6 @@ export const testExtensions: ExtensionRegistry = {
   hookHandlers: [...generatedRegistry.hookHandlers, ...fixtureRegistry.hookHandlers],
   catalogs: [...generatedRegistry.catalogs, ...fixtureRegistry.catalogs],
 }
+
+/** Core's catalogs with the test extensions' merged after them, what a test app translates with. */
+export const testCatalogs = mergeCatalogs(testExtensions.catalogs)

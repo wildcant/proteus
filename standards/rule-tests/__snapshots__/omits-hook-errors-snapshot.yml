@@ -1,6 +1,17 @@
 id: omits-hook-errors
 snapshots:
   ? |
+    const documented = [...orderChargesHook.throws]
+    export const createDraftOrderWorkflow = createWorkflow(
+      { name: 'create-draft-order', throws: [ErrorTypes.NOT_FOUND], tags: [...orderChargesHook.throws] },
+      async (ctx, input) => hookStep(ctx, orderChargesHook, { cartId: input.cartId }),
+    )
+  : labels:
+    - source: 'hookStep(ctx, orderChargesHook, { cartId: input.cartId })'
+      style: primary
+      start: 230
+      end: 287
+  ? |
     export const GetThrows = [...shippingQuoteHook.throws] as const
     export const GET = async (req) => runHook(req.scope, orderChargesHook, { cartId: req.params.id })
   : labels:
@@ -8,6 +19,15 @@ snapshots:
       style: primary
       start: 98
       end: 161
+  ? |
+    export const PostThrows = [...orderChargesHook.throws] as const
+    export const GetThrows = [ErrorTypes.NOT_FOUND] as const
+    export const GET = async (req) => runHook(req.scope, orderChargesHook, { cartId: req.params.id })
+  : labels:
+    - source: 'runHook(req.scope, orderChargesHook, { cartId: req.params.id })'
+      style: primary
+      start: 155
+      end: 218
   ? |
     export const createDraftOrderWorkflow = createWorkflow(
       { name: 'create-draft-order', throws: [ErrorTypes.NOT_FOUND] },
@@ -21,3 +41,17 @@ snapshots:
       style: primary
       start: 174
       end: 231
+  ? |
+    export const previewChargesWorkflow = createWorkflow(
+      { name: 'preview-charges', throws: [...orderChargesHook.throws] },
+      async (ctx, input) => ctx.step('noop', async () => input),
+    )
+    export const createDraftOrderWorkflow = createWorkflow(
+      { name: 'create-draft-order', throws: [ErrorTypes.NOT_FOUND] },
+      async (ctx, input) => hookStep(ctx, orderChargesHook, { cartId: input.cartId }),
+    )
+  : labels:
+    - source: 'hookStep(ctx, orderChargesHook, { cartId: input.cartId })'
+      style: primary
+      start: 332
+      end: 389

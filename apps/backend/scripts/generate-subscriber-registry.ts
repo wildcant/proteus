@@ -30,20 +30,20 @@ import {
   BACKEND,
   byOwnerThenModule,
   collectRuntimeSources,
+  DIM,
+  GREEN,
+  heading,
   isEntryPoint,
   moduleSpecifier,
   type Problem,
+  RED,
+  RESET,
   repoRootOf,
+  report,
   unprefixedName,
+  YELLOW,
 } from './runtime-sources.js'
 import { parse } from './ts-source.js'
-
-const RED = '\x1b[0;31m'
-const GREEN = '\x1b[0;32m'
-const YELLOW = '\x1b[0;33m'
-const DIM = '\x1b[2m'
-const BOLD = '\x1b[1m'
-const RESET = '\x1b[0m'
 
 type Discovered = {
   /** What the generated file imports `config` as. Derived from `name`, which is already unique. */
@@ -205,22 +205,6 @@ ${entries}
 `
 }
 
-function heading(title: string): void {
-  console.info('')
-  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
-  console.info('')
-}
-
-function report(problems: Problem[]): void {
-  heading('subscriber-registry')
-  for (const problem of problems) {
-    console.info(`  ${DIM}${problem.location}${RESET}`)
-    console.info(`    ${problem.message}`)
-    console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
-    console.info('')
-  }
-}
-
 /** The registry `backend`'s sources produce, or what is wrong with them. Exported for the tests. */
 export function generateSubscriberRegistry(backend: string): { rendered: string; count: number; problems: Problem[] } {
   const { subscribers, problems } = discover(backend)
@@ -247,7 +231,7 @@ function main(): void {
   const { rendered, count, problems } = generateSubscriberRegistry(BACKEND)
 
   if (problems.length > 0) {
-    report(problems)
+    report('subscriber-registry', problems)
     process.exit(1)
   }
 

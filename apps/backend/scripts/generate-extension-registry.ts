@@ -14,7 +14,7 @@
  *
  * - every name an extension adds to a shared namespace carries its prefix (`extension-names.ts`):
  *   module keys and event names `<ext>.`, operation ids `<ext camel>…`, OpenAPI component names
- *   `<Ext Pascal>…`;
+ *   `<Ext Pascal>…`, the names a module's model files export `<ext camel>…` or `<Ext Pascal>…`;
  * - a module key, event name, operation id or component name core already has, or another
  *   extension has, fails;
  * - a route outside `/store/` or `/hooks/`, an admin route, a route core already serves (same
@@ -38,15 +38,22 @@ import { basename, dirname, join, relative, resolve } from 'node:path'
 import * as ts from 'typescript'
 import { catalogConflicts, httpSchemasLocales, readCoreCatalog, readExtensionCatalogs } from './extension-catalogs.js'
 import { camelPrefix, hasPrefix, isExtensionName, pascalPrefix, runtimePrefix } from './extension-names.js'
-import { BACKEND, isEntryPoint, moduleSpecifier, type Problem, repoRootOf } from './runtime-sources.js'
+import {
+  BACKEND,
+  DIM,
+  directoriesIn,
+  GREEN,
+  heading,
+  isEntryPoint,
+  moduleSpecifier,
+  type Problem,
+  RED,
+  RESET,
+  repoRootOf,
+  report,
+  YELLOW,
+} from './runtime-sources.js'
 import { collect, parse, type SourceFileInput } from './ts-source.js'
-
-const RED = '\x1b[0;31m'
-const GREEN = '\x1b[0;32m'
-const YELLOW = '\x1b[0;33m'
-const DIM = '\x1b[2m'
-const BOLD = '\x1b[1m'
-const RESET = '\x1b[0m'
 
 export type { Problem }
 
@@ -75,6 +82,8 @@ export type DiscoveredExtension = {
   events: Named[]
   routeFiles: RouteFile[]
   componentNames: Named[]
+  /** Every name a model file exports, which `src/schema.gen.ts` re-exports beside core's. */
+  modelNames: Named[]
   hookHandlers: HookHandlerFile[]
   seeds: (ImportedFile & { seed: string })[]
   subscribers: ImportedFile[]
@@ -109,15 +118,16 @@ function lineOf(source: ts.SourceFile, node: ts.Node): string {
   return `${source.fileName}:${source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1}`
 }
 
-function visit(node: ts.Node, fn: (node: ts.Node) => void): void {
-  fn(node)
-  ts.forEachChild(node, (child) => visit(child, fn))
+/** Calls `visitor` on `node` and every node below it, depth first. */
+function forEachNode(node: ts.Node, visitor: (node: ts.Node) => void): void {
+  visitor(node)
+  ts.forEachChild(node, (child) => forEachNode(child, visitor))
 }
 
 /** Calls to `name(...)` anywhere in the file. */
 function callsTo(source: ts.SourceFile, name: string): ts.CallExpression[] {
   const calls: ts.CallExpression[] = []
-  visit(source, (node) => {
+  forEachNode(source, (node) => {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
       calls.push(node)
     }
@@ -160,6 +170,35 @@ function exportedConst(source: ts.SourceFile, name: string): ts.Expression | und
   return undefined
 }
 
+/** The names one top-level statement exports: `export { … }`, `export const`, `export type`, … */
+function namesExportedBy(statement: ts.Statement): ts.ModuleExportName[] {
+  if (ts.isExportDeclaration(statement)) {
+    const clause = statement.exportClause
+    return clause && ts.isNamedExports(clause) ? clause.elements.map((element) => element.name) : []
+  }
+  const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined
+  if (!modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) return []
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.flatMap((declaration) =>
+      ts.isIdentifier(declaration.name) ? [declaration.name] : [],
+    )
+  }
+  const declared =
+    ts.isFunctionDeclaration(statement) ||
+    ts.isClassDeclaration(statement) ||
+    ts.isEnumDeclaration(statement) ||
+    ts.isTypeAliasDeclaration(statement) ||
+    ts.isInterfaceDeclaration(statement)
+  return declared && statement.name ? [statement.name] : []
+}
+
+/** Every name the file exports, values and types alike. */
+function exportedNames(source: ts.SourceFile): Named[] {
+  return source.statements.flatMap((statement) =>
+    namesExportedBy(statement).map((name) => ({ name: name.text, location: lineOf(source, name) })),
+  )
+}
+
 /** Unwraps `[…] satisfies T` and `[…] as const`. */
 function unwrap(expression: ts.Expression): ts.Expression {
   if (
@@ -175,7 +214,7 @@ function unwrap(expression: ts.Expression): ts.Expression {
 /** Every `{ method, matcher, operationId }` object literal in a definitions file. */
 function routesIn(source: ts.SourceFile): Route[] {
   const routes: Route[] = []
-  visit(source, (node) => {
+  forEachNode(source, (node) => {
     if (!ts.isObjectLiteralExpression(node)) return
     const method = literalProperty(node, 'method')
     const matcher = literalProperty(node, 'matcher')
@@ -188,7 +227,7 @@ function routesIn(source: ts.SourceFile): Route[] {
 /** Every `.openapi('Name')` — a schema registered as an OpenAPI component under that name. */
 function componentNamesIn(source: ts.SourceFile): Named[] {
   const names: Named[] = []
-  visit(source, (node) => {
+  forEachNode(source, (node) => {
     if (!ts.isCallExpression(node) || !ts.isPropertyAccessExpression(node.expression)) return
     if (node.expression.name.text !== 'openapi') return
     const [first] = node.arguments
@@ -201,14 +240,6 @@ function componentNamesIn(source: ts.SourceFile): Named[] {
 function aliasOf(extension: string, ...parts: string[]): string {
   const words = parts.flatMap((part) => part.split(/[^A-Za-z0-9]+/)).filter(Boolean)
   return camelPrefix(extension) + words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')
-}
-
-function directoriesIn(directory: string): string[] {
-  if (!existsSync(directory)) return []
-  return readdirSync(directory, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort((a, b) => a.localeCompare(b))
 }
 
 /** `.ts` files directly in `directory`, sorted, as repo-relative inputs. */
@@ -258,89 +289,90 @@ function hookIdentity(source: ts.SourceFile, call: ts.CallExpression, backend: s
 // ---- Discovery -------------------------------------------------------------------------------
 
 /** One extension folder being read: where it is, and where its problems go. */
-type Reading = { name: string; directory: string; backend: string; repoRoot: string; problems: Problem[] }
+type ExtensionFolder = { name: string; directory: string; backend: string; repoRoot: string; problems: Problem[] }
 
-function at(reading: Reading, ...parts: string[]): string {
-  return join(reading.directory, ...parts)
+/** A path inside the extension folder. */
+function pathIn(folder: ExtensionFolder, ...parts: string[]): string {
+  return join(folder.directory, ...parts)
 }
 
-function readManifest(reading: Reading): Named | undefined {
-  const path = at(reading, 'extension.ts')
+function readManifest(folder: ExtensionFolder): Named | undefined {
+  const path = pathIn(folder, 'extension.ts')
   if (!existsSync(path)) return undefined
 
-  const source = parse({ path: relative(reading.repoRoot, path), source: readFileSync(path, 'utf8') })
+  const source = parse({ path: relative(folder.repoRoot, path), source: readFileSync(path, 'utf8') })
   const [call] = callsTo(source, 'defineExtension')
   const config = call?.arguments[0]
   const manifestName = config && ts.isObjectLiteralExpression(config) ? literalProperty(config, 'name') : undefined
   if (call && manifestName) return { name: manifestName, location: lineOf(source, call) }
 
-  reading.problems.push({
+  folder.problems.push({
     location: source.fileName,
     message: 'the manifest does not name the extension with a string literal',
-    remedy: `export default defineExtension({ name: '${reading.name}' })`,
+    remedy: `export default defineExtension({ name: '${folder.name}' })`,
   })
   return undefined
 }
 
-function readModules(reading: Reading): ImportedFile[] {
-  return directoriesIn(at(reading, 'modules'))
-    .filter((module) => existsSync(at(reading, 'modules', module, 'index.ts')))
+function readModules(folder: ExtensionFolder): ImportedFile[] {
+  return directoriesIn(pathIn(folder, 'modules'))
+    .filter((module) => existsSync(pathIn(folder, 'modules', module, 'index.ts')))
     .map((module) => ({
-      alias: aliasOf(reading.name, module, 'module'),
-      file: relative(reading.repoRoot, at(reading, 'modules', module, 'index.ts')),
+      alias: aliasOf(folder.name, module, 'module'),
+      file: relative(folder.repoRoot, pathIn(folder, 'modules', module, 'index.ts')),
     }))
 }
 
 /**
- * The string literal each `fn(…)` call in `source` names, read by `nameOf` from its first argument;
+ * The string literal each `callee(…)` call in `source` names, read by `nameOf` from its first argument;
  * a call it cannot read is a problem, since its name could not be checked.
  */
 function literalNames(
-  reading: Reading,
+  folder: ExtensionFolder,
   source: ts.SourceFile,
-  fn: string,
+  callee: string,
   nameOf: (argument: ts.Expression) => string | undefined,
   remedy: string,
 ): Named[] {
-  return callsTo(source, fn).flatMap((call) => {
+  return callsTo(source, callee).flatMap((call) => {
     const [argument] = call.arguments
     const name = argument ? nameOf(argument) : undefined
     if (name) return [{ name, location: lineOf(source, call) }]
-    reading.problems.push({
+    folder.problems.push({
       location: lineOf(source, call),
-      message: `a ${fn}(…) whose name is not a string literal`,
+      message: `a ${callee}(…) whose name is not a string literal`,
       remedy,
     })
     return []
   })
 }
 
-function readModuleKeys(reading: Reading): Named[] {
-  const path = at(reading, 'keys.ts')
+function readModuleKeys(folder: ExtensionFolder): Named[] {
+  const path = pathIn(folder, 'keys.ts')
   if (!existsSync(path)) return []
-  const source = parse({ path: relative(reading.repoRoot, path), source: readFileSync(path, 'utf8') })
+  const source = parse({ path: relative(folder.repoRoot, path), source: readFileSync(path, 'utf8') })
   return literalNames(
-    reading,
+    folder,
     source,
     'defineModuleKey',
     (argument) => (ts.isStringLiteralLike(argument) ? argument.text : undefined),
-    `write the key inline — defineModuleKey<IService>('${runtimePrefix(reading.name)}module') — so it can be checked`,
+    `write the key inline — defineModuleKey<IService>('${runtimePrefix(folder.name)}module') — so it can be checked`,
   )
 }
 
 /** Events and OpenAPI component names may be declared anywhere in the extension, so every file is read. */
-function readDeclaredNames(reading: Reading): { events: Named[]; componentNames: Named[] } {
+function readDeclaredNames(folder: ExtensionFolder): { events: Named[]; componentNames: Named[] } {
   const events: Named[] = []
   const componentNames: Named[] = []
-  for (const file of existsSync(reading.directory) ? collect(reading.directory, reading.repoRoot) : []) {
+  for (const file of existsSync(folder.directory) ? collect(folder.directory, folder.repoRoot) : []) {
     const source = parse(file)
     events.push(
       ...literalNames(
-        reading,
+        folder,
         source,
         'defineEvent',
         (argument) => (ts.isObjectLiteralExpression(argument) ? literalProperty(argument, 'name') : undefined),
-        `write the name inline — defineEvent<Payload>({ name: '${runtimePrefix(reading.name)}something_happened' })`,
+        `write the name inline — defineEvent<Payload>({ name: '${runtimePrefix(folder.name)}something_happened' })`,
       ),
     )
     componentNames.push(...componentNamesIn(source))
@@ -348,15 +380,28 @@ function readDeclaredNames(reading: Reading): { events: Named[]; componentNames:
   return { events, componentNames }
 }
 
-function readRouteFiles(reading: Reading): RouteFile[] {
-  const api = at(reading, 'api')
+/**
+ * The names each module's model files export. `src/schema.gen.ts` re-exports every model file of
+ * core and the extensions with `export *`, so an unprefixed name would only clash there, after a
+ * later core release adds the same one.
+ */
+function readModelNames(folder: ExtensionFolder): Named[] {
+  return directoriesIn(pathIn(folder, 'modules')).flatMap((module) => {
+    const models = pathIn(folder, 'modules', module, 'models')
+    if (!existsSync(models)) return []
+    return collect(models, folder.repoRoot).flatMap((file) => exportedNames(parse(file)))
+  })
+}
+
+function readRouteFiles(folder: ExtensionFolder): RouteFile[] {
+  const api = pathIn(folder, 'api')
   if (!existsSync(api)) return []
-  return collect(api, reading.repoRoot)
+  return collect(api, folder.repoRoot)
     .filter((file) => basename(file.path) === 'definitions.ts')
     .map((file) => {
-      const path = relative(api, join(reading.repoRoot, file.path))
+      const path = relative(api, join(folder.repoRoot, file.path))
       return {
-        alias: aliasOf(reading.name, dirname(path), 'routes'),
+        alias: aliasOf(folder.name, dirname(path), 'routes'),
         file: file.path,
         scope: path.split('/')[0] ?? '',
         routes: routesIn(parse(file)),
@@ -364,13 +409,13 @@ function readRouteFiles(reading: Reading): RouteFile[] {
     })
 }
 
-function readHookHandlers(reading: Reading): HookHandlerFile[] {
-  return filesIn(at(reading, 'hooks'), reading.repoRoot).flatMap((file) => {
+function readHookHandlers(folder: ExtensionFolder): HookHandlerFile[] {
+  return filesIn(pathIn(folder, 'hooks'), folder.repoRoot).flatMap((file) => {
     const source = parse(file)
     const handler = exportedConst(source, 'handler')
     const call = handler ? unwrap(handler) : undefined
     if (!call || !ts.isCallExpression(call)) {
-      reading.problems.push({
+      folder.problems.push({
         location: file.path,
         message: 'no `export const handler = defineHookHandler(…)`',
         remedy:
@@ -380,19 +425,19 @@ function readHookHandlers(reading: Reading): HookHandlerFile[] {
     }
     return [
       {
-        alias: aliasOf(reading.name, basename(file.path, '.ts'), 'hook handler'),
+        alias: aliasOf(folder.name, basename(file.path, '.ts'), 'hook handler'),
         file: file.path,
-        hook: hookIdentity(source, call, reading.backend, reading.repoRoot),
+        hook: hookIdentity(source, call, folder.backend, folder.repoRoot),
         location: lineOf(source, call),
       },
     ]
   })
 }
 
-function readSeeds(reading: Reading): DiscoveredExtension['seeds'] {
-  return filesIn(at(reading, 'seeds'), reading.repoRoot).flatMap((file) => {
+function readSeeds(folder: ExtensionFolder): DiscoveredExtension['seeds'] {
+  return filesIn(pathIn(folder, 'seeds'), folder.repoRoot).flatMap((file) => {
     if (!defaultExport(parse(file))) {
-      reading.problems.push({
+      folder.problems.push({
         location: file.path,
         message: 'a seed file with no default export',
         remedy: 'export the step as `export default seedSomething`, typed `ExtensionSeedStep`',
@@ -400,25 +445,25 @@ function readSeeds(reading: Reading): DiscoveredExtension['seeds'] {
       return []
     }
     const seed = basename(file.path, '.ts')
-    return [{ alias: aliasOf(reading.name, seed, 'seed'), file: file.path, seed }]
+    return [{ alias: aliasOf(folder.name, seed, 'seed'), file: file.path, seed }]
   })
 }
 
-function readSubscribers(reading: Reading): ImportedFile[] {
-  return filesIn(at(reading, 'subscribers'), reading.repoRoot)
+function readSubscribers(folder: ExtensionFolder): ImportedFile[] {
+  return filesIn(pathIn(folder, 'subscribers'), folder.repoRoot)
     .filter((file) => exportedConst(parse(file), 'config'))
-    .map((file) => ({ alias: aliasOf(reading.name, basename(file.path, '.ts'), 'subscriber'), file: file.path }))
+    .map((file) => ({ alias: aliasOf(folder.name, basename(file.path, '.ts'), 'subscriber'), file: file.path }))
 }
 
-function readCatalogFiles(reading: Reading): DiscoveredExtension['catalogs'] {
+function readCatalogFiles(folder: ExtensionFolder): DiscoveredExtension['catalogs'] {
   const directories = [
-    { directory: httpSchemasLocales(reading.name), label: 'schema messages' },
-    { directory: at(reading, 'locales'), label: 'messages' },
+    { directory: httpSchemasLocales(folder.name), label: 'schema messages' },
+    { directory: pathIn(folder, 'locales'), label: 'messages' },
   ]
   return directories.flatMap(({ directory, label }) => {
-    const files = filesIn(directory, reading.repoRoot).map((file) => {
+    const files = filesIn(directory, folder.repoRoot).map((file) => {
       const language = basename(file.path, '.ts')
-      return { alias: aliasOf(reading.name, label, language), file: file.path, language }
+      return { alias: aliasOf(folder.name, label, language), file: file.path, language }
     })
     return files.length > 0 ? [{ directory, files }] : []
   })
@@ -427,25 +472,26 @@ function readCatalogFiles(reading: Reading): DiscoveredExtension['catalogs'] {
 function discoverExtension(name: string, options: GenerateOptions, problems: Problem[]): DiscoveredExtension {
   const repoRoot = repoRootOf(options.backend)
   const directory = join(options.root, name)
-  const reading: Reading = { name, directory, backend: options.backend, repoRoot, problems }
+  const folder: ExtensionFolder = { name, directory, backend: options.backend, repoRoot, problems }
 
   return {
     name,
     directory,
     folder: relative(repoRoot, directory),
-    manifest: readManifest(reading),
-    modules: readModules(reading),
-    moduleKeys: readModuleKeys(reading),
-    ...readDeclaredNames(reading),
-    routeFiles: readRouteFiles(reading),
-    hookHandlers: readHookHandlers(reading),
-    seeds: readSeeds(reading),
-    subscribers: options.subscribers ? readSubscribers(reading) : [],
-    catalogs: readCatalogFiles(reading),
+    manifest: readManifest(folder),
+    modules: readModules(folder),
+    moduleKeys: readModuleKeys(folder),
+    ...readDeclaredNames(folder),
+    modelNames: readModelNames(folder),
+    routeFiles: readRouteFiles(folder),
+    hookHandlers: readHookHandlers(folder),
+    seeds: readSeeds(folder),
+    subscribers: options.subscribers ? readSubscribers(folder) : [],
+    catalogs: readCatalogFiles(folder),
   }
 }
 
-/** Every extension folder under `root`, with the problems reading them raised. */
+/** Every extension folder under `root`, with the problems folder them raised. */
 export function discoverExtensions(options: GenerateOptions): {
   extensions: DiscoveredExtension[]
   problems: Problem[]
@@ -464,12 +510,12 @@ export function readCoreNames(backend: string): CoreNames {
   const sourceOf = (path: string) => parse({ path: relative(repoRoot, path), source: readFileSync(path, 'utf8') })
 
   const moduleKeys = new Set<string>()
-  visit(sourceOf(join(backend, 'src/core/utils/modules-definition.ts')), (node) => {
+  forEachNode(sourceOf(join(backend, 'src/core/utils/modules-definition.ts')), (node) => {
     if (ts.isPropertyAssignment(node) && ts.isStringLiteralLike(node.initializer)) moduleKeys.add(node.initializer.text)
   })
 
   const events = new Set<string>()
-  visit(sourceOf(join(backend, 'src/core/event-bus/events.ts')), (node) => {
+  forEachNode(sourceOf(join(backend, 'src/core/event-bus/events.ts')), (node) => {
     if (!ts.isTypeAliasDeclaration(node) || node.name.text !== 'EventPayloads' || !ts.isTypeLiteralNode(node.type))
       return
     for (const member of node.type.members) {
@@ -602,7 +648,7 @@ function routeProblems(extension: DiscoveredExtension, core: CoreNames): Problem
 }
 
 function prefixProblems(extension: DiscoveredExtension): Problem[] {
-  const checks: { kind: string; names: Named[]; prefix: string }[] = [
+  const checks: { kind: string; names: Named[]; prefix: string; alsoAccepted?: string }[] = [
     { kind: 'module key', names: extension.moduleKeys, prefix: runtimePrefix(extension.name) },
     { kind: 'event', names: extension.events, prefix: runtimePrefix(extension.name) },
     {
@@ -615,14 +661,21 @@ function prefixProblems(extension: DiscoveredExtension): Problem[] {
       prefix: camelPrefix(extension.name),
     },
     { kind: 'OpenAPI component', names: extension.componentNames, prefix: pascalPrefix(extension.name) },
+    // A model file exports values in camel case and types in Pascal case: `pisosDjNoteTable`, `PisosDjNote`.
+    {
+      kind: 'exported model identifier',
+      names: extension.modelNames,
+      prefix: camelPrefix(extension.name),
+      alsoAccepted: pascalPrefix(extension.name),
+    },
   ]
 
-  return checks.flatMap(({ kind, names, prefix }) =>
+  return checks.flatMap(({ kind, names, prefix, alsoAccepted }) =>
     names
-      .filter(({ name }) => !hasPrefix(name, prefix))
+      .filter(({ name }) => !hasPrefix(name, prefix) && !(alsoAccepted && hasPrefix(name, alsoAccepted)))
       .map(({ name, location }) => ({
         location,
-        message: `the ${kind} "${name}" in extension "${extension.name}" does not start with "${prefix}"`,
+        message: `the ${kind} "${name}" in extension "${extension.name}" does not start with "${prefix}"${alsoAccepted ? ` or "${alsoAccepted}"` : ''}`,
         remedy: `name it with the prefix, e.g. "${prefix}${prefix.endsWith('.') ? name : name.charAt(0).toUpperCase() + name.slice(1)}"; a later core name cannot collide with a prefixed one`,
       })),
   )
@@ -896,7 +949,7 @@ export async function generateExtensionRegistry(
 }
 
 /** Absent on the first run, and an empty string then differs from any render, which is the right answer. */
-function existing(path: string): string {
+function committedContent(path: string): string {
   try {
     return readFileSync(path, 'utf8')
   } catch {
@@ -906,7 +959,7 @@ function existing(path: string): string {
 
 /** The generated files whose committed copy differs from what the generator would write. */
 export function staleFiles(files: GeneratedFile[]): GeneratedFile[] {
-  return files.filter((file) => existing(file.path) !== file.content)
+  return files.filter((file) => committedContent(file.path) !== file.content)
 }
 
 /** Writes only what changed: an unconditional write re-triggers every watcher pointed at the file. */
@@ -917,22 +970,6 @@ export function writeFiles(files: GeneratedFile[]): GeneratedFile[] {
 }
 
 // ---- CLI -------------------------------------------------------------------------------------
-
-function heading(title: string): void {
-  console.info('')
-  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
-  console.info('')
-}
-
-function report(problems: Problem[]): void {
-  heading('extension-registry')
-  for (const problem of problems) {
-    console.info(`  ${DIM}${problem.location}${RESET}`)
-    console.info(`    ${problem.message}`)
-    console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
-    console.info('')
-  }
-}
 
 async function main(): Promise<void> {
   const fixture = process.argv.includes('--fixture')
@@ -954,7 +991,7 @@ async function main(): Promise<void> {
 
   const { files, problems, count } = await generateExtensionRegistry(options)
   if (problems.length > 0) {
-    report(problems)
+    report('extension-registry', problems)
     process.exit(1)
   }
 

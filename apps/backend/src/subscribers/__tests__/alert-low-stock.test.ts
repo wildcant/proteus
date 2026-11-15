@@ -1,4 +1,4 @@
-import { buildEvent } from '@core/event-bus/events.js'
+import { buildDelivery } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { InventoryLevelDTO } from '@core/types/inventory/common.js'
 import type { UserDTO } from '@core/types/user/common.js'
@@ -41,7 +41,7 @@ function deliver(
   level: Pick<InventoryLevelDTO, 'id' | 'version' | 'stockedQuantity' | 'reservedQuantity'>,
 ): Promise<void> {
   return defineSubscriber(config).handler({
-    event: buildEvent(
+    event: buildDelivery(
       'inventory.available_decreased',
       {
         id: level.id,
@@ -49,7 +49,7 @@ function deliver(
         stockedQuantity: level.stockedQuantity,
         reservedQuantity: level.reservedQuantity,
       },
-      config.name,
+      config,
     ),
     container,
   })

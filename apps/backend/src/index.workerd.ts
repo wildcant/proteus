@@ -6,6 +6,7 @@ import { env } from './env.js'
 import { extensionRegistry } from './extensions/registry.gen.js'
 import { createCloudflareQueuesConsumer } from './framework/event-bus/cloudflare-queues-adapter.js'
 import { subscriberRegistry } from './framework/event-bus/registry.js'
+import { mergeCatalogs } from './framework/i18n/lingui-translator.js'
 import { createWorkerdContainer } from './framework/runtime/container.workerd.js'
 import { createHonoApp } from './framework/runtime/hono/app.js'
 import { Cron } from './framework/scheduler/kuron/cron.js'
@@ -29,6 +30,7 @@ const app = createHonoApp({
   container,
   logger,
   corsOrigins: env.CORS_ORIGIN,
+  catalogs: mergeCatalogs(extensionRegistry.catalogs),
 })
 
 const cron = new Cron()

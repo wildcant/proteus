@@ -42,11 +42,10 @@ export function createInlineEventBus(deps: {
       await Promise.all(
         registry.forEvent(name).map(async (subscriber) => {
           // Caught, not left to escape. `buildDelivery` runs a key extractor — `EVENT_KEYS`, or an
-          // extension event's `key` — which
-          // is ordinary code that can throw — and a throw here would reject `emit`, which the port
-          // forbids for exactly the reason a subscriber failure is caught below. No extractor can
-          // throw today; leaving it uncaught means the first one that can is discovered inside a
-          // compensated checkout.
+          // extension event's `key` — which is ordinary code that can throw, and a throw here would
+          // reject `emit`, which the port forbids for exactly the reason a subscriber failure is
+          // caught below. No extractor can throw today; leaving it uncaught means the first one
+          // that can is discovered inside a compensated checkout.
           let event: Event
           try {
             event = buildDelivery(name, data, subscriber)

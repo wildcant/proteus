@@ -1,6 +1,6 @@
 /**
- * Where the workflow, subscriber and job generators read their files from, and how a generated
- * file names what it imports.
+ * Where the backend's generators read their files from, how a generated file names what it imports,
+ * and how a generator prints what it found.
  *
  * Each of the three reads one folder of core (`src/workflows/`, `src/subscribers/`, `src/jobs/`)
  * and the folder of the same name in every extension (`src/extensions/<ext>/workflows/`, …). Their
@@ -25,23 +25,26 @@ export type RuntimeSourceFile = SourceFileInput & { extension: string | undefine
 
 export type Problem = { location: string; message: string; remedy: string }
 
-/** The backend this script lives in, `apps/backend/`. Tests pass another one. */
-export const BACKEND = fileURLToPath(new URL('../', import.meta.url))
+/** The backend this script lives in, `apps/backend`. Tests pass another one. */
+export const BACKEND = resolve(import.meta.dirname, '..')
 
 /** Repo root of a backend, because locations are printed repo-relative, as clickable paths. */
 export function repoRootOf(backend: string): string {
   return resolve(backend, '../..')
 }
 
-/** Extension folder names under `src/extensions/`, sorted. Empty when the folder is absent. */
-export function extensionNames(backend: string): string[] {
-  const directory = join(backend, 'src/extensions')
+/** The folders directly in `directory`, by name, sorted. Empty when it is absent, as an extensions root upstream is. */
+export function directoriesIn(directory: string): string[] {
   if (!existsSync(directory)) return []
-
   return readdirSync(directory, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort((a, b) => a.localeCompare(b))
+}
+
+/** Extension folder names under `src/extensions/`, sorted. */
+export function extensionNames(backend: string): string[] {
+  return directoriesIn(join(backend, 'src/extensions'))
 }
 
 /** Core's `src/<folder>/`, then each extension's `src/extensions/<ext>/<folder>/` in name order. */
@@ -94,4 +97,29 @@ export function unprefixedName(
 export function isEntryPoint(url: string): boolean {
   const entry = process.argv[1]
   return entry !== undefined && resolve(entry) === fileURLToPath(url)
+}
+
+const BOLD = '\x1b[1m'
+export const RED = '\x1b[0;31m'
+export const GREEN = '\x1b[0;32m'
+export const YELLOW = '\x1b[0;33m'
+export const DIM = '\x1b[2m'
+export const RESET = '\x1b[0m'
+
+/** The rule a generator's failure output opens with, named for the generator. */
+export function heading(title: string): void {
+  console.info('')
+  console.info(`${RED}${BOLD}${title}${RESET} ${DIM}${'━'.repeat(Math.max(0, 76 - title.length))}${RESET}`)
+  console.info('')
+}
+
+/** Every problem under the generator's heading: where, what, and the remedy. */
+export function report(title: string, problems: Problem[]): void {
+  heading(title)
+  for (const problem of problems) {
+    console.info(`  ${DIM}${problem.location}${RESET}`)
+    console.info(`    ${problem.message}`)
+    console.info(`    ${YELLOW}→${RESET} ${problem.remedy}`)
+    console.info('')
+  }
 }
