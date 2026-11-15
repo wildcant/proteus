@@ -549,6 +549,10 @@ msgstr "Espera mientras confirmamos tu correo."
 msgid "If an account exists with that email, we've sent a link to reset your password."
 msgstr "Si existe una cuenta con ese correo, te enviamos un enlace para restablecer tu contraseña."
 
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:57
+msgid "If you gave us an email address, we have sent the order confirmation details to it."
+msgstr "Si nos diste un correo, enviamos allí los detalles de confirmación del pedido."
+
 #: src/components/ui/quantity-stepper/quantity-stepper.tsx:82
 msgid "Increase quantity for {label}"
 msgstr "Aumentar cantidad de {label}"
@@ -704,10 +708,10 @@ msgstr "Abrir menú"
 msgid "Open this link in the same browser you signed up with."
 msgstr "Abre este enlace en el mismo navegador con el que te registraste."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:65
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:66
 #: src/features/orders/components/order-content/order-content.tsx:56
-msgid "Order #{displayId}"
-msgstr "Pedido #{displayId}"
+msgid "Order {reference}"
+msgstr "Pedido {reference}"
 
 #: src/features/orders/components/order-progress-track/order-progress-track.tsx:40
 msgid "Order progress"
@@ -788,7 +792,7 @@ msgstr "Teléfono"
 msgid "Place order"
 msgstr "Realizar pedido"
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:68
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:69
 #: src/features/orders/components/order-content/order-content.tsx:59
 msgid "Placed {placedAt}"
 msgstr "Realizado el {placedAt}"
@@ -1251,13 +1255,9 @@ msgstr "No pudimos mostrar este producto"
 msgid "We email you a link rather than asking for your current password."
 msgstr "Te enviamos un enlace por correo en lugar de pedirte tu contraseña actual."
 
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:52
+#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:53
 msgid "We have sent the order confirmation details to <0>{email}</0>."
 msgstr "Enviamos los detalles de confirmación del pedido a <0>{email}</0>."
-
-#: src/features/orders/components/order-confirmed-content/order-confirmed-content.tsx:56
-msgid "We have sent the order confirmation details to your email."
-msgstr "Enviamos los detalles de confirmación del pedido a tu correo."
 
 #: src/features/auth/components/verify-pending/verify-pending.tsx:24
 msgid "We sent a verification link to your email. Click it to confirm your account, then come back and sign in."
