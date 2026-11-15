@@ -61,8 +61,9 @@ extension's registry instead.
 - **Fulfillment providers** are registered into the fulfillment module. Its bootstrap merges every
   extension's declarations after core's, so an extension provider resolves from the module's
   container under `fp_<identifier>_<id>` exactly as core's do, and a shipping option names it the
-  same way. The provider is constructed with the shared container's services, its own extension's
-  modules included. Its row in `fulfillment_provider` is synced with core's: by the module's loader
+  same way. The provider is constructed with a `resolve` over the shared container that answers
+  module services only (`extensionProviderDependencies`), its own extension's modules included, and
+  refuses `ContainerRegistrationKeys` such as `getDb`. Its row in `fulfillment_provider` is synced with core's: by the module's loader
   at boot on Node, and by `scripts/seed-providers.ts` before a workerd deploy, since workerd skips
   the loader's upsert. Payment and notification providers are not taken from extensions.
 - **Routes** join route preparation's store and webhook arrays, so namespace auth, validation,

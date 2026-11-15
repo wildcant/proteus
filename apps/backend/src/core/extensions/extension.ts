@@ -1,5 +1,7 @@
-import type { AppContainer } from '../types/container.js'
+import type { AppContainer, ModuleServiceContracts } from '../types/container.js'
 import type { Logger } from '../types/logger.js'
+import { ContainerRegistrationKeys } from '../utils/container.js'
+import type { ModuleKey } from './module-key.js'
 
 /**
  * An extension's manifest, the default export of its `extension.ts`.
@@ -28,11 +30,37 @@ export function defineExtension<const TManifest extends ExtensionManifest>(manif
 export type ExtensionSeedStep = (context: { container: AppContainer; logger: Logger }) => Promise<void>
 
 /**
- * What an extension's fulfillment provider is constructed with: the shared container's `resolve`,
- * so it reaches its own extension's modules by their keys (`resolve(PisosDjModules.SHIPPING)`) and
- * core's by their public services, and never a module's private repositories.
+ * What an extension's fulfillment provider is constructed with: a `resolve` that answers module
+ * services only, so it reaches its own extension's modules by their keys
+ * (`resolve(PisosDjModules.SHIPPING)`) and core's by their public services. The database, the
+ * logger, the link service, the bus and the other registrations the shared container holds are
+ * refused, in the type and at runtime, and a module's private repositories were never on it.
  *
  * The provider is built the first time it is resolved, after every module has registered, so its
  * constructor may resolve straight away.
  */
-export type ExtensionProviderDependencies = Pick<AppContainer, 'resolve'>
+export type ExtensionProviderDependencies = {
+  resolve<TKey extends keyof ModuleServiceContracts>(key: TKey): ModuleServiceContracts[TKey]
+  resolve<TService>(key: ModuleKey<TService>): TService
+}
+
+const registrationKeys: ReadonlySet<string> = new Set(Object.values(ContainerRegistrationKeys))
+
+/**
+ * Narrows the shared container to an extension provider's dependencies. Every key on the shared
+ * container is either a module's or one of `ContainerRegistrationKeys`, so refusing the latter
+ * leaves the module services.
+ */
+export function extensionProviderDependencies(container: {
+  resolve(key: ModuleKey<unknown>): unknown
+}): ExtensionProviderDependencies {
+  function resolve<TKey extends keyof ModuleServiceContracts>(key: TKey): ModuleServiceContracts[TKey]
+  function resolve<TService>(key: ModuleKey<TService>): TService
+  function resolve(key: string): unknown {
+    if (registrationKeys.has(key)) {
+      throw new Error(`An extension provider may resolve module services only, not "${key}".`)
+    }
+    return container.resolve(key as ModuleKey<unknown>)
+  }
+  return { resolve }
+}

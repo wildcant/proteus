@@ -220,9 +220,11 @@ run it at start) and commit the generated files. `pnpm run verify` fails on a st
    `ModuleProvider(Modules.FULFILLMENT, { services: [YourProvider] })`. The generator reads that
    export, and the fulfillment module merges it after core's providers. The fixture extension's
    `providers/fulfillment/city-rates.ts` is the worked example.
-3. It may depend on its own extension's module services (its rate table), resolved from the shared
-   container by the extension's module key. It may not reach a core module's repositories or models;
-   a core module is read through its service, like anywhere else in the extension.
+3. Its constructor receives `ExtensionProviderDependencies` (`core/extensions/extension.ts`): a
+   `resolve` that answers module services only, its own extension's by their module keys (its rate
+   table) and core's by `Modules`. `getDb`, the logger, the link service, the event bus and the
+   other `ContainerRegistrationKeys` don't compile, and throw if forced; a module's repositories and
+   models were never on the shared container.
 4. For a calculated option, `calculatePrice(optionData, data, context)` receives the option's
    `data`, the method's `data` and the Cart (its items with variant weight and dimensions, and its
    shipping address), and returns the calculated amount and whether it includes tax. When it can't
