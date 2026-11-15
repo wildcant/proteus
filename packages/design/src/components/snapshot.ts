@@ -269,19 +269,75 @@ export function exportComponentSnapshot(config: ResolvedConfig, names: string[])
 
 /**
  * What node.get doesn't report, by node id, read from the saved file itself (a zip whose `document.json` holds every
- * node by id): a scrolling frame's axis, a text layer's OpenType features.
+ * node by id): a scrolling frame's axis, a text layer's OpenType features, and what an instance's layer still shares
+ * with the layer of the main component it comes from (its `source`), to tell an override that changes something from
+ * one FigCraft records but that changes nothing in code.
  */
 function readSaved(file: string | undefined): Saved {
-  const saved: Saved = { overflows: new Map(), features: new Map() }
+  const saved: Saved = { overflows: new Map(), features: new Map(), unchanged: new Map() }
   if (!file) return saved
   const document = JSON.parse(
     execFileSync('unzip', ['-p', file, 'document.json'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }),
-  ) as { nodes?: Record<string, { overflow?: string; features?: Record<string, boolean> }> }
-  for (const [id, node] of Object.entries(document.nodes ?? {})) {
+  ) as { nodes?: Record<string, SavedNode> }
+  const nodes = document.nodes ?? {}
+  for (const [id, node] of Object.entries(nodes)) {
     if (node.overflow && node.overflow !== 'none') saved.overflows.set(id, node.overflow as Layer['overflow'])
     if (node.features && Object.keys(node.features).length) saved.features.set(id, node.features)
+    const source = node.source == null ? undefined : nodes[String(node.source)]
+    const unchanged = source ? unchangedOverrides(node, source) : []
+    if (unchanged.length) saved.unchanged.set(id, unchanged)
   }
   return saved
+}
+
+/**
+ * A node of the saved file, as far as the snapshot reads it.
+ * @internal exported for its test
+ */
+export type SavedNode = {
+  overflow?: string
+  features?: Record<string, boolean>
+  /** The layer of the main component an instance's layer comes from. */
+  source?: number | string
+  overrides?: string[]
+  styles?: { text?: string | null }
+  width?: number
+  height?: number
+}
+
+/**
+ * The override groups FigCraft records on an instance's layer that leave it as its source draws it in code:
+ * - `textStyle` with the source's own text style. A style whose size is bound to a Viewport variable resolves to
+ *   another size inside a variant drawn in another mode, and FigCraft records that as an override; in code the style
+ *   is one responsive utility either way.
+ * - `size` on an axis the instance didn't resize. Resizing one axis records `size`, which the build would otherwise
+ *   read as both axes fixed by the caller. Returned as the axis kept: `width` or `height`.
+ * @internal exported for its test
+ */
+export function unchangedOverrides(node: SavedNode, source: SavedNode): string[] {
+  const overrides = node.overrides ?? []
+  const unchanged: string[] = []
+  if (overrides.includes('textStyle') && node.styles?.text && node.styles.text === source.styles?.text) {
+    unchanged.push('textStyle')
+  }
+  if (overrides.includes('size')) {
+    if (node.width === source.width) unchanged.push('width')
+    if (node.height === source.height) unchanged.push('height')
+  }
+  return unchanged
+}
+
+/**
+ * The override groups the build reads: the recorded ones less those `unchangedOverrides` found, with `size` narrowed to
+ * the axis the instance resized (`width` or `height`), or dropped when it resized neither.
+ * @internal exported for its test
+ */
+export function effectiveOverrides(overrides: string[], unchanged: string[]): string[] {
+  const kept = overrides.filter((group) => group === 'size' || !unchanged.includes(group))
+  if (!kept.includes('size')) return kept
+  const resized = (['width', 'height'] as const).filter((axis) => !unchanged.includes(axis))
+  if (resized.length === 2) return kept
+  return kept.flatMap((group) => (group === 'size' ? resized : [group]))
 }
 
 const KEPT = [
@@ -311,7 +367,12 @@ const KEPT = [
   'effects',
 ] as const
 
-type Saved = { overflows: Map<string, Layer['overflow']>; features: Map<string, Record<string, boolean>> }
+type Saved = {
+  overflows: Map<string, Layer['overflow']>
+  features: Map<string, Record<string, boolean>>
+  /** By node id, the override groups `unchangedOverrides` found. */
+  unchanged: Map<string, string[]>
+}
 
 function trim(node: FigCraftNode, setOf: Map<string, string>, saved: Saved, parent: FigCraftNode | undefined): Layer {
   const out = Object.fromEntries(KEPT.filter((key) => node[key] != null).map((key) => [key, node[key]])) as Layer
@@ -323,6 +384,8 @@ function trim(node: FigCraftNode, setOf: Map<string, string>, saved: Saved, pare
   if (inGrid && (cell?.columnSpan ?? 1) > 1) out.gridCell = { columnSpan: cell?.columnSpan }
   const overflow = saved.overflows.get(String(node.id))
   if (overflow) out.overflow = overflow
+  const unchanged = saved.unchanged.get(String(node.id))
+  if (out.overrides && unchanged) out.overrides = effectiveOverrides(out.overrides, unchanged)
   const features = saved.features.get(String(node.id))
   if (features) out.fontFeatures = features
   const layout = trimLayout(node.layout as (Layout & { mode: string }) | undefined)
