@@ -909,8 +909,12 @@ function sizeClass(node: Layer, axis: 'horizontal' | 'vertical', parentLayout: s
   if (sizing !== 'fixed') return ''
   // A layer pinned to both edges takes its size from its insets.
   if (node.absolute?.[axis] === (axis === 'horizontal' ? 'leftRight' : 'topBottom')) return ''
-  // A nested instance keeps its component's own size unless the instance resizes it.
-  if (node.type === 'INSTANCE' && !node.overrides?.includes('size')) return ''
+  // A nested instance keeps its component's own size unless the instance resizes it: both axes (`size`) or one, as the
+  // snapshot narrows it (`width`, `height`).
+  const resized = node.overrides?.some(
+    (group) => group === 'size' || group === (axis === 'horizontal' ? 'width' : 'height'),
+  )
+  if (node.type === 'INSTANCE' && !resized) return ''
   if (ctx.config.runtimeSizes[`${ctx.setName} › ${node.name}`] === axis) return ''
   const horizontal = axis === 'horizontal'
   const value = horizontal ? node.width : node.height
@@ -1008,7 +1012,8 @@ function instanceSlots(node: Layer, ctx: SlotContext): Slots {
   // Its box (size, position) is styled here and the instance-swap prop picks the component; any other override
   // (colours, text, nested props) changes the child's look, which is not mapped yet.
   const visual = (node.overrides ?? []).filter(
-    (group) => !['size', 'resizing', 'position', 'name', 'component', 'visible', 'props'].includes(group),
+    (group) =>
+      !['size', 'width', 'height', 'resizing', 'position', 'name', 'component', 'visible', 'props'].includes(group),
   )
   if (visual.length) fail(`${visual.join(', ')} overridden inside a nested instance; not mapped yet`)
   const inside = descendants(node)
