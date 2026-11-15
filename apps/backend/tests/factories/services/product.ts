@@ -125,6 +125,13 @@ export async function deleteProductType(container: AppContainer, typeId: string)
   await productService.softDeleteTypes([typeId])
 }
 
+/** A soft delete: cart lines keep pointing at the id, and the catalogue no longer reads it. */
+export async function deleteProductVariant(container: AppContainer, variantId: string) {
+  const productService = container.resolve(Modules.PRODUCT)
+
+  await productService.softDeleteProductVariants([variantId])
+}
+
 export async function createProductVariants(
   container: AppContainer,
   productId: string,

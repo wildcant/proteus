@@ -126,6 +126,26 @@ export function variantStockProjection(
   }
 }
 
+/**
+ * How many units of each variant a shopper may hold, or `null` when nothing caps it — the same
+ * count {@link variantStockProjection} thresholds, for the cart's quantity stepper to stop at.
+ * Never below zero: stock reserved past what is on the shelf leaves nothing to buy, not a debt.
+ */
+export function variantPurchasableQuantityProjection(
+  links: ProductVariantInventoryItemDTO[],
+  availableByItemId: Map<string, number>,
+): (variant: VariantStockFlags) => number | null {
+  const linksByVariantId = new Map<string, ProductVariantInventoryItemDTO[]>()
+  for (const link of links) {
+    linksByVariantId.set(link.variantId, [...(linksByVariantId.get(link.variantId) ?? []), link])
+  }
+
+  return (variant) => {
+    const remaining = purchasableUnits(variant, linksByVariantId.get(variant.id) ?? [], availableByItemId)
+    return remaining === null ? null : Math.max(0, remaining)
+  }
+}
+
 /** Whether a shopper can put this variant in a cart — the one bit the option picker reads. */
 export function isPurchasable(stock: VariantStock): boolean {
   return stock.state !== 'soldOut'

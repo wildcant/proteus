@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { bigNumberToString, dateToIso, nullableBigNumberToString, timestamps } from '../../common.js'
+import { StoreVariantStock } from '../product/entities.js'
 
 export const StoreCart = z
   .object({
@@ -14,6 +15,12 @@ export const StoreCart = z
   })
   .openapi('StoreCart')
 export type StoreCart = z.input<typeof StoreCart>
+
+/** One entry of the line's Option Combination, as it stood when the line was added. */
+export const StoreCartLineItemOption = z
+  .object({ optionTitle: z.string(), value: z.string() })
+  .openapi('StoreCartLineItemOption')
+export type StoreCartLineItemOption = z.input<typeof StoreCartLineItemOption>
 
 export const StoreCartLineItem = z
   .object({
@@ -34,6 +41,15 @@ export const StoreCartLineItem = z
     variantBarcode: z.string().nullable(),
     variantTitle: z.string().nullable(),
     variantOptionValues: z.string().nullable(),
+    /** The values of `variantOptionValues` beside their option's title, in the product's option order. */
+    variantOptions: z.array(StoreCartLineItemOption),
+    /**
+     * The variant's stock as it stands now, not when the line was added. `soldOut` also answers for
+     * a variant the catalogue no longer has: either way the line cannot be bought and must be removed.
+     */
+    stock: StoreVariantStock,
+    /** The most this line may hold, for the quantity stepper to stop at; `null` when nothing caps it. */
+    maxQuantity: z.number().int().nullable(),
     requiresShipping: z.boolean(),
     isDiscountable: z.boolean(),
     isGiftcard: z.boolean(),

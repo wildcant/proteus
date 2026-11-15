@@ -79,6 +79,7 @@ msgstr "La variante \"{variantId}\" no puede dejar de controlar inventario mient
 #: src/workflows/cart/add-to-cart.ts:62
 #: src/workflows/cart/complete-cart.ts:296
 #: src/workflows/cart/update-cart.ts:161
+#: src/workflows/cart/update-line-item.ts:51
 #: src/workflows/payment/create-payment-collection-for-cart.ts:30
 #: src/workflows/payment/reprice-payment-session.ts:57
 msgid "Cart \"{cartId}\" is already completed"
@@ -227,11 +228,6 @@ msgid "Variant \"{variantId}\" has no price in {currencyCode}"
 msgstr "La variante \"{variantId}\" no tiene precio en {currencyCode}"
 
 #. js-lingui-explicit-id
-#: src/workflows/cart/add-to-cart.ts:230
-msgid "Not enough stock to add the requested quantity"
-msgstr "No hay stock suficiente para agregar la cantidad que pediste"
-
-#. js-lingui-explicit-id
 #: src/workflows/cart/complete-cart.ts:48
 msgid "The payment was declined. Please try another payment method."
 msgstr "Tu pago fue rechazado. Prueba con otro método de pago."
@@ -348,6 +344,11 @@ msgid "\"{title}\" is not sold in {currencyCode}"
 msgstr "\"{title}\" no se vende en {currencyCode}"
 
 #. js-lingui-explicit-id
+#: src/workflows/cart/update-line-item.ts:43
+msgid "Line item \"{lineItemId}\" not found in cart \"{cartId}\""
+msgstr "La línea \"{lineItemId}\" no está en el carrito \"{cartId}\""
+
+#. js-lingui-explicit-id
 #: src/workflows/cart/utils/variant-inventory.ts:136
 msgid "Variant \"{variantId}\" is tracked, but no inventory item is linked to it"
 msgstr "La variante \"{variantId}\" controla inventario, pero no tiene un artículo de inventario vinculado"
@@ -356,6 +357,11 @@ msgstr "La variante \"{variantId}\" controla inventario, pero no tiene un artíc
 #: src/workflows/cart/utils/variant-inventory.ts:142
 msgid "Variants {variantIds} are tracked, but no inventory item is linked to them"
 msgstr "Las variantes {variantIds} controlan inventario, pero no tienen un artículo de inventario vinculado"
+
+#. js-lingui-explicit-id
+#: src/workflows/cart/steps/confirm-variant-inventory.ts:64
+msgid "Not enough stock for the requested quantity"
+msgstr "No hay stock suficiente para la cantidad que pediste"
 
 #. js-lingui-explicit-id
 #: src/workflows/auth/steps/set-auth-app-metadata.ts:34
@@ -1265,7 +1271,7 @@ msgid "Shipping option \"{shippingOptionId}\" is not available"
 msgstr "La opción de envío \"{shippingOptionId}\" no está disponible"
 
 #. js-lingui-explicit-id
-#: src/api/store/carts/[id]/line-items/route.ts:15
+#: src/api/store/carts/[id]/line-items/route.ts:18
 msgid "Line item not returned after add"
 msgstr "No se devolvió el artículo después de agregarlo"
 

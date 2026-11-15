@@ -39,6 +39,7 @@ export * from './storeCartAddressType.ts';
 export * from './storeCartDetailResponse.ts';
 export * from './storeCartDetailResponseCart.ts';
 export * from './storeCartLineItem.ts';
+export * from './storeCartLineItemOption.ts';
 export * from './storeCartResponse.ts';
 export * from './storeCartShippingMethod.ts';
 export * from './storeCartShippingMethodData.ts';

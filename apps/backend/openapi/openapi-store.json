@@ -423,6 +423,21 @@
               "null"
             ]
           },
+          "variantOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCartLineItemOption"
+            }
+          },
+          "stock": {
+            "$ref": "#/components/schemas/StoreVariantStock"
+          },
+          "maxQuantity": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "requiresShipping": {
             "type": "boolean"
           },
@@ -484,6 +499,9 @@
           "variantBarcode",
           "variantTitle",
           "variantOptionValues",
+          "variantOptions",
+          "stock",
+          "maxQuantity",
           "requiresShipping",
           "isDiscountable",
           "isGiftcard",
@@ -494,6 +512,71 @@
           "createdAt",
           "updatedAt",
           "deletedAt"
+        ]
+      },
+      "StoreCartLineItemOption": {
+        "type": "object",
+        "properties": {
+          "optionTitle": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "optionTitle",
+          "value"
+        ]
+      },
+      "StoreVariantStock": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "available"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "low"
+                ]
+              },
+              "remaining": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "state",
+              "remaining"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "soldOut"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          }
         ]
       },
       "StoreCartShippingMethod": {
@@ -2878,56 +2961,6 @@
           "calculatedPrice"
         ]
       },
-      "StoreVariantStock": {
-        "oneOf": [
-          {
-            "type": "object",
-            "properties": {
-              "state": {
-                "type": "string",
-                "enum": [
-                  "available"
-                ]
-              }
-            },
-            "required": [
-              "state"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "state": {
-                "type": "string",
-                "enum": [
-                  "low"
-                ]
-              },
-              "remaining": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "state",
-              "remaining"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "state": {
-                "type": "string",
-                "enum": [
-                  "soldOut"
-                ]
-              }
-            },
-            "required": [
-              "state"
-            ]
-          }
-        ]
-      },
       "StoreProductField": {
         "type": "object",
         "properties": {
@@ -3718,6 +3751,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       },

@@ -63,6 +63,7 @@ export default [
     method: 'POST',
     matcher: '/store/carts/:id/line-items/:lineId',
     handler: lineItemByIdRoutes.POST,
+    throws: lineItemByIdRoutes.PostThrows,
     auth: 'optional',
     input: lineItemByIdRoutes.PostInput,
     operationId: 'updateStoreCartLineItem',

@@ -11,6 +11,7 @@ import { completeCartWorkflow } from '../../../workflows/cart/complete-cart.js'
 import { confirmInventoryWorkflow } from '../../../workflows/cart/confirm-inventory-workflow.js'
 import { transferCartCustomerWorkflow } from '../../../workflows/cart/transfer-cart-customer.js'
 import { updateCartWorkflow } from '../../../workflows/cart/update-cart.js'
+import { updateLineItemWorkflow } from '../../../workflows/cart/update-line-item.js'
 import { completeCustomerAuthWorkflow } from '../../../workflows/customer/complete-customer-auth.js'
 import { createCustomerAccountWorkflow } from '../../../workflows/customer/create-customer-account.js'
 import { deleteFilesWorkflow } from '../../../workflows/file/delete-files.js'
@@ -46,6 +47,7 @@ export const GENERATED_WORKFLOWS: WorkflowDefinition<never, unknown>[] = [
   confirmInventoryWorkflow,
   transferCartCustomerWorkflow,
   updateCartWorkflow,
+  updateLineItemWorkflow,
   completeCustomerAuthWorkflow,
   createCustomerAccountWorkflow,
   deleteFilesWorkflow,

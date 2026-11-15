@@ -3,6 +3,7 @@ import type {
   StoreCartDetailResponse,
   StoreCompleteCartResponse,
   StoreCreateCartLineItemResponse,
+  StoreUpdateCartLineItemResponse,
 } from '@proteus/http-schemas/store'
 import type { ApiErrorBody, TestApi } from '@tests/setup/create-api.js'
 import { test } from '@tests/setup/test-extend.js'
@@ -335,5 +336,76 @@ test.describe('POST /store/carts/:id/line-items', () => {
     const { status } = await api.post<ApiErrorBody>(`/store/carts/${cart.id}/line-items`, { quantity: 1 })
 
     expect(status).toBe(400)
+  })
+})
+
+/**
+ * What the cart page shows per line and what its stepper may ask for. Stock is read live: a line
+ * added while there was plenty answers for the shelf as it is now, and only a sold-out or deleted
+ * variant makes a line unavailable — a quantity above what is left is refused, not flagged.
+ */
+test.describe('the cart line’s stock', () => {
+  test('reports pairs left, flags what cannot be bought, and refuses a quantity past the shelf', async ({
+    factories,
+    service,
+    expect,
+  }) => {
+    await using _store = await factories.create.store({ lowStockThreshold: 2 })
+    const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const sellable = (stockedQuantity: number) =>
+      service.create.sellableVariant(api.container, {
+        price: { currencyCode: 'usd' },
+        inventory: { level: { stockedQuantity } },
+      })
+    const [running, selling, plenty, retired] = await Promise.all([sellable(2), sellable(1), sellable(10), sellable(5)])
+    const addLine = (variantId: string) =>
+      api.post<StoreCreateCartLineItemResponse>(`/store/carts/${cart.id}/line-items`, { variantId, quantity: 1 })
+
+    const added = await addLine(running.variant.id)
+    expect(added.body.lineItem).toMatchObject({ stock: { state: 'low', remaining: 2 }, maxQuantity: 2 })
+    const sold = await addLine(selling.variant.id)
+    const kept = await addLine(plenty.variant.id)
+    const gone = await addLine(retired.variant.id)
+
+    // The last pair sells elsewhere, and a variant is deleted, after both were in this cart.
+    assertDefined(selling.inventoryItem)
+    assertDefined(selling.inventoryLevel)
+    await service.update.inventoryLevel(api.container, selling.inventoryItem.id, selling.inventoryLevel.locationId, -1)
+    await service.update.deletedProductVariant(api.container, retired.variant.id)
+
+    const { body } = await api.get<StoreCartDetailResponse>(`/store/carts/${cart.id}`)
+    const stockByLineId = new Map(
+      body.cart.items.map((item) => [item.id, { stock: item.stock, maxQuantity: item.maxQuantity }]),
+    )
+    expect(stockByLineId.get(added.body.lineItem.id)).toEqual({ stock: { state: 'low', remaining: 2 }, maxQuantity: 2 })
+    expect(stockByLineId.get(sold.body.lineItem.id)).toEqual({ stock: { state: 'soldOut' }, maxQuantity: 0 })
+    expect(stockByLineId.get(kept.body.lineItem.id)).toEqual({ stock: { state: 'available' }, maxQuantity: 10 })
+    expect(stockByLineId.get(gone.body.lineItem.id)).toEqual({ stock: { state: 'soldOut' }, maxQuantity: 0 })
+
+    // Past the shelf is refused and the line keeps what it had; up to it is written.
+    const lineUrl = `/store/carts/${cart.id}/line-items/${added.body.lineItem.id}`
+    const refused = await api.post<ApiErrorBody>(lineUrl, { quantity: 3 })
+    expect(refused.status).toBe(409)
+    expect(refused.body.type).toBe('conflict')
+    const raised = await api.post<StoreUpdateCartLineItemResponse>(lineUrl, { quantity: 2 })
+    expect(raised.status).toBe(200)
+    expect(raised.body.lineItem).toMatchObject({ quantity: 2, maxQuantity: 2 })
+
+    // A line id is only reachable through the cart that holds it.
+    const otherCart = await service.create.cart(api.container, { currencyCode: 'usd' })
+    const foreign = await api.post<ApiErrorBody>(`/store/carts/${otherCart.id}/line-items/${kept.body.lineItem.id}`, {
+      quantity: 1,
+    })
+    expect(foreign.status).toBe(404)
+
+    const lines = await service.read.cartLineItems(api.container, { cartId: cart.id })
+    expect(new Map(lines.map((line) => [line.id, line.quantity]))).toEqual(
+      new Map([
+        [added.body.lineItem.id, 2],
+        [sold.body.lineItem.id, 1],
+        [kept.body.lineItem.id, 1],
+        [gone.body.lineItem.id, 1],
+      ]),
+    )
   })
 })
