@@ -16,15 +16,15 @@ type CreateDraftOrderFromCartInput = { cartId: string }
 
 /**
  * A Proteus addition, not in Medusa: the shopper sends a Cart to the shop as a Draft Order, for a
- * store that confirms orders in a chat. The Cart becomes a `draft` Order as it stands — its lines
+ * store that confirms orders with the shopper off-site. The Cart becomes a `draft` Order as it stands — its lines
  * with their options, its shipping address (phone included), its shipping method as stored, its
  * region, sales channel, currency, customer and email if any — and is closed in the same run, so
  * what the shopper sent can't drift from what the shop sees, and the storefront starts a new Cart.
  *
  * Sending the same Cart again answers the draft it already became, unchanged: the shop may have
- * edited it in the meantime, and nothing it agreed in the chat is overwritten.
+ * edited it in the meantime, and nothing it agreed with the shopper is overwritten.
  *
- * Nothing is reserved and no payment is taken, so an abandoned chat never holds stock; the stock
+ * Nothing is reserved and no payment is taken, so an abandoned conversation never holds stock; the stock
  * is checked here only so a line that can't be sold is refused, by name, before it reaches the shop.
  * No `order.placed` either: the Order is placed when the shop converts the draft.
  */

@@ -46,7 +46,7 @@ export type StoreCompleteCartResponse = z.input<typeof StoreCompleteCartResponse
 
 /**
  * The Draft Order a Cart became, for the storefront to link the shopper to (`GET /store/orders/:id`)
- * and to quote its reference in the chat.
+ * and to quote its reference to the shop.
  */
 export const StoreCreateDraftOrderResponse = z
   .object({ orderId: z.string(), reference: z.string() })

@@ -9,7 +9,7 @@ export type RemoveDraftOrderItemInput = {
 
 /**
  * Removes a line from a Draft Order (Medusa's draft edit `removeDraftOrderActionItem`) and re-prices
- * a calculated shipping method: a courier that charges by the parcel quotes less once a pair is gone.
+ * a calculated shipping method: a courier that charges by the parcel quotes less once an item is gone.
  *
  * Declares no errors of its own: the order module refuses a line not in this draft (NOT_FOUND) and
  * a draft no longer open (NOT_ALLOWED), which the route declares.

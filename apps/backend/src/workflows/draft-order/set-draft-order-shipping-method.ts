@@ -11,7 +11,7 @@ export type SetDraftOrderShippingMethodInput = {
   orderId: string
   shippingOptionId: string
   /**
-   * What the shop agreed in the chat, in the draft's currency. Given, the method is stored at it and
+   * What the shop agreed with the shopper, in the draft's currency. Given, the method is stored at it and
    * marked custom, so re-pricing never overrides it; omitted, the option prices the draft.
    */
   customAmount?: string | undefined

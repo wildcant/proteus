@@ -85,6 +85,7 @@ msgstr "Payment \"{id}\" holds no capture recorded under this request."
 #: src/workflows/cart/add-shipping-method-to-cart.ts:43
 #: src/workflows/cart/add-to-cart.ts:66
 #: src/workflows/cart/complete-cart.ts:302
+#: src/workflows/cart/transfer-cart-customer.ts:36
 #: src/workflows/cart/update-cart.ts:155
 #: src/workflows/cart/update-line-item.ts:52
 #: src/workflows/draft-order/create-draft-order-from-cart.ts:68
@@ -245,17 +246,7 @@ msgid "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryIt
 msgstr "Variant \"{variantId}\" is tracked, but its inventory item \"{inventoryItemId}\" is stocked at no location"
 
 #. js-lingui-explicit-id
-#: src/workflows/draft-order/add-draft-order-items.ts:38
-msgid "Order \"{orderId}\" is not an open draft order, so its items cannot be changed"
-msgstr "Order \"{orderId}\" is not an open draft order, so its items cannot be changed"
-
-#. js-lingui-explicit-id
-#: src/workflows/draft-order/convert-draft-order.ts:51
-msgid "Order \"{orderId}\" is not an open draft order, so it cannot be converted"
-msgstr "Order \"{orderId}\" is not an open draft order, so it cannot be converted"
-
-#. js-lingui-explicit-id
-#: src/workflows/draft-order/convert-draft-order.ts:60
+#: src/workflows/draft-order/convert-draft-order.ts:56
 msgid "Draft order \"{orderId}\" has no items"
 msgstr "Draft order \"{orderId}\" has no items"
 
@@ -273,7 +264,7 @@ msgstr "Cart \"{cartId}\" has no items"
 
 #. js-lingui-explicit-id
 #: src/workflows/cart/add-shipping-method-to-cart.ts:62
-#: src/workflows/draft-order/set-draft-order-shipping-method.ts:62
+#: src/workflows/draft-order/set-draft-order-shipping-method.ts:70
 msgid "Shipping option \"{shippingOptionId}\" is not available"
 msgstr "Shipping option \"{shippingOptionId}\" is not available"
 
@@ -864,48 +855,48 @@ msgid "Method not implemented."
 msgstr "Method not implemented."
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:344
+#: src/modules/order/services/order-module-service.ts:346
 msgid "Draft order with id \"{id}\" not found"
 msgstr "Draft order with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:461
+#: src/modules/order/services/order-module-service.ts:464
 msgid "Order \"{id}\" is not a draft order, so it cannot be deleted"
 msgstr "Order \"{id}\" is not a draft order, so it cannot be deleted"
 
 #. js-lingui-explicit-id
 #: src/core/utils/base-repository.ts:179
-#: src/modules/order/services/order-module-service.ts:478
+#: src/modules/order/services/order-module-service.ts:481
 msgid "Expected row to be created"
 msgstr "Expected row to be created"
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:535
+#: src/modules/order/services/order-module-service.ts:538
 msgid "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 msgstr "Cannot complete order {id}: status is \"{status}\", expected \"pending\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:551
+#: src/modules/order/services/order-module-service.ts:554
 msgid "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
 msgstr "Cannot cancel order {id}: status is \"{status}\", expected \"pending\" or \"draft\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:567
+#: src/modules/order/services/order-module-service.ts:570
 msgid "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 msgstr "Cannot archive order {id}: status is \"{status}\", expected \"completed\""
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:614
+#: src/modules/order/services/order-module-service.ts:617
 msgid "Order \"{id}\" is not a draft order"
 msgstr "Order \"{id}\" is not a draft order"
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:621
+#: src/modules/order/services/order-module-service.ts:624
 msgid "Draft order \"{id}\" is {status}, so it can no longer be changed"
 msgstr "Draft order \"{id}\" is {status}, so it can no longer be changed"
 
 #. js-lingui-explicit-id
-#: src/modules/order/services/order-module-service.ts:637
+#: src/modules/order/services/order-module-service.ts:640
 msgid "Line item \"{lineItemId}\" not found in draft order \"{orderId}\""
 msgstr "Line item \"{lineItemId}\" not found in draft order \"{orderId}\""
 
@@ -957,23 +948,28 @@ msgid "Inventory level with id \"{id}\" not found"
 msgstr "Inventory level with id \"{id}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:252
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:279
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:257
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:286
 msgid "serviceZoneId is required when creating geo zones directly"
 msgstr "serviceZoneId is required when creating geo zones directly"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:567
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:314
+msgid "A {type} geo zone needs {field}"
+msgstr "A {type} geo zone needs {field}"
+
+#. js-lingui-explicit-id
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:593
 msgid "Fulfillment provider \"{providerId}\" cannot calculate shipping prices"
 msgstr "Fulfillment provider \"{providerId}\" cannot calculate shipping prices"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:672
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:721
 msgid "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
 msgstr "Fulfillment \"{id}\" has already been shipped and cannot be canceled"
 
 #. js-lingui-explicit-id
-#: src/modules/fulfillment/services/fulfillment-module-service.ts:680
+#: src/modules/fulfillment/services/fulfillment-module-service.ts:729
 msgid "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
 msgstr "Fulfillment \"{id}\" has already been delivered and cannot be canceled"
 
@@ -1024,7 +1020,7 @@ msgid "Shipping method not returned after create"
 msgstr "Shipping method not returned after create"
 
 #. js-lingui-explicit-id
-#: src/modules/cart/services/cart-module-service.ts:410
+#: src/modules/cart/services/cart-module-service.ts:408
 msgid "Cart {id} is already completed"
 msgstr "Cart {id} is already completed"
 

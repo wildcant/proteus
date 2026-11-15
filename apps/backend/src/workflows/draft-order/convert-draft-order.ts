@@ -23,7 +23,7 @@ export type ConvertDraftOrderInput = {
  * Medusa's `convertDraftOrderWorkflow`: the shop confirms a Draft Order, and it becomes a `pending`
  * Order that holds stock and has its payment collection.
  *
- * Every line is checked first, so a pair that sold out since the draft was made is refused by name
+ * Every line is checked first, so an item that sold out since the draft was made is refused by name
  * rather than by inventory item. Stock is then reserved, the draft becomes an Order, and only then
  * is the deposit recorded (a Proteus departure: Medusa converts and takes payment separately), so a
  * conversion that can't hold the stock takes no money, and a store that takes deposits holds stock

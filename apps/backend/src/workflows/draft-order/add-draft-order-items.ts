@@ -18,7 +18,7 @@ export type AddDraftOrderItemsInput = {
  * line the draft already holds for it.
  *
  * Priced in the draft's currency — the one its region was priced in when it was a Cart — through
- * the same line building as add-to-cart, so an added pair is titled and priced as the shopper's own
+ * the same line building as add-to-cart, so an added item is titled and priced as the shopper's own
  * were. Stock is confirmed for the quantity each line ends up at, without reserving: the draft
  * still reserves nothing until it converts. A calculated shipping method is then re-priced.
  */
