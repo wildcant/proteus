@@ -1,6 +1,6 @@
 import { i18n } from '@proteus/utils'
 import { z } from 'zod'
-import { createFindParams, type FindParams } from '../../common.js'
+import { createFindParams, type FindParams, searchTerm } from '../../common.js'
 
 /** One filter selection, `<key>:<value>`. The value is everything after the first colon. */
 const metafieldSelection = z.string().regex(/^[^:]+:.+$/s, i18n.t('Write a filter as key:value'))
@@ -17,7 +17,7 @@ export const StoreProductListParams = createFindParams().extend({
   /** Defaults to `relevance`. */
   order: StoreProductSort.optional(),
   /** Each word matches a product's title or brand, ignoring case; a product must match every word. */
-  q: z.string().optional(),
+  q: searchTerm,
   /**
    * Searches `q` as written. Without it, a `q` that matches nothing is searched as its closest spelling
    * among the titles and brands in view, and the response names it in `correctedQuery`.

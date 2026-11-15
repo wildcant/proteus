@@ -18,5 +18,8 @@ offset?: number | null;
  */
 limit?: number;
 order?: string;
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 };

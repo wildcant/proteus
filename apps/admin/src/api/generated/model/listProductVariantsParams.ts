@@ -18,7 +18,10 @@ offset?: number | null;
  */
 limit?: number;
 order?: string;
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 allowBackorder?: boolean | string;
 manageInventory?: boolean | string;
 createdAt?: {

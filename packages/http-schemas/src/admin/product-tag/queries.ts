@@ -1,7 +1,6 @@
-import { z } from 'zod'
-import { createFindParams, type FindParams } from '../../common.js'
+import { createFindParams, type FindParams, searchTerm } from '../../common.js'
 
 export const AdminProductTagListParams = createFindParams().extend({
-  q: z.string().optional(),
+  q: searchTerm,
 })
 export type AdminProductTagListQuery = FindParams<typeof AdminProductTagListParams>

@@ -7,7 +7,10 @@
  */
 
 export type ListStoreProductTagValuesParams = {
-q?: string;
+/**
+ * @nullable
+ */
+q?: string | null;
 /**
  * @minLength 1
  */

@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { countryCode } from '../../bounded.js'
-import { createFindParams, type FindParams } from '../../common.js'
+import { createFindParams, type FindParams, searchTerm } from '../../common.js'
 
 export const AdminRegionListParams = createFindParams().extend({
-  q: z.string().optional(),
+  q: searchTerm,
 })
 export type AdminRegionListQuery = FindParams<typeof AdminRegionListParams>
 
@@ -16,7 +16,7 @@ export type AdminRegionListQuery = FindParams<typeof AdminRegionListParams>
  */
 export const AdminCountryListParams = createFindParams().extend({
   limit: z.coerce.number().int().min(1).max(300).default(20),
-  q: z.string().optional(),
+  q: searchTerm,
   /** The countries one region sells to. Omitted lists every country, assigned or not. */
   regionId: z.string().optional(),
 })

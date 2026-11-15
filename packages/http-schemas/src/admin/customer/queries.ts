@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { createDateOperatorMap, createFindParams, type FindParams } from '../../common.js'
+import { createDateOperatorMap, createFindParams, type FindParams, searchTerm } from '../../common.js'
 
 export const AdminCustomerListParams = createFindParams().extend({
-  q: z.string().optional(),
+  q: searchTerm,
   id: z.union([z.string(), z.array(z.string())]).optional(),
   email: z.string().optional(),
   phone: z.string().optional(),
