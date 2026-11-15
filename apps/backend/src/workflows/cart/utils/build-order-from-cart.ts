@@ -66,6 +66,7 @@ export function buildOrderFromCart({
       name: method.name,
       description: method.description,
       amount: method.amount,
+      isTaxInclusive: method.isTaxInclusive,
       shippingOptionId: method.shippingOptionId,
       data: method.data ?? undefined,
     })),

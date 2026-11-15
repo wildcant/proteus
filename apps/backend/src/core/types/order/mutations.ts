@@ -40,6 +40,7 @@ export type CreateOrderShippingMethodDTO = {
   name: string
   description?: string | null | undefined
   amount: BigNumber
+  isTaxInclusive?: boolean | undefined
   shippingOptionId?: string | null | undefined
   data?: Record<string, unknown> | null | undefined
   isCustomAmount?: boolean | undefined

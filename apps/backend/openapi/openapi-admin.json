@@ -1557,6 +1557,9 @@
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
           },
+          "isTaxInclusive": {
+            "type": "boolean"
+          },
           "shippingOptionId": {
             "type": [
               "string",
@@ -1595,6 +1598,7 @@
           "name",
           "description",
           "amount",
+          "isTaxInclusive",
           "shippingOptionId",
           "data",
           "isCustomAmount",

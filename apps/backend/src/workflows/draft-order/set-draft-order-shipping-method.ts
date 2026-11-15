@@ -23,6 +23,7 @@ export type SetDraftOrderShippingMethodInput = {
 type PricedDraftShippingMethod = {
   name: string
   amount: string
+  isTaxInclusive: boolean
   shippingOptionId: string
   data: Record<string, unknown>
   isCustomAmount: boolean
@@ -48,7 +49,14 @@ export const setDraftOrderShippingMethodWorkflow = createWorkflow<
 
     if (input.customAmount !== undefined) {
       const option = await fulfillmentService.retrieveShippingOption(input.shippingOptionId)
-      return { name: option.name, amount: input.customAmount, shippingOptionId: option.id, data, isCustomAmount: true }
+      return {
+        name: option.name,
+        amount: input.customAmount,
+        isTaxInclusive: false,
+        shippingOptionId: option.id,
+        data,
+        isCustomAmount: true,
+      }
     }
 
     const pricingContext = await loadDraftOrderShippingPricingContext(container, input.orderId)
@@ -67,6 +75,7 @@ export const setDraftOrderShippingMethodWorkflow = createWorkflow<
     return {
       name: priced.name,
       amount: String(priced.calculatedPrice.calculatedAmount),
+      isTaxInclusive: priced.calculatedPrice.isCalculatedPriceTaxInclusive,
       shippingOptionId: priced.id,
       data: await fulfillmentService.validateShippingOptionFulfillmentData(priced.id, data, pricingContext),
       isCustomAmount: false,

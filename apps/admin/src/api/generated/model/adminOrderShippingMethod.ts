@@ -15,6 +15,7 @@ export interface AdminOrderShippingMethod {
   description: string | null;
   /** Numeric string (arbitrary precision) */
   amount: string;
+  isTaxInclusive: boolean;
   /** @nullable */
   shippingOptionId: string | null;
   /** @nullable */
