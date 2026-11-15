@@ -171,11 +171,12 @@ calls it the **bag** ("Your Bag"); the code, the API and this glossary say Cart.
 _Avoid_: bag (in code and docs — Store Copy only), basket, checkout (for the thing itself), session
 
 **Customer**:
-The person a Cart and an Order belong to, identified by an email. A Customer exists for every
-shopper who has given an email, registered or not: `hasAccount` says whether they can sign in, and
-at most one Customer with an account and one without may hold the same email. A guest checkout
-writes a Customer without an account; registering, or signing in and claiming a guest Cart, is what
-ties a Cart to a Customer with an account.
+The person a Cart and an Order belong to, identified by an email or a phone. `hasAccount` says
+whether they can sign in, and a Customer with an account always has an email. At most one Customer
+with an account and one without may hold the same email, and at most one without an account the
+same phone, kept as digits only. A guest checkout writes a Customer without an account, and so does
+converting a Draft Order that has an email or a phone; registering, or signing in and claiming a
+guest Cart, is what ties a Cart to a Customer with an account.
 _Avoid_: user (reserved for admin staff), account (for the person), shopper (in code), member, client
 
 **Address**:

@@ -21,6 +21,7 @@ order?: string;
 q?: string;
 id?: string | string[];
 email?: string;
+phone?: string;
 hasAccount?: boolean;
 createdAt?: {
   /** @nullable */

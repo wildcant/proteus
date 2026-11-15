@@ -1,5 +1,5 @@
 {
-  "id": "cd13c007-9579-44c2-899a-0a6405b989f4",
+  "id": "cf9f26a8-57ba-4cca-82f1-750041780adf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -229,7 +229,13 @@
           "name": "email",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "status": {
           "name": "status",
@@ -282,6 +288,22 @@
           "columns": [
             {
               "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "has_account = false AND deleted_at IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_customer_unique_phone_has_account_false": {
+          "name": "idx_customer_unique_phone_has_account_false",
+          "columns": [
+            {
+              "expression": "phone",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

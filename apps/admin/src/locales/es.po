@@ -154,7 +154,8 @@ msgstr "Acepta .yaml de hasta {maxSize}"
 msgid "Access Denied"
 msgstr "Acceso denegado"
 
-#: src/features/customers/hooks/use-customer-table.tsx:28
+#: src/features/customers/hooks/use-customer-table.tsx:29
+#: src/features/orders/components/order-customer-section.tsx:25
 msgid "Account"
 msgstr "Cuenta"
 
@@ -453,7 +454,7 @@ msgstr "bytes"
 #: src/features/access-control/components/edit-role-form.tsx:75
 #: src/features/categories/components/edit-category-form.tsx:45
 #: src/features/collections/components/edit-collection-form.tsx:35
-#: src/features/customers/components/update-customer-form.tsx:49
+#: src/features/customers/components/update-customer-form.tsx:53
 #: src/features/draft-orders/components/add-draft-item-form.tsx:59
 #: src/features/draft-orders/components/convert-draft-form.tsx:68
 #: src/features/draft-orders/components/draft-general-section.tsx:52
@@ -817,7 +818,7 @@ msgstr "Crear usuarios"
 msgid "Create your account"
 msgstr "Crea tu cuenta"
 
-#: src/features/customers/hooks/use-customer-table.tsx:52
+#: src/features/customers/hooks/use-customer-table.tsx:53
 msgid "Create your first customer to get started."
 msgstr "Crea tu primer cliente para empezar."
 
@@ -833,8 +834,8 @@ msgstr "Crea tu primer producto para empezar."
 msgid "Create your first variant to get started."
 msgstr "Crea tu primera variante para empezar."
 
-#: src/features/customers/hooks/use-customer-table.tsx:31
-#: src/features/customers/hooks/use-customer-table.tsx:37
+#: src/features/customers/hooks/use-customer-table.tsx:32
+#: src/features/customers/hooks/use-customer-table.tsx:38
 #: src/features/products/components/import-products/import-progress-step.tsx:27
 #: src/features/products/hooks/use-product-table.tsx:52
 msgid "Created"
@@ -849,7 +850,7 @@ msgstr "Creando cuenta..."
 msgid "Currencies"
 msgstr "Monedas"
 
-#: src/features/orders/components/order-customer-section.tsx:17
+#: src/features/orders/components/order-customer-section.tsx:29
 #: src/features/regions/components/region-currency-select.tsx:39
 #: src/routes/_authed/settings/regions/$id/_detail/route.tsx:37
 msgid "Currency"
@@ -865,14 +866,10 @@ msgstr "Importe personalizado ({currency})"
 
 #: src/features/draft-orders/components/draft-customer-section.tsx:20
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:25
-#: src/features/orders/components/order-customer-section.tsx:12
+#: src/features/orders/components/order-customer-section.tsx:18
 #: src/features/orders/hooks/use-order-table.tsx:30
 msgid "Customer"
 msgstr "Cliente"
-
-#: src/features/orders/components/order-customer-section.tsx:16
-msgid "Customer ID"
-msgstr "ID de cliente"
 
 #: src/components/layout/use-sidebar-label.ts:20
 #: src/routes/_authed/_shell/customers/index.tsx:21
@@ -1095,15 +1092,19 @@ msgstr "Arrastra y suelta una imagen aquí o haz clic para subirla."
 msgid "Drag and drop images here or click to upload."
 msgstr "Arrastra y suelta imágenes aquí o haz clic para subirlas."
 
+#: src/features/customers/components/update-customer-form.tsx:47
+msgid "e.g. +57 300 123 4567"
+msgstr "p. ej. +57 300 123 4567"
+
 #: src/features/store/components/edit-store-form.tsx:42
 msgid "e.g. 5"
 msgstr "p. ej., 5"
 
-#: src/features/customers/components/update-customer-form.tsx:36
+#: src/features/customers/components/update-customer-form.tsx:37
 msgid "e.g. Ada"
 msgstr "p. ej., Ada"
 
-#: src/features/customers/components/update-customer-form.tsx:43
+#: src/features/customers/components/update-customer-form.tsx:44
 msgid "e.g. ada@example.com"
 msgstr "p. ej., ada@example.com"
 
@@ -1122,7 +1123,7 @@ msgstr "p. ej., es-CO"
 msgid "e.g. Europe"
 msgstr "p. ej., Europa"
 
-#: src/features/customers/components/update-customer-form.tsx:39
+#: src/features/customers/components/update-customer-form.tsx:40
 msgid "e.g. Lovelace"
 msgstr "p. ej., Lovelace"
 
@@ -1191,7 +1192,7 @@ msgstr "Editar colección"
 msgid "Edit customer"
 msgstr "Editar cliente"
 
-#: src/features/customers/components/update-customer-form.tsx:31
+#: src/features/customers/components/update-customer-form.tsx:32
 msgid "Edit Customer"
 msgstr "Editar cliente"
 
@@ -1291,11 +1292,11 @@ msgid "Editable data grid"
 msgstr "Cuadrícula de datos editable"
 
 #: src/features/auth/components/login-form.tsx:14
-#: src/features/customers/components/update-customer-form.tsx:43
+#: src/features/customers/components/update-customer-form.tsx:44
 #: src/features/customers/hooks/use-customer-table.tsx:26
 #: src/features/draft-orders/components/draft-customer-section.tsx:29
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:36
-#: src/features/orders/components/order-customer-section.tsx:15
+#: src/features/orders/components/order-customer-section.tsx:28
 #: src/features/users/components/create-account-form.tsx:36
 #: src/features/users/components/invite-form.tsx:33
 #: src/features/users/hooks/use-invite-table.tsx:22
@@ -1449,7 +1450,7 @@ msgstr "No se pudo eliminar la categoría"
 msgid "Failed to delete collection"
 msgstr "No se pudo eliminar la colección"
 
-#: src/features/customers/api/customers.ts:84
+#: src/features/customers/api/customers.ts:88
 msgid "Failed to delete customer"
 msgstr "No se pudo eliminar el cliente"
 
@@ -1549,7 +1550,7 @@ msgstr "No se pudo actualizar la categoría"
 msgid "Failed to update collection"
 msgstr "No se pudo actualizar la colección"
 
-#: src/features/customers/api/customers.ts:64
+#: src/features/customers/api/customers.ts:68
 msgid "Failed to update customer"
 msgstr "No se pudo actualizar el cliente"
 
@@ -1642,7 +1643,7 @@ msgstr "Completa tus datos para aceptar la invitación."
 msgid "filter"
 msgstr "filtro"
 
-#: src/features/customers/components/update-customer-form.tsx:36
+#: src/features/customers/components/update-customer-form.tsx:37
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:28
 msgid "First name"
 msgstr "Nombre"
@@ -1714,7 +1715,8 @@ msgstr "Ir a la opción de producto"
 msgid "Group products into a tree that shoppers browse."
 msgstr "Agrupa los productos en un árbol que los compradores recorren."
 
-#: src/features/customers/hooks/use-customer-table.tsx:29
+#: src/features/customers/hooks/use-customer-table.tsx:30
+#: src/features/orders/components/order-customer-section.tsx:25
 msgid "Guest"
 msgstr "Invitado"
 
@@ -1879,28 +1881,28 @@ msgstr "Palabras clave por las que los clientes pueden filtrar productos."
 msgid "Language"
 msgstr "Idioma"
 
-#: src/features/customers/hooks/use-customer-table.tsx:42
+#: src/features/customers/hooks/use-customer-table.tsx:43
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:44
 #: src/features/orders/hooks/use-order-table.tsx:66
 #: src/features/products/hooks/use-product-table.tsx:57
 msgid "Last 12 months"
 msgstr "Últimos 12 meses"
 
-#: src/features/customers/hooks/use-customer-table.tsx:41
+#: src/features/customers/hooks/use-customer-table.tsx:42
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:43
 #: src/features/orders/hooks/use-order-table.tsx:65
 #: src/features/products/hooks/use-product-table.tsx:56
 msgid "Last 30 days"
 msgstr "Últimos 30 días"
 
-#: src/features/customers/hooks/use-customer-table.tsx:40
+#: src/features/customers/hooks/use-customer-table.tsx:41
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:42
 #: src/features/orders/hooks/use-order-table.tsx:64
 #: src/features/products/hooks/use-product-table.tsx:55
 msgid "Last 7 days"
 msgstr "Últimos 7 días"
 
-#: src/features/customers/components/update-customer-form.tsx:39
+#: src/features/customers/components/update-customer-form.tsx:40
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:30
 msgid "Last name"
 msgstr "Apellido"
@@ -2101,6 +2103,7 @@ msgstr "Se canceló el movimiento de {name}."
 #: src/features/categories/components/edit-category-form.tsx:26
 #: src/features/customers/hooks/use-customer-table.tsx:25
 #: src/features/draft-orders/components/draft-customer-section.tsx:28
+#: src/features/orders/components/order-customer-section.tsx:23
 #: src/features/regions/components/create-region-form.tsx:37
 #: src/features/regions/components/edit-region-form.tsx:29
 #: src/features/regions/hooks/use-region-country-table.tsx:34
@@ -2195,11 +2198,11 @@ msgstr "No se encontraron monedas."
 msgid "No currencies left to add."
 msgstr "No quedan monedas por agregar."
 
-#: src/features/customers/hooks/use-customer-table.tsx:55
+#: src/features/customers/hooks/use-customer-table.tsx:56
 msgid "No customers found"
 msgstr "No se encontraron clientes"
 
-#: src/features/customers/hooks/use-customer-table.tsx:51
+#: src/features/customers/hooks/use-customer-table.tsx:52
 msgid "No customers yet"
 msgstr "Aún no hay clientes"
 
@@ -2612,8 +2615,11 @@ msgstr "Invitaciones pendientes"
 msgid "Permissions"
 msgstr "Permisos"
 
+#: src/features/customers/components/update-customer-form.tsx:47
+#: src/features/customers/hooks/use-customer-table.tsx:27
 #: src/features/draft-orders/components/draft-customer-section.tsx:30
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:33
+#: src/features/orders/components/order-customer-section.tsx:24
 msgid "Phone"
 msgstr "Teléfono"
 
@@ -2844,7 +2850,8 @@ msgstr "Reembolsado"
 msgid "Regions"
 msgstr "Regiones"
 
-#: src/features/customers/hooks/use-customer-table.tsx:29
+#: src/features/customers/hooks/use-customer-table.tsx:30
+#: src/features/orders/components/order-customer-section.tsx:25
 msgid "Registered"
 msgstr "Registrado"
 
@@ -2994,7 +3001,7 @@ msgstr "Regla"
 #: src/features/categories/components/edit-category-form.tsx:48
 #: src/features/collections/components/create-collection-form.tsx:44
 #: src/features/collections/components/edit-collection-form.tsx:38
-#: src/features/customers/components/update-customer-form.tsx:52
+#: src/features/customers/components/update-customer-form.tsx:56
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:65
 #: src/features/draft-orders/components/edit-draft-shipping-form.tsx:63
 #: src/features/product-options/components/create-product-option-form.tsx:55
@@ -3435,7 +3442,7 @@ msgstr "Hasta"
 msgid "To pick up a category, press space or enter. Use the up and down arrow keys to move it, and the left and right arrow keys to change its level. Press space or enter again to drop it, or escape to cancel."
 msgstr "Para tomar una categoría, pulsa espacio o intro. Usa las flechas arriba y abajo para moverla, y las flechas izquierda y derecha para cambiar su nivel. Pulsa espacio o intro de nuevo para soltarla, o escape para cancelar."
 
-#: src/features/customers/hooks/use-customer-table.tsx:39
+#: src/features/customers/hooks/use-customer-table.tsx:40
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:41
 #: src/features/orders/hooks/use-order-table.tsx:63
 #: src/features/products/hooks/use-product-table.tsx:54
@@ -3458,7 +3465,7 @@ msgid "True"
 msgstr "Sí"
 
 #: src/components/data-table/data-table.tsx:82
-#: src/features/customers/hooks/use-customer-table.tsx:56
+#: src/features/customers/hooks/use-customer-table.tsx:57
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:58
 #: src/features/orders/hooks/use-order-table.tsx:80
 #: src/features/products/hooks/use-product-table.tsx:72

@@ -17,5 +17,7 @@ export interface AdminCreateCustomer {
      * @maxLength 255
      */
   lastName: string;
-  email: string;
+  email?: string;
+  /** @maxLength 32 */
+  phone?: string;
 }

@@ -7,7 +7,9 @@ export const AdminCustomer = z
     hasAccount: z.boolean(),
     firstName: z.string().nullable(),
     lastName: z.string().nullable(),
-    email: z.string(),
+    email: z.string().nullable(),
+    /** Digits only. */
+    phone: z.string().nullable(),
     ...timestamps.shape,
   })
   .openapi('AdminCustomer')

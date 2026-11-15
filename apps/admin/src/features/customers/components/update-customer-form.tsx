@@ -12,9 +12,10 @@ export function UpdateCustomerForm({ customer }: { customer: AdminCustomer }) {
   const { form } = useUpdateCustomerForm({
     id: customer.id,
     defaultValues: {
-      firstName: customer.firstName,
-      lastName: customer.lastName,
-      email: customer.email,
+      firstName: customer.firstName ?? '',
+      lastName: customer.lastName ?? '',
+      email: customer.email ?? '',
+      phone: customer.phone ?? '',
     },
     onSuccess: () => handleSuccess(),
   })
@@ -41,6 +42,9 @@ export function UpdateCustomerForm({ customer }: { customer: AdminCustomer }) {
               </div>
               <form.AppField name="email">
                 {(field) => <field.TextField label={t`Email`} type="email" placeholder={t`e.g. ada@example.com`} />}
+              </form.AppField>
+              <form.AppField name="phone">
+                {(field) => <field.TextField label={t`Phone`} type="tel" placeholder={t`e.g. +57 300 123 4567`} />}
               </form.AppField>
             </div>
           </RouteFocusModal.Body>

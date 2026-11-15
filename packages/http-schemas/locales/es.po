@@ -14,6 +14,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
+#: src/admin/customer/payloads.ts:13
+msgid "A customer needs an email or a phone"
+msgstr "Un cliente necesita un correo o un teléfono"
+
+#. js-lingui-explicit-id
 #: src/bounded.ts:63
 msgid "Use {maximum} characters or fewer"
 msgstr "Usa {maximum} caracteres o menos"

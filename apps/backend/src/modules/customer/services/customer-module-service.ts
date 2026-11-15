@@ -15,9 +15,15 @@ import type {
 } from '../../../core/types/customer/mutations.js'
 import type { ICustomerModuleService } from '../../../core/types/customer/service.js'
 import type { Logger } from '../../../core/types/logger.js'
+import { toPhoneDigits } from '../../../core/utils/phone-digits.js'
 import type { WithTransaction } from '../../../core/utils/with-transaction.js'
 import type { CustomerRepository } from '../repositories/customer.js'
 import type { CustomerAddressRepository } from '../repositories/customer-address.js'
+
+/** A write's phone as the Customer stores it: digits only, left out when the write doesn't name one. */
+function withPhoneDigits<T extends { phone?: string | null | undefined }>(data: T): T {
+  return data.phone === undefined ? data : { ...data, phone: toPhoneDigits(data.phone) }
+}
 
 type InjectedDependencies = {
   customerRepository: CustomerRepository
@@ -76,7 +82,7 @@ export class CustomerModuleService implements ICustomerModuleService {
   async createCustomers(data: CreateCustomerDTO[], context?: Context): Promise<CustomerDTO[]> {
     this.logger.debug(`Creating ${data.length} customer(s)`)
     return this.withTransaction(context, async (ctx) => {
-      const customers = await this.customerRepository.createMany(data, ctx)
+      const customers = await this.customerRepository.createMany(data.map(withPhoneDigits), ctx)
 
       const addressData = customers.flatMap((customer, i) =>
         (data[i]?.addresses ?? []).map((addr) => ({ ...addr, customerId: customer.id })),
@@ -91,13 +97,13 @@ export class CustomerModuleService implements ICustomerModuleService {
 
   async updateCustomers(customerIds: string[], data: UpdateCustomerDTO, context?: Context): Promise<CustomerDTO[]> {
     return this.withTransaction(context, async (ctx) => {
-      return this.customerRepository.updateMany(customerIds, data, ctx)
+      return this.customerRepository.updateMany(customerIds, withPhoneDigits(data), ctx)
     })
   }
 
   async createCustomer(data: CreateCustomerDTO, context?: Context): Promise<CustomerDTO> {
     return this.withTransaction(context, async (ctx) => {
-      const customer = await this.customerRepository.create(data, ctx)
+      const customer = await this.customerRepository.create(withPhoneDigits(data), ctx)
 
       const addressData = (data.addresses ?? []).map((addr) => ({ ...addr, customerId: customer.id }))
       if (addressData.length > 0) {
@@ -110,7 +116,7 @@ export class CustomerModuleService implements ICustomerModuleService {
 
   async updateCustomer(customerId: string, data: UpdateCustomerDTO, context?: Context): Promise<CustomerDTO> {
     return this.withTransaction(context, async (ctx) => {
-      return this.customerRepository.update(customerId, data, ctx)
+      return this.customerRepository.update(customerId, withPhoneDigits(data), ctx)
     })
   }
 

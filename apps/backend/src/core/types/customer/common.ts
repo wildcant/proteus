@@ -5,7 +5,9 @@ export type CustomerDTO = {
   hasAccount: boolean
   firstName: string | null
   lastName: string | null
-  email: string
+  email: string | null
+  /** Digits only. */
+  phone: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -15,6 +17,7 @@ export interface FilterableCustomerProps extends BaseFilterable<FilterableCustom
   id?: string | string[] | undefined
   hasAccount?: boolean | undefined
   email?: string | string[] | OperatorMap<string> | undefined
+  phone?: string | string[] | undefined
   firstName?: string | OperatorMap<string> | undefined
   lastName?: string | OperatorMap<string> | undefined
   createdAt?: OperatorMap<Date> | undefined

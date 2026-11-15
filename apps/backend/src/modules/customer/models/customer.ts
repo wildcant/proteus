@@ -12,13 +12,17 @@ export const customerTable = pgTable(
     hasAccount: boolean().default(false).notNull(),
     firstName: text(),
     lastName: text(),
-    email: text().notNull(),
+    email: text(),
+    /** Digits only (`toPhoneDigits`), so one number typed two ways is one Customer. */
+    phone: text(),
     status: customerStatusEnum().default('active').notNull(),
     ...timestamps,
   },
   (table) => [
     liveUniqueIndex('idx_customer_unique_email_has_account_true', sql`has_account = true`).on(table.email),
     liveUniqueIndex('idx_customer_unique_email_has_account_false', sql`has_account = false`).on(table.email),
+    // A guest is found by phone when it gave no email, so two guests can't share one.
+    liveUniqueIndex('idx_customer_unique_phone_has_account_false', sql`has_account = false`).on(table.phone),
   ],
 )
 

@@ -19,5 +19,11 @@ export interface AdminUpdateCustomer {
      * @nullable
      */
   lastName?: string | null;
-  email?: string;
+  /** @nullable */
+  email?: string | null;
+  /**
+     * @maxLength 32
+     * @nullable
+     */
+  phone?: string | null;
 }

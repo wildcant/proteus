@@ -10,7 +10,7 @@ export default [
     matcher: '/admin/customers',
     handler: customerRoutes.GET,
     input: customerRoutes.GetInput,
-    searchableColumns: searchable<CustomerDTO>('email', 'firstName', 'lastName'),
+    searchableColumns: searchable<CustomerDTO>('email', 'phone', 'firstName', 'lastName'),
     permissions: ['customer.read'],
     operationId: 'listCustomers',
     summary: 'List customers',

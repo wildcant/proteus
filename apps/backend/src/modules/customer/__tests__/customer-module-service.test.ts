@@ -214,16 +214,6 @@ test.describe('CustomerModuleService', () => {
       expect(error.type).toBe(ErrorTypes.NOT_FOUND)
     })
 
-    test('createCustomers with missing required field throws INVALID_DATA', async ({ expect }) => {
-      // biome-ignore lint/suspicious/noExplicitAny: intentionally invalid input to test runtime error
-      const invalid = { firstName: 'Test', lastName: 'User' } as any
-
-      const error = await service.createCustomers([invalid]).catch((e) => e)
-
-      expect(AppError.isError(error)).toBe(true)
-      expect(error.type).toBe(ErrorTypes.INVALID_DATA)
-    })
-
     test('updateCustomers with non-existent ids returns empty array', async ({ expect, dto }) => {
       const update = dto.generate.updateCustomer({ firstName: 'Ghost' })
 

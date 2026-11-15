@@ -23,7 +23,7 @@ export const POST = async (
   if (customerId) {
     const customerService = req.scope.resolve(Modules.CUSTOMER)
     const customer = await customerService.retrieveCustomer(customerId)
-    email = customer.email
+    email = customer.email ?? undefined
   }
 
   const { items, ...body } = req.body
