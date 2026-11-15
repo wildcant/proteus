@@ -169,11 +169,16 @@ test.describe('POST /store/orders/lookup', () => {
     })
 
     const found = await lookup({ displayId: order.displayId, phoneLastDigits: '4567' })
+    // Typed as the phone shows them: spaces and dashes don't count, but four digits are still needed.
+    const typedLoosely = await lookup({ displayId: order.displayId, phoneLastDigits: ' 45-67 ' })
+    const tooFew = await lookup({ displayId: order.displayId, phoneLastDigits: '456 ' })
     const wrongDigits = await lookup({ displayId: order.displayId, phoneLastDigits: '4568' })
     const noPhone = await lookup({ displayId: withoutPhone.displayId, phoneLastDigits: '4567' })
     const unknownNumber = await lookup({ displayId: order.displayId + 1000, phoneLastDigits: '4567' })
 
     expect(found).toEqual({ status: 200, body: { id: order.id } })
+    expect(typedLoosely).toEqual(found)
+    expect(tooFew).toMatchObject({ status: 400, body: { type: 'invalid_data' } })
     expect(wrongDigits).toMatchObject({ status: 404, body: { type: 'not_found' } })
     expect(noPhone).toEqual(wrongDigits)
     expect(unknownNumber).toEqual(wrongDigits)
