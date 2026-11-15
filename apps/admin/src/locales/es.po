@@ -109,6 +109,10 @@ msgstr "Imágenes de {title}"
 msgid "A keyword shoppers can filter products by. A product can have several."
 msgstr "Una palabra clave por la que los clientes pueden filtrar productos. Un producto puede tener varias."
 
+#: src/features/orders/components/record-payment-form.tsx:25
+msgid "A payment received outside the store, such as a bank transfer or cash on delivery."
+msgstr "Un pago recibido fuera de la tienda, como una transferencia bancaria o el pago contra entrega."
+
 #: src/features/products/components/create-product-form/product-create-organize-form.tsx:43
 msgid "A product can sit in several collections."
 msgstr "Un producto puede estar en varias colecciones."
@@ -262,16 +266,23 @@ msgstr "Permitir pedidos sin stock"
 msgid "Allow backorders"
 msgstr "Permitir pedidos sin stock"
 
+#. placeholder {0}: order.currencyCode.toUpperCase()
+#. placeholder {0}: payment.currencyCode.toUpperCase()
+#: src/features/orders/components/record-payment-form.tsx:32
+#: src/features/orders/components/refund-payment-form.tsx:33
+msgid "Amount ({0})"
+msgstr "Monto ({0})"
+
 #: src/features/products/components/import-structure/structure-preview-step.tsx:162
 msgid "Apply structure"
 msgstr "Aplicar estructura"
 
-#: src/features/orders/components/order-general-section.tsx:54
-#: src/features/orders/components/order-general-section.tsx:67
+#: src/features/orders/components/order-general-section.tsx:64
+#: src/features/orders/components/order-general-section.tsx:77
 msgid "Archive"
 msgstr "Archivar"
 
-#: src/features/orders/components/order-general-section.tsx:52
+#: src/features/orders/components/order-general-section.tsx:62
 msgid "Archive order"
 msgstr "Archivar pedido"
 
@@ -279,19 +290,19 @@ msgstr "Archivar pedido"
 msgid "Archive orders"
 msgstr "Archivar pedidos"
 
-#: src/features/orders/utils/order-status.ts:28
+#: src/features/orders/utils/order-status.ts:42
 msgid "archived"
 msgstr "archivado"
 
-#: src/features/orders/hooks/use-order-table.tsx:59
+#: src/features/orders/hooks/use-order-table.tsx:56
 msgid "Archived"
 msgstr "Archivado"
 
-#: src/features/orders/components/order-general-section.tsx:53
+#: src/features/orders/components/order-general-section.tsx:63
 msgid "Are you sure you want to archive this order?"
 msgstr "¿Estás seguro de que quieres archivar este pedido?"
 
-#: src/features/orders/components/order-general-section.tsx:40
+#: src/features/orders/components/order-general-section.tsx:50
 msgid "Are you sure you want to cancel this order? This will release all inventory reservations."
 msgstr "¿Estás seguro de que quieres cancelar este pedido? Esto liberará todas las reservas de inventario."
 
@@ -327,7 +338,7 @@ msgstr "¿Estás seguro de que quieres eliminar la opción \"{title}\"?"
 msgid "Are you sure you want to leave? Your unsaved changes will be lost."
 msgstr "¿Estás seguro de que quieres salir? Se perderán los cambios que no guardaste."
 
-#: src/features/orders/components/order-general-section.tsx:28
+#: src/features/orders/components/order-general-section.tsx:33
 msgid "Are you sure you want to mark this order as completed?"
 msgstr "¿Estás seguro de que quieres marcar este pedido como completado?"
 
@@ -363,6 +374,10 @@ msgstr "Con esta cantidad de unidades disponibles o menos, se considera que una 
 msgid "Attributes"
 msgstr "Atributos"
 
+#: src/features/orders/utils/order-status.ts:55
+msgid "authorized"
+msgstr "autorizado"
+
 #: src/features/inventory/hooks/use-inventory-table.tsx:39
 msgid "Available"
 msgstr "Disponible"
@@ -370,6 +385,10 @@ msgstr "Disponible"
 #: src/features/products/components/variant/variant-stock-section.tsx:45
 msgid "Available quantity"
 msgstr "Cantidad disponible"
+
+#: src/features/orders/utils/order-status.ts:54
+msgid "awaiting"
+msgstr "en espera"
 
 #: src/features/access-control/components/edit-role-form.tsx:75
 msgid "Back"
@@ -413,7 +432,9 @@ msgstr "bytes"
 #: src/features/categories/components/edit-category-form.tsx:45
 #: src/features/collections/components/edit-collection-form.tsx:35
 #: src/features/customers/components/update-customer-form.tsx:49
-#: src/features/orders/components/order-general-section.tsx:66
+#: src/features/orders/components/order-general-section.tsx:76
+#: src/features/orders/components/record-payment-form.tsx:42
+#: src/features/orders/components/refund-payment-form.tsx:44
 #: src/features/product-options/components/edit-product-option-form.tsx:50
 #: src/features/product-options/components/manage-product-options-form.tsx:64
 #: src/features/products/components/create-product-form/create-product-form.tsx:73
@@ -442,8 +463,10 @@ msgstr "bytes"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: src/features/orders/components/order-general-section.tsx:39
-#: src/features/orders/components/order-general-section.tsx:41
+#: src/features/orders/components/cancel-order-form.tsx:23
+#: src/features/orders/components/cancel-order-form.tsx:49
+#: src/features/orders/components/order-general-section.tsx:49
+#: src/features/orders/components/order-general-section.tsx:51
 msgid "Cancel order"
 msgstr "Cancelar pedido"
 
@@ -451,17 +474,22 @@ msgstr "Cancelar pedido"
 msgid "Cancel orders"
 msgstr "Cancelar pedidos"
 
-#: src/features/orders/utils/order-status.ts:27
+#: src/features/orders/utils/order-status.ts:41
+#: src/features/orders/utils/order-status.ts:61
 msgid "canceled"
 msgstr "cancelado"
 
-#: src/features/orders/hooks/use-order-table.tsx:58
+#: src/features/orders/hooks/use-order-table.tsx:55
 msgid "Canceled"
 msgstr "Cancelado"
 
 #: src/features/access-control/utils/permission-titles.ts:36
 msgid "Capture payments"
 msgstr "Capturar pagos"
+
+#: src/features/orders/utils/order-status.ts:58
+msgid "captured"
+msgstr "cobrado"
 
 #: src/components/layout/use-sidebar-label.ts:14
 #: src/features/categories/components/category-tree-list.tsx:19
@@ -565,12 +593,12 @@ msgstr "Colecciones por actualizar"
 msgid "Combination"
 msgstr "Combinación"
 
-#: src/features/orders/components/order-general-section.tsx:29
-#: src/features/orders/components/order-general-section.tsx:65
+#: src/features/orders/components/order-general-section.tsx:34
+#: src/features/orders/components/order-general-section.tsx:75
 msgid "Complete"
 msgstr "Completar"
 
-#: src/features/orders/components/order-general-section.tsx:27
+#: src/features/orders/components/order-general-section.tsx:32
 msgid "Complete order"
 msgstr "Completar pedido"
 
@@ -578,11 +606,11 @@ msgstr "Completar pedido"
 msgid "Complete orders"
 msgstr "Completar pedidos"
 
-#: src/features/orders/utils/order-status.ts:26
+#: src/features/orders/utils/order-status.ts:40
 msgid "completed"
 msgstr "completado"
 
-#: src/features/orders/hooks/use-order-table.tsx:57
+#: src/features/orders/hooks/use-order-table.tsx:54
 msgid "Completed"
 msgstr "Completado"
 
@@ -758,7 +786,7 @@ msgid "Currency"
 msgstr "Moneda"
 
 #: src/features/orders/components/order-customer-section.tsx:12
-#: src/features/orders/hooks/use-order-table.tsx:33
+#: src/features/orders/hooks/use-order-table.tsx:30
 msgid "Customer"
 msgstr "Cliente"
 
@@ -781,8 +809,8 @@ msgid "Dashboard"
 msgstr "Panel"
 
 #: src/features/inventory/hooks/use-reservation-table.tsx:33
-#: src/features/orders/hooks/use-order-table.tsx:48
-#: src/features/orders/hooks/use-order-table.tsx:64
+#: src/features/orders/hooks/use-order-table.tsx:45
+#: src/features/orders/hooks/use-order-table.tsx:61
 msgid "Date"
 msgstr "Fecha"
 
@@ -894,7 +922,7 @@ msgstr "Eliminar usuarios"
 msgid "Deliver orders"
 msgstr "Entregar pedidos"
 
-#: src/features/orders/utils/order-status.ts:35
+#: src/features/orders/utils/order-status.ts:49
 msgid "delivered"
 msgstr "entregado"
 
@@ -939,7 +967,7 @@ msgstr "Descargar archivo"
 msgid "Download sample CSV"
 msgstr "Descargar CSV de ejemplo"
 
-#: src/features/orders/utils/order-status.ts:24
+#: src/features/orders/utils/order-status.ts:38
 #: src/features/products/utils/product-status.ts:17
 msgid "draft"
 msgstr "borrador"
@@ -1161,6 +1189,14 @@ msgstr "Correo electrónico"
 msgid "Empty"
 msgstr "Vacío"
 
+#: src/features/orders/utils/payment-amounts.ts:46
+msgid "Enter an amount greater than zero."
+msgstr "Ingresa un monto mayor que cero."
+
+#: src/features/orders/utils/payment-amounts.ts:47
+msgid "Enter an amount of zero or more."
+msgstr "Ingresa un monto de cero o más."
+
 #: src/features/products/components/variant/create-variant-form.tsx:114
 msgid "Every combination of this product's options already has a variant."
 msgstr "Cada combinación de las opciones de este producto ya tiene una variante."
@@ -1197,11 +1233,11 @@ msgstr "No se pudieron agregar las monedas"
 msgid "Failed to apply the structure file"
 msgstr "No se pudo aplicar el archivo de estructura"
 
-#: src/features/orders/api/orders.ts:104
+#: src/features/orders/api/orders.ts:111
 msgid "Failed to archive order"
 msgstr "No se pudo archivar el pedido"
 
-#: src/features/orders/api/orders.ts:85
+#: src/features/orders/api/orders.ts:92
 msgid "Failed to cancel order"
 msgstr "No se pudo cancelar el pedido"
 
@@ -1217,7 +1253,7 @@ msgstr "No se pudo cambiar la moneda predeterminada"
 msgid "Failed to change the language"
 msgstr "No se pudo cambiar el idioma"
 
-#: src/features/orders/api/orders.ts:66
+#: src/features/orders/api/orders.ts:70
 msgid "Failed to complete order"
 msgstr "No se pudo completar el pedido"
 
@@ -1229,7 +1265,7 @@ msgstr "No se pudo crear la categoría"
 msgid "Failed to create collection"
 msgstr "No se pudo crear la colección"
 
-#: src/features/orders/api/orders.ts:126
+#: src/features/orders/api/orders.ts:133
 msgid "Failed to create fulfillment"
 msgstr "No se pudo crear la preparación"
 
@@ -1249,7 +1285,7 @@ msgstr "No se pudo crear la región"
 msgid "Failed to create role"
 msgstr "No se pudo crear el rol"
 
-#: src/features/orders/api/orders.ts:149
+#: src/features/orders/api/orders.ts:156
 msgid "Failed to create shipment"
 msgstr "No se pudo crear el envío"
 
@@ -1305,7 +1341,7 @@ msgstr "No se pudo eliminar el tipo"
 msgid "Failed to delete variant"
 msgstr "No se pudo eliminar la variante"
 
-#: src/features/orders/api/orders.ts:172
+#: src/features/orders/api/orders.ts:179
 msgid "Failed to mark as delivered"
 msgstr "No se pudo marcar como entregado"
 
@@ -1320,6 +1356,14 @@ msgstr "No se pudo leer el archivo CSV"
 #: src/features/products/api/catalog-structure.ts:20
 msgid "Failed to read the structure file"
 msgstr "No se pudo leer el archivo de estructura"
+
+#: src/features/orders/api/orders.ts:201
+msgid "Failed to record payment"
+msgstr "No se pudo registrar el pago"
+
+#: src/features/orders/api/payments.ts:28
+msgid "Failed to refund payment"
+msgstr "No se pudo reembolsar el pago"
 
 #: src/features/regions/api/countries.ts:136
 msgid "Failed to remove countries"
@@ -1463,12 +1507,12 @@ msgstr "Preparar pedido"
 msgid "Fulfill orders"
 msgstr "Preparar pedidos"
 
-#: src/features/orders/utils/order-status.ts:33
+#: src/features/orders/utils/order-status.ts:47
 msgid "fulfilled"
 msgstr "preparado"
 
 #: src/features/orders/components/order-fulfillment-section.tsx:26
-#: src/features/orders/hooks/use-order-table.tsx:42
+#: src/features/orders/hooks/use-order-table.tsx:39
 msgid "Fulfillment"
 msgstr "Preparación"
 
@@ -1661,6 +1705,10 @@ msgstr "Se unió"
 msgid "KB"
 msgstr "KB"
 
+#: src/features/orders/components/cancel-order-form.tsx:46
+msgid "Keep order"
+msgstr "Conservar pedido"
+
 #: src/features/products/components/create-product-form/product-create-organize-form.tsx:46
 msgid "Keywords shoppers can filter products by."
 msgstr "Palabras clave por las que los clientes pueden filtrar productos."
@@ -1670,19 +1718,19 @@ msgid "Language"
 msgstr "Idioma"
 
 #: src/features/customers/hooks/use-customer-table.tsx:42
-#: src/features/orders/hooks/use-order-table.tsx:69
+#: src/features/orders/hooks/use-order-table.tsx:66
 #: src/features/products/hooks/use-product-table.tsx:57
 msgid "Last 12 months"
 msgstr "Últimos 12 meses"
 
 #: src/features/customers/hooks/use-customer-table.tsx:41
-#: src/features/orders/hooks/use-order-table.tsx:68
+#: src/features/orders/hooks/use-order-table.tsx:65
 #: src/features/products/hooks/use-product-table.tsx:56
 msgid "Last 30 days"
 msgstr "Últimos 30 días"
 
 #: src/features/customers/hooks/use-customer-table.tsx:40
-#: src/features/orders/hooks/use-order-table.tsx:67
+#: src/features/orders/hooks/use-order-table.tsx:64
 #: src/features/products/hooks/use-product-table.tsx:55
 msgid "Last 7 days"
 msgstr "Últimos 7 días"
@@ -2025,17 +2073,21 @@ msgstr "No hay opciones vinculadas a este producto."
 msgid "No options yet"
 msgstr "Aún no hay opciones"
 
-#: src/features/orders/hooks/use-order-table.tsx:82
+#: src/features/orders/hooks/use-order-table.tsx:79
 msgid "No orders found"
 msgstr "No se encontraron pedidos"
 
-#: src/features/orders/hooks/use-order-table.tsx:78
+#: src/features/orders/hooks/use-order-table.tsx:75
 msgid "No orders yet"
 msgstr "Aún no hay pedidos"
 
 #: src/features/regions/components/region-provider-select.tsx:33
 msgid "No payment providers found."
 msgstr "No se encontraron proveedores de pago."
+
+#: src/features/orders/components/order-payment-section.tsx:41
+msgid "No payments recorded yet."
+msgstr "Aún no se han registrado pagos."
 
 #: src/features/users/hooks/use-invite-table.tsx:38
 msgid "No pending invites"
@@ -2180,9 +2232,17 @@ msgstr "No es una imagen compatible. Los tipos de archivo compatibles son: {exte
 msgid "Not a YAML file. Choose a file ending in .yaml or .yml."
 msgstr "No es un archivo YAML. Elige un archivo que termine en .yaml o .yml."
 
+#: src/features/orders/utils/order-status.ts:53
+msgid "not paid"
+msgstr "no pagado"
+
 #: src/features/product-options/components/listing-role-select.tsx:27
 msgid "Not shown"
 msgstr "No se muestra"
+
+#: src/features/orders/components/refund-payment-form.tsx:40
+msgid "Note"
+msgstr "Nota"
 
 #: src/features/inventory/hooks/use-inventory-table.tsx:66
 msgid "Nothing tracked yet"
@@ -2236,7 +2296,7 @@ msgid "Options"
 msgstr "Opciones"
 
 #: src/features/inventory/hooks/use-reservation-table.tsx:26
-#: src/features/orders/hooks/use-order-table.tsx:30
+#: src/features/orders/hooks/use-order-table.tsx:29
 msgid "Order"
 msgstr "Pedido"
 
@@ -2250,7 +2310,7 @@ msgstr "Total del pedido"
 msgid "Orders"
 msgstr "Pedidos"
 
-#: src/features/orders/hooks/use-order-table.tsx:79
+#: src/features/orders/hooks/use-order-table.tsx:76
 msgid "Orders will appear here once customers complete checkout."
 msgstr "Los pedidos aparecerán aquí cuando los clientes finalicen la compra."
 
@@ -2273,11 +2333,14 @@ msgstr "Organizar categorías"
 msgid "Outstanding amount"
 msgstr "Monto pendiente"
 
+#: src/features/orders/components/record-payment-form.tsx:33
+msgid "Outstanding: {outstanding}"
+msgstr "Pendiente: {outstanding}"
+
 #: src/features/products/components/import-products/import-upload-step.tsx:74
 msgid "Overwrite products with matching handles."
 msgstr "Sobrescribir productos con el mismo handle."
 
-#: src/features/orders/components/order-payment-section.tsx:37
 #: src/features/orders/components/order-summary-section.tsx:68
 msgid "Paid Total"
 msgstr "Total pagado"
@@ -2286,6 +2349,18 @@ msgstr "Total pagado"
 #: src/routes/_authed/_shell/categories/$id/_detail/route.tsx:81
 msgid "Parent"
 msgstr "Categoría superior"
+
+#: src/features/orders/utils/order-status.ts:56
+msgid "partially authorized"
+msgstr "parcialmente autorizado"
+
+#: src/features/orders/utils/order-status.ts:57
+msgid "partially captured"
+msgstr "parcialmente cobrado"
+
+#: src/features/orders/utils/order-status.ts:59
+msgid "partially refunded"
+msgstr "parcialmente reembolsado"
 
 #: src/features/auth/components/login-form.tsx:17
 #: src/features/users/components/create-account-form.tsx:44
@@ -2300,16 +2375,25 @@ msgstr "La contraseña es obligatoria"
 msgid "Passwords do not match"
 msgstr "Las contraseñas no coinciden"
 
+#. placeholder {0}: money(payment.amount)
+#: src/features/orders/components/order-payment-section.tsx:64
+msgid "Payment of {0}"
+msgstr "Pago de {0}"
+
 #: src/features/regions/hooks/use-region-table.tsx:34
 #: src/routes/_authed/settings/regions/$id/_detail/route.tsx:46
 msgid "Payment Providers"
 msgstr "Proveedores de pago"
 
-#: src/features/orders/utils/order-status.ts:25
+#: src/features/orders/components/order-payment-section.tsx:24
+msgid "Payments"
+msgstr "Pagos"
+
+#: src/features/orders/utils/order-status.ts:39
 msgid "pending"
 msgstr "pendiente"
 
-#: src/features/orders/hooks/use-order-table.tsx:56
+#: src/features/orders/hooks/use-order-table.tsx:53
 #: src/features/users/hooks/use-invite-table.tsx:28
 msgid "Pending"
 msgstr "Pendiente"
@@ -2455,9 +2539,53 @@ msgstr "publicado"
 msgid "Published"
 msgstr "Publicado"
 
+#: src/features/orders/components/order-payment-section.tsx:87
+msgid "Received"
+msgstr "Recibido"
+
+#: src/features/orders/components/cancel-order-form.tsx:37
+msgid "Received: {received}"
+msgstr "Recibido: {received}"
+
+#: src/features/orders/components/refund-payment-form.tsx:26
+msgid "Record money returned to the customer from this payment."
+msgstr "Registra el dinero devuelto al cliente de este pago."
+
+#: src/features/orders/components/order-payment-section.tsx:33
+#: src/features/orders/components/record-payment-form.tsx:22
+#: src/features/orders/components/record-payment-form.tsx:45
+msgid "Record payment"
+msgstr "Registrar pago"
+
+#: src/features/orders/components/order-payment-section.tsx:78
+#: src/features/orders/components/refund-payment-form.tsx:47
+msgid "Refund"
+msgstr "Reembolsar"
+
+#. placeholder {0}: order.currencyCode.toUpperCase()
+#: src/features/orders/components/cancel-order-form.tsx:36
+msgid "Refund amount ({0})"
+msgstr "Monto a reembolsar ({0})"
+
+#: src/features/orders/components/refund-payment-form.tsx:23
+msgid "Refund payment"
+msgstr "Reembolsar pago"
+
 #: src/features/access-control/utils/permission-titles.ts:37
 msgid "Refund payments"
 msgstr "Reembolsar pagos"
+
+#: src/features/orders/components/refund-payment-form.tsx:34
+msgid "Refundable: {refundable}"
+msgstr "Reembolsable: {refundable}"
+
+#: src/features/orders/utils/order-status.ts:60
+msgid "refunded"
+msgstr "reembolsado"
+
+#: src/features/orders/components/order-payment-section.tsx:87
+msgid "Refunded"
+msgstr "Reembolsado"
 
 #: src/components/layout/use-sidebar-label.ts:25
 #: src/routes/_authed/settings/regions/index.tsx:24
@@ -2543,6 +2671,10 @@ msgstr "Reordenar"
 #: src/features/products/components/import-products/import-file-picker.tsx:64
 msgid "Replace file"
 msgstr "Reemplazar archivo"
+
+#: src/features/orders/utils/order-status.ts:62
+msgid "requires action"
+msgstr "requiere acción"
 
 #: src/features/users/components/invite-row-actions.tsx:60
 msgid "Resend invite"
@@ -2751,7 +2883,7 @@ msgstr "Enviar"
 msgid "Ship orders"
 msgstr "Enviar pedidos"
 
-#: src/features/orders/utils/order-status.ts:34
+#: src/features/orders/utils/order-status.ts:48
 msgid "shipped"
 msgstr "enviado"
 
@@ -2801,8 +2933,8 @@ msgstr "Omitidos"
 msgid "SKU"
 msgstr "SKU"
 
-#: src/features/orders/hooks/use-order-table.tsx:35
-#: src/features/orders/hooks/use-order-table.tsx:54
+#: src/features/orders/hooks/use-order-table.tsx:32
+#: src/features/orders/hooks/use-order-table.tsx:51
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
 #: src/features/products/components/import-products/import-preview-step.tsx:197
 #: src/features/products/hooks/use-product-list-table.tsx:34
@@ -2873,6 +3005,18 @@ msgstr "Etiquetas"
 msgid "TB"
 msgstr "TB"
 
+#: src/features/orders/utils/payment-amounts.ts:48
+msgid "The amount can't be more than what is outstanding."
+msgstr "El monto no puede ser mayor que lo pendiente."
+
+#: src/features/orders/utils/payment-amounts.ts:50
+msgid "The amount can't be more than what the order has received."
+msgstr "El monto no puede ser mayor que lo que ha recibido el pedido."
+
+#: src/features/orders/utils/payment-amounts.ts:49
+msgid "The amount can't be more than what this payment can refund."
+msgstr "El monto no puede ser mayor que lo que este pago puede reembolsar."
+
 #: src/features/store/components/add-currencies-form.tsx:27
 msgid "The currencies the store sells in are the prices a product can carry, and the money a region may settle in."
 msgstr "Las monedas en las que vende la tienda son los precios que puede tener un producto y el dinero en el que puede liquidar una región."
@@ -2937,6 +3081,10 @@ msgstr "Esta importación creará"
 msgid "This is the store's default currency. Make another currency the default first."
 msgstr "Esta es la moneda predeterminada de la tienda. Primero establece otra moneda como predeterminada."
 
+#: src/features/orders/components/cancel-order-form.tsx:26
+msgid "This order has received {received}. Choose how much of it to refund, from nothing to all of it. Its inventory reservations are released."
+msgstr "Este pedido ha recibido {received}. Elige cuánto reembolsar, desde nada hasta todo. Sus reservas de inventario se liberan."
+
 #: src/routes/_authed/_shell/products/$id/_detail/images/$imageId/variants.tsx:40
 msgid "This product has no image with that id."
 msgstr "Este producto no tiene ninguna imagen con ese id."
@@ -2994,7 +3142,7 @@ msgid "To pick up a category, press space or enter. Use the up and down arrow ke
 msgstr "Para tomar una categoría, pulsa espacio o intro. Usa las flechas arriba y abajo para moverla, y las flechas izquierda y derecha para cambiar su nivel. Pulsa espacio o intro de nuevo para soltarla, o escape para cancelar."
 
 #: src/features/customers/hooks/use-customer-table.tsx:39
-#: src/features/orders/hooks/use-order-table.tsx:66
+#: src/features/orders/hooks/use-order-table.tsx:63
 #: src/features/products/hooks/use-product-table.tsx:54
 msgid "Today"
 msgstr "Hoy"
@@ -3009,10 +3157,6 @@ msgstr "Alternar barra lateral"
 msgid "top level"
 msgstr "nivel superior"
 
-#: src/features/orders/components/order-payment-section.tsx:14
-msgid "Transactions"
-msgstr "Transacciones"
-
 #: src/features/products/components/product-general-section.tsx:54
 #: src/features/products/hooks/use-image-variants-table.tsx:36
 msgid "True"
@@ -3020,7 +3164,7 @@ msgstr "Sí"
 
 #: src/components/data-table/data-table.tsx:82
 #: src/features/customers/hooks/use-customer-table.tsx:56
-#: src/features/orders/hooks/use-order-table.tsx:83
+#: src/features/orders/hooks/use-order-table.tsx:80
 #: src/features/products/hooks/use-product-table.tsx:72
 #: src/features/products/hooks/use-variant-table.tsx:74
 msgid "Try changing your filters or search term."
@@ -3077,7 +3221,7 @@ msgstr "Escribe para añadir uno."
 msgid "Types"
 msgstr "Tipos"
 
-#: src/features/orders/utils/order-status.ts:32
+#: src/features/orders/utils/order-status.ts:46
 msgid "unfulfilled"
 msgstr "sin preparar"
 
