@@ -269,13 +269,43 @@ export class OrderModuleService implements IOrderModuleService {
   async addOrderTransaction(data: CreateOrderTransactionDTO, context?: Context): Promise<OrderTransactionDTO> {
     return this.withTransaction(context, async (ctx) => {
       await this.orderRepository.findByIdOrFail(data.orderId, undefined, ctx)
-      return this.orderTransactionRepository.create(data, ctx)
+      const [transaction] = await this.addOrderTransactions([data], ctx)
+      if (!transaction) {
+        throw new AppError({ type: ErrorTypes.UNEXPECTED_STATE, message: i18n.t('Expected row to be created') })
+      }
+      return transaction
     })
   }
 
+  /**
+   * Writes what is new and answers with what was already there for the rest. A transaction records
+   * one capture or one refund, keyed by that row (`reference`, `referenceId`), and the step writing
+   * it may run again after it committed — so the second write converges on the first instead of
+   * doubling the Order's Paid Total.
+   */
   async addOrderTransactions(data: CreateOrderTransactionDTO[], context?: Context): Promise<OrderTransactionDTO[]> {
+    if (data.length === 0) return []
     return this.withTransaction(context, async (ctx) => {
-      return this.orderTransactionRepository.createMany(data, ctx)
+      const inserted = await this.orderTransactionRepository.createManyIgnoringDuplicates(data, ctx)
+
+      const sameKey = (a: CreateOrderTransactionDTO | OrderTransactionDTO, b: CreateOrderTransactionDTO) =>
+        a.reference === b.reference && a.referenceId === b.referenceId
+      const skipped = data.filter((d) => d.referenceId != null && !inserted.some((row) => sameKey(row, d)))
+      if (skipped.length === 0) return inserted
+
+      const existing = await this.orderTransactionRepository.find(
+        { referenceId: skipped.map((d) => d.referenceId).filter((id) => id != null) },
+        undefined,
+        ctx,
+      )
+      return [...inserted, ...existing.filter((row) => skipped.some((d) => sameKey(row, d)))]
+    })
+  }
+
+  async softDeleteOrderTransactions(ids: string[], context?: Context): Promise<void> {
+    if (ids.length === 0) return
+    return this.withTransaction(context, async (ctx) => {
+      await this.orderTransactionRepository.softDelete(ids, ctx)
     })
   }
 

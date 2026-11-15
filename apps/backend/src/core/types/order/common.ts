@@ -124,6 +124,7 @@ export interface FilterableOrderTransactionProps extends BaseFilterable<Filterab
   id?: string | string[]
   orderId?: string | string[]
   reference?: string | string[]
+  referenceId?: string | string[]
   currencyCode?: string | string[]
   createdAt?: OperatorMap<Date>
 }
@@ -142,7 +143,18 @@ export type OrderTotals = {
   outstandingTotal: BigNumber
 }
 
-export type PaymentStatus = 'awaiting' | 'authorized' | 'captured'
+/** Medusa's order payment status, aggregated from the Order's payment collections. */
+export type PaymentStatus =
+  | 'not_paid'
+  | 'awaiting'
+  | 'authorized'
+  | 'partially_authorized'
+  | 'partially_captured'
+  | 'captured'
+  | 'partially_refunded'
+  | 'refunded'
+  | 'canceled'
+  | 'requires_action'
 
 export type EnrichedOrderLineItemDTO = OrderLineItemDTO & { lineTotal: BigNumber }
 

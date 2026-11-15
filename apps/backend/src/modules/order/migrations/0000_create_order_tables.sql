@@ -98,4 +98,4 @@ CREATE INDEX "idx_order_status" ON "order" USING btree ("status") WHERE deleted_
 CREATE INDEX "idx_order_shipping_method_order_id" ON "order_shipping_method" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_shipping_method_option_id" ON "order_shipping_method" USING btree ("shipping_option_id") WHERE shipping_option_id IS NOT NULL AND deleted_at IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_order_transaction_order_id" ON "order_transaction" USING btree ("order_id") WHERE deleted_at IS NULL;--> statement-breakpoint
-CREATE INDEX "idx_order_transaction_reference" ON "order_transaction" USING btree ("reference","reference_id") WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX "idx_order_transaction_reference" ON "order_transaction" USING btree ("reference","reference_id") WHERE deleted_at IS NULL;

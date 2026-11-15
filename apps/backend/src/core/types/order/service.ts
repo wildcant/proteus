@@ -77,8 +77,15 @@ export type IOrderModuleService = {
   ): Promise<OrderShippingMethodDTO[]>
 
   // Transactions
+  /**
+   * Idempotent per `(reference, referenceId)`: a transaction already recorded for the same capture
+   * or refund is answered with rather than written again, so a retried step never doubles the
+   * Order's Paid Total.
+   */
   addOrderTransaction(data: CreateOrderTransactionDTO, context?: Context): Promise<OrderTransactionDTO>
+  /** As `addOrderTransaction`, for several at once. */
   addOrderTransactions(data: CreateOrderTransactionDTO[], context?: Context): Promise<OrderTransactionDTO[]>
+  softDeleteOrderTransactions(ids: string[], context?: Context): Promise<void>
   listOrderTransactions(
     filters?: FilterableOrderTransactionProps,
     config?: FindConfig<OrderTransactionDTO>,
