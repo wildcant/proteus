@@ -43,6 +43,11 @@ The admin records a payment against that collection:
    as Medusa collects again through a new session. An authorization still open but holding less
    than the amount asked is not topped up: the capture is refused with what it still holds.
 
+Only a manual authorization is captured this way. A card authorized at checkout and not yet captured
+is never captured by recording a payment, which would charge the card as well as take the cash. The
+manual authorization opened beside it covers only what the card does not hold, and a payment that
+does not fit there is refused until the card's payment is captured or canceled.
+
 Capture takes an amount, as Medusa's does, so the same collection could later be authorized by a
 real gateway and captured the same way, with no change to the Order.
 

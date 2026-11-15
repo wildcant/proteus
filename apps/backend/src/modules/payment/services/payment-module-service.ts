@@ -527,8 +527,9 @@ export class PaymentModuleService implements IPaymentModuleService {
    * Medusa's model. The first payment recorded opens a session on the manual provider and
    * authorizes everything the collection still has outstanding; every payment then captures part
    * of that authorization, so the collection reads `partially_captured` until the last one makes it
-   * `completed`. A collection that already holds a live authorization — a shopper who chose manual
-   * payment at checkout — is captured against that one instead of opening a second.
+   * `completed`. A collection that already holds a live manual authorization — a shopper who chose
+   * manual payment at checkout — is captured against that one instead of opening a second. Another
+   * provider's open authorization is never captured here; see `authorizeManualPayment_`.
    *
    * One transaction, opened by taking the collection's row lock, so the reads that decide what is
    * outstanding cannot be overtaken by a second admin recording a payment at the same moment: the
@@ -575,8 +576,16 @@ export class PaymentModuleService implements IPaymentModuleService {
         })
       }
 
-      const open = payments.find((payment) => !payment.canceledAt && remainingToCapture(payment).isGreaterThan(0))
-      const payment = open ?? (await this.authorizeManualPayment_(collection, outstanding, ctx))
+      // Only a manual authorization is captured against. Money the admin received in cash says
+      // nothing about a card's authorization, and capturing that would charge the card at the
+      // gateway as well: the shopper pays twice.
+      const open = payments.find(
+        (payment) =>
+          payment.providerId === MANUAL_PROVIDER_ID &&
+          !payment.canceledAt &&
+          remainingToCapture(payment).isGreaterThan(0),
+      )
+      const payment = open ?? (await this.authorizeManualPayment_(collection, outstanding, data.amount, ctx))
 
       await this.capture_(payment.id, data, ctx)
 
@@ -1082,12 +1091,37 @@ export class PaymentModuleService implements IPaymentModuleService {
     return this.captureRepository.findOne({ idempotencyKey }, undefined, ctx)
   }
 
-  /** Opens and authorizes a manual session for `amount`: the authorization recorded payments capture against. */
+  /**
+   * Opens and authorizes a manual session for what is outstanding and not already held by another
+   * provider's open authorization: the authorization recorded payments capture against.
+   *
+   * A card authorized and not yet captured can still be captured at the gateway, so the part it
+   * holds is spoken for. The manual session takes only the rest, as a collection can hold several
+   * sessions, so the two together never authorize more than the total. A payment that does not
+   * fit in the rest is refused rather than voiding the card to make room: releasing the shopper's
+   * card is a decision of its own, and a refusal leaves nothing done.
+   */
   private async authorizeManualPayment_(
     collection: PaymentCollectionDTO,
-    amount: BigNumber,
+    outstanding: BigNumber,
+    requested: BigNumber,
     ctx: Context,
   ): Promise<PaymentDTO> {
+    const held = (collection.payments ?? [])
+      .filter((payment) => payment.providerId !== MANUAL_PROVIDER_ID && !payment.canceledAt)
+      .reduce((sum, payment) => sum.plus(remainingToCapture(payment)), new BigNumber(0))
+    const amount = outstanding.minus(held)
+
+    if (requested.isGreaterThan(amount)) {
+      throw new AppError({
+        type: ErrorTypes.NOT_ALLOWED,
+        message: i18n.t(
+          'Payment amount {amount} cannot be recorded on payment collection "{id}": {held} of it is held by an open authorization at another provider. Capture or cancel that payment first.',
+        ),
+        values: { amount: requested.toFixed(), held: held.toFixed(), id: collection.id },
+      })
+    }
+
     const session = await this.createPaymentSession(
       collection.id,
       { providerId: MANUAL_PROVIDER_ID, amount, currencyCode: collection.currencyCode },
