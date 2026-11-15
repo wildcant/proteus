@@ -118,7 +118,7 @@ export type PaymentDTO = {
  * The payment hangs off the `authorized` member alone, so there is no branch in which a caller
  * can read one that does not exist.
  */
-export type AuthorizePaymentSessionResult =
+export type PaymentSessionAuthorization =
   | { outcome: 'authorized'; payment: PaymentDTO }
   /** Confirmed at the provider and still settling. No payment yet; the webhook brings one. */
   | { outcome: 'pending_authorization' }

@@ -1,6 +1,6 @@
 import { BigNumber } from '@core/bignumber.js'
 import { AppError, ErrorTypes } from '@core/errors/app-error.js'
-import type { AuthorizePaymentSessionResult, PaymentDTO } from '@core/types/payment/common.js'
+import type { PaymentDTO, PaymentSessionAuthorization } from '@core/types/payment/common.js'
 import { PaymentErrorCodes } from '@core/types/payment/errors.js'
 import type { Msgid } from '@proteus/utils'
 import type { Fixtures } from '@tests/setup/test-extend.js'
@@ -29,7 +29,7 @@ const cascadeGraph = buildCascadeGraph(paymentModule.models)
  * these tests are about what happens to a payment that exists. The two outcomes that carry none
  * have their own tests, where the discriminant is the assertion rather than a precondition.
  */
-function authorizedPayment(result: AuthorizePaymentSessionResult): PaymentDTO {
+function authorizedPayment(result: PaymentSessionAuthorization): PaymentDTO {
   if (result.outcome !== 'authorized') {
     throw new Error(`Expected an authorized payment, got outcome "${result.outcome}"`)
   }

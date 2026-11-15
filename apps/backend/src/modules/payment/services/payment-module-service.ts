@@ -6,7 +6,6 @@ import type { Context } from '../../../core/types/context.js'
 import type { Logger } from '../../../core/types/logger.js'
 import type {
   AccountHolderDTO,
-  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
@@ -14,6 +13,7 @@ import type {
   PaymentDTO,
   PaymentProviderDTO,
   PaymentProviderMeta,
+  PaymentSessionAuthorization,
   PaymentSessionDTO,
   PaymentSessionStatus,
   RefundReasonDTO,
@@ -383,7 +383,7 @@ export class PaymentModuleService implements IPaymentModuleService {
     return updated
   }
 
-  async authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult> {
+  async authorizePaymentSession(id: string, context?: Context): Promise<PaymentSessionAuthorization> {
     this.logger.debug(`Authorizing payment session "${id}"`)
     const session = await this.paymentSessionRepository.findByIdOrFail(id, undefined, context)
 
@@ -816,8 +816,10 @@ export class PaymentModuleService implements IPaymentModuleService {
    * loser reads back the winner's. A read-then-write alone would let both callers through.
    */
   async ensureAccountHolders(input: EnsureAccountHoldersDTO, context?: Context): Promise<AccountHolderDTO[]> {
-    const existing = await this.accountHolderRepository.find({ customerId: input.customerId }, undefined, context)
-    const providers = await this.paymentProviderService.list({ isEnabled: true }, undefined, context)
+    const [existing, providers] = await Promise.all([
+      this.accountHolderRepository.find({ customerId: input.customerId }, undefined, context),
+      this.paymentProviderService.list({ isEnabled: true }, undefined, context),
+    ])
     const missing = providers.filter((provider) => !existing.some((holder) => holder.providerId === provider.id))
 
     const created = await Promise.all(

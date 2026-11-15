@@ -2,13 +2,13 @@ import type { FindConfig } from '../common.js'
 import type { Context } from '../context.js'
 import type {
   AccountHolderDTO,
-  AuthorizePaymentSessionResult,
   FilterableAccountHolderProps,
   FilterablePaymentProviderProps,
   PaymentCollectionDTO,
   PaymentDTO,
   PaymentProviderDTO,
   PaymentProviderMeta,
+  PaymentSessionAuthorization,
   PaymentSessionDTO,
   RefundReasonDTO,
   SavedMethodDTO,
@@ -83,7 +83,7 @@ export type IPaymentModuleService = {
    * to tell an intent that is still settling from one the provider refused, and `null` said both.
    * Idempotent — a session already authorized answers with the payment it produced.
    */
-  authorizePaymentSession(id: string, context?: Context): Promise<AuthorizePaymentSessionResult>
+  authorizePaymentSession(id: string, context?: Context): Promise<PaymentSessionAuthorization>
 
   // Payment retrieval
   retrievePayment(id: string, context?: Context): Promise<PaymentDTO>
