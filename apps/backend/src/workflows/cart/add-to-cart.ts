@@ -5,9 +5,9 @@ import { Modules } from '@core/utils/modules-definition.js'
 import { createWorkflow, WorkflowTerminalError } from '@core/workflows/types.js'
 import { i18n } from '@proteus/utils'
 import { buildVariantPrices } from '../product/utils/build-variant-prices.js'
-import { planLineItemActions } from './utils/plan-line-item-actions.js'
+import { confirmVariantInventoryStep, confirmVariantInventoryThrows } from './steps/confirm-variant-inventory.js'
+import { lineItemPlanDemands, planLineItemActions } from './utils/plan-line-item-actions.js'
 import { prepareLineItemData } from './utils/prepare-line-item-data.js'
-import { missingInventoryItemMessage, prepareVariantInventoryChecks } from './utils/variant-inventory.js'
 
 /** What a shopper picks: which variant, and how many. Everything else is the catalogue's to say. */
 type AddToCartItem = {
@@ -38,7 +38,7 @@ export type AddToCartInput = {
 export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[]>(
   {
     name: 'add-to-cart',
-    throws: [ErrorTypes.CONFLICT, ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND],
+    throws: [...confirmVariantInventoryThrows, ErrorTypes.INVALID_DATA, ErrorTypes.NOT_ALLOWED, ErrorTypes.NOT_FOUND],
   },
   async (ctx, input) => {
     /**
@@ -158,79 +158,20 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
       })
     })
 
-    /** Which of the prepared items join a line the cart already holds, and which start one. */
-    const plan = await ctx.step('plan-line-items', async ({ container }) => {
+    /**
+     * Which of the prepared items join a line the cart already holds, and which start one — and the
+     * quantity each variant's line ends up at, which is what stock is confirmed against: raising a
+     * line from one to five is confirmed at five, not at the four being added.
+     */
+    const planned = await ctx.step('plan-line-items', async ({ container }) => {
       const cartService = container.resolve(Modules.CART)
       const existing = await cartService.listLineItems({ cartId: cart.id })
 
-      return planLineItemActions(existing, lineItems)
+      const plan = planLineItemActions(existing, lineItems)
+      return { plan, demands: lineItemPlanDemands(plan) }
     })
 
-    /**
-     * Confirms the cart could actually be fulfilled once the addition lands. Checked against the
-     * post-merge quantity, so raising a line from one to five is confirmed at five — the number
-     * the shopper would be holding, not the four being added.
-     */
-    await ctx.step('confirm-inventory', async ({ container }) => {
-      const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-      const productService = container.resolve(Modules.PRODUCT)
-      const linkService = container.resolve(ContainerRegistrationKeys.LINK)
-      const inventoryService = container.resolve(Modules.INVENTORY)
-
-      const demands = [
-        ...plan.create.flatMap((item) =>
-          item.variantId ? [{ variantId: item.variantId, quantity: item.quantity }] : [],
-        ),
-        ...plan.merge.flatMap((entry) =>
-          entry.data.quantity === undefined ? [] : [{ variantId: entry.variantId, quantity: entry.data.quantity }],
-        ),
-      ]
-
-      const variantIds = demands.map((demand) => demand.variantId)
-      /** Read again rather than carried down from `prepare-line-items`: a step's return value is
-       *  what a replay hands back, and the two flags are worth their own read at the point they
-       *  decide something. */
-      const variants = await productService.listProductVariants({ id: variantIds })
-      const mappings = await linkService.repo('productVariantInventoryItem').findByVariantIds(variantIds)
-
-      const missingInventoryItem = missingInventoryItemMessage(variants, mappings)
-      if (missingInventoryItem) {
-        throw new WorkflowTerminalError({ type: ErrorTypes.INVALID_DATA, ...missingInventoryItem })
-      }
-
-      const inventoryItemIds = [...new Set(mappings.map((mapping) => mapping.inventoryItemId))]
-      const levels = await inventoryService.listInventoryLevels({ inventoryItemId: inventoryItemIds })
-
-      /** A backorder is stock the shop promises before it has it, so it is asked to cover nothing;
-       *  an untracked variant never reached this list at all. */
-      const checks = prepareVariantInventoryChecks(demands, variants, mappings, levels).filter(
-        (check) => !check.allowBackorder,
-      )
-      if (!checks.length) {
-        logger.debug('[add-to-cart] No stock-managed variants in the addition, skipping')
-        return
-      }
-
-      const covered = await Promise.all(
-        checks.map(async (check) => {
-          const required = check.quantity * check.requiredQuantity
-          const hasCoverage = await inventoryService.confirmInventory(
-            check.inventoryItemId,
-            check.locationIds,
-            required,
-          )
-          logger.debug(`[add-to-cart] Variant ${check.variantId}: need ${required}, covered=${hasCoverage}`)
-          return hasCoverage
-        }),
-      )
-
-      if (covered.some((hasCoverage) => !hasCoverage)) {
-        throw new WorkflowTerminalError({
-          type: ErrorTypes.CONFLICT,
-          message: i18n.t('Not enough stock to add the requested quantity'),
-        })
-      }
-    })
+    await confirmVariantInventoryStep(ctx, planned.demands)
 
     /**
      * No compensation, and none needed: the lines started and the lines raised are rows of one
@@ -239,7 +180,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
      */
     return ctx.step('write-line-items', async ({ container }) => {
       const cartService = container.resolve(Modules.CART)
-      return cartService.applyLineItemPlan(cart.id, plan)
+      return cartService.applyLineItemPlan(cart.id, planned.plan)
     })
   },
 )

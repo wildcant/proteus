@@ -1,5 +1,6 @@
 import type { CartLineItemDTO } from '@core/types/cart/common.js'
 import type { CreateLineItemDTO, LineItemUpdateDTO } from '@core/types/cart/mutations.js'
+import type { VariantDemand } from './variant-inventory.js'
 
 /** The fields a merge decision reads off a row the cart already holds. */
 export type MergeableLineItem = Pick<CartLineItemDTO, 'id' | 'variantId' | 'quantity' | 'unitPrice'>
@@ -85,4 +86,17 @@ export function planLineItemActions(existing: MergeableLineItem[], incoming: Cre
   }
 
   return { create, merge }
+}
+
+/**
+ * The quantity each variant's line ends up at once the plan is written — what stock has to cover,
+ * rather than the amount being added. A custom line has no variant and is asked to cover nothing.
+ */
+export function lineItemPlanDemands(plan: LineItemPlan): VariantDemand[] {
+  return [
+    ...plan.create.flatMap((item) => (item.variantId ? [{ variantId: item.variantId, quantity: item.quantity }] : [])),
+    ...plan.merge.flatMap((entry) =>
+      entry.data.quantity === undefined ? [] : [{ variantId: entry.variantId, quantity: entry.data.quantity }],
+    ),
+  ]
 }
