@@ -500,6 +500,9 @@ export class ProductModuleService implements IProductModuleService {
     const [variant] = await this.productVariantRepository.find({ id: variantId }, undefined, context)
     if (!variant) return null
     if (variant.thumbnail) return variant.thumbnail
+    // The image assigned to the variant, its colourway's photo, before the product's cover: the one the listing shows.
+    const [image] = await this.listImagesForVariant(variantId, context)
+    if (image) return image.url
 
     const [product] = await this.productRepository.find({ id: variant.productId }, undefined, context)
     return product?.thumbnail ?? null
