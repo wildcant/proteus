@@ -1347,4 +1347,63 @@ test.describe('GET /store/products sale', () => {
     expect(coSale.body.products).toEqual([])
     expect(coSale.body.count).toBe(0)
   })
+
+  test('the colourway holding the sale opens on its marked-down variant, not its first in stock', async ({
+    expect,
+    service,
+    dto,
+    factories,
+  }) => {
+    await factories.create.country({ id: 'us', regionId: usRegionId, localeCode: 'en-US' })
+    const colour = await createOption(service, 'Color', ['Silver', 'Bone'], 'grouping')
+    const size = await createOption(service, 'Size', ['40', '41'])
+    const { product } = await service.create.product(api.container, { status: 'published' })
+    await service.update.productOptions(api.container, product.id, {
+      options: [
+        { optionId: colour.id, valueIds: colour.values.map((value) => value.id) },
+        { optionId: size.id, valueIds: size.values.map((value) => value.id) },
+      ],
+    })
+    const combination = (value: string, sizeValue: string) => ({
+      [colour.id]: colour.idOf(value),
+      [size.id]: size.idOf(sizeValue),
+    })
+    const variants = await service.create.productVariants(api.container, product.id, [
+      { variantRank: 0, optionValues: combination('Bone', '40') },
+      { variantRank: 1, optionValues: combination('Silver', '40') },
+      { variantRank: 2, optionValues: combination('Silver', '41') },
+    ])
+    const [bone, firstSilver, markedDownSilver] = variants
+    if (!bone || !firstSilver || !markedDownSilver) throw new Error('Expected three variants')
+    // Bone is the cheapest at full price; only Silver 41 is marked down.
+    const quotes = new Map([
+      [bone.id, { amount: '145', compareAt: null }],
+      [firstSilver.id, { amount: '185', compareAt: null }],
+      [markedDownSilver.id, { amount: '150', compareAt: '185' }],
+    ])
+    await Promise.all(
+      variants.map(async (variant) => {
+        const quote = quotes.get(variant.id)
+        if (!quote) throw new Error('Expected a quote per variant')
+        const price = dto.generate.createPrice({
+          currencyCode: 'usd',
+          amount: new BigNumber(quote.amount),
+          compareAtAmount: quote.compareAt === null ? null : new BigNumber(quote.compareAt),
+        })
+        await service.create.variantPrices(api.container, [variant.id], { prices: [price] })
+        await service.create.variantStock(api.container, { variantId: variant.id, level: { stockedQuantity: 2 } })
+      }),
+    )
+
+    const response = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=us')
+    expect(response.status).toBe(200)
+    const card = response.body.products.find((item) => item.id === product.id)
+    expect(card?.salePrice).toMatchObject({ calculatedAmount: '150', variantId: markedDownSilver.id })
+    expect(card?.groups?.values.map(({ value, variantId }) => [value, variantId])).toEqual(
+      expect.arrayContaining([
+        ['Silver', markedDownSilver.id],
+        ['Bone', bone.id],
+      ]),
+    )
+  })
 })

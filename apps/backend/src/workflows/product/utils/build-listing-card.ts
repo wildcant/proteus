@@ -36,7 +36,8 @@ function labelsOfRole(
 /**
  * Each product's grouping values over `variants`, in the option's value order, each with the image of
  * its first variant (by variant rank) that has one, whether any of its variants can be bought, and the
- * variant the product page opens on: the first that can be bought, else the first. A value no passed
+ * variant the product page opens on: the product's sale variant when the value holds it, so the page opens
+ * on the price the card shows, else the first that can be bought, else the first. A value no passed
  * variant carries — none priced here — is not one.
  */
 export function buildListingGroups(
@@ -46,10 +47,12 @@ export function buildListingGroups(
     listingOptions,
     imageUrlByVariantId,
     purchasableVariantIds,
+    saleVariantIds,
   }: {
     listingOptions: Record<string, ProductListingOptionsDTO>
     imageUrlByVariantId: Map<string, string>
     purchasableVariantIds: Set<string>
+    saleVariantIds: Set<string>
   },
 ): Map<string, { option: string; values: GroupValue[] }> {
   const labelByVariantId = labelsOfRole(variants, labels, (id) => listingOptions[id]?.grouping?.id)
@@ -81,7 +84,10 @@ export function buildListingGroups(
               buckets,
               thumbnail: variantIds.map((id) => imageUrlByVariantId.get(id)).find((url) => url !== undefined) ?? null,
               inStock: variantIds.some((id) => purchasableVariantIds.has(id)),
-              variantId: variantIds.find((id) => purchasableVariantIds.has(id)) ?? first,
+              variantId:
+                variantIds.find((id) => saleVariantIds.has(id)) ??
+                variantIds.find((id) => purchasableVariantIds.has(id)) ??
+                first,
             },
           ]
         })

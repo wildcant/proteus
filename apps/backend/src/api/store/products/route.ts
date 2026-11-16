@@ -150,6 +150,7 @@ export const GET = async (
     listingOptions,
     imageUrlByVariantId: buildVariantImageUrls(variantImages, images),
     purchasableVariantIds,
+    saleVariantIds: new Set(rows.flatMap((row) => (row.saleVariantId ? [row.saleVariantId] : []))),
   })
   const availableByProductId = buildListingAvailability(purchasableVariants, optionLabels, listingOptions)
   const sublineByProductId = buildListingSublines(pageProducts, {
