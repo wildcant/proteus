@@ -27,7 +27,11 @@ export const productDetailTitle = cva('type-title self-stretch text-ink')
 
 export const productDetailPricing = cva('flex flex-col items-start gap-2')
 
+export const productDetailPrices = cva('flex flex-wrap items-baseline gap-x-2')
+
 export const productDetailPrice = cva('type-body-bold text-ink')
+
+export const productDetailCompareAt = cva('type-label-struck text-ink-muted')
 
 export const productDetailStock = cva('flex')
 

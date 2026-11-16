@@ -5,11 +5,13 @@ import type { StoreProductListItem } from '#/api/generated/model'
 import { Icon } from '#/components/ui/icon/icon'
 import {
   productCard,
+  productCardCompareAt,
   productCardImage,
   productCardInfo,
   productCardLabel,
   productCardMedia,
   productCardPrice,
+  productCardPrices,
   productCardSoldOut,
   productCardTitle,
 } from '#/features/products/components/product-card/product-card.variants'
@@ -23,6 +25,10 @@ export function ProductCard({ product, link, priority, className }: ProductCardP
   const { formatPrice } = useFormatters()
   const startingPrice = product.startingPrice
     ? formatPrice(product.startingPrice.calculatedAmount, product.startingPrice.currencyCode)
+    : null
+  // The cheapest variant's own compare-at, so the struck figure is always the one "From" undercuts.
+  const compareAtPrice = product.startingPrice?.compareAtAmount
+    ? formatPrice(product.startingPrice.compareAtAmount, product.startingPrice.currencyCode)
     : null
 
   return (
@@ -64,10 +70,26 @@ export function ProductCard({ product, link, priority, className }: ProductCardP
           {!!product.subtitle && <p className="mt-1 text-ink-muted text-sm">{product.subtitle}</p>}
         </div>
         {!!startingPrice && (
-          <p className={productCardPrice()}>
-            {/* `startingPrice` is the cheapest variant's, so a product whose sizes run $46 to $60
-                would otherwise show a price no shopper can buy at without knowing which one. */}
-            <Trans>From {startingPrice}</Trans>
+          <p className={productCardPrices()}>
+            {/* Absolutely placed, so the screen-reader labels take no slot in the wrapping row. */}
+            {!!compareAtPrice && (
+              <span className="sr-only">
+                <Trans>Sale price</Trans>
+              </span>
+            )}
+            <span className={productCardPrice()}>
+              {/* `startingPrice` is the cheapest variant's, so a product whose sizes run $46 to $60
+                  would otherwise show a price no shopper can buy at without knowing which one. */}
+              <Trans>From {startingPrice}</Trans>
+            </span>
+            {!!compareAtPrice && (
+              <>
+                <span className="sr-only">
+                  <Trans>Regular price</Trans>
+                </span>
+                <span className={productCardCompareAt()}>{compareAtPrice}</span>
+              </>
+            )}
           </p>
         )}
       </div>

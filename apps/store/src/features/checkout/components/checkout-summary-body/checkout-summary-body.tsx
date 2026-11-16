@@ -1,9 +1,11 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import BigNumber from 'bignumber.js'
 import type { StoreCartDetailResponseCart } from '#/api/generated/model'
 import { Icon } from '#/components/ui/icon/icon'
 import {
   checkoutSummaryBody,
+  checkoutSummaryBodyCompareAt,
   checkoutSummaryBodyCount,
   checkoutSummaryBodyImage,
   checkoutSummaryBodyInfo,
@@ -13,6 +15,7 @@ import {
   checkoutSummaryBodyMedia,
   checkoutSummaryBodyOptions,
   checkoutSummaryBodyPrice,
+  checkoutSummaryBodyPrices,
   checkoutSummaryBodyQuantity,
   checkoutSummaryBodyShipping,
   checkoutSummaryBodyShippingLabel,
@@ -69,9 +72,31 @@ export function CheckoutSummaryBody({ cart, className }: { cart: StoreCartDetail
                   <p className={cn(checkoutSummaryBodyOptions(), 'm-0')}>{item.variantOptionValues}</p>
                 )}
               </div>
-              <span className={cn(checkoutSummaryBodyPrice(), 'shrink-0 tabular-nums')}>
-                {formatPrice(item.lineTotal, cart.currencyCode)}
-              </span>
+              {/* The compare-at for the whole quantity, struck against the line total it sits
+                  beside, so a marked-down line reads the same at one as at three. */}
+              <p className={cn(checkoutSummaryBodyPrices(), 'm-0 shrink-0')}>
+                {!!item.compareAtUnitPrice && (
+                  <span className="sr-only">
+                    <Trans>Sale price</Trans>
+                  </span>
+                )}
+                <span className={cn(checkoutSummaryBodyPrice(), 'tabular-nums')}>
+                  {formatPrice(item.lineTotal, cart.currencyCode)}
+                </span>
+                {!!item.compareAtUnitPrice && (
+                  <>
+                    <span className="sr-only">
+                      <Trans>Regular price</Trans>
+                    </span>
+                    <span className={cn(checkoutSummaryBodyCompareAt(), 'tabular-nums')}>
+                      {formatPrice(
+                        new BigNumber(item.compareAtUnitPrice).times(item.quantity).toFixed(),
+                        cart.currencyCode,
+                      )}
+                    </span>
+                  </>
+                )}
+              </p>
             </div>
           </li>
         ))}

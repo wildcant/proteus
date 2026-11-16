@@ -27,7 +27,11 @@ export const checkoutSummaryBodyItemTitle = cva('type-body-compact text-ink')
 
 export const checkoutSummaryBodyOptions = cva('type-caption text-ink-muted')
 
+export const checkoutSummaryBodyPrices = cva('flex flex-wrap items-baseline gap-x-2')
+
 export const checkoutSummaryBodyPrice = cva('type-label text-ink')
+
+export const checkoutSummaryBodyCompareAt = cva('type-label-struck text-ink-muted')
 
 export const checkoutSummaryBodyTotals = cva('flex flex-col items-stretch gap-3 border-line border-t pt-6')
 

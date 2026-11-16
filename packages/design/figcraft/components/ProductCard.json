@@ -12,6 +12,16 @@
       "type": "variant"
     },
     {
+      "default": "$100.00",
+      "name": "compareAt",
+      "type": "text"
+    },
+    {
+      "default": false,
+      "name": "hasCompareAt",
+      "type": "boolean"
+    },
+    {
       "default": "From $90.00",
       "name": "price",
       "type": "text"
@@ -227,23 +237,72 @@
               "textStyle": "S:8"
             },
             {
-              "name": "price",
-              "type": "TEXT",
-              "fills": [
-                {
-                  "color": "#0D1012",
-                  "type": "solid"
-                }
-              ],
+              "name": "prices",
+              "type": "FRAME",
+              "clip": false,
               "sizing": {
                 "horizontal": "fill",
                 "vertical": "hug"
               },
               "boundVariables": {
-                "fill": "VariableID:18"
+                "gap": "VariableID:35"
               },
-              "textAlign": "left",
-              "textStyle": "S:10"
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "baseline",
+                "gap": 8,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true,
+                "wrap": true,
+                "crossGap": 0
+              },
+              "children": [
+                {
+                  "name": "price",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:10"
+                },
+                {
+                  "name": "compareAt",
+                  "type": "TEXT",
+                  "visible": false,
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:36"
+                }
+              ]
             }
           ]
         }
@@ -449,23 +508,72 @@
               "textStyle": "S:8"
             },
             {
-              "name": "price",
-              "type": "TEXT",
-              "fills": [
-                {
-                  "color": "#0D1012",
-                  "type": "solid"
-                }
-              ],
+              "name": "prices",
+              "type": "FRAME",
+              "clip": false,
               "sizing": {
                 "horizontal": "fill",
                 "vertical": "hug"
               },
               "boundVariables": {
-                "fill": "VariableID:18"
+                "gap": "VariableID:35"
               },
-              "textAlign": "left",
-              "textStyle": "S:10"
+              "layout": {
+                "mode": "horizontal",
+                "mainAlign": "min",
+                "crossAlign": "baseline",
+                "gap": 8,
+                "padding": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "strokesIncluded": true,
+                "wrap": true,
+                "crossGap": 0
+              },
+              "children": [
+                {
+                  "name": "price",
+                  "type": "TEXT",
+                  "fills": [
+                    {
+                      "color": "#0D1012",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:18"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:10"
+                },
+                {
+                  "name": "compareAt",
+                  "type": "TEXT",
+                  "visible": false,
+                  "fills": [
+                    {
+                      "color": "#767A7F",
+                      "type": "solid"
+                    }
+                  ],
+                  "sizing": {
+                    "horizontal": "hug",
+                    "vertical": "hug"
+                  },
+                  "boundVariables": {
+                    "fill": "VariableID:19"
+                  },
+                  "textAlign": "left",
+                  "textStyle": "S:36"
+                }
+              ]
             }
           ]
         }

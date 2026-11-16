@@ -103,3 +103,22 @@ test('a line links to its product by the handle it was added with, and a line wi
   await expect.element(page.getByText('Sport Shorts')).toBeVisible()
   await expect.element(page.getByRole('link', { name: 'Sport Shorts' })).not.toBeInTheDocument()
 })
+
+test('a marked-down line strikes its compare-at unit price beside the unit price, and a full-price line shows none', async () => {
+  const markedDown = await renderLine(lineItem({ compareAtUnitPrice: '60.00' }))
+
+  await expect.element(page.getByText('$46.00', { exact: true })).toBeVisible()
+  const compareAt = page.getByText('$60.00', { exact: true })
+  await expect.element(compareAt).toBeVisible()
+  // Off the real Chromium, not the class list: a struck figure is the claim, not a class name.
+  expect(getComputedStyle(compareAt.element()).textDecorationLine).toBe('line-through')
+  await expect.element(page.getByText('Regular price')).toBeInTheDocument()
+  await markedDown.unmount()
+
+  renderLine(lineItem({}))
+
+  // Anchored on the price first, so the absence below is read off a rendered line.
+  await expect.element(page.getByText('$46.00', { exact: true })).toBeVisible()
+  await expect.element(page.getByText('$60.00', { exact: true })).not.toBeInTheDocument()
+  await expect.element(page.getByText('Regular price')).not.toBeInTheDocument()
+})

@@ -1,9 +1,11 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
+import BigNumber from 'bignumber.js'
 import type { StoreOrderDetail } from '#/api/generated/model'
 import { Icon } from '#/components/ui/icon/icon'
 import {
   orderItems,
+  orderItemsCompareAt,
   orderItemsCount,
   orderItemsImage,
   orderItemsInfo,
@@ -11,6 +13,7 @@ import {
   orderItemsMedia,
   orderItemsOptions,
   orderItemsPrice,
+  orderItemsPrices,
   orderItemsQuantity,
   orderItemsText,
   orderItemsThumbnail,
@@ -75,10 +78,31 @@ export function OrderItems({ order, className }: { order: StoreOrderDetail; clas
               )}
             </div>
             {/* Right-aligned at both widths. Stacked under the details it would otherwise read as
-                a fourth meta line rather than the row's total. */}
-            <span className={cn(orderItemsPrice(), 'shrink-0 whitespace-nowrap tabular-nums')}>
-              {formatPrice(item.lineTotal, order.currencyCode)}
-            </span>
+                a fourth meta line rather than the row's total. A marked-down line strikes the
+                compare-at for the whole quantity beside it, the same rule as the checkout summary. */}
+            <p className={cn(orderItemsPrices(), 'shrink-0')}>
+              {!!item.compareAtUnitPrice && (
+                <span className="sr-only">
+                  <Trans>Sale price</Trans>
+                </span>
+              )}
+              <span className={cn(orderItemsPrice(), 'whitespace-nowrap tabular-nums')}>
+                {formatPrice(item.lineTotal, order.currencyCode)}
+              </span>
+              {!!item.compareAtUnitPrice && (
+                <>
+                  <span className="sr-only">
+                    <Trans>Regular price</Trans>
+                  </span>
+                  <span className={cn(orderItemsCompareAt(), 'whitespace-nowrap tabular-nums')}>
+                    {formatPrice(
+                      new BigNumber(item.compareAtUnitPrice).times(item.quantity).toFixed(),
+                      order.currencyCode,
+                    )}
+                  </span>
+                </>
+              )}
+            </p>
           </div>
         </li>
       ))}
