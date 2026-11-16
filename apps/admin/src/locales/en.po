@@ -13,11 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:212
+#: src/features/products/components/import-structure/structure-preview-step.tsx:211
+msgid "(filter: {filterNames})"
+msgstr "(filter: {filterNames})"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:231
 msgid "(footer: {footerNames})"
 msgstr "(footer: {footerNames})"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:207
+#: src/features/products/components/import-structure/structure-preview-step.tsx:226
 msgid "(sections: {sectionNames})"
 msgstr "(sections: {sectionNames})"
 
@@ -50,7 +54,7 @@ msgstr "{create} new, {update} to update, {skip} skipped."
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} is not a supported file type. Supported file types are: {extensions}."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:203
+#: src/features/products/components/import-structure/structure-preview-step.tsx:222
 msgid "{handle} (collection)"
 msgstr "{handle} (collection)"
 
@@ -70,11 +74,11 @@ msgstr "{name} was dropped."
 msgid "{name} will stop being sold to, and its storefront will no longer resolve."
 msgstr "{name} will stop being sold to, and its storefront will no longer resolve."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:176
+#: src/features/products/components/import-structure/structure-preview-step.tsx:178
 msgid "{name}: {key} by {groupKey}"
 msgstr "{name}: {key} by {groupKey}"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:180
+#: src/features/products/components/import-structure/structure-preview-step.tsx:182
 msgid "{name}: option {option}"
 msgstr "{name}: option {option}"
 
@@ -1317,7 +1321,7 @@ msgstr "Editable data grid"
 msgid "Email"
 msgstr "Email"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:187
+#: src/features/products/components/import-structure/structure-preview-step.tsx:189
 msgid "Empty"
 msgstr "Empty"
 

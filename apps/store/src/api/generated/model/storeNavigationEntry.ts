@@ -5,13 +5,17 @@
  * Storefront API for shoppers: product browsing, carts, checkout and orders.
  * OpenAPI spec version: 0.1.0
  */
-import type { StoreNavigationEntryType } from './storeNavigationEntryType.ts';
+import type { StoreNavigationFilter } from './storeNavigationFilter.ts';
 import type { StoreNavigationLink } from './storeNavigationLink.ts';
 import type { StoreNavigationSection } from './storeNavigationSection.ts';
 
-export interface StoreNavigationEntry {
-  type: StoreNavigationEntryType;
+export type StoreNavigationEntry = {
+  type: 'category' | 'collection';
   handle: string;
   sections: StoreNavigationSection[];
   footer: StoreNavigationLink[];
-}
+} | {
+  type: 'products';
+  label: string;
+  filters: StoreNavigationFilter[];
+};

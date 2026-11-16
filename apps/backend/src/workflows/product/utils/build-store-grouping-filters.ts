@@ -1,5 +1,5 @@
 import type { FilterableProductProps } from '@core/types/product/common.js'
-import { OPTION_FILTER_PREFIX } from '@core/utils/product-filter-key.js'
+import { OPTION_FILTER_PREFIX, SALE_FILTER_KEY, SALE_FILTER_VALUE } from '@core/utils/product-filter-key.js'
 
 type StoreGroupingParams = {
   category?: string
@@ -12,7 +12,8 @@ type StoreGroupingParams = {
  * The store's grouping params as product filters. Mapped by hand rather than spread: `category`,
  * `collection`, `tag` and `filter` are no columns, so a spread would reach the query builder as keys
  * it silently drops. A store `category` lists its Visible descendants too, and a hidden one matches
- * nothing.
+ * nothing. The sale filter reads price, which no product filter can, so it is left to
+ * {@link selectsSale} and the listing.
  */
 export function buildStoreGroupingFilters({
   category,
@@ -28,13 +29,20 @@ export function buildStoreGroupingFilters({
   }
 }
 
-/** The `option.<title>` keys are options, by title; every other key is a metafield's. */
+/** Whether the `filter` param holds `price.sale:on`, the built-in filter for products on sale. */
+export function selectsSale(filter: string | string[] | undefined): boolean {
+  if (filter === undefined) return false
+  return (groupSelectionsByKey(filter)[SALE_FILTER_KEY] ?? []).includes(SALE_FILTER_VALUE)
+}
+
+/** The `option.<title>` keys are options, by title; every other key but the sale filter's is a metafield's. */
 function splitSelections(
   selections: Record<string, string[]>,
 ): Pick<FilterableProductProps, 'metafields' | 'optionValues'> {
   const metafields: Record<string, string[]> = {}
   const optionValues: Record<string, string[]> = {}
   for (const [key, values] of Object.entries(selections)) {
+    if (key === SALE_FILTER_KEY) continue
     if (key.startsWith(OPTION_FILTER_PREFIX)) optionValues[key.slice(OPTION_FILTER_PREFIX.length)] = values
     else metafields[key] = values
   }

@@ -297,7 +297,7 @@ menu:
     // Changing the Type moves the product out of Tenis, and out of its brand's column.
     await service.update.product(api.container, dunk.id, { typeId: botas.id })
     const [entry] = await navigation()
-    expect(entry?.sections[2]).toEqual(brandColumn('Nike', ['TN']))
+    expect(entry && 'sections' in entry ? entry.sections[2] : null).toEqual(brandColumn('Nike', ['TN']))
   })
   test('serves the popular searches and the most-searched models with how many match and the newest photo', async ({
     expect,
@@ -361,6 +361,30 @@ search:
         },
       ],
     })
+  })
+})
+
+test.describe('Store navigation filter entries', () => {
+  test('serves a top-level entry to the all-products list filtered, in its place among the others, as a filter link is', async ({
+    expect,
+  }) => {
+    await applyStructure(`
+fields:
+  - { name: Género, key: genero }
+categories:
+  - { name: Mujer, handle: mujer, rule: { genero: [mujer] } }
+menu:
+  - category: mujer
+  - { name: Ofertas, filter: { price.sale: [on] } }
+`)
+
+    const response = await api.get<typeof navigationRoutes.GetOutput>('/store/navigation')
+
+    expect(response.status).toBe(200)
+    expect(response.body.navigation).toEqual([
+      { type: 'category', handle: 'mujer', sections: [], footer: [] },
+      { type: 'products', label: 'Ofertas', filters: [{ key: 'price.sale', value: 'on' }] },
+    ])
   })
 })
 

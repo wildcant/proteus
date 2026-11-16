@@ -76,6 +76,16 @@ msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its s
 msgstr "Variant \"{variantId}\" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first."
 
 #. js-lingui-explicit-id
+#: src/workflows/product/utils/build-store-product-filters.ts:33
+msgid "On sale"
+msgstr "On sale"
+
+#. js-lingui-explicit-id
+#: src/workflows/product/utils/build-store-product-filters.ts:56
+msgid "Sale"
+msgstr "Sale"
+
+#. js-lingui-explicit-id
 #: src/workflows/payment/capture-payment.ts:59
 #: src/workflows/payment/steps/record-order-payment.ts:156
 msgid "Payment \"{id}\" holds no capture recorded under this request."
@@ -712,12 +722,12 @@ msgid "Variant \"{variantId}\" not found"
 msgstr "Variant \"{variantId}\" not found"
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1328
+#: src/modules/product/services/product-module-service.ts:1331
 msgid "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 msgstr "These options do not fit the product's variants: {reasons}. Remove those variants first, or make the change from the admin, which moves them for you."
 
 #. js-lingui-explicit-id
-#: src/modules/product/services/product-module-service.ts:1433
+#: src/modules/product/services/product-module-service.ts:1436
 msgid "No metafield is defined with the key {keys}. Declare it under fields in the structure file."
 msgstr "No metafield is defined with the key {keys}. Declare it under fields in the structure file."
 

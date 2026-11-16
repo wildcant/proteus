@@ -9,10 +9,11 @@ import type {
   ProductMetafieldType,
 } from '../../src/core/types/product/common.js'
 import type {
-  StoreNavigationEntryDTO,
+  StoreNavigationGroupingEntryDTO,
   StoreNavigationLinkDTO,
   StoreNavigationSectionDTO,
 } from '../../src/core/types/store/common.js'
+import { SALE_FILTER_KEY } from '../../src/core/utils/product-filter-key.js'
 import { parseCatalogStructure } from '../../src/modules/product/utils/catalog-structure/parse-catalog-structure.js'
 import { matchesGroupingRule } from '../../src/modules/product/utils/grouping-rule.js'
 import { parseShopifyCsv } from '../../src/modules/product/utils/shopify-csv/parse-shopify-csv.js'
@@ -71,6 +72,9 @@ type ShopifyCollection = {
  * One menu item, linked to the collection `collectionHandle`, or — when `url` is set — to that URL,
  * a collection page narrowed by Search & Discovery filter params.
  */
+/** Shopify's built-in collection of every product, which the all-products list is there. */
+const ALL_PRODUCTS_HANDLE = 'all'
+
 type ShopifyMenuItem = { title: string; collectionHandle: string; url: string | null; children: ShopifyMenuItem[] }
 
 type ShopifyStructureManifest = {
@@ -156,7 +160,7 @@ export function buildStructureManifest(
     url,
     children: [],
   })
-  const linkItem = (entry: StoreNavigationEntryDTO, link: StoreNavigationLinkDTO): ShopifyMenuItem => {
+  const linkItem = (entry: StoreNavigationGroupingEntryDTO, link: StoreNavigationLinkDTO): ShopifyMenuItem => {
     if (link.type === 'filter') return leaf(link.name, entry.handle, fieldUrl(entry.handle, link.filter))
     // The parser guarantees the handle names a grouping the file declares.
     const name =
@@ -164,7 +168,10 @@ export function buildStructureManifest(
     return leaf(link.name ?? name ?? link.handle, link.handle)
   }
   /** The CSV products in `entry`'s grouping. A manual one's members are picked in the admin, so the CSV cannot say. */
-  const productsOf = (entry: StoreNavigationEntryDTO, section: StoreNavigationSectionDTO): ManifestProduct[] => {
+  const productsOf = (
+    entry: StoreNavigationGroupingEntryDTO,
+    section: StoreNavigationSectionDTO,
+  ): ManifestProduct[] => {
     if (!products) {
       throw new Error(
         `The menu entry "${entry.handle}" lists values in "${section.name}": pass the product CSV to read them from.`,
@@ -178,7 +185,10 @@ export function buildStructureManifest(
   }
 
   /** The children a section adds under its entry: one titled item holding its links, or one per group. */
-  const sectionItems = (entry: StoreNavigationEntryDTO, section: StoreNavigationSectionDTO): ShopifyMenuItem[] => {
+  const sectionItems = (
+    entry: StoreNavigationGroupingEntryDTO,
+    section: StoreNavigationSectionDTO,
+  ): ShopifyMenuItem[] => {
     const titled = (children: ShopifyMenuItem[]) => [
       { title: section.name, collectionHandle: entry.handle, url: null, children },
     ]
@@ -229,6 +239,12 @@ export function buildStructureManifest(
 
   // The parser guarantees every menu entry names a handle the file declares.
   const menu = structure.menu.flatMap((entry): ShopifyMenuItem[] => {
+    // Shopify's list filters by field and option but not by markdown, so a sale entry has no URL there:
+    // a Shopify store links its own sale collection.
+    if (entry.type === 'products') {
+      if (SALE_FILTER_KEY in entry.filter) return []
+      return [leaf(entry.name, ALL_PRODUCTS_HANDLE, fieldUrl(ALL_PRODUCTS_HANDLE, entry.filter))]
+    }
     const title =
       entry.type === 'category' ? categories.get(entry.handle)?.name : collectionsByHandle.get(entry.handle)?.name
     if (title === undefined) return []

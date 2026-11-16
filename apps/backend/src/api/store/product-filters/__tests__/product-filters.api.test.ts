@@ -706,3 +706,79 @@ test.describe('Option buckets', () => {
     expect(await listed('Blue')).toEqual([idOf.Navy])
   })
 })
+
+test.describe('Sale filter', () => {
+  test('the structure file offers «On sale» while something is, counted under every other choice, and it narrows the other filters', async ({
+    expect,
+    service,
+    dto,
+  }) => {
+    await applyStructure(`
+fields:
+  - { name: Género, key: genero, filterable: true }
+filters: [genero, price.sale]
+`)
+    const product = async (genero: string, amount: string, compareAt: string | null) => {
+      const { product } = await service.create.product(api.container, {
+        status: 'published',
+        metafields: { genero: [genero] },
+      })
+      const [variant] = await service.create.productVariants(api.container, product.id)
+      if (!variant) throw new Error('Expected a variant')
+      await service.create.variantPrices(api.container, [variant.id], {
+        prices: [
+          dto.generate.createPrice({
+            amount: new BigNumber(amount),
+            compareAtAmount: compareAt === null ? null : new BigNumber(compareAt),
+          }),
+        ],
+      })
+      await service.create.variantStock(api.container, { variantId: variant.id, level: { stockedQuantity: 2 } })
+    }
+    await product('men', '40', '60')
+    await product('women', '50', '80')
+    await product('women', '90', null)
+
+    const facets = async (query = '') => {
+      const response = await api.get<typeof productFilterRoutes.GetOutput>(`/store/product-filters${query}`)
+      expect(response.status).toBe(200)
+      return response.body.filters.map((filter) => [
+        filter.key,
+        filter.name,
+        filter.values.map(({ value, label, count }) => [value, label, count]),
+      ])
+    }
+
+    expect(await facets()).toEqual([
+      [
+        'genero',
+        'Género',
+        [
+          ['men', 'Men', 1],
+          ['women', 'Women', 2],
+        ],
+      ],
+      ['price.sale', 'Sale', [['on', 'On sale', 2]]],
+    ])
+    // The sale count follows the other choices, and the sale choice narrows theirs.
+    expect(await facets('?filter=genero:women')).toContainEqual(['price.sale', 'Sale', [['on', 'On sale', 1]]])
+    expect(await facets('?filter=price.sale:on')).toEqual([
+      [
+        'genero',
+        'Género',
+        [
+          ['men', 'Men', 1],
+          ['women', 'Women', 1],
+        ],
+      ],
+      ['price.sale', 'Sale', [['on', 'On sale', 2]]],
+    ])
+    // Nothing on sale under the choices: the filter is not offered, rather than offered at 0.
+    expect((await facets('?filter=genero:women&minPrice=60')).map(([key]) => key)).toEqual(['genero'])
+
+    const list = await api.get<typeof productRoutes.GetOutput>(
+      '/store/products?filter=price.sale:on&filter=genero:women',
+    )
+    expect(list.body.count).toBe(1)
+  })
+})

@@ -5,13 +5,16 @@
  * Back-office API for staff: catalog, orders, fulfillment, payments and users.
  * OpenAPI spec version: 0.1.0
  */
-import type { AdminNavigationEntryType } from './adminNavigationEntryType.ts';
 import type { AdminNavigationLink } from './adminNavigationLink.ts';
 import type { AdminNavigationSection } from './adminNavigationSection.ts';
 
-export interface AdminNavigationEntry {
-  type: AdminNavigationEntryType;
+export type AdminNavigationEntry = {
+  type: 'category' | 'collection';
   handle: string;
   sections: AdminNavigationSection[];
   footer?: AdminNavigationLink[];
-}
+} | {
+  type: 'products';
+  name: string;
+  filter: {[key: string]: string[]};
+};

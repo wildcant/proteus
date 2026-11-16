@@ -166,10 +166,12 @@ export function StructurePreviewStep({ fileId, plan }: PreviewedCatalogStructure
   )
 }
 
+type GroupingEntry = Exclude<AdminNavigationEntry, { type: 'products' }>
+
 function MenuEntries({ entries }: { entries: AdminNavigationEntry[] }) {
   const { t } = useLingui()
   /** A section by name, with what it lists when that is more than its name says: "Marcas: modelo by marca". */
-  const describe = (section: AdminNavigationEntry['sections'][number]) => {
+  const describe = (section: GroupingEntry['sections'][number]) => {
     const { name } = section
     if (section.type === 'groups') {
       const { key, groupKey } = section
@@ -190,16 +192,33 @@ function MenuEntries({ entries }: { entries: AdminNavigationEntry[] }) {
   }
   return (
     <ol className="flex flex-wrap gap-x-2">
-      {entries.map(({ type, handle, sections, footer = [] }, index) => {
+      {entries.map((entry, index) => {
+        const separator = index > 0 && (
+          <span className="pr-2 text-muted-foreground" aria-hidden="true">
+            ·
+          </span>
+        )
+        if (entry.type === 'products') {
+          const { name, filter } = entry
+          const filterNames = Object.entries(filter)
+            .map(([key, values]) => `${key}: ${values.join(', ')}`)
+            .join('; ')
+          return (
+            <li key={`products:${name}`}>
+              {separator}
+              <span>{name}</span>
+              <span className="pl-1 text-muted-foreground">
+                <Trans>(filter: {filterNames})</Trans>
+              </span>
+            </li>
+          )
+        }
+        const { type, handle, sections, footer = [] } = entry
         const sectionNames = sections.map(describe).join(', ')
         const footerNames = footer.map((link) => link.name ?? ('handle' in link ? link.handle : '')).join(', ')
         return (
           <li key={`${type}:${handle}`}>
-            {index > 0 && (
-              <span className="pr-2 text-muted-foreground" aria-hidden="true">
-                ·
-              </span>
-            )}
+            {separator}
             {type === 'collection' ? <Trans>{handle} (collection)</Trans> : <span>{handle}</span>}
             {/* The panel's columns, so a change to a section shows up as a change to the menu. */}
             {sections.length > 0 && (

@@ -9,9 +9,11 @@ import type { StoreCalculatedPrice } from './storeCalculatedPrice.ts';
 import type { StoreProduct } from './storeProduct.ts';
 import type { StoreProductListingAvailability } from './storeProductListingAvailability.ts';
 import type { StoreProductListingGroups } from './storeProductListingGroups.ts';
+import type { StoreSalePrice } from './storeSalePrice.ts';
 
 export type StoreProductListItem = StoreProduct & ({
   startingPrice?: StoreCalculatedPrice;
+  salePrice: StoreSalePrice | null;
   soldOut: boolean;
   badges: string[];
   groups: StoreProductListingGroups | null;

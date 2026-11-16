@@ -3,7 +3,7 @@ import { Modules } from '@core/utils/modules-definition.js'
 import type { HttpRequest, HttpResult } from '@framework/http/ports.js'
 import { StoreNavigationResponse, StorePricingContextParams } from '@proteus/http-schemas/store'
 import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
-import { buildStoreNavigation } from '@workflows/store/utils/build-store-navigation.js'
+import { buildStoreNavigation, type ReadNavigationEntryDTO } from '@workflows/store/utils/build-store-navigation.js'
 import { setPricingContext } from '../middlewares.js'
 
 export const GetInput = { contextQuery: StorePricingContextParams }
@@ -66,32 +66,35 @@ export const GET = async (
   )
 
   const readNavigation = Promise.all(
-    navigation.map(async (entry) => ({
-      ...entry,
-      sections: await Promise.all(
-        entry.sections.map(async (section) => {
-          if (section.type === 'subcategories' || section.type === 'links') return section
-          const scope = {
-            ...buildStoreGroupingFilters(
-              entry.type === 'category' ? { category: entry.handle } : { collection: entry.handle },
-            ),
-            status: 'published' as const,
-            sellableProductIds,
-          }
-          if (section.type === 'groups') {
-            return {
-              ...section,
-              read: await productService.listProductFieldGroups(section.key, section.groupKey, scope),
+    navigation.map(async (entry): Promise<ReadNavigationEntryDTO> => {
+      if (entry.type === 'products') return entry
+      return {
+        ...entry,
+        sections: await Promise.all(
+          entry.sections.map(async (section) => {
+            if (section.type === 'subcategories' || section.type === 'links') return section
+            const scope = {
+              ...buildStoreGroupingFilters(
+                entry.type === 'category' ? { category: entry.handle } : { collection: entry.handle },
+              ),
+              status: 'published' as const,
+              sellableProductIds,
             }
-          }
-          const values =
-            section.type === 'option'
-              ? await productService.listOfferedOptionValues(section.option, scope)
-              : await productService.listProductFieldValues(section.key, scope)
-          return { ...section, values }
-        }),
-      ),
-    })),
+            if (section.type === 'groups') {
+              return {
+                ...section,
+                read: await productService.listProductFieldGroups(section.key, section.groupKey, scope),
+              }
+            }
+            const values =
+              section.type === 'option'
+                ? await productService.listOfferedOptionValues(section.option, scope)
+                : await productService.listProductFieldValues(section.key, scope)
+            return { ...section, values }
+          }),
+        ),
+      }
+    }),
   )
 
   const [read, trending] = await Promise.all([readNavigation, readTrending])

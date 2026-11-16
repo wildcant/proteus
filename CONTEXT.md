@@ -66,7 +66,12 @@ _Avoid_: original price, was price, regular price, MSRP, list price
 **Markdown**:
 A variant is marked down in a currency when its Compare-at Price there is above its price. A
 Compare-at Price at or below the price is kept but makes no Markdown.
-_Avoid_: on sale, discount (discounts belong to promotions)
+_Avoid_: on sale (that is the product's, below), discount (discounts belong to promotions)
+
+**On Sale**:
+A product is On Sale in a market when a variant a shopper can buy now has a Markdown in the market's
+currency. Read from the prices when asked, never stored, so it holds in one market and not another.
+_Avoid_: sale collection, discounted product
 
 ### Product grouping
 

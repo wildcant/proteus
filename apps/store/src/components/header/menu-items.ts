@@ -1,6 +1,6 @@
 import type {
   StoreNavigationEntry,
-  StoreNavigationEntryType,
+  StoreNavigationFilter,
   StoreNavigationLink,
   StoreNavigationSection,
   StoreProductCategoryTreeNode,
@@ -9,9 +9,12 @@ import type {
 
 /**
  * Where a menu link goes: a Category's page or a Collection's, by handle, narrowed by `filter` — the
- * list's own `filter` param, `<key>:<value>` — when the link carries field values.
+ * list's own `filter` param, `<key>:<value>` — when the link carries field values; or the all-products
+ * list narrowed by `filter`.
  */
-export type MenuTarget = { type: StoreNavigationEntryType; handle: string; filter?: string[] }
+export type MenuTarget =
+  | { type: StoreNavigationLink['type']; handle: string; filter?: string[] }
+  | { type: 'products'; filter: string[] }
 
 type MenuChild = { key: string; label: string; target: MenuTarget }
 
@@ -55,6 +58,19 @@ export function resolveMenuItems({ categories, navigation, collections }: MenuSo
   if (navigation.length === 0) return categories.map((node) => categoryItem(node, [], []))
 
   return navigation.flatMap((entry): MenuItem[] => {
+    if (entry.type === 'products') {
+      const filter = filterParam(entry.filters)
+      return [
+        {
+          key: `products:${entry.label}:${filter.join('&')}`,
+          label: entry.label,
+          target: { type: 'products', filter },
+          children: [],
+          sections: [],
+          footer: [],
+        },
+      ]
+    }
     const sections = entry.sections.map((section, index): MenuSection => {
       const key = `${entry.type}:${entry.handle}:${index}`
       const { viewAll } = section
@@ -103,9 +119,12 @@ const categoryItem = (node: StoreProductCategoryTreeNode, sections: MenuSection[
 
 /** A link's list, by handle, with its field values as the list's own `filter` param. */
 const targetOf = ({ type, handle, filters }: Omit<StoreNavigationLink, 'label'>): MenuTarget => {
-  const filter = filters.map(({ key, value }) => `${key}:${value}`)
+  const filter = filterParam(filters)
   return filter.length > 0 ? { type, handle, filter } : { type, handle }
 }
+
+/** A link's field values as the list's own `filter` param, `<key>:<value>` each. */
+const filterParam = (filters: StoreNavigationFilter[]) => filters.map(({ key, value }) => `${key}:${value}`)
 
 const sectionLink = (link: StoreNavigationLink): MenuChild => {
   const target = targetOf(link)

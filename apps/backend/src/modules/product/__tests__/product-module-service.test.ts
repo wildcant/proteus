@@ -459,6 +459,20 @@ test.describe('ProductModuleService variant images', () => {
     expect(await service.listProductVariantImages({ variantId: variant.id })).toMatchObject([{ imageId: image.id }])
   })
 
+  test('resolveVariantThumbnail prefers the image assigned to the variant over the product’s cover', async ({
+    expect,
+    dto,
+  }) => {
+    const { otherImage, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
+    // With no image of its own the variant shows the product's cover, the first image.
+    expect(await service.resolveVariantThumbnail(variant.id)).toBe('https://cdn.test/a.png')
+
+    await service.addImageToVariant([{ imageId: otherImage.id, variantId: variant.id }])
+
+    // Catches a cart line showing the product's cover when its colourway has a photo of its own.
+    expect(await service.resolveVariantThumbnail(variant.id)).toBe('https://cdn.test/b.png')
+  })
+
   test('a removed pair can be linked again', async ({ expect, dto }) => {
     const { image, variant } = await createProductWithVariantAndImage(dto.generate.createProduct())
     await service.addImageToVariant([{ imageId: image.id, variantId: variant.id }])
