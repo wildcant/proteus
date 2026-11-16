@@ -313,7 +313,7 @@ test.describe('POST /store/carts/:id/line-items', () => {
   test('prices the line from the catalogue, whatever the payload says', async ({ service, expect }) => {
     const cart = await service.create.cart(api.container, { currencyCode: 'usd' })
     const { variant } = await service.create.sellableVariant(api.container, {
-      price: { amount: new BigNumber('80'), currencyCode: 'usd' },
+      price: { amount: new BigNumber('80'), currencyCode: 'usd', compareAtAmount: new BigNumber('100') },
       inventory: { level: { stockedQuantity: 10 } },
     })
 
@@ -327,6 +327,8 @@ test.describe('POST /store/carts/:id/line-items', () => {
     expect(status).toBe(201)
     expect(body.lineItem.unitPrice).toBe('80')
     expect(body.lineItem.lineTotal).toBe('80')
+    // Snapshotted with the price, so the line keeps showing the Markdown it was added under.
+    expect(body.lineItem.compareAtUnitPrice).toBe('100')
   })
 
   test('merges a repeat add into the line the cart already holds', async ({ service, expect }) => {

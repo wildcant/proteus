@@ -45,7 +45,11 @@ export const createProductVariantsWorkflow = createWorkflow<CreateProductVariant
 
         const created = await pricingService.createPriceSets(
           variantsWithPrices.map((entry) => ({
-            prices: entry.prices?.map((price) => ({ currencyCode: price.currencyCode, amount: price.amount })),
+            prices: entry.prices?.map((price) => ({
+              currencyCode: price.currencyCode,
+              amount: price.amount,
+              compareAtAmount: price.compareAtAmount,
+            })),
           })),
         )
 

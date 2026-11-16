@@ -1,5 +1,5 @@
 {
-  "id": "851f217a-69d3-429a-9487-ae2c9db52692",
+  "id": "5296c4d3-ffce-4f00-aa77-b745d5b53153",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -66,6 +66,12 @@
           "type": "numeric",
           "primaryKey": false,
           "notNull": true
+        },
+        "compare_at_amount": {
+          "name": "compare_at_amount",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
         },
         "price_set_id": {
           "name": "price_set_id",

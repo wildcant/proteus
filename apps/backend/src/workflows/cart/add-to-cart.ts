@@ -92,7 +92,7 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
      * The lines started and the lines raised are rows of one table in one module, so the cart module
      * writes them in a single transaction and the database puts a failure of this step back. The
      * compensation is for the shipping refresh after it: the started lines are removed and the raised
-     * ones return to the quantity they held.
+     * ones return to the quantity and price they held.
      */
     const written = await ctx.step(
       'write-line-items',
@@ -106,14 +106,17 @@ export const addToCartWorkflow = createWorkflow<AddToCartInput, CartLineItemDTO[
         return {
           lineItems,
           createdIds: lineItems.filter((item) => !mergedIdSet.has(item.id)).map((item) => item.id),
-          previousQuantities: previous.map((item) => ({ id: item.id, data: { quantity: item.quantity } })),
+          previousLines: previous.map((item) => ({
+            id: item.id,
+            data: { quantity: item.quantity, unitPrice: item.unitPrice, compareAtUnitPrice: item.compareAtUnitPrice },
+          })),
         }
       },
-      async ({ createdIds, previousQuantities }, { container }) => {
+      async ({ createdIds, previousLines }, { container }) => {
         const cartService = container.resolve(Modules.CART)
         if (createdIds.length > 0) await cartService.softDeleteLineItems(createdIds)
-        if (previousQuantities.length > 0) {
-          await cartService.applyLineItemPlan(cart.id, { create: [], merge: previousQuantities })
+        if (previousLines.length > 0) {
+          await cartService.applyLineItemPlan(cart.id, { create: [], merge: previousLines })
         }
       },
     )

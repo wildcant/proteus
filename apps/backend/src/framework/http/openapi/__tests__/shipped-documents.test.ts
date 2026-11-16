@@ -169,9 +169,12 @@ test.describe('shipped OpenAPI documents', () => {
     })
   }
 
-  test('store: a cart line with no compare-at price says its compareAtUnitPrice is null', ({ expect }) => {
+  test('store: every compare-at a shopper can be sent says it may be null', ({ expect }) => {
     // `bigNumberToString.nullable()` is documented as a plain string; the client would then promise a
-    // string the API sends as null for every line with no compare-at price.
-    expect(admitsNull(componentsOf(documents.store).StoreCartLineItem?.properties?.compareAtUnitPrice)).toBe(true)
+    // string the API sends as null for every price and line that is not marked down.
+    const components = componentsOf(documents.store)
+    expect(admitsNull(components.StoreCartLineItem?.properties?.compareAtUnitPrice)).toBe(true)
+    expect(admitsNull(components.StoreOrderLineItem?.properties?.compareAtUnitPrice)).toBe(true)
+    expect(admitsNull(components.StoreCalculatedPrice?.properties?.compareAtAmount)).toBe(true)
   })
 })

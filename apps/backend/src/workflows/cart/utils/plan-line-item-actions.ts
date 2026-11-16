@@ -79,7 +79,12 @@ export function planLineItemActions(existing: MergeableLineItem[], incoming: Cre
     const entry: LineItemMerge = {
       id: row.id,
       variantId,
-      data: { quantity: row.quantity + item.quantity, unitPrice: item.unitPrice },
+      data: {
+        quantity: row.quantity + item.quantity,
+        unitPrice: item.unitPrice,
+        // Refreshed with the price it was struck against, so the two never come from different moments.
+        compareAtUnitPrice: item.compareAtUnitPrice ?? null,
+      },
     }
     plannedMergeByVariantId.set(variantId, entry)
     merge.push(entry)

@@ -3,6 +3,7 @@ import type { BigNumber } from '../../bignumber.js'
 export type CreatePriceDTO = {
   currencyCode: string
   amount: BigNumber
+  compareAtAmount?: BigNumber | null
 }
 
 export type CreatePriceSetDTO = {
@@ -11,6 +12,7 @@ export type CreatePriceSetDTO = {
 
 export type UpdatePriceDTO = {
   amount?: BigNumber
+  compareAtAmount?: BigNumber | null
   currencyCode?: string
 }
 

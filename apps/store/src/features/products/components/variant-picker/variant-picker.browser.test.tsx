@@ -40,7 +40,7 @@ function variant(id: string, valueId: string): StoreProductVariant {
     length: null,
     height: null,
     width: null,
-    calculatedPrice: { id: 'price_1', currencyCode: 'usd', calculatedAmount: '46.00' },
+    calculatedPrice: { id: 'price_1', currencyCode: 'usd', calculatedAmount: '46.00', compareAtAmount: null },
   }
 }
 

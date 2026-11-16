@@ -61,7 +61,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
         return { prevPrices }
       },
       // The recorded list is the price set's whole prior contents, in every currency it quoted —
-      // so replaying it puts the amounts back and drops whatever the edit added. An empty one is
+      // so replaying it puts the amounts and compare-ats back and drops whatever the edit added. An empty one is
       // not a no-op: it means the set had no prices, and the edit's must go.
       async ({ prevPrices }, { container }) => {
         const pricingService = container.resolve(Modules.PRICING)
@@ -72,6 +72,7 @@ export const updateVariantPricesWorkflow = createWorkflow<UpdateVariantPricesInp
               id: price.id,
               currencyCode: price.currencyCode,
               amount: price.amount,
+              compareAtAmount: price.compareAtAmount,
             })),
           },
         ])

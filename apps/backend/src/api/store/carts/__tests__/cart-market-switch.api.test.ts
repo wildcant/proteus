@@ -52,7 +52,7 @@ type Market = Awaited<ReturnType<typeof createMarket>>
 const cartInMarket = async (
   { factories, service }: Pick<Fixtures, 'factories' | 'service'>,
   market: Market,
-  options: { prices?: Array<{ amount: string; currencyCode: string }> } = {},
+  options: { prices?: Array<{ amount: string; currencyCode: string; compareAtAmount?: string }> } = {},
 ) => {
   const product = await factories.create.productWithPricing({
     prices: options.prices ?? [
@@ -129,9 +129,18 @@ test.describe('POST /store/carts/:id — market switch', () => {
 
   test('reprices back into the market it came from', async ({ factories, service, expect }) => {
     const markets = await createMarkets(factories)
-    const { cart } = await cartInMarket({ factories, service }, markets.unitedStates)
+    // Marked down in pesos only, so each switch has to rewrite the line's compare-at with its price.
+    const { cart } = await cartInMarket({ factories, service }, markets.unitedStates, {
+      prices: [
+        { amount: USD_PRICE, currencyCode: 'usd' },
+        { amount: COP_PRICE, currencyCode: 'cop', compareAtAmount: '400000' },
+      ],
+    })
 
     await switchMarket(cart.id, markets.colombia)
+    const inColombia = await readCart(cart.id)
+    expect(inColombia.body.cart.items.map((item) => item.compareAtUnitPrice)).toEqual(['400000'])
+
     const { status } = await switchMarket(cart.id, markets.unitedStates)
 
     expect(status).toBe(200)
@@ -140,6 +149,7 @@ test.describe('POST /store/carts/:id — market switch', () => {
     // on the cart and the price on every line are written by the same step.
     expect(detail.body.cart.currencyCode).toBe('usd')
     expect(detail.body.cart.items.map((item) => item.unitPrice)).toEqual([USD_PRICE])
+    expect(detail.body.cart.items.map((item) => item.compareAtUnitPrice)).toEqual([null])
   })
 
   test('drops a shipping method the new market does not offer', async ({ factories, service, expect }) => {

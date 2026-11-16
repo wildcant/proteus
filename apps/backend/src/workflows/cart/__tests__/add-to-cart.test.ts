@@ -156,12 +156,19 @@ test.describe('addToCartWorkflow', () => {
   test('puts the lines back when the shipping refresh after them fails', async ({ service, expect }) => {
     const cart = await usdCart(service)
     const { variant } = await service.create.sellableVariant(container, {
+      price: { amount: new BigNumber('30'), compareAtAmount: new BigNumber('40'), currencyCode: 'usd' },
       inventory: { level: { stockedQuantity: 10 } },
     })
     const { variant: other } = await service.create.sellableVariant(container, {
       inventory: { level: { stockedQuantity: 10 } },
     })
-    const [line] = await addToCartWorkflow.run({ cartId: cart.id, items: [{ variantId: variant.id, quantity: 2 }] })
+    // Struck before the catalogue moved, so the merge rewrites its price as well as its quantity.
+    const line = await service.create.lineItem(container, cart.id, {
+      variantId: variant.id,
+      quantity: 2,
+      unitPrice: new BigNumber('20'),
+      compareAtUnitPrice: new BigNumber('25'),
+    })
     await service.create.shippingMethod(container, cart.id)
     const refresh = vi.spyOn(container.resolve(Modules.CART), 'applyShippingMethodRefresh')
 
@@ -176,16 +183,21 @@ test.describe('addToCartWorkflow', () => {
       }),
     ).rejects.toThrow('Shipping refresh failed')
 
-    // The raised line is back at two and the started one is gone.
+    // The raised line is back at two, at the price it was struck at, and the started one is gone.
     const afterAdd = await service.read.cartLineItems(container, { cartId: cart.id })
-    expect(afterAdd.map(({ variantId, quantity }) => ({ variantId, quantity }))).toEqual([
-      { variantId: variant.id, quantity: 2 },
-    ])
+    expect(
+      afterAdd.map(({ variantId, quantity, unitPrice, compareAtUnitPrice }) => ({
+        variantId,
+        quantity,
+        unitPrice: unitPrice.toString(),
+        compareAtUnitPrice: compareAtUnitPrice?.toString() ?? null,
+      })),
+    ).toEqual([{ variantId: variant.id, quantity: 2, unitPrice: '20', compareAtUnitPrice: '25' }])
 
     refresh.mockRejectedValueOnce(new Error('Shipping refresh failed'))
-    await expect(
-      updateLineItemWorkflow.run({ cartId: cart.id, lineItemId: line?.id ?? '', quantity: 7 }),
-    ).rejects.toThrow('Shipping refresh failed')
+    await expect(updateLineItemWorkflow.run({ cartId: cart.id, lineItemId: line.id, quantity: 7 })).rejects.toThrow(
+      'Shipping refresh failed',
+    )
 
     const afterUpdate = await service.read.cartLineItems(container, { cartId: cart.id })
     expect(afterUpdate.map(({ quantity }) => quantity)).toEqual([2])

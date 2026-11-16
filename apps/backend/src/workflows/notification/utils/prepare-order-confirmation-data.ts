@@ -55,6 +55,12 @@ function buildItemRow(item: EnrichedOrderLineItemDTO, currencyCode: string): str
     ? `<p style="margin:2px 0 0;padding:0;font-size:13px;line-height:1.4;color:#8898aa">${escapeHtml(item.variantTitle)}</p>`
     : ''
 
+  // The whole line's old price, so a Markdown reads at quantity 1 as it does at 3. The line
+  // snapshot only holds a compare-at that marked the variant down, so null is the only check.
+  const compareAtTotal = item.compareAtUnitPrice
+    ? `<p style="margin:0;padding:0;font-size:13px;line-height:1.4;color:#8898aa"><s>${formatMoney(item.compareAtUnitPrice.times(item.quantity), currencyCode)}</s></p>`
+    : ''
+
   return [
     '<tr>',
     `<td width="68" valign="top" style="width:68px;padding:12px 12px 12px 0">${thumbnail}</td>`,
@@ -64,6 +70,7 @@ function buildItemRow(item: EnrichedOrderLineItemDTO, currencyCode: string): str
     `<p style="margin:2px 0 0;padding:0;font-size:13px;line-height:1.4;color:#8898aa">Qty ${item.quantity} &times; ${formatMoney(item.unitPrice, currencyCode)}</p>`,
     '</td>',
     `<td width="90" align="right" valign="top" style="width:90px;padding:12px 0;white-space:nowrap">`,
+    compareAtTotal,
     `<p style="margin:0;padding:0;font-size:15px;line-height:1.4;color:#1a1a1a">${formatMoney(item.lineTotal, currencyCode)}</p>`,
     '</td>',
     '</tr>',

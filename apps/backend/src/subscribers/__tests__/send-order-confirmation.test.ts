@@ -1,6 +1,8 @@
+import { BigNumber } from '@core/bignumber.js'
 import { buildDelivery } from '@core/event-bus/events.js'
 import { defineSubscriber } from '@core/event-bus/types.js'
 import type { NotificationDTO } from '@core/types/notification/common.js'
+import type { CreateOrderDTO } from '@core/types/order/mutations.js'
 import { Modules } from '@core/utils/modules-definition.js'
 import type { TestContainer } from '@tests/setup/create-container.js'
 import { type Fixtures, test } from '@tests/setup/test-extend.js'
@@ -44,13 +46,14 @@ function deliver(orderId: string): Promise<void> {
  * .order` does: that runs the checkout workflow, which now publishes `order.placed` itself, so
  * every assertion here would be about a confirmation this test did not send.
  */
-async function orderAwaitingItsConfirmation(dto: Fixtures['dto']) {
+async function orderAwaitingItsConfirmation(dto: Fixtures['dto'], overrides?: Partial<CreateOrderDTO>) {
   const orderService = container.resolve(Modules.ORDER)
 
   const order = await orderService.createOrder(
     dto.generate.createOrder({
       email: 'shopper@example.com',
       items: [dto.generate.createOrderLineItem()],
+      ...overrides,
       shippingMethods: [dto.generate.createOrderShippingMethod()],
       shippingAddress: dto.generate.createOrderAddress(),
     }),
@@ -72,11 +75,24 @@ function refusedByProvider(notification: NotificationDTO): NotificationDTO {
 
 test.describe('the order confirmation subscriber', () => {
   test('builds the confirmation from the order the event names', async ({ dto, service, expect }) => {
-    const order = await orderAwaitingItsConfirmation(dto)
+    // One marked-down line and one at its regular price: only the first strikes an old price, and
+    // it strikes the whole line's, the compare-at times the quantity.
+    const order = await orderAwaitingItsConfirmation(dto, {
+      currencyCode: 'usd',
+      items: [
+        dto.generate.createOrderLineItem({
+          quantity: 3,
+          unitPrice: new BigNumber('80'),
+          compareAtUnitPrice: new BigNumber('100.5'),
+        }),
+        dto.generate.createOrderLineItem({ compareAtUnitPrice: null }),
+      ],
+    })
 
     await deliver(order.id)
 
-    expect(await service.read.notifications(container)).toMatchObject([
+    const notifications = await service.read.notifications(container)
+    expect(notifications).toMatchObject([
       {
         to: order.email,
         channel: 'email',
@@ -86,6 +102,8 @@ test.describe('the order confirmation subscriber', () => {
         resourceId: order.id,
       },
     ])
+    const itemRows = String(notifications[0]?.data?.itemRows)
+    expect(itemRows.match(/<s>(.*?)<\/s>/g)).toEqual(['<s>$301.50</s>'])
   })
 
   /**

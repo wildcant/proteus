@@ -2018,6 +2018,13 @@
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
           },
+          "compareAtUnitPrice": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
           "lineTotal": {
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
@@ -2032,6 +2039,7 @@
           "thumbnail",
           "quantity",
           "unitPrice",
+          "compareAtUnitPrice",
           "lineTotal"
         ]
       },
@@ -2750,12 +2758,20 @@
           "calculatedAmount": {
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
+          },
+          "compareAtAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
           }
         },
         "required": [
           "id",
           "currencyCode",
-          "calculatedAmount"
+          "calculatedAmount",
+          "compareAtAmount"
         ]
       },
       "StoreProductListingGroups": {

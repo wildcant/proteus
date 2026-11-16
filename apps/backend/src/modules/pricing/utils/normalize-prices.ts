@@ -1,7 +1,12 @@
 import type { BigNumber } from '@core/bignumber.js'
 import type { CreatePriceDTO } from '@core/types/pricing/mutations.js'
 
-export type NormalizedPrice = { currencyCode: string; amount: BigNumber; priceSetId: string }
+export type NormalizedPrice = {
+  currencyCode: string
+  amount: BigNumber
+  compareAtAmount: BigNumber | null
+  priceSetId: string
+}
 
 // TODO(pricing): extend with priceListId, minQuantity, maxQuantity, and rules when those arrive.
 function hashPrice(price: { currencyCode: string; priceSetId: string }): string {
@@ -17,6 +22,7 @@ export function normalizePrices(prices: CreatePriceDTO[], priceSetId: string): N
     const normalized: NormalizedPrice = {
       currencyCode: price.currencyCode.toLowerCase(),
       amount: price.amount,
+      compareAtAmount: price.compareAtAmount ?? null,
       priceSetId,
     }
     map.set(hashPrice(normalized), normalized)

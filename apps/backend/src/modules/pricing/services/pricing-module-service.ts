@@ -114,7 +114,11 @@ export class PricingModuleService implements IPricingModuleService {
       if (toCreate.length > 0) {
         await this.priceRepository.createMany(
           normalizePrices(
-            toCreate.map((price) => ({ currencyCode: price.currencyCode, amount: price.amount })),
+            toCreate.map((price) => ({
+              currencyCode: price.currencyCode,
+              amount: price.amount,
+              compareAtAmount: price.compareAtAmount,
+            })),
             data.id,
           ),
           ctx,
@@ -124,7 +128,14 @@ export class PricingModuleService implements IPricingModuleService {
       await Promise.all(
         toUpdate
           .filter((price): price is typeof price & { id: string } => typeof price.id === 'string')
-          .map((price) => this.priceRepository.update(price.id, { amount: price.amount }, ctx)),
+          // Each entry is the price's whole state, so an omitted compare-at clears the stored one.
+          .map((price) =>
+            this.priceRepository.update(
+              price.id,
+              { amount: price.amount, compareAtAmount: price.compareAtAmount ?? null },
+              ctx,
+            ),
+          ),
       )
 
       if (toDelete.length > 0) {
@@ -141,7 +152,12 @@ export class PricingModuleService implements IPricingModuleService {
   async addPrice(priceSetId: string, price: CreatePriceDTO, context?: Context): Promise<PriceDTO> {
     return this.withTransaction(context, async (ctx) => {
       return this.priceRepository.create(
-        { currencyCode: price.currencyCode.toLowerCase(), amount: price.amount, priceSetId },
+        {
+          currencyCode: price.currencyCode.toLowerCase(),
+          amount: price.amount,
+          compareAtAmount: price.compareAtAmount ?? null,
+          priceSetId,
+        },
         ctx,
       )
     })
@@ -195,6 +211,8 @@ export class PricingModuleService implements IPricingModuleService {
     return prices.map((price) => ({
       id: price.priceSetId,
       calculatedAmount: price.amount,
+      // The Markdown rule lives here so every consumer only has to check for null.
+      compareAtAmount: price.compareAtAmount?.gt(price.amount) ? price.compareAtAmount : null,
       currencyCode: price.currencyCode,
     }))
   }

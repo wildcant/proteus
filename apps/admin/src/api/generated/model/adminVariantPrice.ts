@@ -11,6 +11,11 @@ export interface AdminVariantPrice {
   currencyCode: string;
   /** Numeric string (arbitrary precision) */
   amount: string;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  compareAtAmount: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle } from '@proteus/ui'
 import { formatPrice } from '@proteus/utils'
 import { Link } from '@tanstack/react-router'
 import type { AdminOrderResponseOrder } from '#/api/generated/model'
+import { LineItemTotal } from '#/features/orders/components/line-item-total'
 import { activeLocale } from '#/lib/i18n/locale'
 
 export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder }) {
@@ -49,9 +50,7 @@ export function OrderSummarySection({ order }: { order: AdminOrderResponseOrder 
             {formatPrice(item.unitPrice, currency, activeLocale())}
           </span>
           <span className="shrink-0 text-muted-foreground text-sm">×{item.quantity}</span>
-          <span className="shrink-0 font-medium text-sm tabular-nums">
-            {formatPrice(item.lineTotal, currency, activeLocale())}
-          </span>
+          <LineItemTotal item={item} currency={currency} />
         </div>
       ))}
 

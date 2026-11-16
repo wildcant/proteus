@@ -552,6 +552,44 @@ test.describe('PUT /admin/products/:id/variants/:variantId/prices', () => {
     expect(response.body.variant.prices).toMatchObject([{ currencyCode: 'cop', amount: '12000000' }])
   })
 
+  /**
+   * A sent entry is the whole price for its currency, so leaving its compare-at out clears it — but
+   * a currency the request does not mention keeps its compare-at along with its amount.
+   */
+  test('a compare-at survives edits to other currencies and clears when its own is sent without one', async ({
+    expect,
+    service,
+  }) => {
+    const { product } = await service.create.product(api.container)
+    const created = await api.post<typeof variantRoutes.PostOutput>(`/admin/products/${product.id}/variants`, {
+      optionValues: {},
+      prices: [
+        { currencyCode: 'usd', amount: '2800', compareAtAmount: '3500' },
+        { currencyCode: 'cop', amount: '12000000' },
+      ],
+    })
+    expect(created.status).toBe(201)
+    const variantId = created.body.variant.id
+    const compareAts = (prices: { currencyCode: string; compareAtAmount: string | null }[] | undefined) =>
+      Object.fromEntries((prices ?? []).map((price) => [price.currencyCode, price.compareAtAmount]))
+
+    expect(compareAts(created.body.variant.prices)).toEqual({ usd: '3500', cop: null })
+
+    const pesoEdit = await api.put<typeof variantPricesRoutes.PutOutput>(
+      `/admin/products/${product.id}/variants/${variantId}/prices`,
+      { prices: [{ currencyCode: 'cop', amount: '12000000', compareAtAmount: '15000000' }] },
+    )
+    expect(pesoEdit.status).toBe(200)
+    expect(compareAts(pesoEdit.body.variant.prices)).toEqual({ usd: '3500', cop: '15000000' })
+
+    const dollarEdit = await api.put<typeof variantPricesRoutes.PutOutput>(
+      `/admin/products/${product.id}/variants/${variantId}/prices`,
+      { prices: [{ currencyCode: 'usd', amount: '2800' }] },
+    )
+    expect(dollarEdit.status).toBe(200)
+    expect(compareAts(dollarEdit.body.variant.prices)).toEqual({ usd: null, cop: '15000000' })
+  })
+
   test('a price with no currency code never reaches the workflow', async ({ expect, service }) => {
     const { product } = await service.create.product(api.container)
     const [variant] = await service.create.productVariants(api.container, product.id)

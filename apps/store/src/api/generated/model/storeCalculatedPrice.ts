@@ -11,4 +11,9 @@ export interface StoreCalculatedPrice {
   currencyCode: string;
   /** Numeric string (arbitrary precision) */
   calculatedAmount: string;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  compareAtAmount: string | null;
 }

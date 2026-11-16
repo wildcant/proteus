@@ -11,7 +11,7 @@ const settings: ProductImportSettingsDTO = {
 }
 
 const HEADER =
-  'Title,URL handle,Description,Vendor,Type,Tags,Status,SKU,Option1 name,Option1 value,Option2 name,Option2 value,Price,Price / Colombia,Inventory tracker,Inventory quantity,Continue selling when out of stock,Weight value (grams),Product image URL,Image position,Variant image URL'
+  'Title,URL handle,Description,Vendor,Type,Tags,Status,SKU,Option1 name,Option1 value,Option2 name,Option2 value,Price,Price / Colombia,Inventory tracker,Inventory quantity,Continue selling when out of stock,Weight value (grams),Product image URL,Image position,Variant image URL,Compare-at price,Compare-at price / Colombia'
 
 /** A source that hands the parser the file in small pieces, the way a download stream does. */
 async function* streamOf(text: string, pieceSize = 7): AsyncGenerator<Uint8Array> {
@@ -29,8 +29,8 @@ test.describe('parseShopifyCsv', () => {
   test('groups rows by handle into products with their variants, prices, tags and gallery', async ({ expect }) => {
     const { products, errors, ignoredColumns } = await parse([
       HEADER,
-      'Hoodie,hoodie,"<p>Warm,\nsoft</p>", Nike ,Hoodie,"genero:hombre, coleccion:essentials, cotton, , cotton",Active,HOODIE-S-GREEN,Color,Green,Size,S,90,360000,shopify,100,DENY,400,https://cdn.example.com/b.jpg,2,https://cdn.example.com/a.jpg',
-      ',hoodie,,,,,,HOODIE-M-GREEN,,Green,,M,"90,50",,shopify,5,CONTINUE,400,https://cdn.example.com/a.jpg,1,',
+      'Hoodie,hoodie,"<p>Warm,\nsoft</p>", Nike ,Hoodie,"genero:hombre, coleccion:essentials, cotton, , cotton",Active,HOODIE-S-GREEN,Color,Green,Size,S,90,360000,shopify,100,DENY,400,https://cdn.example.com/b.jpg,2,https://cdn.example.com/a.jpg,120,450000',
+      ',hoodie,,,,,,HOODIE-M-GREEN,,Green,,M,"90,50",,shopify,5,CONTINUE,400,https://cdn.example.com/a.jpg,1,,,450000',
       ',hoodie,,,,,,,,,,,,,,,,,https://cdn.example.com/c.jpg,3,',
       'Cap,cap,,,,,draft,CAP-1,Title,Default Title,,,10,,,,,,,,',
     ])
@@ -68,8 +68,8 @@ test.describe('parseShopifyCsv', () => {
         allowBackorder: false,
         inventoryQuantity: 100,
         prices: [
-          { currencyCode: 'usd', amount: 90 },
-          { currencyCode: 'cop', amount: 360000 },
+          { currencyCode: 'usd', amount: 90, compareAtAmount: 120 },
+          { currencyCode: 'cop', amount: 360000, compareAtAmount: 450000 },
         ],
         imageUrl: 'https://cdn.example.com/a.jpg',
       },
@@ -77,7 +77,8 @@ test.describe('parseShopifyCsv', () => {
         line: 4,
         optionValues: ['Green', 'M'],
         allowBackorder: true,
-        prices: [{ currencyCode: 'usd', amount: 90.5 }],
+        // A blank compare-at is `null`; the Colombia one has no price beside it, so it is dropped.
+        prices: [{ currencyCode: 'usd', amount: 90.5, compareAtAmount: null }],
       }),
     ])
     expect(cap).toMatchObject({
@@ -96,7 +97,7 @@ test.describe('parseShopifyCsv', () => {
       'Hoodie,hoodie,,,,,active,H-1,Size,S,,,abc,,,,,,,,',
       ',hoodie,,,,,,H-2,,S,,,10,,,,,,,,',
       'Mug,,,,,,,,,,,,,,,,,,,,',
-      'Cap,cap,,,,,,C-1,,,,,10,,,,,,apps/backend/seed-images/cap.jpg,1,',
+      'Cap,cap,,,,,,C-1,,,,,10,,,,,,apps/backend/seed-images/cap.jpg,1,,abc,',
       'Bag,Big Bag,,,,,,B-1,,,,,10,,,,,,,,',
     ])
 
@@ -105,6 +106,7 @@ test.describe('parseShopifyCsv', () => {
       { line: 3, handle: 'hoodie', message: 'The option combination "S" appears more than once.' },
       { line: 4, handle: null, message: 'The row has no URL handle.' },
       { line: 5, handle: 'cap', message: 'The image URL "apps/backend/seed-images/cap.jpg" is not an http(s) URL.' },
+      { line: 5, handle: 'cap', message: 'The compare-at price "abc" is not a number.' },
       // The handle becomes the product's storefront URL, so one that isn't a clean path segment is refused.
       {
         line: 6,
@@ -116,7 +118,10 @@ test.describe('parseShopifyCsv', () => {
 
   test('refuses a file missing a required column or naming an unknown market, at the header', async ({ expect }) => {
     const missing = await parse(['Title,SKU', 'Hoodie,H-1'])
-    const unknownMarket = await parse(['Title,URL handle,Price / Atlantis', 'Hoodie,hoodie,10'])
+    const unknownMarket = await parse([
+      'Title,URL handle,Price / Atlantis,Compare-at price / Atlantis',
+      'Hoodie,hoodie,10,12',
+    ])
 
     expect(missing).toEqual({
       products: [],
@@ -126,6 +131,11 @@ test.describe('parseShopifyCsv', () => {
     })
     expect(unknownMarket.errors).toEqual([
       { line: 1, handle: null, message: 'The column "Price / Atlantis" names a market the store does not sell in.' },
+      {
+        line: 1,
+        handle: null,
+        message: 'The column "Compare-at price / Atlantis" names a market the store does not sell in.',
+      },
     ])
   })
 
@@ -185,6 +195,21 @@ test.describe('parseShopifyCsv', () => {
     ])
   })
 
+  test('leaves the compare-at out of a currency with no compare-at column, and nulls a blank one', async ({
+    expect,
+  }) => {
+    const { products, errors } = await parse([
+      'Title,URL handle,Price,Price / Colombia,Compare-at price',
+      'Hoodie,hoodie,90,360000,',
+    ])
+
+    expect(errors).toEqual([])
+    // `toEqual` reads a missing key as `undefined`, so the key's absence is checked on its own.
+    const [usd, cop] = products[0]?.variants[0]?.prices ?? []
+    expect(usd).toStrictEqual({ currencyCode: 'usd', amount: 90, compareAtAmount: null })
+    expect(cop).toStrictEqual({ currencyCode: 'cop', amount: 360000 })
+  })
+
   test('drafts active products when publishing is off', async ({ expect }) => {
     const { products } = await parse([HEADER, 'Hoodie,hoodie,,,,,active,H-1,,,,,10,,,,,,,,'], { publish: false })
 
@@ -192,7 +217,8 @@ test.describe('parseShopifyCsv', () => {
   })
 
   test('refuses a file over the size cap', async ({ expect }) => {
-    const row = 'Hoodie,hoodie,,,,,active,H-1,,,,,10,,,,,,,,\n'
+    // As wide as the header: a short row costs the CSV parser a column-count error object each time.
+    const row = 'Hoodie,hoodie,,,,,active,H-1,,,,,10,,,,,,,,,,\n'
     const text = `${HEADER}\n${row.repeat(Math.ceil((15 * 1024 * 1024) / row.length) + 1)}`
 
     const { products, errors } = await parseShopifyCsv(streamOf(text, 64 * 1024), settings, new Set())

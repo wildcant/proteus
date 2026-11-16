@@ -79,7 +79,7 @@ type AppliedRegionChange = {
 }
 
 /** One line item's price before the switch — the whole of what repricing has to undo. */
-type PreviousLineItemPrice = { id: string; unitPrice: BigNumber }
+type PreviousLineItemPrice = { id: string; unitPrice: BigNumber; compareAtUnitPrice: BigNumber | null }
 
 /** The payment collection's terms before the switch, or null when the cart has none yet. */
 type PreviousPaymentCollection = { id: string; amount: BigNumber; currencyCode: string } | null
@@ -425,15 +425,23 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
             })
           }
 
-          return { id: item.id, unitPrice: price.calculatedAmount, previousUnitPrice: item.unitPrice }
+          return {
+            id: item.id,
+            unitPrice: price.calculatedAmount,
+            compareAtUnitPrice: price.compareAtAmount,
+            previous: { id: item.id, unitPrice: item.unitPrice, compareAtUnitPrice: item.compareAtUnitPrice },
+          }
         })
 
         await cartService.applyLineItemPlan(input.cartId, {
           create: [],
-          merge: repriced.map(({ id, unitPrice }) => ({ id, data: { unitPrice } })),
+          merge: repriced.map(({ id, unitPrice, compareAtUnitPrice }) => ({
+            id,
+            data: { unitPrice, compareAtUnitPrice },
+          })),
         })
 
-        return repriced.map(({ id, previousUnitPrice }) => ({ id, unitPrice: previousUnitPrice }))
+        return repriced.map(({ previous }) => previous)
       },
       async (previousPrices, { container }) => {
         if (previousPrices.length === 0) return
@@ -441,7 +449,10 @@ export const updateCartWorkflow = createWorkflow<UpdateCartInput, CartDTO>(
 
         await cartService.applyLineItemPlan(input.cartId, {
           create: [],
-          merge: previousPrices.map(({ id, unitPrice }) => ({ id, data: { unitPrice } })),
+          merge: previousPrices.map(({ id, unitPrice, compareAtUnitPrice }) => ({
+            id,
+            data: { unitPrice, compareAtUnitPrice },
+          })),
         })
       },
     )

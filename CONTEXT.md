@@ -58,6 +58,16 @@ Variant Reconciliation Plan derives it. A variant's identity — its SKU, price,
 history — survives a reassignment; only which combination it stands for changes.
 _Avoid_: move, remap, re-link
 
+**Compare-at Price**:
+The amount a merchant sets beside a variant's price in one currency, for shoppers to compare
+against. A reference figure, not what the shopper pays.
+_Avoid_: original price, was price, regular price, MSRP, list price
+
+**Markdown**:
+A variant is marked down in a currency when its Compare-at Price there is above its price. A
+Compare-at Price at or below the price is kept but makes no Markdown.
+_Avoid_: on sale, discount (discounts belong to promotions)
+
 ### Product grouping
 
 **Category**:

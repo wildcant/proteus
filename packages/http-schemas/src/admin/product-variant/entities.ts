@@ -1,11 +1,13 @@
 import { z } from 'zod'
-import { bigNumberToString, dateToIso, metadata } from '../../common.js'
+import { bigNumberToString, dateToIso, metadata, nullableBigNumberToString } from '../../common.js'
 
 export const AdminVariantPrice = z
   .object({
     id: z.string(),
     currencyCode: z.string(),
     amount: bigNumberToString,
+    // The stored value as entered, even at or below `amount`; the store only shows it when above.
+    compareAtAmount: nullableBigNumberToString,
     createdAt: dateToIso,
     updatedAt: dateToIso,
   })

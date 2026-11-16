@@ -210,7 +210,7 @@ msgid "Add image to variant"
 msgstr "Agregar imagen a la variante"
 
 #: src/features/draft-orders/components/add-draft-item-form.tsx:28
-#: src/features/draft-orders/components/draft-summary-section.tsx:25
+#: src/features/draft-orders/components/draft-summary-section.tsx:26
 msgid "Add item"
 msgstr "Añadir artículo"
 
@@ -478,7 +478,7 @@ msgstr "bytes"
 #: src/features/products/components/variant/create-variant-form.tsx:119
 #: src/features/products/components/variant/edit-variant-form.tsx:103
 #: src/features/products/components/variant/edit-variant-media-form.tsx:143
-#: src/features/products/components/variant/variant-price-edit-form.tsx:97
+#: src/features/products/components/variant/variant-price-edit-form.tsx:81
 #: src/features/products/components/variant/variant-stock-edit-form.tsx:46
 #: src/features/regions/components/add-countries-form.tsx:38
 #: src/features/regions/components/create-region-form.tsx:57
@@ -642,6 +642,18 @@ msgstr "Combinación"
 #: src/features/draft-orders/components/edit-draft-contact-form.tsx:39
 msgid "Company"
 msgstr "Empresa"
+
+#: src/features/products/utils/price-columns.ts:37
+msgid "Compare-at {code}"
+msgstr "Precio de comparación {code}"
+
+#: src/features/products/components/variant/variant-prices-section.tsx:22
+msgid "Compare-at {compareAt}"
+msgstr "Precio de comparación {compareAt}"
+
+#: src/features/products/components/import-products/import-preview-step.tsx:227
+msgid "Compare-at price"
+msgstr "Precio de comparación"
 
 #: src/features/orders/components/order-general-section.tsx:34
 #: src/features/orders/components/order-general-section.tsx:75
@@ -893,11 +905,11 @@ msgstr "Panel"
 msgid "Date"
 msgstr "Fecha"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:110
+#: src/features/draft-orders/components/draft-summary-section.tsx:111
 msgid "Decrease quantity"
 msgstr "Reducir cantidad"
 
-#: src/features/products/components/import-products/import-preview-step.tsx:231
+#: src/features/products/components/import-products/import-preview-step.tsx:234
 #: src/features/store/hooks/use-store-currency-table.tsx:52
 #: src/features/store/hooks/use-store-currency-table.tsx:53
 msgid "Default"
@@ -1221,7 +1233,7 @@ msgstr "Editar imágenes"
 msgid "Edit Organization"
 msgstr "Editar organización"
 
-#: src/features/products/components/variant/variant-prices-section.tsx:23
+#: src/features/products/components/variant/variant-prices-section.tsx:32
 msgid "Edit prices"
 msgstr "Editar precios"
 
@@ -1811,7 +1823,7 @@ msgstr "en {ancestors}"
 msgid "Inactive"
 msgstr "Inactiva"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:120
+#: src/features/draft-orders/components/draft-summary-section.tsx:121
 msgid "Increase quantity"
 msgstr "Aumentar cantidad"
 
@@ -1856,8 +1868,8 @@ msgstr "Invitar usuarios"
 msgid "is"
 msgstr "es"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:47
-#: src/features/orders/components/order-summary-section.tsx:59
+#: src/features/draft-orders/components/draft-summary-section.tsx:48
+#: src/features/orders/components/order-summary-section.tsx:58
 msgid "Item Subtotal"
 msgstr "Subtotal de artículos"
 
@@ -2503,8 +2515,8 @@ msgstr "Opciones"
 msgid "Order"
 msgstr "Pedido"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:49
-#: src/features/orders/components/order-summary-section.tsx:64
+#: src/features/draft-orders/components/draft-summary-section.tsx:50
+#: src/features/orders/components/order-summary-section.tsx:63
 msgid "Order Total"
 msgstr "Total del pedido"
 
@@ -2537,7 +2549,7 @@ msgstr "Organizar"
 msgid "Organize categories"
 msgstr "Organizar categorías"
 
-#: src/features/orders/components/order-summary-section.tsx:70
+#: src/features/orders/components/order-summary-section.tsx:69
 msgid "Outstanding amount"
 msgstr "Monto pendiente"
 
@@ -2549,7 +2561,7 @@ msgstr "Pendiente: {outstanding}"
 msgid "Overwrite products with matching handles."
 msgstr "Sobrescribir productos con el mismo handle."
 
-#: src/features/orders/components/order-summary-section.tsx:68
+#: src/features/orders/components/order-summary-section.tsx:67
 msgid "Paid Total"
 msgstr "Total pagado"
 
@@ -2683,11 +2695,11 @@ msgstr "Vista previa de tu primer producto"
 msgid "Price"
 msgstr "Precio"
 
-#: src/features/products/utils/price-columns.ts:17
+#: src/features/products/utils/price-columns.ts:35
 msgid "Price {code}"
 msgstr "Precio {code}"
 
-#: src/features/products/components/variant/variant-prices-section.tsx:20
+#: src/features/products/components/variant/variant-prices-section.tsx:29
 msgid "Prices"
 msgstr "Precios"
 
@@ -2864,7 +2876,7 @@ msgid "Rejected"
 msgstr "Rechazado"
 
 #: src/features/collections/components/collection-thumbnail-picker.tsx:53
-#: src/features/draft-orders/components/draft-summary-section.tsx:77
+#: src/features/draft-orders/components/draft-summary-section.tsx:78
 #: src/features/product-options/components/value-row-actions.tsx:28
 #: src/features/regions/components/region-countries-card.tsx:34
 #: src/features/regions/components/region-countries-card.tsx:56
@@ -2877,7 +2889,7 @@ msgstr "Rechazado"
 msgid "Remove"
 msgstr "Quitar"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:76
+#: src/features/draft-orders/components/draft-summary-section.tsx:77
 msgid "Remove \"{title}\" from this draft?"
 msgstr "¿Quitar \"{title}\" de este borrador?"
 
@@ -2910,8 +2922,8 @@ msgstr "Quitar de la categoría"
 msgid "Remove from collection"
 msgstr "Quitar de la colección"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:75
-#: src/features/draft-orders/components/draft-summary-section.tsx:134
+#: src/features/draft-orders/components/draft-summary-section.tsx:76
+#: src/features/draft-orders/components/draft-summary-section.tsx:133
 msgid "Remove item"
 msgstr "Quitar artículo"
 
@@ -3013,7 +3025,7 @@ msgstr "Regla"
 #: src/features/products/components/media/manage-image-variants-form.tsx:74
 #: src/features/products/components/variant/edit-variant-form.tsx:106
 #: src/features/products/components/variant/edit-variant-media-form.tsx:146
-#: src/features/products/components/variant/variant-price-edit-form.tsx:102
+#: src/features/products/components/variant/variant-price-edit-form.tsx:86
 #: src/features/products/components/variant/variant-stock-edit-form.tsx:49
 #: src/features/regions/components/add-countries-form.tsx:41
 #: src/features/regions/components/create-region-form.tsx:60
@@ -3177,8 +3189,8 @@ msgstr "Envío"
 msgid "Shipping option"
 msgstr "Opción de envío"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:48
-#: src/features/orders/components/order-summary-section.tsx:61
+#: src/features/draft-orders/components/draft-summary-section.tsx:49
+#: src/features/orders/components/order-summary-section.tsx:60
 msgid "Shipping Subtotal"
 msgstr "Subtotal de envío"
 
@@ -3271,8 +3283,8 @@ msgstr "Estructura aplicada"
 msgid "Subtitle"
 msgstr "Subtítulo"
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:21
-#: src/features/orders/components/order-summary-section.tsx:16
+#: src/features/draft-orders/components/draft-summary-section.tsx:22
+#: src/features/orders/components/order-summary-section.tsx:17
 msgid "Summary"
 msgstr "Resumen"
 
@@ -3374,7 +3386,7 @@ msgstr "Estos productos no se importaron"
 msgid "This changes the live storefront URLs for {countryName}. Links to the current ones stop resolving — nothing redirects them."
 msgstr "Esto cambia las URL activas de la tienda para {countryName}. Los enlaces a las actuales dejarán de funcionar: nada los redirige."
 
-#: src/features/draft-orders/components/draft-summary-section.tsx:32
+#: src/features/draft-orders/components/draft-summary-section.tsx:33
 msgid "This draft has no items."
 msgstr "Este borrador no tiene artículos."
 

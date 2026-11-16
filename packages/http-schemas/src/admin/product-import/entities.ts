@@ -29,7 +29,10 @@ export const AdminImportedVariant = z
     manageInventory: z.boolean(),
     allowBackorder: z.boolean(),
     inventoryQuantity: z.number().nullable(),
-    prices: z.array(z.object({ currencyCode: z.string(), amount: z.number() })),
+    /** `compareAtAmount` is absent when the file has no compare-at column for the currency. */
+    prices: z.array(
+      z.object({ currencyCode: z.string(), amount: z.number(), compareAtAmount: z.number().nullable().optional() }),
+    ),
     imageUrl: z.string().nullable(),
   })
   .openapi('AdminImportedVariant')

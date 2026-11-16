@@ -6,6 +6,7 @@ import type { AdminOrderLineItem } from '#/api/generated/model'
 import { ActionMenu } from '#/components/common/action-menu'
 import { useRemoveDraftOrderItem, useUpdateDraftOrderItem } from '#/features/draft-orders/api/draft-orders'
 import type { DraftOrderData } from '#/features/draft-orders/hooks/use-draft-order-data'
+import { LineItemTotal } from '#/features/orders/components/line-item-total'
 import { useUiCopy } from '#/hooks/use-ui-copy'
 import { activeLocale } from '#/lib/i18n/locale'
 
@@ -127,9 +128,7 @@ function DraftItemRow({ draftOrderId, item, currency, canEdit }: DraftItemRowPro
       ) : (
         <span className="shrink-0 text-muted-foreground text-sm">{`×${item.quantity}`}</span>
       )}
-      <span className="shrink-0 font-medium text-sm tabular-nums">
-        {formatPrice(item.lineTotal, currency, activeLocale())}
-      </span>
+      <LineItemTotal item={item} currency={currency} />
       {!!canEdit && (
         <Button variant="ghost" size="icon-xs" aria-label={t`Remove item`} disabled={isWriting} onClick={handleRemove}>
           <TrashIcon />

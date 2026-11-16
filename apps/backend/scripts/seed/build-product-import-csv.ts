@@ -171,6 +171,18 @@ const STOCK_BY_SKU: Record<string, number> = {
   'MENTSHIRT-MEDIUM-OCEAN': 3,
 }
 
+/**
+ * Compare-at prices in USD by handle, since mock.shop marks nothing down, so the storefront's struck
+ * old price is reachable on a fresh database. `optionValue` limits one to the variants with that
+ * value: the sweatpants mark down only Ocean, which is not their cheapest, so their listing card
+ * shows no old price while the Ocean variants do.
+ */
+const COMPARE_AT_BY_HANDLE: Record<string, { amount: number; optionValue?: string }> = {
+  'light-puffer': { amount: 100 },
+  sweatpants: { amount: 55, optionValue: 'Ocean' },
+  'black-sunnies': { amount: 65 },
+}
+
 const HEADER = [
   'Title',
   'URL handle',
@@ -189,6 +201,7 @@ const HEADER = [
   'Price',
   'Price / Colombia',
   'Compare-at price',
+  'Compare-at price / Colombia',
   'Charge tax',
   'Inventory tracker',
   'Inventory quantity',
@@ -212,6 +225,8 @@ type Row = Record<(typeof HEADER)[number], string>
 
 const skuToken = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '')
 const money = (amount: number) => amount.toFixed(2)
+/** A blank cell for no amount; `rate` converts from USD. */
+const optionalMoney = (amount: number | null, rate = 1) => (amount === null ? '' : money(amount * rate))
 
 /** mock.shop descriptions are one paragraph of editor HTML; the CSV keeps only its text. */
 function plainText(html: string): string {
@@ -239,6 +254,14 @@ function metafieldsFor(product: MockShopProduct, enrichment: Enrichment) {
     ),
     'Modelo (product.metafields.custom.modelo)': enrichment.model,
   }
+}
+
+function compareAtFor(handle: string, variant: MockShopProduct['variants']['nodes'][number]): number | null {
+  const seeded = COMPARE_AT_BY_HANDLE[handle]
+  const isSeeded =
+    seeded && (!seeded.optionValue || variant.selectedOptions.some(({ value }) => value === seeded.optionValue))
+  if (isSeeded) return seeded.amount
+  return variant.compareAtPrice ? Number(variant.compareAtPrice.amount) : null
 }
 
 function rowsFor(product: MockShopProduct, stockedSkus: Set<string>): Row[] {
@@ -283,13 +306,15 @@ function rowsFor(product: MockShopProduct, stockedSkus: Set<string>): Row[] {
           ...(isDefaultVariant ? [] : options.map((name) => skuToken(values.get(name) ?? ''))),
         ].join('-')
       const price = Number(variant.price.amount)
+      const compareAt = compareAtFor(product.handle, variant)
       const stocked = STOCK_BY_SKU[sku]
       if (stocked !== undefined) stockedSkus.add(sku)
       Object.assign(row, {
         SKU: sku,
         Price: money(price),
         'Price / Colombia': money(price * COP_PER_USD),
-        'Compare-at price': variant.compareAtPrice ? money(Number(variant.compareAtPrice.amount)) : '',
+        'Compare-at price': optionalMoney(compareAt),
+        'Compare-at price / Colombia': optionalMoney(compareAt, COP_PER_USD),
         'Charge tax': 'TRUE',
         'Inventory tracker': 'shopify',
         'Inventory quantity': String(stocked ?? variant.quantityAvailable ?? 0),
@@ -325,7 +350,7 @@ const { data } = (await response.json()) as CatalogResponse
 if (data.products.pageInfo.hasNextPage) throw new Error('mock.shop has more than 100 products; paginate')
 
 const products = data.products.nodes
-const unknownHandles = Object.keys(ENRICHMENT).filter(
+const unknownHandles = [...Object.keys(ENRICHMENT), ...Object.keys(COMPARE_AT_BY_HANDLE)].filter(
   (handle) => !products.some((product) => product.handle === handle),
 )
 if (unknownHandles.length > 0)

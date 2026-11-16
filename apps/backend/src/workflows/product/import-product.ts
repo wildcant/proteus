@@ -159,8 +159,26 @@ export const importProductWorkflow = createWorkflow<ImportProductInput, ImportPr
       const matched = matchImportedVariants(product, references, existing)
 
       const kept = matched.flatMap(({ variant, variantId }) => (variantId ? [{ variant, variantId }] : []))
+      // A compare-at the file has no column for keeps the stored one, so the kept variants' prices
+      // are read up front: one query for their price sets, one for the prices in them.
+      const priceSetLinks = await container
+        .resolve(ContainerRegistrationKeys.LINK)
+        .repo('productVariantPriceSet')
+        .findByVariantIds(kept.map(({ variantId }) => variantId))
+      const storedPrices =
+        priceSetLinks.length > 0
+          ? await container
+              .resolve(Modules.PRICING)
+              .listPrices({ priceSetId: priceSetLinks.map((link) => link.priceSetId) })
+          : []
+      const priceSetIdByVariant = new Map(priceSetLinks.map((link) => [link.variantId, link.priceSetId]))
       for (const { variant, variantId } of kept) {
-        const { prices, ...fields } = buildImportedVariant(variant, product, references)
+        const { prices, ...fields } = buildImportedVariant(
+          variant,
+          product,
+          references,
+          storedPrices.filter((price) => price.priceSetId === priceSetIdByVariant.get(variantId)),
+        )
         await productService.updateProductVariant(variantId, fields)
         if (prices?.length) await updateVariantPricesWorkflow.run({ variantId, data: { prices } })
       }

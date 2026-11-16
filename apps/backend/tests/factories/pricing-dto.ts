@@ -14,6 +14,7 @@ export function generateCreatePriceDTO(overrides?: Partial<CreatePriceDTO>): Cre
   return {
     currencyCode: 'usd',
     amount: new BigNumber(faker.commerce.price({ min: 1, max: 1000 })),
+    compareAtAmount: null,
     ...overrides,
   }
 }
@@ -22,6 +23,7 @@ export function generateCalculatedPriceSetDTO(overrides?: Partial<CalculatedPric
   return {
     id: `pset_${faker.string.alphanumeric(32)}`,
     calculatedAmount: new BigNumber(faker.commerce.price({ min: 1, max: 1000 })),
+    compareAtAmount: null,
     currencyCode: 'usd',
     ...overrides,
   }
