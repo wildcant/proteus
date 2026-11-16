@@ -51,18 +51,22 @@ export const StoreNavigationSection = z
 export type StoreNavigationSection = z.input<typeof StoreNavigationSection>
 
 /**
- * One entry of the store's menu, by handle: a Category or a Collection. With no `sections` a Category
- * is shown with its children; with them, the entry opens a panel of those sections, and `footer`
- * holds the links set apart below them. A handle that names no visible Category or Collection is the
- * store's to skip.
+ * One entry of the store's menu: a Category or a Collection by handle, or the all-products list
+ * narrowed by `filters` (`products`, labelled `label`), as a filter link is. With no `sections` a
+ * Category is shown with its children; with them, the entry opens a panel of those sections, and
+ * `footer` holds the links set apart below them. A handle that names no visible Category or
+ * Collection is the store's to skip.
  */
 export const StoreNavigationEntry = z
-  .object({
-    type: StoreNavigationTargetType,
-    handle: z.string(),
-    sections: z.array(StoreNavigationSection),
-    footer: z.array(StoreNavigationLink),
-  })
+  .discriminatedUnion('type', [
+    z.object({
+      type: StoreNavigationTargetType,
+      handle: z.string(),
+      sections: z.array(StoreNavigationSection),
+      footer: z.array(StoreNavigationLink),
+    }),
+    z.object({ type: z.literal('products'), label: z.string(), filters: z.array(StoreNavigationFilter) }),
+  ])
   .openapi('StoreNavigationEntry')
 export type StoreNavigationEntry = z.input<typeof StoreNavigationEntry>
 

@@ -12,7 +12,7 @@ import type {
   StoreSearchDTO,
 } from '../../../../core/types/store/common.js'
 import { parseSublineTemplate, SUBLINE_BUILTIN_PLACEHOLDERS, sublineKeys } from '../../../../core/utils/card-subline.js'
-import { OPTION_FILTER_PREFIX } from '../../../../core/utils/product-filter-key.js'
+import { OPTION_FILTER_PREFIX, SALE_FILTER_KEY, SALE_FILTER_VALUE } from '../../../../core/utils/product-filter-key.js'
 import { HANDLE_PATTERN } from '../../../../core/utils/to-handle.js'
 
 /** A structure file is a page of YAML; anything near this is not one. */
@@ -174,9 +174,14 @@ const section = z.strictObject(
 
 type RawSection = z.infer<typeof section>
 
-/** Like `link`, one object whose key pairing is checked after the shape. */
+/**
+ * Like `link`, one object whose key pairing is checked after the shape: a `category` or `collection`
+ * by handle, or `name` with a `filter`, the all-products list filtered as a filter link is.
+ */
 const menuEntry = z.strictObject(
   {
+    name: name.optional(),
+    filter: rule.optional(),
     category: handle.optional(),
     collection: handle.optional(),
     sections: z.array(section, { error: ifWrongType('Must be a list of sections.') }).optional(),
@@ -276,14 +281,15 @@ export type ParsedCatalogStructure =
  * (`categories[0].children[1].handle`). Beyond the shape: a key is declared once, at most one field
  * is the vendor (`source: vendor`) and at most one the type (`source: type`), every rule names
  * only declared keys, a handle is used once among the Categories and once among the Collections,
- * and every menu entry names one the file declares. A menu entry's `sections` and `footer` read only
- * declared keys (`values`, `groupBy`, `filter`) and link only declared handles; only a Category
+ * and every menu entry names one the file declares or is a `name` with a `filter`. A menu entry's
+ * `sections` and `footer` read only declared keys (`values`, `groupBy`, `filter`) and link only
+ * declared handles; a link's or entry's `filter` may also read `price.sale: [on]`. Only a Category
  * has `subcategories`; `groups` needs `groupBy`, which must differ from `values`. A `search` popular
  * term (ignoring case) and a trending model's name are each listed once, and a model's `filter` reads
  * only declared keys. Each `filters` key is listed once and is a declared field with
- * `filterable: true` or `option.<Title>`. A `card.subline` reads only `{type}`, `{brand}` and declared
- * keys, with no modifier but `lower`. Each `related` key is listed once and is `category`, `type`,
- * `brand`, `option.<Title>` or a declared key, with a whole weight of at least 1.
+ * `filterable: true`, `option.<Title>` or `price.sale`. A `card.subline` reads only `{type}`, `{brand}`
+ * and declared keys, with no modifier but `lower`. Each `related` key is listed once and is `category`,
+ * `type`, `brand`, `option.<Title>` or a declared key, with a whole weight of at least 1.
  */
 export function parseCatalogStructure(text: string): ParsedCatalogStructure {
   const document = parseDocument(text, { prettyErrors: false })
@@ -337,10 +343,23 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       source: raw.source ?? ('metafield' as const),
     }
   })
-  /** A rule, or a link's `filter`, which is written the same way: `at` is the key it sits under. */
-  const toRule = (raw: RawRule | undefined, path: string, at = 'rule') => {
+  /**
+   * A rule, or a link's `filter`, which is written the same way: `at` is the key it sits under. A link
+   * lists products, so its filter may also read the built-in `price.sale: [on]`; a rule picks a
+   * grouping's members, which a price cannot decide.
+   */
+  const toRule = (raw: RawRule | undefined, path: string, at = 'rule', { isLink = false } = {}) => {
     if (!raw) return null
-    for (const ruleKey of Object.keys(raw)) {
+    for (const [ruleKey, values] of Object.entries(raw)) {
+      if (isLink && ruleKey === SALE_FILTER_KEY) {
+        if (values.some((value) => value !== SALE_FILTER_VALUE)) {
+          errors.push({
+            path: `${path}.${at}.${ruleKey}`,
+            message: `The sale filter's one value is "${SALE_FILTER_VALUE}".`,
+          })
+        }
+        continue
+      }
       if (!keys.has(ruleKey)) {
         errors.push({ path: `${path}.${at}.${ruleKey}`, message: `No field in the file has the key "${ruleKey}".` })
       }
@@ -441,7 +460,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
         errors.push({ path, message: 'A link with a filter must have a name.' })
         return null
       }
-      return { type: 'filter', name: raw.name, filter: toRule(raw.filter, path, 'filter') ?? {} }
+      return { type: 'filter', name: raw.name, filter: toRule(raw.filter, path, 'filter', { isLink: true }) ?? {} }
     }
     if (!hasOneTarget(raw)) {
       errors.push({ path, message: 'Must have exactly one of filter, category or collection.' })
@@ -501,6 +520,18 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
 
   const navigation = menu.flatMap((entry, index): StoreNavigationEntryDTO[] => {
     const path = `menu[${index}]`
+    if (entry.filter !== undefined || entry.name !== undefined) {
+      const { name: entryName, filter, ...rest } = entry
+      if (Object.values(rest).some((value) => value !== undefined)) {
+        errors.push({ path, message: 'A menu entry with a filter has only a name and the filter.' })
+        return []
+      }
+      if (entryName === undefined || filter === undefined) {
+        errors.push({ path, message: 'A menu entry with a filter must have a name and the filter.' })
+        return []
+      }
+      return [{ type: 'products', name: entryName, filter: toRule(filter, path, 'filter', { isLink: true }) ?? {} }]
+    }
     if (!hasOneTarget(entry)) {
       errors.push({ path, message: 'Must be one of "category: <handle>" or "collection: <handle>".' })
       return []
@@ -544,6 +575,7 @@ export function parseCatalogStructure(text: string): ParsedCatalogStructure {
       errors.push({ path, message: `The filter "${filterKey}" is listed more than once.` })
       return
     }
+    if (filterKey === SALE_FILTER_KEY) return
     if (filterKey.startsWith(OPTION_FILTER_PREFIX)) {
       if (filterKey.slice(OPTION_FILTER_PREFIX.length).trim() === '') {
         errors.push({ path, message: 'Must name the option, like "option.Size".' })

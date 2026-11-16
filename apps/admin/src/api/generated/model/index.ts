@@ -137,7 +137,6 @@ export * from './adminMeResponseSidebarItemItemsItemChildrenItemIcon.ts';
 export * from './adminMeResponseSidebarItemItemsItemIcon.ts';
 export * from './adminMeResponseUser.ts';
 export * from './adminNavigationEntry.ts';
-export * from './adminNavigationEntryType.ts';
 export * from './adminNavigationLink.ts';
 export * from './adminNavigationSection.ts';
 export * from './adminNotification.ts';

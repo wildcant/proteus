@@ -13,6 +13,17 @@ export const StoreCalculatedPrice = z
   })
   .openapi('StoreCalculatedPrice')
 
+/** A marked-down price: a calculated price whose compare-at is always set, and above it, and the variant it is. */
+export const StoreSalePrice = z
+  .object({
+    id: z.string(),
+    currencyCode: z.string(),
+    calculatedAmount: bigNumberToString,
+    compareAtAmount: bigNumberToString,
+    variantId: z.string(),
+  })
+  .openapi('StoreSalePrice')
+
 export const StoreProductImage = z
   .object({
     id: z.string(),
@@ -170,6 +181,12 @@ export type StoreProductListingAvailability = z.infer<typeof StoreProductListing
  */
 export const StoreProductListItem = StoreProduct.extend({
   startingPrice: StoreCalculatedPrice.optional(),
+  /**
+   * The price of the cheapest variant a shopper can buy now that is marked down — its compare-at above
+   * its price in the market's currency — with that compare-at. `null` when no such variant exists: the
+   * product is on sale exactly when this is set.
+   */
+  salePrice: StoreSalePrice.nullable(),
   /** Whether no variant of this product can be bought. */
   soldOut: z.boolean(),
   /** The badges of the product's Collections (`new`), each once. */

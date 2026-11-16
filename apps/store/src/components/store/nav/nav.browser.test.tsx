@@ -13,6 +13,7 @@ import { stringifySearch } from '#/lib/search-params'
 const menuLink: MenuLinkTo = (target) => {
   if (!target) return { to: '/' }
   const search = target.filter ? { filter: target.filter } : undefined
+  if (target.type === 'products') return { to: '/', search }
   return { to: `/${target.type === 'collection' ? 'collections' : 'categories'}/${target.handle}`, search }
 }
 

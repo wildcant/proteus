@@ -79,17 +79,21 @@ const AdminNavigationSection = z
   .openapi('AdminNavigationSection')
 
 /**
- * One entry of the store's menu: a Category or a Collection. Without `sections` a Category brings its
+ * One entry of the store's menu: a Category or a Collection, or the all-products list filtered
+ * (`products`, `name` with `filter` by key, as a filter link). Without `sections` a Category brings its
  * children; with them the entry opens a panel of those sections. `footer` holds the links set apart
  * below the panel's columns.
  */
 export const AdminNavigationEntry = z
-  .object({
-    type: AdminNavigationTargetType,
-    handle: z.string(),
-    sections: z.array(AdminNavigationSection),
-    footer: z.array(AdminNavigationLink).optional(),
-  })
+  .discriminatedUnion('type', [
+    z.object({
+      type: AdminNavigationTargetType,
+      handle: z.string(),
+      sections: z.array(AdminNavigationSection),
+      footer: z.array(AdminNavigationLink).optional(),
+    }),
+    z.object({ type: z.literal('products'), name: z.string(), filter: z.record(z.string(), z.array(z.string())) }),
+  ])
   .openapi('AdminNavigationEntry')
 export type AdminNavigationEntry = z.input<typeof AdminNavigationEntry>
 

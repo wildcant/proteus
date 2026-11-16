@@ -32,7 +32,8 @@ export const StoreProductListParams = createFindParams().extend({
   /**
    * Filter selections as `<key>:<value>`, repeatable: `filter=genero:women&filter=option.Talla:42`. A
    * key is a metafield's key or `option.<title>` for a product option. Lists products holding any of
-   * the values chosen for a key, for every key chosen; an unknown key matches nothing.
+   * the values chosen for a key, for every key chosen; an unknown key matches nothing. `price.sale:on`
+   * lists the products on sale: a variant a shopper can buy now is marked down in the market's currency.
    */
   filter: z.union([metafieldSelection, metafieldSelection.array()]).optional(),
   /** The lowest price, in the market's currency: lists products with a variant priced at least this. */

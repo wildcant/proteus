@@ -1,5 +1,6 @@
 import type { ProductCategoryDTO, ProductFilterDTO } from '@core/types/product/common.js'
-import { OPTION_FILTER_PREFIX } from '@core/utils/product-filter-key.js'
+import { OPTION_FILTER_PREFIX, SALE_FILTER_KEY, SALE_FILTER_VALUE } from '@core/utils/product-filter-key.js'
+import { i18n } from '@proteus/utils'
 import { buildFieldValueLabel, findNamingCategory } from './build-field-value-label.js'
 
 type StoreProductFilter = Omit<ProductFilterDTO, 'values'> & {
@@ -26,6 +27,12 @@ export function buildStoreProductFilters(
 ): StoreProductFilter[] {
   const inStock = new Set(inStockLabels.map((label) => `${OPTION_FILTER_PREFIX}${label.optionTitle}:${label.value}`))
   return filters.map((filter) => {
+    if (filter.key === SALE_FILTER_KEY) {
+      return {
+        ...filter,
+        values: filter.values.map((value) => ({ ...value, label: i18n.t('On sale'), soldOut: false, swatch: null })),
+      }
+    }
     const isNamed = namedFieldKeys.has(filter.key)
     const values = isNamed ? inMenuOrder(filter.key, filter.values, categories) : filter.values
     return {
@@ -39,6 +46,14 @@ export function buildStoreProductFilters(
       })),
     }
   })
+}
+
+/**
+ * The built-in sale filter, «Sale» with its one value «On sale», holding `count` products. Named in
+ * Proteus's catalogs rather than the structure file, since its key names no field.
+ */
+export function buildSaleFilter(count: number): ProductFilterDTO {
+  return { key: SALE_FILTER_KEY, name: i18n.t('Sale'), values: [{ value: SALE_FILTER_VALUE, count }] }
 }
 
 /**

@@ -92,6 +92,9 @@ export class StoreCatalogListingRepository {
    *
    * Every order ends newest first and then by id, so rows the order cannot tell apart keep one total
    * order and an offset pager never repeats a row across pages.
+   *
+   * The sale price is read for the page alone too: the cheapest variant a shopper can buy now that is
+   * marked down, so a cheaper variant at full price does not hide the markdown.
    */
   async listStoreProducts(
     options: ListStoreProductsOptions,
@@ -117,10 +120,12 @@ export class StoreCatalogListingRepository {
     const rows = await client.execute<{
       productId: string
       startingPriceSetId: string
+      saleVariantId: string | null
       purchasable: boolean
       total: string
     }>(sql`
       SELECT page.product_id AS "productId", page.starting_price_set_id AS "startingPriceSetId", page.total,
+        ${this.saleVariantId(options.currencyCode, sql`page.product_id`)} AS "saleVariantId",
         ${this.hasPurchasableVariant(options.currencyCode, sql`page.product_id`)} AS purchasable
       FROM (${listed}) page
       ORDER BY page.ordinal`)
@@ -133,6 +138,7 @@ export class StoreCatalogListingRepository {
       rows: rows.map((row) => ({
         productId: row.productId,
         startingPriceSetId: row.startingPriceSetId,
+        saleVariantId: row.saleVariantId,
         purchasable: row.purchasable,
       })),
       count,
@@ -187,6 +193,40 @@ export class StoreCatalogListingRepository {
     }
   }
 
+  /**
+   * The products on sale in the market, as a subquery: published, with a variant a shopper can buy now
+   * whose compare-at price in `currencyCode` is above its price. Read live from the prices, so a
+   * markdown starts and ends with the price itself, with no sale grouping to keep in step.
+   */
+  saleProductIds({ currencyCode }: Pick<StoreCatalogFilters, 'currencyCode'>): SQL {
+    return sql`SELECT priced_variant.product_id FROM (${this.pricedVariants(currencyCode)}) priced_variant
+      JOIN ${productTable} ON ${productTable.id} = priced_variant.product_id
+        AND ${productTable.deletedAt} IS NULL AND ${productTable.status} = 'published'
+      LEFT JOIN (${this.stockedVariants()}) stocked_variant ON stocked_variant.variant_id = priced_variant.variant_id
+      WHERE ${this.discounted(sql`priced_variant`)}
+        AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}`
+  }
+
+  /**
+   * The products the store filters' price selections keep, as one subquery for `selectedProductIds`:
+   * a variant inside `priceRange`, and on sale when `onSale`. `undefined` when neither is asked.
+   */
+  selectedProductIds({
+    currencyCode,
+    priceRange,
+    onSale,
+  }: Omit<StoreCatalogFilters, 'products' | 'search'>): SQL | undefined {
+    const { minPrice, maxPrice } = priceRange ?? {}
+    const selections = [
+      ...(minPrice === undefined && maxPrice === undefined
+        ? []
+        : [this.sellableProductIds({ currencyCode, priceRange })]),
+      ...(onSale ? [this.saleProductIds({ currencyCode })] : []),
+    ]
+    if (selections.length === 0) return undefined
+    return sql.join(selections, sql` INTERSECT `)
+  }
+
   private async countListed(options: ListStoreProductsOptions, context?: Context): Promise<number> {
     const [row] = await this.getClient(context).execute<{ total: string }>(sql`
       SELECT COUNT(*) AS total FROM (
@@ -205,7 +245,8 @@ export class StoreCatalogListingRepository {
     return sql`
       SELECT ${productVariantTable.id} AS variant_id, ${productVariantTable.productId} AS product_id,
         ${productVariantTable.manageInventory} AS manage_inventory, ${productVariantTable.allowBackorder} AS allow_backorder,
-        ${priceTable.amount} AS amount, ${priceTable.priceSetId} AS price_set_id
+        ${priceTable.amount} AS amount, ${priceTable.compareAtAmount} AS compare_at_amount,
+        ${priceTable.priceSetId} AS price_set_id
       FROM ${productVariantTable}
       JOIN ${productVariantPriceSetTable} ON ${productVariantPriceSetTable.variantId} = ${productVariantTable.id}
         AND ${productVariantPriceSetTable.deletedAt} IS NULL
@@ -236,6 +277,7 @@ export class StoreCatalogListingRepository {
       parts.push(sql`${productSimilarity(sourceId, options.similarTo.match)} > 0`)
     }
     if (options.purchasableOnly) parts.push(this.hasPurchasableVariant(options.currencyCode, sql`${productTable.id}`))
+    if (options.onSale) parts.push(sql`${productTable.id} IN (${this.saleProductIds(options)})`)
     return sql.join(parts, sql` AND `)
   }
 
@@ -247,6 +289,24 @@ export class StoreCatalogListingRepository {
       WHERE priced_variant.product_id = ${productId}
         AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}
     )`
+  }
+
+  /** `productId`'s cheapest variant a shopper can buy now that is marked down, else null. */
+  private saleVariantId(currencyCode: string, productId: SQL): SQL {
+    return sql`(
+      SELECT priced_variant.variant_id FROM (${this.pricedVariants(currencyCode)}) priced_variant
+      LEFT JOIN LATERAL (${this.stockedVariants(sql`priced_variant.variant_id`)}) stocked_variant ON TRUE
+      WHERE priced_variant.product_id = ${productId}
+        AND ${this.discounted(sql`priced_variant`)}
+        AND ${this.purchasable(sql`priced_variant`, sql`stocked_variant.stocked`)}
+      ORDER BY priced_variant.amount, priced_variant.variant_id
+      LIMIT 1
+    )`
+  }
+
+  /** The `variant` row's compare-at price is above its price: the markdown rule `calculatePrices` applies. */
+  private discounted(variant: SQL): SQL {
+    return sql`${variant}.compare_at_amount > ${variant}.amount`
   }
 
   /** The list's order, after the likeness to `similarTo` when there is one. */

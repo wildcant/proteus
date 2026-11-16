@@ -13,11 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:212
+#: src/features/products/components/import-structure/structure-preview-step.tsx:211
+msgid "(filter: {filterNames})"
+msgstr "(filtro: {filterNames})"
+
+#: src/features/products/components/import-structure/structure-preview-step.tsx:231
 msgid "(footer: {footerNames})"
 msgstr "(pie: {footerNames})"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:207
+#: src/features/products/components/import-structure/structure-preview-step.tsx:226
 msgid "(sections: {sectionNames})"
 msgstr "(secciones: {sectionNames})"
 
@@ -50,7 +54,7 @@ msgstr "{create} nuevos, {update} por actualizar, {skip} omitidos."
 msgid "{fileName} is not a supported file type. Supported file types are: {extensions}."
 msgstr "{fileName} no es un tipo de archivo compatible. Los tipos de archivo compatibles son: {extensions}."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:203
+#: src/features/products/components/import-structure/structure-preview-step.tsx:222
 msgid "{handle} (collection)"
 msgstr "{handle} (colección)"
 
@@ -70,11 +74,11 @@ msgstr "{name} se soltó."
 msgid "{name} will stop being sold to, and its storefront will no longer resolve."
 msgstr "Se dejará de vender en {name} y su tienda dejará de estar disponible."
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:176
+#: src/features/products/components/import-structure/structure-preview-step.tsx:178
 msgid "{name}: {key} by {groupKey}"
 msgstr "{name}: {key} por {groupKey}"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:180
+#: src/features/products/components/import-structure/structure-preview-step.tsx:182
 msgid "{name}: option {option}"
 msgstr "{name}: opción {option}"
 
@@ -1317,7 +1321,7 @@ msgstr "Cuadrícula de datos editable"
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: src/features/products/components/import-structure/structure-preview-step.tsx:187
+#: src/features/products/components/import-structure/structure-preview-step.tsx:189
 msgid "Empty"
 msgstr "Vacío"
 

@@ -31,16 +31,25 @@ export type StoreNavigationSectionDTO = StoreNavigationSectionNote &
   )
 
 /**
- * One entry of the store's menu: a Category or a Collection, by handle. With no `sections` a
- * Category brings its children; with them, the entry opens a panel of those sections. `footer` holds
- * the links set apart below the panel's columns; an entry without one has none.
+ * A menu entry naming a Category or a Collection, by handle. With no `sections` a Category brings its
+ * children; with them, the entry opens a panel of those sections. `footer` holds the links set apart
+ * below the panel's columns; an entry without one has none.
  */
-export type StoreNavigationEntryDTO = {
+export type StoreNavigationGroupingEntryDTO = {
   type: StoreNavigationTargetType
   handle: string
   sections: StoreNavigationSectionDTO[]
   footer?: StoreNavigationLinkDTO[]
 }
+
+/**
+ * A menu entry to the all-products list filtered, as a section's filter link is: `name` with `filter`
+ * (keyed by field key, `option.<Title>` or `price.sale`, values ORed within a key). It opens no panel.
+ */
+export type StoreNavigationFilterEntryDTO = { type: 'products'; name: string; filter: Record<string, string[]> }
+
+/** One entry of the store's menu: a Category or a Collection by handle, or the all-products list filtered. */
+export type StoreNavigationEntryDTO = StoreNavigationGroupingEntryDTO | StoreNavigationFilterEntryDTO
 
 /**
  * A most-searched model, as the structure file's `search.trending` names it: its label, the list it

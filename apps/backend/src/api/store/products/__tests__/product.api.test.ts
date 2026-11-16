@@ -1257,3 +1257,94 @@ async function applyStructure(text: string) {
   const applied = await api.post<typeof structureRoutes.PostOutput>('/admin/catalog-structure', { fileId: file?.id })
   if (applied.status !== 200) throw new Error(`The structure was not applied: ${JSON.stringify(applied.body)}`)
 }
+
+test.describe('GET /store/products sale', () => {
+  test('a product is on sale through its cheapest marked-down variant a shopper can buy, in the market’s own currency, and the sale filter lists exactly those', async ({
+    expect,
+    service,
+    dto,
+    factories,
+  }) => {
+    await factories.create.country({ id: 'us', regionId: usRegionId, localeCode: 'en-US' })
+    const colombia = await factories.create.region({ name: 'Colombia', currencyCode: 'cop' })
+    await factories.create.country({ id: 'co', regionId: colombia.id, localeCode: 'es-CO' })
+
+    type Quote = { amount: string; compareAt?: string }
+    /**
+     * A published product, one variant per entry, each priced in USD and COP and holding `stock` pairs, with its
+     * variants' ids in entry order.
+     */
+    const createProduct = async (variants: Array<{ usd: Quote; cop: Quote; stock: number }>) => {
+      const { product } = await service.create.product(api.container, { status: 'published' })
+      const created = await service.create.productVariants(
+        api.container,
+        product.id,
+        variants.map(() => ({})),
+      )
+      await Promise.all(
+        variants.map(async ({ usd, cop, stock }, index) => {
+          const variant = created[index]
+          if (!variant) throw new Error('Expected a variant per entry')
+          const price = (currencyCode: string, { amount, compareAt }: Quote) =>
+            dto.generate.createPrice({
+              currencyCode,
+              amount: new BigNumber(amount),
+              compareAtAmount: compareAt === undefined ? null : new BigNumber(compareAt),
+            })
+          await service.create.variantPrices(api.container, [variant.id], {
+            prices: [price('usd', usd), price('cop', cop)],
+          })
+          await service.create.variantStock(api.container, { variantId: variant.id, level: { stockedQuantity: stock } })
+        }),
+      )
+      return { id: product.id, variantIds: created.map((variant) => variant.id) }
+    }
+
+    // A cheaper variant at full price, the markdown above it, and a deeper markdown sold out: the
+    // card's sale is the markdown a shopper can buy, not the cheapest price nor the deepest cut. In
+    // COP nothing is marked down.
+    const markedDown = await createProduct([
+      { usd: { amount: '50' }, cop: { amount: '200000' }, stock: 3 },
+      { usd: { amount: '80', compareAt: '120' }, cop: { amount: '320000' }, stock: 2 },
+      { usd: { amount: '60', compareAt: '100' }, cop: { amount: '240000' }, stock: 0 },
+    ])
+    // Its only markdown is sold out, so it is not on sale.
+    const soldOutMarkdown = await createProduct([
+      { usd: { amount: '40' }, cop: { amount: '160000' }, stock: 5 },
+      { usd: { amount: '30', compareAt: '90' }, cop: { amount: '120000' }, stock: 0 },
+    ])
+    // A compare-at at the price is no markdown.
+    const fullPrice = await createProduct([
+      { usd: { amount: '70', compareAt: '70' }, cop: { amount: '280000' }, stock: 4 },
+    ])
+
+    const us = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=us')
+    expect(us.status).toBe(200)
+    const saleById = new Map(us.body.products.map((product) => [product.id, product.salePrice]))
+    // The sale names its variant, so the card opens on the one marked down.
+    expect(saleById.get(markedDown.id)).toMatchObject({
+      currencyCode: 'usd',
+      calculatedAmount: '80',
+      compareAtAmount: '120',
+      variantId: markedDown.variantIds[1],
+    })
+    expect(saleById.get(soldOutMarkdown.id)).toBeNull()
+    expect(saleById.get(fullPrice.id)).toBeNull()
+    // The starting price is still the cheapest variant's, marked down or not.
+    expect(us.body.products.find((product) => product.id === markedDown.id)?.startingPrice).toMatchObject({
+      calculatedAmount: '50',
+    })
+
+    const co = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=co')
+    expect(co.body.products.map((product) => [product.id, product.salePrice])).toEqual(
+      expect.arrayContaining([[markedDown.id, null]]),
+    )
+
+    const usSale = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=us&filter=price.sale:on')
+    expect(usSale.body.products.map((product) => product.id)).toEqual([markedDown.id])
+    expect(usSale.body.count).toBe(1)
+    const coSale = await api.get<typeof productRoutes.GetOutput>('/store/products?countryCode=co&filter=price.sale:on')
+    expect(coSale.body.products).toEqual([])
+    expect(coSale.body.count).toBe(0)
+  })
+})

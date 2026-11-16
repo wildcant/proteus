@@ -76,6 +76,16 @@ msgid "Variant \"{variantId}\" cannot stop being tracked while orders hold its s
 msgstr "Variant \"{variantId}\" cannot stop being tracked while orders hold its stock: reservation(s) {reservations}. Fulfil or cancel them first."
 
 #. js-lingui-explicit-id
+#: src/workflows/product/utils/build-store-product-filters.ts:33
+msgid "On sale"
+msgstr "On sale"
+
+#. js-lingui-explicit-id
+#: src/workflows/product/utils/build-store-product-filters.ts:56
+msgid "Sale"
+msgstr "Sale"
+
+#. js-lingui-explicit-id
 #: src/workflows/payment/capture-payment.ts:59
 #: src/workflows/payment/steps/record-order-payment.ts:156
 msgid "Payment \"{id}\" holds no capture recorded under this request."

@@ -3532,35 +3532,67 @@
         ]
       },
       "AdminNavigationEntry": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "category",
-              "collection"
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "category",
+                  "collection"
+                ]
+              },
+              "handle": {
+                "type": "string"
+              },
+              "sections": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminNavigationSection"
+                }
+              },
+              "footer": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdminNavigationLink"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "handle",
+              "sections"
             ]
           },
-          "handle": {
-            "type": "string"
-          },
-          "sections": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminNavigationSection"
-            }
-          },
-          "footer": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdminNavigationLink"
-            }
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "products"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "filter": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "type",
+              "name",
+              "filter"
+            ]
           }
-        },
-        "required": [
-          "type",
-          "handle",
-          "sections"
         ]
       },
       "AdminNavigationSection": {

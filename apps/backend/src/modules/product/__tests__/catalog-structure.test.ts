@@ -492,6 +492,69 @@ test.describe('parseCatalogStructure', () => {
     expect(structure?.filters).toEqual(['option.Talla', 'genero'])
   })
 
+  test('reads the sale filter, and a menu entry or link to the list filtered by it', async ({ expect }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'fields:',
+        '  - { name: Género, key: genero, filterable: true }',
+        'categories:',
+        '  - { name: Mujer, handle: mujer }',
+        'menu:',
+        '  - category: mujer',
+        '    sections:',
+        '      - name: Destacados',
+        '        links:',
+        '          - { name: Ofertas mujer, filter: { price.sale: [on] } }',
+        '  - { name: Ofertas, filter: { price.sale: [on] } }',
+        '  - { name: Todo mujer, filter: { genero: [mujer] } }',
+        'filters: [genero, price.sale]',
+      ]),
+    )
+
+    expect(errors).toEqual([])
+    expect(structure?.filters).toEqual(['genero', 'price.sale'])
+    expect(structure?.menu).toEqual([
+      {
+        type: 'category',
+        handle: 'mujer',
+        sections: [
+          {
+            type: 'links',
+            name: 'Destacados',
+            links: [{ type: 'filter', name: 'Ofertas mujer', filter: { 'price.sale': ['on'] } }],
+          },
+        ],
+      },
+      { type: 'products', name: 'Ofertas', filter: { 'price.sale': ['on'] } },
+      { type: 'products', name: 'Todo mujer', filter: { genero: ['mujer'] } },
+    ])
+  })
+
+  test('refuses the sale filter in a rule, a sale value other than on, and a filter menu entry without its name or with a handle', async ({
+    expect,
+  }) => {
+    const { structure, errors } = parseCatalogStructure(
+      yaml([
+        'fields:',
+        '  - { name: Género, key: genero, filterable: true }',
+        'collections:',
+        '  - { name: Ofertas, handle: ofertas, rule: { price.sale: [on] } }',
+        'menu:',
+        '  - { name: Ofertas, filter: { price.sale: [yes] } }',
+        '  - { filter: { genero: [mujer] } }',
+        '  - { name: Ofertas, filter: { genero: [mujer] }, collection: ofertas }',
+      ]),
+    )
+
+    expect(structure).toBeNull()
+    expect(errors).toEqual([
+      { path: 'collections[0].rule.price.sale', message: 'No field in the file has the key "price.sale".' },
+      { path: 'menu[0].filter.price.sale', message: 'The sale filter\'s one value is "on".' },
+      { path: 'menu[1]', message: 'A menu entry with a filter must have a name and the filter.' },
+      { path: 'menu[2]', message: 'A menu entry with a filter has only a name and the filter.' },
+    ])
+  })
+
   test('refuses a repeated search term or model, and a filter that is no filter', async ({ expect }) => {
     const { structure, errors } = parseCatalogStructure(
       yaml([

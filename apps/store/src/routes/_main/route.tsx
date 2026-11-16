@@ -20,9 +20,10 @@ import { flowLinks } from '#/navigation/links'
 // The `Root` screen's ways out, handed to the chrome, which imports no navigation code.
 const links = flowLinks('Root')
 
-/** A menu destination: Shop all, a Category or a Collection, a filter riding along. */
+/** A menu destination: Shop all, a Category or a Collection, a filter riding along; or every product, filtered. */
 const menuLink: MenuLinkTo = (target) => {
   if (!target) return links.MENU_LINK('ProductListPage')
+  if (target.type === 'products') return links.MENU_LINK('ProductListPage', { search: { filter: target.filter } })
   const params = { handle: target.handle }
   const search = target.filter ? { filter: target.filter } : undefined
   return target.type === 'collection'

@@ -4,13 +4,14 @@ import type {
   ProductFieldGroupDTO,
 } from '@core/types/product/common.js'
 import type {
-  StoreNavigationEntryDTO,
+  StoreNavigationFilterEntryDTO,
+  StoreNavigationGroupingEntryDTO,
   StoreNavigationLinkDTO,
   StoreNavigationSectionDTO,
 } from '@core/types/store/common.js'
 import { OPTION_FILTER_PREFIX } from '@core/utils/product-filter-key.js'
 
-type TargetType = StoreNavigationEntryDTO['type']
+type TargetType = StoreNavigationGroupingEntryDTO['type']
 
 type NavigationFilter = { key: string; value: string }
 
@@ -29,12 +30,9 @@ type NavigationSection = {
   note: string | null
 }
 
-type NavigationEntry = {
-  type: TargetType
-  handle: string
-  sections: NavigationSection[]
-  footer: NavigationLink[]
-}
+type NavigationEntry =
+  | { type: TargetType; handle: string; sections: NavigationSection[]; footer: NavigationLink[] }
+  | { type: 'products'; label: string; filters: NavigationFilter[] }
 
 /**
  * A section once the products are read: a `values` or `option` section with every value among the
@@ -45,8 +43,10 @@ type ReadSectionDTO =
   | (Extract<StoreNavigationSectionDTO, { type: 'values' | 'option' }> & { values: string[] })
   | (Extract<StoreNavigationSectionDTO, { type: 'groups' }> & { read: ProductFieldGroupDTO[] })
 
-/** A menu entry whose `values`, `option` and `groups` sections have been read. */
-export type ReadNavigationEntryDTO = Omit<StoreNavigationEntryDTO, 'sections'> & { sections: ReadSectionDTO[] }
+/** A menu entry whose `values`, `option` and `groups` sections have been read; a filter entry has none to read. */
+export type ReadNavigationEntryDTO =
+  | (Omit<StoreNavigationGroupingEntryDTO, 'sections'> & { sections: ReadSectionDTO[] })
+  | StoreNavigationFilterEntryDTO
 
 /**
  * The store's menu as the storefront renders it: each entry's sections resolved into columns of
@@ -67,7 +67,8 @@ export function buildStoreNavigation(
   navigation: ReadNavigationEntryDTO[],
   { categoryTree, collections }: { categoryTree: ProductCategoryTreeNodeDTO[]; collections: ProductCollectionDTO[] },
 ): NavigationEntry[] {
-  return navigation.map((entry) => {
+  return navigation.map((entry): NavigationEntry => {
+    if (entry.type === 'products') return { type: 'products', label: entry.name, filters: toFilters(entry.filter) }
     const listLink = (label: string, filters: NavigationFilter[]): NavigationLink => ({
       label,
       ...target(entry),
@@ -80,10 +81,7 @@ export function buildStoreNavigation(
     ): NavigationSection => ({ name, display: 'list', links, viewAll: null, note: null, ...extra })
 
     const toLink = (link: StoreNavigationLinkDTO): NavigationLink[] => {
-      if (link.type === 'filter') {
-        const filters = Object.entries(link.filter).flatMap(([key, values]) => values.map((value) => ({ key, value })))
-        return [listLink(link.name, filters)]
-      }
+      if (link.type === 'filter') return [listLink(link.name, toFilters(link.filter))]
       const label =
         link.type === 'category'
           ? findCategory(categoryTree, link.handle)?.name
@@ -135,6 +133,10 @@ export function buildStoreNavigation(
     }
   })
 }
+
+/** `{ marca: ['Nike', 'Adidas'] }` → one `{ key, value }` per value, as the list's `filter` param spells them. */
+const toFilters = (filter: Record<string, string[]>): NavigationFilter[] =>
+  Object.entries(filter).flatMap(([key, values]) => values.map((value) => ({ key, value })))
 
 const target = ({ type, handle }: { type: TargetType; handle: string }) => ({ type, handle })
 

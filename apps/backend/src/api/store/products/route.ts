@@ -16,7 +16,7 @@ import {
   findActiveGroupValue,
 } from '@workflows/product/utils/build-listing-card.js'
 import { buildListingSublines } from '@workflows/product/utils/build-listing-subline.js'
-import { buildStoreGroupingFilters } from '@workflows/product/utils/build-store-grouping-filters.js'
+import { buildStoreGroupingFilters, selectsSale } from '@workflows/product/utils/build-store-grouping-filters.js'
 import { buildVariantPrices } from '@workflows/product/utils/build-variant-prices.js'
 import {
   buildAvailableQuantities,
@@ -50,6 +50,7 @@ export const GET = async (
     ...buildStoreGroupingFilters({ category, collection, tag, filter }),
   }
   const priceRange = { minPrice, maxPrice }
+  const onSale = selectsSale(filter)
   // What the store relates products by, read up front only when the list ranks by likeness.
   const related = similarTo ? ((await storeService.resolveStore())?.related ?? DEFAULT_RELATED_MATCH) : null
   // Filtered, sorted, paged and counted in one query: price and stock are no product column, and
@@ -60,6 +61,7 @@ export const GET = async (
       products,
       search,
       priceRange,
+      onSale,
       sort: order,
       limit,
       offset,
@@ -77,6 +79,7 @@ export const GET = async (
           ...products,
           status: 'published',
           sellableProductIds: listing.sellableProductIds({ currencyCode, priceRange }),
+          selectedProductIds: listing.selectedProductIds({ currencyCode, onSale }),
         })
       : null
   const { rows, count } = correctedQuery ? await listPage(correctedQuery) : asked
@@ -126,6 +129,14 @@ export const GET = async (
     imageIds.length > 0 ? productService.listProductImages({ id: imageIds }) : [],
   ])
   const priceByVariantId = buildVariantPrices(priceLinks, variantPrices)
+  /**
+   * The sale variant's quote, which carries its compare-at: the listing picked it for being marked down. Its
+   * variant rides along so the card opens on the variant the sale is.
+   */
+  const salePriceOf = (variantId: string | null) => {
+    const price = variantId === null ? undefined : priceByVariantId.get(variantId)
+    return variantId && price?.compareAtAmount ? { ...price, compareAtAmount: price.compareAtAmount, variantId } : null
+  }
   const stockOf = variantStockProjection(
     inventoryLinks,
     buildAvailableQuantities(levels),
@@ -163,6 +174,7 @@ export const GET = async (
         ...product,
         thumbnail: activeGroupValue?.thumbnail ?? product.thumbnail,
         startingPrice: priceBySetId.get(row.startingPriceSetId),
+        salePrice: salePriceOf(row.saleVariantId),
         soldOut: !row.purchasable,
         badges: buildListingBadges(groupingsByProductId[product.id]?.collections ?? []),
         groups,

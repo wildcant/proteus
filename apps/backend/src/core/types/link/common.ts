@@ -215,6 +215,8 @@ export type StoreCatalogFilters = {
   search?: string
   /** A product is in when any one priced variant is in the range, either end optional. */
   priceRange?: { minPrice?: number; maxPrice?: number }
+  /** Only products on sale: a variant a shopper can buy now is marked down in the currency. */
+  onSale?: boolean
 }
 
 export type ListStoreProductsOptions = StoreCatalogFilters & {
@@ -235,6 +237,8 @@ export type StoreListedProductDTO = {
   productId: string
   /** The cheapest priced variant's price set, so the card's "from" price is that variant's. */
   startingPriceSetId: string
+  /** The cheapest marked-down variant of those a shopper can buy now; `null` when none is on sale. */
+  saleVariantId: string | null
   /** Some priced variant can be bought. */
   purchasable: boolean
 }
@@ -265,4 +269,11 @@ export type IStoreCatalogListingRepository = {
     context?: Context,
   ): Promise<{ rows: StoreListedProductDTO[]; count: number }>
   listStoreFacets(options: ListStoreFacetsOptions, context?: Context): Promise<StoreFacetsDTO>
+  /** The products on sale: a variant a shopper can buy now is marked down in the currency, as a subquery. */
+  saleProductIds(filters: Pick<StoreCatalogFilters, 'currencyCode'>): SQL
+  /**
+   * What the store filters' price selections keep — a variant in `priceRange`, on sale when `onSale` —
+   * as one subquery for `selectedProductIds`; `undefined` when neither is asked.
+   */
+  selectedProductIds(filters: Omit<StoreCatalogFilters, 'products' | 'search'>): SQL | undefined
 }

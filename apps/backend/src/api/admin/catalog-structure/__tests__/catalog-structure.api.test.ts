@@ -214,9 +214,8 @@ test.describe('Structure files', () => {
     expect(await membersOf(`categoryId=${womenId}`)).toEqual([])
 
     // The store serves the file's menu, in its order; how sections resolve is the navigation API's own test.
-    expect((await navigation()).map(({ type, handle }) => `${type}:${handle}`)).toEqual(
-      plan.menu.next.map(({ type, handle }) => `${type}:${handle}`),
-    )
+    const identity = (entry: { type: string; handle?: string }) => `${entry.type}:${entry.handle}`
+    expect((await navigation()).map(identity)).toEqual(plan.menu.next.map(identity))
 
     // The same file again changes nothing.
     const again = await preview(await upload(FIXTURE))

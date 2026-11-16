@@ -25,7 +25,7 @@ export const navigationQueryOptions = (countryCode: string) =>
     queryKey: navigationQueryKeys.list({ countryCode }),
     queryFn: async (): Promise<Navigation> => {
       const { navigation } = await getStoreNavigation({ countryCode })
-      const handles = navigation.filter((entry) => entry.type === 'collection').map((entry) => entry.handle)
+      const handles = navigation.flatMap((entry) => (entry.type === 'collection' ? [entry.handle] : []))
       if (handles.length === 0) return { navigation, collections: [] }
       // One request for every Collection on the menu; 100 is the list's ceiling and far above any menu.
       const { collections } = await listStoreProductCollections({ handle: handles, limit: 100 })
