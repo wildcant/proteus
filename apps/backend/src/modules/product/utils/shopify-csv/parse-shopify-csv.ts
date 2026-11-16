@@ -12,6 +12,7 @@ import {
   CUSTOM_METAFIELD_NAMESPACE,
   IMPORT_COLUMNS,
   type ImportColumn,
+  MARKET_COMPARE_AT_HEADER,
   MARKET_PRICE_HEADER,
   METAFIELD_HEADER,
   normalizeHeader,
@@ -31,10 +32,11 @@ export type ParsedShopifyCsv = {
 
 type CsvSource = AsyncIterable<Uint8Array | string>
 
-/** Where each read column sits in a record, and which currency each price column is in. */
+/** Where each read column sits in a record, and which currency each price and compare-at column is in. */
 type HeaderMap = {
   index: Partial<Record<ImportColumn, number>>
   prices: Array<{ index: number; currencyCode: string }>
+  compareAts: Array<{ index: number; currencyCode: string }>
   metafields: Array<{ index: number; key: string }>
 }
 
@@ -184,7 +186,7 @@ function readHeader(
   definedMetafieldKeys: ReadonlySet<string>,
   fail: (line: number, handle: string | null, message: string) => void,
 ): { header: HeaderMap; ignored: string[] } | null {
-  const header: HeaderMap = { index: {}, prices: [], metafields: [] }
+  const header: HeaderMap = { index: {}, prices: [], compareAts: [], metafields: [] }
   const ignored: string[] = []
   const columnByName = new Map<string, ImportColumn>(
     Object.entries(IMPORT_COLUMNS).flatMap(([column, names]) => names.map((name) => [name, column as ImportColumn])),
@@ -193,10 +195,10 @@ function readHeader(
   record.forEach((raw, index) => {
     const name = normalizeHeader(raw)
     if (!name) return
-    const market = MARKET_PRICE_HEADER.exec(name)?.[1]
-    if (market) {
-      const currencyCode = settings.marketCurrencies[market.trim()]
-      if (currencyCode) header.prices.push({ index, currencyCode })
+    const marketColumn = readMarketHeader(name)
+    if (marketColumn) {
+      const currencyCode = settings.marketCurrencies[marketColumn.market]
+      if (currencyCode) header[marketColumn.list].push({ index, currencyCode })
       else fail(1, null, `The column "${raw.trim()}" names a market the store does not sell in.`)
       return
     }
@@ -217,10 +219,10 @@ function readHeader(
     const column = columnByName.get(name)
     if (column && header.index[column] === undefined) {
       header.index[column] = index
-      if (column === 'price') {
-        if (settings.defaultCurrency) header.prices.push({ index, currencyCode: settings.defaultCurrency })
-        else fail(1, null, 'The "Price" column needs a default currency, and the store has none.')
-      }
+      const priced = DEFAULT_CURRENCY_COLUMNS[column]
+      if (priced && settings.defaultCurrency)
+        header[priced.list].push({ index, currencyCode: settings.defaultCurrency })
+      else if (priced) fail(1, null, `The "${priced.label}" column needs a default currency, and the store has none.`)
       return
     }
     ignored.push(raw.trim())
@@ -239,6 +241,20 @@ function readHeader(
 }
 
 const HEADER_LABELS = { title: 'Title', handle: 'URL handle' } as const
+
+/** The price columns in the store's default currency, by the list each feeds. */
+const DEFAULT_CURRENCY_COLUMNS: Partial<Record<ImportColumn, { list: 'prices' | 'compareAts'; label: string }>> = {
+  price: { list: 'prices', label: 'Price' },
+  compareAtPrice: { list: 'compareAts', label: 'Compare-at price' },
+}
+
+/** `Price / <market>` and `Compare-at price / <market>`, with the market they name. */
+function readMarketHeader(name: string): { list: 'prices' | 'compareAts'; market: string } | null {
+  const price = MARKET_PRICE_HEADER.exec(name)?.[1]
+  if (price) return { list: 'prices', market: price.trim() }
+  const compareAt = MARKET_COMPARE_AT_HEADER.exec(name)?.[1]
+  return compareAt ? { list: 'compareAts', market: compareAt.trim() } : null
+}
 
 function readRow(
   record: string[],
@@ -276,7 +292,14 @@ function readRow(
     product.images.push({ url: imageUrl, position: position && /^\d+$/.test(position) ? Number(position) : null })
   }
 
-  const prices = header.prices.map(({ index, currencyCode }) => ({ currencyCode, raw: (record[index] ?? '').trim() }))
+  const prices = header.prices.map(({ index, currencyCode }) => {
+    const compareAtColumn = header.compareAts.find((compareAt) => compareAt.currencyCode === currencyCode)
+    return {
+      currencyCode,
+      raw: (record[index] ?? '').trim(),
+      rawCompareAt: compareAtColumn ? readCell(record, compareAtColumn) : undefined,
+    }
+  })
   const optionValues = OPTION_COLUMNS.slice(0, product.options.length).map(({ value }) => get(value))
   // A later row with nothing variant-like on it only adds an image, which is how Shopify exports a
   // gallery longer than the variant list.
@@ -352,7 +375,7 @@ function readMetafields(record: string[], header: HeaderMap): Record<string, str
 function readVariant(
   line: number,
   get: (column: ImportColumn) => string,
-  prices: Array<{ currencyCode: string; raw: string }>,
+  prices: Array<{ currencyCode: string; raw: string; rawCompareAt: string | undefined }>,
   optionValues: string[],
   product: ProductDraft,
   report: (message: string) => void,
@@ -372,14 +395,31 @@ function readVariant(
     product.combinations.add(combination)
   }
 
-  const readPrice = ({ currencyCode, raw }: { currencyCode: string; raw: string }) => {
+  // A compare-at rides on its currency's price, so one in a currency with no price is dropped. With
+  // no compare-at column for the currency it stays `undefined`, so an overwrite keeps the stored one
+  // the way a missing Price column keeps prices; a blank cell is `null` and clears it.
+  const readPrice = ({
+    currencyCode,
+    raw,
+    rawCompareAt,
+  }: {
+    currencyCode: string
+    raw: string
+    rawCompareAt: string | undefined
+  }) => {
     if (!raw) return []
     const amount = readNumber(raw)
     if (amount === null || amount < 0) {
       report(`The price "${raw}" is not a number.`)
       return []
     }
-    return [{ currencyCode, amount }]
+    if (rawCompareAt === undefined) return [{ currencyCode, amount }]
+    const compareAtAmount = rawCompareAt ? readNumber(rawCompareAt) : null
+    if (rawCompareAt && (compareAtAmount === null || compareAtAmount < 0)) {
+      report(`The compare-at price "${rawCompareAt}" is not a number.`)
+      return [{ currencyCode, amount, compareAtAmount: null }]
+    }
+    return [{ currencyCode, amount, compareAtAmount }]
   }
   const variantPrices = prices.flatMap(readPrice)
 
@@ -428,6 +468,10 @@ function finishProduct({ images, combinations: _combinations, ...product }: Prod
     })),
     imageUrls: [...new Set([...ordered, ...variantImages])],
   }
+}
+
+function readCell(record: string[], column: { index: number } | undefined): string {
+  return column ? (record[column.index] ?? '').trim() : ''
 }
 
 /** A decimal with either separator, since a `;`-delimited file usually writes `9,99`. */

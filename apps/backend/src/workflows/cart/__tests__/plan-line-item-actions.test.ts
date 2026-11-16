@@ -37,12 +37,13 @@ test.describe('planLineItemActions', () => {
   test('reprices the merged line to the incoming price', ({ expect }) => {
     const plan = planLineItemActions(
       [existingLine({ unitPrice: new BigNumber('10') })],
-      [addition({ unitPrice: new BigNumber('12') })],
+      [addition({ unitPrice: new BigNumber('12'), compareAtUnitPrice: new BigNumber('15') })],
     )
 
     // The whole line sells at the price the catalogue is quoting now, not at the one the row
-    // was written with.
+    // was written with — and strikes the compare-at quoted with it.
     expect(plan.merge[0]?.data.unitPrice?.toString()).toBe('12')
+    expect(plan.merge[0]?.data.compareAtUnitPrice?.toString()).toBe('15')
   })
 
   test('folds repeats of one variant within a single addition', ({ expect }) => {

@@ -304,8 +304,7 @@ pnpm exec dotenvx run -f ../../.env.local -- drizzle-kit generate \
 ```
 
 The `--name` is what keeps the tag stable, so the diff is additions inside the existing `.sql` plus a
-`when` timestamp in `meta/_journal.json`. Without it drizzle-kit invents one —
-`0000_perpetual_paper_doll.sql` in `pricing` is a leftover that got through, not a precedent.
+`when` timestamp in `meta/_journal.json`. Without it drizzle-kit invents a random tag.
 
 A Postgres extension is not something drizzle-kit can generate, so a line hand-added to the migration
 would be dropped at the next regeneration. Extensions live in `scripts/database-extensions.ts`, which

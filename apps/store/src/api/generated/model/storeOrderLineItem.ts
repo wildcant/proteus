@@ -20,6 +20,11 @@ export interface StoreOrderLineItem {
   quantity: number;
   /** Numeric string (arbitrary precision) */
   unitPrice: string;
+  /**
+     * Numeric string (arbitrary precision)
+     * @nullable
+     */
+  compareAtUnitPrice: string | null;
   /** Numeric string (arbitrary precision) */
   lineTotal: string;
 }

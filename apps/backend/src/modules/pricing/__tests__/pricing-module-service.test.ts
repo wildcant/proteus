@@ -342,4 +342,60 @@ test.describe('PricingModuleService', () => {
     expect(newPrices).toHaveLength(1)
     expect(newPrices[0]?.currencyCode).toBe('gbp')
   })
+
+  /**
+   * The Markdown rule lives in `calculatePrices`, so a stored compare-at reaches the store only
+   * when it is above the price. `listPrices` is the admin's read and keeps the value as entered.
+   */
+  test('calculatePrices returns a compare-at only when it marks the price down', async ({ expect, dto }) => {
+    const priceSet = await service.createPriceSet({
+      prices: [
+        dto.generate.createPrice({
+          currencyCode: 'usd',
+          amount: new BigNumber('80'),
+          compareAtAmount: new BigNumber('100'),
+        }),
+        dto.generate.createPrice({
+          currencyCode: 'eur',
+          amount: new BigNumber('90'),
+          compareAtAmount: new BigNumber('90'),
+        }),
+        dto.generate.createPrice({
+          currencyCode: 'gbp',
+          amount: new BigNumber('70'),
+          compareAtAmount: new BigNumber('60'),
+        }),
+      ],
+    })
+    const compareAtIn = async (currencyCode: string) => {
+      const [calculated] = await service.calculatePrices([priceSet.id], { currencyCode })
+      return calculated?.compareAtAmount?.toFixed() ?? null
+    }
+
+    expect(await compareAtIn('usd')).toBe('100')
+    expect(await compareAtIn('eur')).toBeNull()
+    expect(await compareAtIn('gbp')).toBeNull()
+
+    const stored = await service.listPrices({ priceSetId: priceSet.id, currencyCode: 'gbp' })
+    expect(stored[0]?.compareAtAmount?.toFixed()).toBe('60')
+
+    // An upsert entry is the whole price: one that names a compare-at changes it, one that leaves
+    // it out clears it.
+    const prices = await service.listPrices({ priceSetId: priceSet.id })
+    const idOf = (currencyCode: string) => prices.find((price) => price.currencyCode === currencyCode)?.id
+    await service.upsertPriceSets([
+      {
+        id: priceSet.id,
+        prices: [
+          { id: idOf('usd'), currencyCode: 'usd', amount: new BigNumber('80'), compareAtAmount: new BigNumber('120') },
+          { id: idOf('eur'), currencyCode: 'eur', amount: new BigNumber('80') },
+          { id: idOf('gbp'), currencyCode: 'gbp', amount: new BigNumber('70') },
+        ],
+      },
+    ])
+
+    expect(await compareAtIn('usd')).toBe('120')
+    const cleared = await service.listPrices({ priceSetId: priceSet.id, currencyCode: 'gbp' })
+    expect(cleared[0]?.compareAtAmount).toBeNull()
+  })
 })

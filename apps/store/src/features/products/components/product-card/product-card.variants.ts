@@ -15,4 +15,8 @@ export const productCardInfo = cva('flex flex-col items-stretch gap-4 py-2 lg:px
 
 export const productCardTitle = cva('type-body-compact text-ink')
 
+export const productCardPrices = cva('flex flex-wrap items-baseline gap-x-2')
+
 export const productCardPrice = cva('type-label-bold text-ink')
+
+export const productCardCompareAt = cva('type-label-struck text-ink-muted')

@@ -18,7 +18,7 @@ import { fromVariantGridRows, toVariantGridRows, type VariantGridRow } from './v
  * One column for the combination, headed by the options it is made of — which is also the variant's
  * title, since a Variant Title is that label. A separate Title column would repeat it verbatim.
  *
- * Then one price column per currency the store sells in, so a product can be priced for every
+ * Then a price and a compare-at column per currency the store sells in, so a product can be priced for every
  * market on the screen that creates it rather than in a second pass per variant.
  */
 function buildColumns(optionTitles: string[], currencyCodes: string[], i18n: I18n): DataGridColumn<VariantGridRow>[] {

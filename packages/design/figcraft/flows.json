@@ -72,7 +72,8 @@
         "soldOut",
         "notFound",
         "bagOpen",
-        "loading"
+        "loading",
+        "markedDown"
       ]
     },
     "Root": {

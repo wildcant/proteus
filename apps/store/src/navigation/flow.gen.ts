@@ -15,7 +15,7 @@ export const screenStates = {
   OrderConfirmedContent: ['default', 'loading', 'error'],
   OrderContent: ['default', 'loading', 'error'],
   PaymentMethodsBook: ['empty', 'loading', 'unavailable', 'list', 'removeConfirm'],
-  ProductDetail: ['default', 'soldOut', 'notFound', 'bagOpen', 'loading'],
+  ProductDetail: ['default', 'soldOut', 'notFound', 'bagOpen', 'loading', 'markedDown'],
   ProductListPage: ['default', 'loading', 'navigating', 'filterOpen', 'filtered', 'search', 'searchNoMatch', 'category', 'collection', 'notFound', 'filteredEmpty', 'empty'],
   RegisterForm: ['default', 'validation', 'verificationPending'],
   ResetPasswordForm: ['default', 'validation', 'failure', 'success', 'missingToken'],

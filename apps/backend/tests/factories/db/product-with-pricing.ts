@@ -11,7 +11,7 @@ import {
 import { createProduct, deleteProductById } from './product.js'
 import { createProductVariant } from './product-variant.js'
 
-type PriceOverride = { amount: string; currencyCode?: string }
+type PriceOverride = { amount: string; currencyCode?: string; compareAtAmount?: string }
 
 type CreateProductWithPricingOptions = {
   product?: Partial<CreateProduct>
@@ -40,6 +40,7 @@ export async function createProductWithPricing(options: CreateProductWithPricing
   const prices = requested.map((price) => ({
     amount: price.amount ?? faker.commerce.price({ min: 5, max: 200 }),
     currencyCode: price.currencyCode ?? 'usd',
+    compareAtAmount: price.compareAtAmount ?? null,
   }))
 
   await Promise.all(
@@ -48,6 +49,7 @@ export async function createProductWithPricing(options: CreateProductWithPricing
         priceSetId: priceSet.id,
         amount: new BigNumber(price.amount),
         currencyCode: price.currencyCode,
+        compareAtAmount: price.compareAtAmount ? new BigNumber(price.compareAtAmount) : null,
       }),
     ),
   )

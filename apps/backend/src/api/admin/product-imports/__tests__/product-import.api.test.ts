@@ -390,29 +390,44 @@ test.describe('product CSV import', () => {
     expect,
     service,
   }) => {
-    await runImport([HEADER, 'Cap,cap,,,,,active,CAP-1,,,10,,shopify,3,,,'])
+    const header = `${HEADER},Compare-at price`
+    await runImport([header, 'Cap,cap,,,,,active,CAP-1,,,10,,shopify,3,,,,15'])
     const [cap] = await service.read.products(api.container, { handle: 'cap' })
     const [variant] = await service.read.productVariants(api.container, { productId: cap?.id ?? '' })
+    const [priceLink] = await service.read
+      .linkRepo(api.container, 'productVariantPriceSet')
+      .findByVariantIds([variant?.id ?? ''])
+    const readPrices = async () =>
+      (await service.read.prices(api.container, priceLink?.priceSetId ?? '')).map((price) => [
+        price.currencyCode,
+        price.amount.toNumber(),
+        price.compareAtAmount?.toNumber() ?? null,
+      ])
+    const pricesBefore = await readPrices()
 
     const skipped = await runImport([HEADER, 'Cap renamed,cap,,,,,active,CAP-1,,,12,,shopify,7,,,'])
     const titleAfterSkip = (await service.read.products(api.container, { handle: 'cap' }))[0]?.title
 
-    const updated = await runImport([HEADER, 'Cap renamed,cap,,,,,active,CAP-1,,,12,,shopify,7,,,'], {
+    // A file with no compare-at column leaves the stored one alone, as one with no Price column would.
+    await runImport([HEADER, 'Cap,cap,,,,,active,CAP-1,,,11,,shopify,3,,,'], { overwrite: true })
+    const pricesWithoutColumn = await readPrices()
+
+    const updated = await runImport([header, 'Cap renamed,cap,,,,,active,CAP-1,,,12,,shopify,7,,,,'], {
       overwrite: true,
     })
     const [afterOverwrite] = await service.read.products(api.container, { handle: 'cap' })
     const variants = await service.read.productVariants(api.container, { productId: cap?.id ?? '' })
-    const [priceLink] = await service.read
-      .linkRepo(api.container, 'productVariantPriceSet')
-      .findByVariantIds([variant?.id ?? ''])
-    const prices = await service.read.prices(api.container, priceLink?.priceSetId ?? '')
+    const prices = await readPrices()
 
     expect(skipped).toMatchObject({ status: 'completed', skipped: 1, created: 0, updated: 0 })
     expect(titleAfterSkip).toBe('Cap')
     expect(updated).toMatchObject({ status: 'completed', updated: 1, summary: { products: { update: 1, skip: 0 } } })
     expect(afterOverwrite?.title).toBe('Cap renamed')
     expect(variants.map((entry) => entry.id)).toEqual([variant?.id])
-    expect(prices.map((price) => [price.currencyCode, price.amount.toNumber()])).toEqual([['usd', 12]])
+    expect(pricesBefore).toEqual([['usd', 10, 15]])
+    expect(pricesWithoutColumn).toEqual([['usd', 11, 15]])
+    // The overwrite's blank compare-at clears the one the first import set.
+    expect(prices).toEqual([['usd', 12, null]])
   })
 
   test('refuses to run a file with errors, listing every one with its line', async ({ expect }) => {

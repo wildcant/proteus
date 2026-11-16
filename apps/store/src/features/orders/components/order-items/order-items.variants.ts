@@ -25,4 +25,8 @@ export const orderItemsTitle = cva('type-body-compact text-ink')
 
 export const orderItemsOptions = cva('type-caption text-ink-muted')
 
-export const orderItemsPrice = cva('type-label self-stretch text-right text-ink sm:w-auto')
+export const orderItemsPrices = cva('flex flex-wrap items-baseline justify-end gap-x-2 self-stretch sm:w-auto')
+
+export const orderItemsPrice = cva('type-label text-right text-ink')
+
+export const orderItemsCompareAt = cva('type-label-struck text-ink-muted')

@@ -56,7 +56,7 @@ function product(overrides: Partial<StoreProductListItem> & Pick<StoreProductLis
     originCountry: null,
     material: null,
     brand: null,
-    startingPrice: { id: 'price_1', currencyCode: 'usd', calculatedAmount: '46.00' },
+    startingPrice: { id: 'price_1', currencyCode: 'usd', calculatedAmount: '46.00', compareAtAmount: null },
     soldOut: false,
     badges: [],
     groups: null,
@@ -119,4 +119,38 @@ test('a sold-out product stays in the grid, in the place the API gave it', async
 
   // Each card is addressed by its product's handle, the readable half of the URL, not its id.
   expect(badges[0]?.closest('a')?.getAttribute('href')).toBe('/products/sport-shorts')
+})
+
+test('a marked-down product strikes its compare-at after the "From" price, and an unmarked one shows none', async () => {
+  const markedDown = await renderInRouter(
+    <ProductCard
+      product={product({
+        id: 'prod_down',
+        title: 'Sport Shorts',
+        startingPrice: { id: 'price_1', currencyCode: 'usd', calculatedAmount: '46.00', compareAtAmount: '60.00' },
+      })}
+      link={productLink('sport-shorts')}
+    />,
+  )
+
+  // The "From" phrasing stays on the price the shopper pays; the old figure follows it.
+  await expect.element(page.getByText('From $46.00')).toBeVisible()
+  const compareAt = page.getByText('$60.00', { exact: true })
+  await expect.element(compareAt).toBeVisible()
+  // Off the real Chromium, not the class list: a struck figure is the claim, not a class name.
+  expect(getComputedStyle(compareAt.element()).textDecorationLine).toBe('line-through')
+  // Read aloud as two named prices, since a strike says nothing to a screen reader.
+  await expect.element(page.getByText('Regular price')).toBeInTheDocument()
+  await expect.element(page.getByText('Sale price')).toBeInTheDocument()
+  await markedDown.unmount()
+
+  await renderInRouter(
+    <ProductCard product={product({ id: 'prod_full', title: 'Sport Shorts' })} link={productLink('sport-shorts')} />,
+  )
+
+  // Anchored on the price first, so the absence below is read off a rendered card.
+  await expect.element(page.getByText('From $46.00')).toBeVisible()
+  await expect.element(page.getByText('$60.00', { exact: true })).not.toBeInTheDocument()
+  await expect.element(page.getByText('Regular price')).not.toBeInTheDocument()
+  await expect.element(page.getByText('Sale price')).not.toBeInTheDocument()
 })

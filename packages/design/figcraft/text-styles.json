@@ -141,6 +141,34 @@
       "fontSize": "VariableID:92",
       "lineHeight": "VariableID:93"
     },
+    "description": "A Compare-at Price beside the price it was marked down to (text-sm font-medium line-through).",
+    "id": "S:36",
+    "name": "type/label-struck",
+    "style": {
+      "case": "original",
+      "decoration": "strikethrough",
+      "fills": null,
+      "font_family": "Manrope",
+      "font_size": 14,
+      "font_style": "Medium",
+      "letter_spacing": {
+        "unit": "percent",
+        "value": 0
+      },
+      "line_height": {
+        "unit": "pixels",
+        "value": 20
+      },
+      "link": null
+    },
+    "type": "text"
+  },
+  {
+    "bound": {
+      "fontFamily": "VariableID:17",
+      "fontSize": "VariableID:92",
+      "lineHeight": "VariableID:93"
+    },
     "description": "Buttons, field labels, menu items (text-sm font-medium).",
     "id": "S:9",
     "name": "type/label",

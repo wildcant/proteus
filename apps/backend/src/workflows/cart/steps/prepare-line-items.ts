@@ -130,6 +130,7 @@ export async function prepareLineItemsStep(
         productSubline: sublineByProductId.get(product.id) ?? null,
         variant,
         unitPrice: price.calculatedAmount,
+        compareAtUnitPrice: price.compareAtAmount,
         thumbnail: thumbnails.get(variant.id) ?? null,
       })
     })

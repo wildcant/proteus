@@ -223,6 +223,9 @@ function FirstProduct({
               <TableHead>
                 <Trans>Price</Trans>
               </TableHead>
+              <TableHead>
+                <Trans>Compare-at price</Trans>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -234,6 +237,16 @@ function FirstProduct({
                 <TableCell>
                   {variant.prices
                     .map((price) => formatPrice(String(price.amount), price.currencyCode, activeLocale()))
+                    .join(' · ') || none}
+                </TableCell>
+                <TableCell>
+                  {variant.prices
+                    // Absent when the file has no compare-at column, which an overwrite reads as keep.
+                    .flatMap((price) =>
+                      typeof price.compareAtAmount === 'number'
+                        ? [formatPrice(String(price.compareAtAmount), price.currencyCode, activeLocale())]
+                        : [],
+                    )
                     .join(' · ') || none}
                 </TableCell>
               </TableRow>

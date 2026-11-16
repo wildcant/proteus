@@ -1,11 +1,13 @@
 import { z } from 'zod'
-import { bigNumberToString } from '../../common.js'
+import { bigNumberToString, nullableBigNumberToString } from '../../common.js'
 
 export const StoreCalculatedPrice = z
   .object({
     id: z.string(),
     currencyCode: z.string(),
     calculatedAmount: bigNumberToString,
+    // Null unless the variant is marked down: a compare-at at or below the price never reaches the store.
+    compareAtAmount: nullableBigNumberToString,
     // TODO(pricing): add originalAmount when PriceRule/PriceList is implemented
     // TODO(tax): add calculatedAmountWithTax, calculatedAmountWithoutTax
   })

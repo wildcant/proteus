@@ -56,6 +56,8 @@ export const variantsSchema = z.object({
       sku: z.string(),
       /** One amount per store currency, keyed by ISO code. Blank means unpriced in that market. */
       prices: z.record(z.string(), z.string()),
+      /** The compare-at beside each price, keyed the same way. Blank means none in that currency. */
+      compareAtPrices: z.record(z.string(), z.string()),
     }),
   ),
 })

@@ -9,16 +9,20 @@ import { amountToBigNumber, metadata } from '../../common.js'
 const CreateVariantPrice = z.object({
   currencyCode: machineCode.min(1),
   amount: amountToBigNumber,
+  /** The amount shown struck beside `amount`. It only marks the variant down when it is above `amount`. */
+  compareAtAmount: amountToBigNumber.nullable().optional(),
 })
 
 /**
  * `id` names the row to overwrite. Omitting it prices a currency the variant does not have yet —
- * currencies this payload leaves out are kept as they are, not dropped.
+ * currencies this payload leaves out are kept as they are, not dropped. An entry is the whole
+ * price for its currency, so omitting `compareAtAmount` clears it.
  */
 const UpdateVariantPrice = z.object({
   id: entityId.optional(),
   currencyCode: machineCode.min(1),
   amount: amountToBigNumber,
+  compareAtAmount: amountToBigNumber.nullable().optional(),
 })
 
 export const AdminCreateProductVariant = z

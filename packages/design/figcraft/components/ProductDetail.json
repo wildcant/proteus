@@ -13,6 +13,11 @@
       "type": "variant"
     },
     {
+      "default": "$100.00",
+      "name": "compareAt",
+      "type": "text"
+    },
+    {
       "default": "Hoodie",
       "name": "crumb",
       "type": "text"
@@ -21,6 +26,11 @@
       "default": "This hoodie is the perfect choice for comfort and warmth. Meticulously crafted from 100% cotton, the hoodie features a soft, plush fleece interior and a unisex sizing design. Soft and lightweight, it's sure to be your go-to for chilly days.",
       "name": "description",
       "type": "text"
+    },
+    {
+      "default": false,
+      "name": "hasCompareAt",
+      "type": "boolean"
     },
     {
       "default": true,
@@ -447,23 +457,72 @@
                       },
                       "children": [
                         {
-                          "name": "price",
-                          "type": "TEXT",
-                          "fills": [
-                            {
-                              "color": "#0D1012",
-                              "type": "solid"
-                            }
-                          ],
+                          "name": "prices",
+                          "type": "FRAME",
+                          "clip": false,
                           "sizing": {
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
                           "boundVariables": {
-                            "fill": "VariableID:18"
+                            "gap": "VariableID:35"
                           },
-                          "textAlign": "left",
-                          "textStyle": "S:24"
+                          "layout": {
+                            "mode": "horizontal",
+                            "mainAlign": "min",
+                            "crossAlign": "baseline",
+                            "gap": 8,
+                            "padding": [
+                              0,
+                              0,
+                              0,
+                              0
+                            ],
+                            "strokesIncluded": true,
+                            "wrap": true,
+                            "crossGap": 0
+                          },
+                          "children": [
+                            {
+                              "name": "price",
+                              "type": "TEXT",
+                              "fills": [
+                                {
+                                  "color": "#0D1012",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "hug",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:18"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:24"
+                            },
+                            {
+                              "name": "compareAt",
+                              "type": "TEXT",
+                              "visible": false,
+                              "fills": [
+                                {
+                                  "color": "#767A7F",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "hug",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:19"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:36"
+                            }
+                          ]
                         },
                         {
                           "name": "stock",
@@ -2188,23 +2247,72 @@
                       },
                       "children": [
                         {
-                          "name": "price",
-                          "type": "TEXT",
-                          "fills": [
-                            {
-                              "color": "#0D1012",
-                              "type": "solid"
-                            }
-                          ],
+                          "name": "prices",
+                          "type": "FRAME",
+                          "clip": false,
                           "sizing": {
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
                           "boundVariables": {
-                            "fill": "VariableID:18"
+                            "gap": "VariableID:35"
                           },
-                          "textAlign": "left",
-                          "textStyle": "S:24"
+                          "layout": {
+                            "mode": "horizontal",
+                            "mainAlign": "min",
+                            "crossAlign": "baseline",
+                            "gap": 8,
+                            "padding": [
+                              0,
+                              0,
+                              0,
+                              0
+                            ],
+                            "strokesIncluded": true,
+                            "wrap": true,
+                            "crossGap": 0
+                          },
+                          "children": [
+                            {
+                              "name": "price",
+                              "type": "TEXT",
+                              "fills": [
+                                {
+                                  "color": "#0D1012",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "hug",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:18"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:24"
+                            },
+                            {
+                              "name": "compareAt",
+                              "type": "TEXT",
+                              "visible": false,
+                              "fills": [
+                                {
+                                  "color": "#767A7F",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "hug",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:19"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:36"
+                            }
+                          ]
                         },
                         {
                           "name": "stock",
@@ -3941,23 +4049,72 @@
                       },
                       "children": [
                         {
-                          "name": "price",
-                          "type": "TEXT",
-                          "fills": [
-                            {
-                              "color": "#0D1012",
-                              "type": "solid"
-                            }
-                          ],
+                          "name": "prices",
+                          "type": "FRAME",
+                          "clip": false,
                           "sizing": {
                             "horizontal": "hug",
                             "vertical": "hug"
                           },
                           "boundVariables": {
-                            "fill": "VariableID:18"
+                            "gap": "VariableID:35"
                           },
-                          "textAlign": "left",
-                          "textStyle": "S:24"
+                          "layout": {
+                            "mode": "horizontal",
+                            "mainAlign": "min",
+                            "crossAlign": "baseline",
+                            "gap": 8,
+                            "padding": [
+                              0,
+                              0,
+                              0,
+                              0
+                            ],
+                            "strokesIncluded": true,
+                            "wrap": true,
+                            "crossGap": 0
+                          },
+                          "children": [
+                            {
+                              "name": "price",
+                              "type": "TEXT",
+                              "fills": [
+                                {
+                                  "color": "#0D1012",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "hug",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:18"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:24"
+                            },
+                            {
+                              "name": "compareAt",
+                              "type": "TEXT",
+                              "visible": false,
+                              "fills": [
+                                {
+                                  "color": "#767A7F",
+                                  "type": "solid"
+                                }
+                              ],
+                              "sizing": {
+                                "horizontal": "hug",
+                                "vertical": "hug"
+                              },
+                              "boundVariables": {
+                                "fill": "VariableID:19"
+                              },
+                              "textAlign": "left",
+                              "textStyle": "S:36"
+                            }
+                          ]
                         },
                         {
                           "name": "stock",

@@ -8,6 +8,7 @@ import {
   productDetailAddToCart,
   productDetailBody,
   productDetailBreadcrumb,
+  productDetailCompareAt,
   productDetailCurrent,
   productDetailDescription,
   productDetailGallery,
@@ -15,6 +16,7 @@ import {
   productDetailInfo,
   productDetailPicker,
   productDetailPrice,
+  productDetailPrices,
   productDetailPricing,
   productDetailProductsLink,
   productDetailSeparator,
@@ -97,10 +99,31 @@ export function ProductDetail({ handle, variantId, links }: ProductDetailProps) 
               // the shopper is currently on, so it belongs beside the other one — and ahead of the
               // control that changes which variant that is.
               <div className={productDetailPricing()}>
-                <p className={cn(productDetailPrice(), 'tabular-nums')}>
-                  {formatPrice(
-                    selectedVariant.calculatedPrice.calculatedAmount,
-                    selectedVariant.calculatedPrice.currencyCode,
+                <p className={productDetailPrices()}>
+                  {/* The screen-reader labels are `sr-only`, out of the row's flow and its gap. */}
+                  {!!selectedVariant.calculatedPrice.compareAtAmount && (
+                    <span className="sr-only">
+                      <Trans>Sale price</Trans>
+                    </span>
+                  )}
+                  <span className={cn(productDetailPrice(), 'tabular-nums')}>
+                    {formatPrice(
+                      selectedVariant.calculatedPrice.calculatedAmount,
+                      selectedVariant.calculatedPrice.currencyCode,
+                    )}
+                  </span>
+                  {!!selectedVariant.calculatedPrice.compareAtAmount && (
+                    <>
+                      <span className="sr-only">
+                        <Trans>Regular price</Trans>
+                      </span>
+                      <span className={cn(productDetailCompareAt(), 'tabular-nums')}>
+                        {formatPrice(
+                          selectedVariant.calculatedPrice.compareAtAmount,
+                          selectedVariant.calculatedPrice.currencyCode,
+                        )}
+                      </span>
+                    </>
                   )}
                 </p>
                 <VariantStock stock={selectedVariant.stock} className={productDetailStock()} />

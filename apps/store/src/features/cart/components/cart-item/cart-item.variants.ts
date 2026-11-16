@@ -17,6 +17,10 @@ export const cartItemOptions = cva('type-body-compact text-ink-subtle')
 
 export const cartItemFooter = cva('flex flex-wrap items-center justify-between gap-x-3 gap-y-3 pt-3')
 
+export const cartItemPrices = cva('flex flex-wrap items-baseline gap-x-2')
+
 export const cartItemPrice = cva('type-label-bold text-ink')
+
+export const cartItemCompareAt = cva('type-label-struck text-ink-muted')
 
 export const cartItemQuantity = cva('flex')

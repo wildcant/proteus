@@ -15,6 +15,7 @@ export const priceTable = pgTable(
     id: text().primaryKey().default(sql`CONCAT('price_', REPLACE(gen_random_uuid()::text, '-', ''))`),
     currencyCode: text().notNull(),
     amount: bignum().notNull(),
+    compareAtAmount: bignum(),
     priceSetId: text()
       .notNull()
       .references(() => priceSetTable.id, { onDelete: 'cascade' }),

@@ -12,6 +12,7 @@ export type PriceDTO = {
   id: string
   currencyCode: string
   amount: BigNumber
+  compareAtAmount: BigNumber | null
   priceSetId: string
   createdAt: Date
   updatedAt: Date
@@ -21,6 +22,8 @@ export type PriceDTO = {
 export type CalculatedPriceSetDTO = {
   id: string
   calculatedAmount: BigNumber
+  /** Null unless above calculatedAmount: a compare-at at or below the price is no Markdown. */
+  compareAtAmount: BigNumber | null
   currencyCode: string
 }
 

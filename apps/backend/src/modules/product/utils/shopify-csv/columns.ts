@@ -14,6 +14,7 @@ export const IMPORT_COLUMNS = {
   sku: ['sku'],
   weight: ['weight value (grams)'],
   price: ['price'],
+  compareAtPrice: ['compare-at price'],
   inventoryTracker: ['inventory tracker'],
   inventoryQuantity: ['inventory quantity'],
   continueSelling: ['continue selling when out of stock'],
@@ -47,6 +48,9 @@ export const CUSTOM_METAFIELD_NAMESPACE = 'custom'
 
 /** `Price / Colombia` — a price in the currency of the region the market names. */
 export const MARKET_PRICE_HEADER = /^price \/ (.+)$/
+
+/** `Compare-at price / Colombia` — a compare-at price in the currency of the region the market names. */
+export const MARKET_COMPARE_AT_HEADER = /^compare-at price \/ (.+)$/
 
 export function normalizeHeader(header: string): string {
   return header.trim().toLowerCase().replace(/\s+/g, ' ')

@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { bigNumberToString, dateToIso, OrderPaymentStatus, timestamps } from '../../common.js'
+import {
+  bigNumberToString,
+  dateToIso,
+  nullableBigNumberToString,
+  OrderPaymentStatus,
+  timestamps,
+} from '../../common.js'
 
 export const StoreOrderStatus = z.enum(['draft', 'pending', 'completed', 'canceled', 'archived'])
 
@@ -36,6 +42,7 @@ export const StoreOrderLineItem = z
     thumbnail: z.string().nullable(),
     quantity: z.number(),
     unitPrice: bigNumberToString,
+    compareAtUnitPrice: nullableBigNumberToString,
     lineTotal: bigNumberToString,
   })
   .openapi('StoreOrderLineItem')

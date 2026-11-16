@@ -45,18 +45,33 @@ function importedCombination(
   )
 }
 
+/**
+ * The variant write an imported variant makes. A price whose compare-at the file has no column for
+ * takes the one `stored` holds in its currency, so an overwrite leaves it as it was; a new variant
+ * passes none and gets no compare-at.
+ */
 export function buildImportedVariant(
   variant: ImportedVariantDTO,
   product: ImportedProductDTO,
   references: ProductImportReferencesDTO,
+  stored: Array<{ currencyCode: string; compareAtAmount: BigNumber | null }> = [],
 ): AdminCreateProductVariantBody {
+  const storedCompareAt = new Map(stored.map((price) => [price.currencyCode.toLowerCase(), price.compareAtAmount]))
+  const compareAtOf = (price: ImportedVariantDTO['prices'][number]) => {
+    if (price.compareAtAmount === undefined) return storedCompareAt.get(price.currencyCode.toLowerCase()) ?? null
+    return price.compareAtAmount === null ? null : new BigNumber(price.compareAtAmount)
+  }
   return {
     sku: variant.sku,
     weight: variant.weight,
     manageInventory: variant.manageInventory,
     allowBackorder: variant.allowBackorder,
     optionValues: importedCombination(variant, product, references),
-    prices: variant.prices.map((price) => ({ currencyCode: price.currencyCode, amount: new BigNumber(price.amount) })),
+    prices: variant.prices.map((price) => ({
+      currencyCode: price.currencyCode,
+      amount: new BigNumber(price.amount),
+      compareAtAmount: compareAtOf(price),
+    })),
   }
 }
 

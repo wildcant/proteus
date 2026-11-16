@@ -1,41 +1,17 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Button, KeyboundForm, RouteFocusModal, useRouteModal } from '@proteus/ui'
 import { useCallback, useMemo, useState } from 'react'
-import type { AdminProductVariant, AdminUpdateVariantPricesPricesItem } from '#/api/generated/model'
+import type { AdminProductVariant } from '#/api/generated/model'
 import { DataGrid } from '#/components/data-grid/data-grid'
 import { useUpdateVariantPrices } from '#/features/products/api/product-variants'
-import { buildPriceColumns, type CurrencyAmounts } from '#/features/products/utils/price-columns'
+import {
+  buildPriceColumns,
+  buildPricePayload,
+  type CurrencyAmounts,
+  compareAtKey,
+} from '#/features/products/utils/price-columns'
 import { useStoreCurrencies } from '#/features/store/api/store'
 import { useUiCopy } from '#/hooks/use-ui-copy'
-
-/**
- * The edit as a payload, or `undefined` when nothing changed.
- *
- * A currency left blank is omitted rather than sent as zero: the endpoint merges by currency, so
- * omitting one leaves whatever price it already has alone, and quoting zero would put a variant on
- * sale for nothing. That is also why a price the merchant never touched is safe to send — it goes
- * back with the same id and amount it arrived with.
- */
-function buildPricePayload(
-  initial: CurrencyAmounts,
-  current: CurrencyAmounts,
-  priceIdByCurrency: Map<string, string>,
-): AdminUpdateVariantPricesPricesItem[] | undefined {
-  const prices: AdminUpdateVariantPricesPricesItem[] = []
-  let hasChanges = false
-
-  for (const [currencyCode, amount] of Object.entries(current)) {
-    if (amount !== (initial[currencyCode] ?? '')) {
-      hasChanges = true
-    }
-    if (amount === '') continue
-
-    const id = priceIdByCurrency.get(currencyCode)
-    prices.push({ ...(id ? { id } : {}), currencyCode, amount })
-  }
-
-  return hasChanges && prices.length > 0 ? prices : undefined
-}
 
 export function VariantPriceEditForm({ productId, variant }: { productId: string; variant: AdminProductVariant }) {
   const { i18n } = useLingui()
@@ -52,8 +28,16 @@ export function VariantPriceEditForm({ productId, variant }: { productId: string
   )
 
   const initialRow = useMemo((): CurrencyAmounts => {
-    const amountByCurrency = new Map((variant.prices ?? []).map((price) => [price.currencyCode, price.amount]))
-    return Object.fromEntries(currencyCodes.map((code) => [code, amountByCurrency.get(code) ?? '']))
+    const priceByCurrency = new Map((variant.prices ?? []).map((price) => [price.currencyCode, price]))
+    return Object.fromEntries(
+      currencyCodes.flatMap((code) => {
+        const price = priceByCurrency.get(code)
+        return [
+          [code, price?.amount ?? ''],
+          [compareAtKey(code), price?.compareAtAmount ?? ''],
+        ]
+      }),
+    )
   }, [variant.prices, currencyCodes])
 
   // Null until the merchant types, so the row still picks up the store currencies when they land
@@ -71,7 +55,7 @@ export function VariantPriceEditForm({ productId, variant }: { productId: string
 
   const handleSubmit = (event: React.SubmitEvent) => {
     event.preventDefault()
-    const payload = buildPricePayload(initialRow, row, priceIdByCurrency)
+    const payload = buildPricePayload(currencyCodes, initialRow, row, priceIdByCurrency)
     if (!payload) {
       handleSuccess()
       return

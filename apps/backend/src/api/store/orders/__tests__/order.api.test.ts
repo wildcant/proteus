@@ -104,13 +104,17 @@ test.describe('GET /store/orders/:id', () => {
   })
 
   test('returns the line items and shipping methods the order owns', async ({ service, expect }) => {
-    const { order, lineItem, shippingMethod } = await service.create.order(api.container)
+    const { order, lineItem, shippingMethod } = await service.create.order(api.container, {
+      lineItem: { compareAtUnitPrice: new BigNumber('150') },
+    })
 
     const { body } = await retrieve(order.id)
 
+    // The cart line's compare-at travels onto the order line, so the order page strikes what the
+    // shopper saw struck at checkout.
     expect(body).toMatchObject({
       order: {
-        lineItems: [{ title: lineItem.title, quantity: lineItem.quantity }],
+        lineItems: [{ title: lineItem.title, quantity: lineItem.quantity, compareAtUnitPrice: '150' }],
         shippingMethods: [{ name: shippingMethod.name }],
       },
     })

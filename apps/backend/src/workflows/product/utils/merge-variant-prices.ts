@@ -1,9 +1,14 @@
 import type { BigNumber } from '@core/bignumber.js'
 
-type PriceEntry = { id?: string | undefined; currencyCode: string; amount: BigNumber }
+type PriceEntry = {
+  id?: string | undefined
+  currencyCode: string
+  amount: BigNumber
+  compareAtAmount?: BigNumber | null | undefined
+}
 
 /** What the pricing module takes for one price set: a full list, one entry per currency. */
-type UpsertPriceEntry = { id?: string; currencyCode: string; amount: BigNumber }
+type UpsertPriceEntry = { id?: string; currencyCode: string; amount: BigNumber; compareAtAmount: BigNumber | null }
 
 /**
  * Folds an edit into the prices a variant already has.
@@ -16,6 +21,9 @@ type UpsertPriceEntry = { id?: string; currencyCode: string; amount: BigNumber }
  * Matching is by currency code, because that is what identifies a price within a set: an incoming
  * price with no id still overwrites the row already quoting that currency instead of adding a
  * second one beside it.
+ *
+ * An incoming entry is the whole price for its currency, so one sent without a compare-at clears
+ * it. Untouched currencies keep the compare-at they had.
  */
 export function mergeVariantPrices(existing: PriceEntry[], incoming: PriceEntry[]): UpsertPriceEntry[] {
   const key = (currencyCode: string) => currencyCode.trim().toLowerCase()
@@ -23,13 +31,23 @@ export function mergeVariantPrices(existing: PriceEntry[], incoming: PriceEntry[
 
   const merged = incoming.map((price) => {
     const id = price.id ?? existingByCurrency.get(key(price.currencyCode))?.id
-    return { ...(id ? { id } : {}), currencyCode: price.currencyCode, amount: price.amount }
+    return {
+      ...(id ? { id } : {}),
+      currencyCode: price.currencyCode,
+      amount: price.amount,
+      compareAtAmount: price.compareAtAmount ?? null,
+    }
   })
 
   const edited = new Set(incoming.map((price) => key(price.currencyCode)))
   const untouched = existing
     .filter((price) => !edited.has(key(price.currencyCode)))
-    .map((price) => ({ ...(price.id ? { id: price.id } : {}), currencyCode: price.currencyCode, amount: price.amount }))
+    .map((price) => ({
+      ...(price.id ? { id: price.id } : {}),
+      currencyCode: price.currencyCode,
+      amount: price.amount,
+      compareAtAmount: price.compareAtAmount ?? null,
+    }))
 
   return [...merged, ...untouched]
 }

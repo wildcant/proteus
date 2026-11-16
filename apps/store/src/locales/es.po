@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: formatPrice(item.unitPrice, order.currencyCode)
-#: src/features/orders/components/order-items/order-items.tsx:73
+#: src/features/orders/components/order-items/order-items.tsx:76
 msgid "{0} each"
 msgstr "{0} c/u"
 
@@ -414,7 +414,7 @@ msgstr "Ingresa tu correo electrónico"
 msgid "Email verified"
 msgstr "Correo verificado"
 
-#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:97
+#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:122
 msgid "Enter shipping address"
 msgstr "Ingresa la dirección de envío"
 
@@ -525,7 +525,7 @@ msgstr "¿Olvidaste tu contraseña?"
 msgid "From"
 msgstr "Desde"
 
-#: src/features/products/components/product-card/product-card.tsx:70
+#: src/features/products/components/product-card/product-card.tsx:83
 msgid "From {startingPrice}"
 msgstr "Desde {startingPrice}"
 
@@ -844,7 +844,7 @@ msgstr "Precio: de menor a mayor"
 msgid "Price: up to {0}"
 msgstr "Precio: hasta {0}"
 
-#: src/features/products/components/product-detail/product-detail.tsx:69
+#: src/features/products/components/product-detail/product-detail.tsx:71
 #: src/features/products/components/search-results/search-results.tsx:67
 msgid "Products"
 msgstr "Productos"
@@ -864,6 +864,14 @@ msgstr "Ref."
 #: src/features/auth/api/auth.ts:46
 msgid "Registration failed"
 msgstr "No pudimos crear tu cuenta"
+
+#: src/features/cart/components/cart-item/cart-item.tsx:91
+#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:89
+#: src/features/orders/components/order-items/order-items.tsx:95
+#: src/features/products/components/product-card/product-card.tsx:88
+#: src/features/products/components/product-detail/product-detail.tsx:118
+msgid "Regular price"
+msgstr "Precio regular"
 
 #: src/features/products/api/products.ts:39
 msgid "Relevance"
@@ -907,6 +915,14 @@ msgstr "Enviamos el enlace a <0>{email}</0>. Revisa tu bandeja de entrada."
 #: src/features/cart/components/cart-mismatch-banner/cart-mismatch-banner.tsx:42
 msgid "Run transfer again"
 msgstr "Volver a transferir"
+
+#: src/features/cart/components/cart-item/cart-item.tsx:84
+#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:80
+#: src/features/orders/components/order-items/order-items.tsx:86
+#: src/features/products/components/product-card/product-card.tsx:77
+#: src/features/products/components/product-detail/product-detail.tsx:106
+msgid "Sale price"
+msgstr "Precio de oferta"
 
 #: src/features/address/components/address-form/address-form.tsx:165
 msgid "Save"
@@ -973,7 +989,7 @@ msgid "Shipped"
 msgstr "Enviado"
 
 #: src/features/cart/components/cart-drawer/cart-drawer.tsx:140
-#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:91
+#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:116
 #: src/features/orders/components/order-summary/order-summary.tsx:48
 msgid "Shipping"
 msgstr "Envío"
@@ -1036,7 +1052,7 @@ msgid "Signing in..."
 msgstr "Iniciando sesión..."
 
 #: src/features/products/components/add-to-cart/add-to-cart.tsx:88
-#: src/features/products/components/product-card/product-card.tsx:92
+#: src/features/products/components/product-card/product-card.tsx:114
 #: src/features/products/components/variant-stock/variant-stock.tsx:26
 msgid "Sold out"
 msgstr "Agotado"
@@ -1067,7 +1083,7 @@ msgstr "Departamento / Estado"
 msgid "Stored with your account so your next checkout is one tap. Remove it whenever you like."
 msgstr "Se guarda en tu cuenta para que tu próxima compra sea de un solo toque. Elimínala cuando quieras."
 
-#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:83
+#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:108
 #: src/features/orders/components/order-summary/order-summary.tsx:40
 msgid "Subtotal"
 msgstr "Subtotal"
@@ -1142,7 +1158,7 @@ msgid "To"
 msgstr "Hasta"
 
 #: src/features/cart/components/cart-drawer/cart-drawer.tsx:148
-#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:103
+#: src/features/checkout/components/checkout-summary-body/checkout-summary-body.tsx:128
 #: src/features/orders/components/order-summary/order-summary.tsx:56
 msgid "Total"
 msgstr "Total"

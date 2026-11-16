@@ -45,6 +45,7 @@
     "@tanstack/react-router-devtools": "catalog:",
     "@tanstack/react-router-ssr-query": "^1.167.1",
     "@tanstack/react-start": "^1.168.50",
+    "bignumber.js": "catalog:",
     "class-variance-authority": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

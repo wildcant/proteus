@@ -1002,10 +1002,12 @@ test.describe('GET /store/products across markets', () => {
    */
   const createCatalogue = async (factories: Factories) => {
     const usdOnly = await factories.create.productWithPricing({ prices: [{ amount: '100', currencyCode: 'usd' }] })
+    // Marked down in both markets, by a different compare-at in each, so the starting price has to
+    // carry the one in the market's own currency.
     const bothMarkets = await factories.create.productWithPricing({
       prices: [
-        { amount: '120', currencyCode: 'usd' },
-        { amount: '480000', currencyCode: 'cop' },
+        { amount: '120', currencyCode: 'usd', compareAtAmount: '150' },
+        { amount: '480000', currencyCode: 'cop', compareAtAmount: '600000' },
       ],
     })
     return { usdOnly, bothMarkets }
@@ -1046,10 +1048,12 @@ test.describe('GET /store/products across markets', () => {
     expect(us.body.products.find((product) => product.id === bothMarkets.id)?.startingPrice).toMatchObject({
       currencyCode: 'usd',
       calculatedAmount: '120',
+      compareAtAmount: '150',
     })
     expect(co.body.products.find((product) => product.id === bothMarkets.id)?.startingPrice).toMatchObject({
       currencyCode: 'cop',
       calculatedAmount: '480000',
+      compareAtAmount: '600000',
     })
   })
 })
@@ -1119,10 +1123,11 @@ test.describe('GET /store/products/:handle across markets', () => {
   })
 
   test('a product priced in both markets is unaffected in either', async ({ expect, factories }) => {
+    // Marked down in dollars only: the peso compare-at sits below the price, so it is no Markdown.
     const bothMarkets = await factories.create.productWithPricing({
       prices: [
-        { amount: '120', currencyCode: 'usd' },
-        { amount: '480000', currencyCode: 'cop' },
+        { amount: '120', currencyCode: 'usd', compareAtAmount: '150' },
+        { amount: '480000', currencyCode: 'cop', compareAtAmount: '400000' },
       ],
     })
 
@@ -1135,8 +1140,14 @@ test.describe('GET /store/products/:handle across markets', () => {
 
     expect(us.status).toBe(200)
     expect(co.status).toBe(200)
-    expect(us.body.product.variants[0]?.calculatedPrice.calculatedAmount).toBe('120')
-    expect(co.body.product.variants[0]?.calculatedPrice.calculatedAmount).toBe('480000')
+    expect(us.body.product.variants[0]?.calculatedPrice).toMatchObject({
+      calculatedAmount: '120',
+      compareAtAmount: '150',
+    })
+    expect(co.body.product.variants[0]?.calculatedPrice).toMatchObject({
+      calculatedAmount: '480000',
+      compareAtAmount: null,
+    })
   })
 })
 

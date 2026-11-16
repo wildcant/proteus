@@ -706,7 +706,11 @@ export type ImportedVariantDTO = {
   allowBackorder: boolean
   /** Units on hand at the default location; `null` leaves stock alone. */
   inventoryQuantity: number | null
-  prices: Array<{ currencyCode: string; amount: number }>
+  /**
+   * `compareAtAmount` is `null` for a blank cell, which clears it on overwrite, and absent when the
+   * file has no compare-at column for the currency, which keeps the stored one.
+   */
+  prices: Array<{ currencyCode: string; amount: number; compareAtAmount?: number | null }>
   imageUrl: string | null
 }
 

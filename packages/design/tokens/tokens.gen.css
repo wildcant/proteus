@@ -227,6 +227,16 @@
   }
 }
 
+@utility type-label-struck {
+  && {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: var(--text-sm--line-height);
+    text-decoration-line: line-through;
+  }
+}
+
 @utility type-label {
   && {
     font-family: var(--font-sans);

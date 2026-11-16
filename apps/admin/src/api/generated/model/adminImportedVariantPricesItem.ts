@@ -9,4 +9,6 @@
 export type AdminImportedVariantPricesItem = {
   currencyCode: string;
   amount: number;
+  /** @nullable */
+  compareAtAmount?: number | null;
 };

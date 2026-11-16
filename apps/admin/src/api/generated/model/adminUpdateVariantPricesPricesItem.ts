@@ -16,4 +16,9 @@ export type AdminUpdateVariantPricesPricesItem = {
   currencyCode: string;
   /** @pattern ^-?\d{1,12}(\.\d{1,8})?$ */
   amount: string;
+  /**
+     * @nullable
+     * @pattern ^-?\d{1,12}(\.\d{1,8})?$
+     */
+  compareAtAmount?: string | null;
 };

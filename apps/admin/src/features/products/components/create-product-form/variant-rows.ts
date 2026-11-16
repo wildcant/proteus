@@ -1,6 +1,6 @@
 import type { AdminCreateProduct, AdminProductOption } from '#/api/generated/model'
 import type { OptionValueEntry } from '#/features/product-options/components/option-value-selector'
-import type { CurrencyAmounts } from '#/features/products/utils/price-columns'
+import { type CurrencyAmounts, compareAtKey } from '#/features/products/utils/price-columns'
 
 /** One row of the wizard's variant grid: a combination plus what the shopkeeper typed against it. */
 export type VariantRow = {
@@ -16,19 +16,29 @@ export type VariantRow = {
    * the day it is created.
    */
   prices: CurrencyAmounts
+  /** The compare-at beside each price, keyed the same way. Blank means none in that currency. */
+  compareAtPrices: CurrencyAmounts
 }
 
 /**
- * The row as the grid holds it: `label`, `sku`, and one key per currency, all flat.
+ * The row as the grid holds it: `label`, `sku`, and per currency its price under the code and its
+ * compare-at under `compareAt:<code>`, all flat.
  *
- * `DataGridColumn` reaches a value by a single key, so the nested `prices` has to be spread out for
+ * `DataGridColumn` reaches a value by a single key, so the nested amounts have to be spread out for
  * the grid and folded back afterwards. The projection is here rather than in the form because it is
  * the other half of the row shape above, and the two only make sense together.
  */
 export type VariantGridRow = Record<string, string>
 
 export function toVariantGridRows(rows: VariantRow[]): VariantGridRow[] {
-  return rows.map((row) => ({ label: row.label, sku: row.sku, ...row.prices }))
+  return rows.map((row) => ({
+    label: row.label,
+    sku: row.sku,
+    ...row.prices,
+    ...Object.fromEntries(
+      Object.entries(row.compareAtPrices).map(([currencyCode, amount]) => [compareAtKey(currencyCode), amount]),
+    ),
+  }))
 }
 
 /**
@@ -39,13 +49,21 @@ export function fromVariantGridRows(rows: VariantRow[], gridRows: VariantGridRow
   return rows.map((row, index) => {
     const gridRow = gridRows[index]
     if (!gridRow) return row
-    const { label: _label, sku, ...prices } = gridRow
-    return { ...row, sku: sku ?? '', prices }
+    // Read back by the row's own currencies rather than by what the grid row happens to carry, so
+    // a compare-at key can never land in `prices`.
+    const amountsFor = (amounts: CurrencyAmounts, key: (currencyCode: string) => string) =>
+      Object.fromEntries(Object.keys(amounts).map((currencyCode) => [currencyCode, gridRow[key(currencyCode)] ?? '']))
+    return {
+      ...row,
+      sku: gridRow.sku ?? '',
+      prices: amountsFor(row.prices, (currencyCode) => currencyCode),
+      compareAtPrices: amountsFor(row.compareAtPrices, compareAtKey),
+    }
   })
 }
 
 /**
- * A row's price cells for the currencies the store sells in today, carrying over whatever was
+ * A row's amount cells for the currencies the store sells in today, carrying over whatever was
  * already typed. A currency the store has dropped is dropped with it rather than quietly submitted.
  */
 function seedPrices(currencyCodes: string[], existing?: CurrencyAmounts): CurrencyAmounts {
@@ -104,6 +122,7 @@ export function enumerateVariantRows(
       optionValues,
       sku: edited?.sku ?? '',
       prices: seedPrices(currencyCodes, edited?.prices),
+      compareAtPrices: seedPrices(currencyCodes, edited?.compareAtPrices),
     }
   })
 }
@@ -148,10 +167,13 @@ export function resolveVariantsPayload(variants: {
     variants: variants.rows.map((row, index) => {
       // One price per currency the merchant actually typed into. A blank cell is not a zero: it
       // means this variant is not priced in that market yet, and sending it would put the variant
-      // on sale for nothing there.
+      // on sale for nothing there. A compare-at goes with its price, or not at all.
       const prices = Object.entries(row.prices)
         .filter(([, amount]) => amount !== '')
-        .map(([currencyCode, amount]) => ({ currencyCode, amount }))
+        .map(([currencyCode, amount]) => {
+          const compareAtAmount = row.compareAtPrices[currencyCode] ?? ''
+          return { currencyCode, amount, compareAtAmount: compareAtAmount === '' ? null : compareAtAmount }
+        })
 
       return {
         optionValues: row.optionValues,

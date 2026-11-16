@@ -14,6 +14,8 @@ export type PrepareLineItemDataInput = {
   productSubline: string | null
   variant: EnrichedProductVariantDTO
   unitPrice: BigNumber
+  /** The price's compare-at when it marks the variant down, else `null`. */
+  compareAtUnitPrice: BigNumber | null
   thumbnail: string | null
 }
 
@@ -34,6 +36,7 @@ export function prepareLineItemData(input: PrepareLineItemDataInput): CreateLine
     title: product.title,
     quantity: input.quantity,
     unitPrice: input.unitPrice,
+    compareAtUnitPrice: input.compareAtUnitPrice,
     thumbnail: input.thumbnail,
     variantId: variant.id,
     variantSku: variant.sku,

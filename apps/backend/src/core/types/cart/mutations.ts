@@ -30,6 +30,7 @@ export type CreateLineItemDTO = {
 export type UpdateLineItemDTO = {
   quantity?: number | undefined
   unitPrice?: BigNumber | undefined
+  compareAtUnitPrice?: BigNumber | null | undefined
 }
 
 /** One line item and the patch meant for it alone. */

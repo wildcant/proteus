@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { cn } from '@proteus/ui-core'
 import { Link } from '@tanstack/react-router'
 import type { StoreCartLineItem } from '#/api/generated/model'
@@ -5,12 +6,14 @@ import { Icon } from '#/components/ui/icon/icon'
 import { QuantityStepper } from '#/components/ui/quantity-stepper/quantity-stepper'
 import {
   cartItem,
+  cartItemCompareAt,
   cartItemDetails,
   cartItemFooter,
   cartItemImage,
   cartItemInfo,
   cartItemOptions,
   cartItemPrice,
+  cartItemPrices,
   cartItemQuantity,
   cartItemThumbnail,
   cartItemTitle,
@@ -73,7 +76,24 @@ export function CartItem({
         </div>
 
         <div className={cartItemFooter()}>
-          <span className={cartItemPrice()}>{formatPrice(item.unitPrice, currencyCode)}</span>
+          {/* Unit against unit: the stepper beside it is what multiplies both. The screen-reader
+              labels are `sr-only`, out of the row's flow and its gap. */}
+          <p className={cn(cartItemPrices(), 'm-0')}>
+            {!!item.compareAtUnitPrice && (
+              <span className="sr-only">
+                <Trans>Sale price</Trans>
+              </span>
+            )}
+            <span className={cartItemPrice()}>{formatPrice(item.unitPrice, currencyCode)}</span>
+            {!!item.compareAtUnitPrice && (
+              <>
+                <span className="sr-only">
+                  <Trans>Regular price</Trans>
+                </span>
+                <span className={cartItemCompareAt()}>{formatPrice(item.compareAtUnitPrice, currencyCode)}</span>
+              </>
+            )}
+          </p>
 
           <QuantityStepper
             size="xs"

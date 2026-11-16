@@ -5348,6 +5348,14 @@
                   "type": "string",
                   "format": "decimal",
                   "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+                },
+                "compareAtAmount": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "decimal",
+                  "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
                 }
               },
               "required": [
@@ -5807,6 +5815,13 @@
             "type": "string",
             "description": "Numeric string (arbitrary precision)"
           },
+          "compareAtAmount": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Numeric string (arbitrary precision)"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -5820,6 +5835,7 @@
           "id",
           "currencyCode",
           "amount",
+          "compareAtAmount",
           "createdAt",
           "updatedAt"
         ]
@@ -6221,6 +6237,14 @@
                 },
                 "amount": {
                   "type": "string",
+                  "format": "decimal",
+                  "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
+                },
+                "compareAtAmount": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
                   "format": "decimal",
                   "pattern": "^-?\\d{1,12}(\\.\\d{1,8})?$"
                 }
@@ -6695,6 +6719,12 @@
                 },
                 "amount": {
                   "type": "number"
+                },
+                "compareAtAmount": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
                 }
               },
               "required": [

@@ -21,7 +21,7 @@ const dualPricedVariant = async (service: Services) => {
 
   const [priceSet] = await service.create.variantPrices(container, [variant.id], {
     prices: [
-      { currencyCode: 'usd', amount: new BigNumber(2800) },
+      { currencyCode: 'usd', amount: new BigNumber(2800), compareAtAmount: new BigNumber(3200) },
       { currencyCode: 'cop', amount: new BigNumber(12000000) },
     ],
   })
@@ -29,7 +29,12 @@ const dualPricedVariant = async (service: Services) => {
 
   const pricesByCurrency = async () => {
     const prices = await service.read.prices(container, priceSet.id)
-    return Object.fromEntries(prices.map((price) => [price.currencyCode, { id: price.id, amount: price.amount }]))
+    return Object.fromEntries(
+      prices.map((price) => [
+        price.currencyCode,
+        { id: price.id, amount: price.amount, compareAtAmount: price.compareAtAmount },
+      ]),
+    )
   }
 
   return { variant, priceSet, pricesByCurrency }
@@ -68,12 +73,23 @@ test.describe('updateVariantPricesWorkflow', () => {
     await expect(
       updateVariantPricesWorkflow.run({
         variantId: variant.id,
-        data: { prices: [{ id: before.usd?.id, currencyCode: 'usd', amount: new BigNumber(3500) }] },
+        data: {
+          prices: [
+            {
+              id: before.usd?.id,
+              currencyCode: 'usd',
+              amount: new BigNumber(3500),
+              compareAtAmount: new BigNumber(4000),
+            },
+          ],
+        },
       }),
     ).rejects.toThrow('pricing unavailable')
 
     vi.restoreAllMocks()
     expect(await pricesByCurrency()).toEqual(before)
+    // The compare-at is part of what came back, not a field the rollback could leave at the edit's.
+    expect(before.usd?.compareAtAmount?.toString()).toBe('3200')
   })
 
   test('rollback removes a currency the failed edit had added', async ({ service, expect }) => {

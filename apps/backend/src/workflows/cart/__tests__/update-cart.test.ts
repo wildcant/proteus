@@ -131,7 +131,9 @@ type Factories = Fixtures['factories']
 type Services = Fixtures['service']
 
 const USD_PRICE = '80'
+const USD_COMPARE_AT = '100'
 const COP_PRICE = '320000'
+const COP_COMPARE_AT = '400000'
 const SHIPPING_AMOUNT = '10'
 
 /** A market: a region, the country it sells to, and one shipping option zoned to that country. */
@@ -159,8 +161,8 @@ const cartReadyToSwitch = async (
   const colombia = await createMarket(factories, 'co', 'cop')
   const product = await factories.create.productWithPricing({
     prices: options.prices ?? [
-      { amount: USD_PRICE, currencyCode: 'usd' },
-      { amount: COP_PRICE, currencyCode: 'cop' },
+      { amount: USD_PRICE, compareAtAmount: USD_COMPARE_AT, currencyCode: 'usd' },
+      { amount: COP_PRICE, compareAtAmount: COP_COMPARE_AT, currencyCode: 'cop' },
     ],
   })
 
@@ -170,6 +172,7 @@ const cartReadyToSwitch = async (
     variantId: product.variant.id,
     quantity: 1,
     unitPrice: new BigNumber(USD_PRICE),
+    compareAtUnitPrice: new BigNumber(USD_COMPARE_AT),
   })
   const shippingMethod = await service.create.shippingMethod(container, cart.id, {
     name: 'US Standard',
@@ -196,6 +199,7 @@ const cartState = async (service: Services, cartId: string) => {
     regionId: cart.regionId,
     currencyCode: cart.currencyCode,
     unitPrices: lineItems.map((item) => item.unitPrice.toString()),
+    compareAtUnitPrices: lineItems.map((item) => item.compareAtUnitPrice?.toString() ?? null),
     shippingMethodNames: shippingMethods.map((method) => method.name),
     addressCountryCodes: addresses.map((address) => address.countryCode),
   }
@@ -230,6 +234,7 @@ test.describe('updateCartWorkflow — market switch rollback', () => {
       regionId: scene.unitedStates.region.id,
       currencyCode: 'usd',
       unitPrices: [USD_PRICE],
+      compareAtUnitPrices: [USD_COMPARE_AT],
       shippingMethodNames: ['US Standard'],
     })
   })

@@ -87,7 +87,13 @@ export const setProductOptionsWorkflow = createWorkflow<SetProductOptionsInput, 
           if (prices.length === 0) return
 
           const [priceSet] = await pricingService.createPriceSets([
-            { prices: prices.map((price) => ({ currencyCode: price.currencyCode, amount: price.amount })) },
+            {
+              prices: prices.map((price) => ({
+                currencyCode: price.currencyCode,
+                amount: price.amount,
+                compareAtAmount: price.compareAtAmount,
+              })),
+            },
           ])
           if (!priceSet) return
 

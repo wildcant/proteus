@@ -9,6 +9,7 @@ CREATE TABLE "price" (
 	"id" text PRIMARY KEY DEFAULT CONCAT('price_', REPLACE(gen_random_uuid()::text, '-', '')) NOT NULL,
 	"currency_code" text NOT NULL,
 	"amount" numeric NOT NULL,
+	"compare_at_amount" numeric,
 	"price_set_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
