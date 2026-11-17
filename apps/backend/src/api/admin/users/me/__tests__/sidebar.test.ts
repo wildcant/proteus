@@ -54,10 +54,10 @@ describe('sidebar response contract', () => {
     ])
   })
 
-  test('lists draft orders under Orders for anyone who can read orders', () => {
+  test('lists draft and closed orders under Orders for anyone who can read orders', () => {
     const groups = buildSidebar(new Set<PermissionKey>(['order.read']))
     expect(groups.at(0)?.items.map((item) => [item.to, item.children?.map((child) => child.to)])).toEqual([
-      ['/orders', ['/draft-orders']],
+      ['/orders', ['/draft-orders', '/closed-orders']],
     ])
   })
 

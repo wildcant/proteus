@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { daysAgoIso, todayIso } from '@proteus/utils'
-import type { AdminOrder } from '#/api/generated/model'
+import type { AdminOrder, ListOrdersParams } from '#/api/generated/model'
 import { StatusCell } from '#/components/data-table/data-table-ui/status-cell'
 import { useDefineTable } from '#/components/data-table/hooks/use-define-table'
 import { useOrders } from '#/features/orders/api/orders'
@@ -11,12 +11,27 @@ import {
   orderStatusLabels,
 } from '#/features/orders/utils/order-status'
 
-export const useOrderTable = () => {
+type OrderStatus = NonNullable<AdminOrder['status']>
+
+/** Orders the shop still has to act on, on the main page. */
+export const OPEN_ORDER_STATUSES: OrderStatus[] = ['pending']
+/** Orders in an end state, on a page of their own so they stay out of the way. */
+export const CLOSED_ORDER_STATUSES: OrderStatus[] = ['completed', 'canceled', 'archived']
+
+/** The orders table, scoped to `statuses`; a status filter narrows within them. */
+export const useOrderTable = (statuses: OrderStatus[]) => {
   const { t, i18n } = useLingui()
 
+  const statusOptions = [
+    { label: t`Pending`, value: 'pending' },
+    { label: t`Completed`, value: 'completed' },
+    { label: t`Canceled`, value: 'canceled' },
+    { label: t`Archived`, value: 'archived' },
+  ].filter((option) => statuses.includes(option.value as OrderStatus))
+
   return useDefineTable<AdminOrder>({
-    useData: (params) => {
-      const { data, isPending, isFetching } = useOrders(params)
+    useData: (params: ListOrdersParams) => {
+      const { data, isPending, isFetching } = useOrders({ ...params, status: params.status ?? statuses })
       return {
         data: data?.orders ?? [],
         count: data?.count,
@@ -46,16 +61,10 @@ export const useOrderTable = () => {
     ],
 
     filters: (filter) => [
-      filter.accessor('status', {
-        type: 'select',
-        label: t`Status`,
-        options: [
-          { label: t`Pending`, value: 'pending' },
-          { label: t`Completed`, value: 'completed' },
-          { label: t`Canceled`, value: 'canceled' },
-          { label: t`Archived`, value: 'archived' },
-        ],
-      }),
+      // One status has nothing to filter between.
+      ...(statusOptions.length > 1
+        ? [filter.accessor('status', { type: 'select', label: t`Status`, options: statusOptions })]
+        : []),
       filter.accessor('createdAt', {
         type: 'date',
         label: t`Date`,

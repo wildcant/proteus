@@ -321,7 +321,7 @@ msgstr "Archive orders"
 msgid "archived"
 msgstr "archived"
 
-#: src/features/orders/hooks/use-order-table.tsx:56
+#: src/features/orders/hooks/use-order-table.tsx:29
 msgid "Archived"
 msgstr "Archived"
 
@@ -523,7 +523,7 @@ msgstr "Cancel orders"
 msgid "canceled"
 msgstr "canceled"
 
-#: src/features/orders/hooks/use-order-table.tsx:55
+#: src/features/orders/hooks/use-order-table.tsx:28
 msgid "Canceled"
 msgstr "Canceled"
 
@@ -535,7 +535,7 @@ msgstr "Capture payments"
 msgid "captured"
 msgstr "captured"
 
-#: src/components/layout/use-sidebar-label.ts:15
+#: src/components/layout/use-sidebar-label.ts:16
 #: src/features/categories/components/category-tree-list.tsx:19
 #: src/features/categories/components/product-categories-picker.tsx:21
 #: src/features/products/components/product-organization-section.tsx:32
@@ -612,12 +612,18 @@ msgstr "Close"
 msgid "Close toast"
 msgstr "Close toast"
 
+#: src/components/layout/use-sidebar-label.ts:14
+#: src/routes/_authed/_shell/closed-orders/index.tsx:22
+#: src/routes/_authed/_shell/closed-orders/route.tsx:5
+msgid "Closed orders"
+msgstr "Closed orders"
+
 #: src/features/regions/hooks/use-region-country-table.tsx:35
 #: src/features/store/hooks/use-store-currency-table.tsx:49
 msgid "Code"
 msgstr "Code"
 
-#: src/components/layout/use-sidebar-label.ts:16
+#: src/components/layout/use-sidebar-label.ts:17
 #: src/features/collections/components/collections-combobox.tsx:16
 #: src/features/products/components/product-organization-section.tsx:33
 #: src/routes/_authed/_shell/collections/index.tsx:24
@@ -676,7 +682,7 @@ msgstr "Complete orders"
 msgid "completed"
 msgstr "completed"
 
-#: src/features/orders/hooks/use-order-table.tsx:54
+#: src/features/orders/hooks/use-order-table.tsx:27
 msgid "Completed"
 msgstr "Completed"
 
@@ -883,11 +889,11 @@ msgstr "Custom amount ({currency})"
 #: src/features/draft-orders/components/draft-customer-section.tsx:20
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:25
 #: src/features/orders/components/order-customer-section.tsx:18
-#: src/features/orders/hooks/use-order-table.tsx:30
+#: src/features/orders/hooks/use-order-table.tsx:45
 msgid "Customer"
 msgstr "Customer"
 
-#: src/components/layout/use-sidebar-label.ts:20
+#: src/components/layout/use-sidebar-label.ts:21
 #: src/routes/_authed/_shell/customers/index.tsx:21
 #: src/routes/_authed/_shell/customers/route.tsx:5
 msgid "Customers"
@@ -904,8 +910,8 @@ msgstr "Dashboard"
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:33
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:39
 #: src/features/inventory/hooks/use-reservation-table.tsx:33
-#: src/features/orders/hooks/use-order-table.tsx:45
-#: src/features/orders/hooks/use-order-table.tsx:61
+#: src/features/orders/hooks/use-order-table.tsx:60
+#: src/features/orders/hooks/use-order-table.tsx:70
 msgid "Date"
 msgstr "Date"
 
@@ -1686,7 +1692,7 @@ msgid "fulfilled"
 msgstr "fulfilled"
 
 #: src/features/orders/components/order-fulfillment-section.tsx:26
-#: src/features/orders/hooks/use-order-table.tsx:39
+#: src/features/orders/hooks/use-order-table.tsx:54
 msgid "Fulfillment"
 msgstr "Fulfillment"
 
@@ -1694,7 +1700,7 @@ msgstr "Fulfillment"
 msgid "GB"
 msgstr "GB"
 
-#: src/components/layout/use-sidebar-label.ts:23
+#: src/components/layout/use-sidebar-label.ts:24
 #: src/features/products/components/create-product-form/product-create-details-form.tsx:23
 msgid "General"
 msgstr "General"
@@ -1838,7 +1844,7 @@ msgstr "Increase quantity"
 msgid "Internal"
 msgstr "Internal"
 
-#: src/components/layout/use-sidebar-label.ts:21
+#: src/components/layout/use-sidebar-label.ts:22
 #: src/routes/_authed/_shell/inventory/index.tsx:21
 #: src/routes/_authed/_shell/inventory/route.tsx:5
 msgid "Inventory"
@@ -1899,21 +1905,21 @@ msgstr "Language"
 
 #: src/features/customers/hooks/use-customer-table.tsx:43
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:44
-#: src/features/orders/hooks/use-order-table.tsx:66
+#: src/features/orders/hooks/use-order-table.tsx:75
 #: src/features/products/hooks/use-product-table.tsx:57
 msgid "Last 12 months"
 msgstr "Last 12 months"
 
 #: src/features/customers/hooks/use-customer-table.tsx:42
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:43
-#: src/features/orders/hooks/use-order-table.tsx:65
+#: src/features/orders/hooks/use-order-table.tsx:74
 #: src/features/products/hooks/use-product-table.tsx:56
 msgid "Last 30 days"
 msgstr "Last 30 days"
 
 #: src/features/customers/hooks/use-customer-table.tsx:41
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:42
-#: src/features/orders/hooks/use-order-table.tsx:64
+#: src/features/orders/hooks/use-order-table.tsx:73
 #: src/features/products/hooks/use-product-table.tsx:55
 msgid "Last 7 days"
 msgstr "Last 7 days"
@@ -2271,11 +2277,11 @@ msgstr "No options linked to this product."
 msgid "No options yet"
 msgstr "No options yet"
 
-#: src/features/orders/hooks/use-order-table.tsx:79
+#: src/features/orders/hooks/use-order-table.tsx:88
 msgid "No orders found"
 msgstr "No orders found"
 
-#: src/features/orders/hooks/use-order-table.tsx:75
+#: src/features/orders/hooks/use-order-table.tsx:84
 msgid "No orders yet"
 msgstr "No orders yet"
 
@@ -2507,7 +2513,7 @@ msgstr "Optional"
 msgid "Optional description"
 msgstr "Optional description"
 
-#: src/components/layout/use-sidebar-label.ts:19
+#: src/components/layout/use-sidebar-label.ts:20
 #: src/features/product-options/components/product-option-section.tsx:16
 #: src/routes/_authed/_shell/product-options/index.tsx:24
 #: src/routes/_authed/_shell/product-options/route.tsx:5
@@ -2515,7 +2521,7 @@ msgid "Options"
 msgstr "Options"
 
 #: src/features/inventory/hooks/use-reservation-table.tsx:26
-#: src/features/orders/hooks/use-order-table.tsx:29
+#: src/features/orders/hooks/use-order-table.tsx:44
 msgid "Order"
 msgstr "Order"
 
@@ -2534,7 +2540,7 @@ msgstr "Order total: {total}"
 msgid "Orders"
 msgstr "Orders"
 
-#: src/features/orders/hooks/use-order-table.tsx:76
+#: src/features/orders/hooks/use-order-table.tsx:85
 msgid "Orders will appear here once customers complete checkout."
 msgstr "Orders will appear here once customers complete checkout."
 
@@ -2617,7 +2623,7 @@ msgstr "Payments"
 msgid "pending"
 msgstr "pending"
 
-#: src/features/orders/hooks/use-order-table.tsx:53
+#: src/features/orders/hooks/use-order-table.tsx:26
 #: src/features/users/hooks/use-invite-table.tsx:28
 msgid "Pending"
 msgstr "Pending"
@@ -2738,7 +2744,7 @@ msgstr "Product Variant"
 msgid "Product variants"
 msgstr "Product variants"
 
-#: src/components/layout/use-sidebar-label.ts:14
+#: src/components/layout/use-sidebar-label.ts:15
 #: src/features/products/components/product-group-section.tsx:39
 #: src/features/products/components/product-picker.tsx:30
 #: src/routes/_authed/_shell/product-options/$id/_detail/route.tsx:76
@@ -2860,7 +2866,7 @@ msgstr "refunded"
 msgid "Refunded"
 msgstr "Refunded"
 
-#: src/components/layout/use-sidebar-label.ts:26
+#: src/components/layout/use-sidebar-label.ts:27
 #: src/routes/_authed/settings/regions/index.tsx:24
 #: src/routes/_authed/settings/regions/route.tsx:5
 msgid "Regions"
@@ -2968,7 +2974,7 @@ msgstr "Resend invite"
 msgid "Resend invites"
 msgstr "Resend invites"
 
-#: src/components/layout/use-sidebar-label.ts:22
+#: src/components/layout/use-sidebar-label.ts:23
 #: src/routes/_authed/_shell/reservations/index.tsx:21
 #: src/routes/_authed/_shell/reservations/route.tsx:5
 msgid "Reservations"
@@ -2987,7 +2993,7 @@ msgstr "Reserved quantity"
 msgid "Role \"{name}\" deleted"
 msgstr "Role \"{name}\" deleted"
 
-#: src/components/layout/use-sidebar-label.ts:25
+#: src/components/layout/use-sidebar-label.ts:26
 #: src/features/users/components/invite-form.tsx:42
 #: src/features/users/components/user-role-assignment.tsx:43
 #: src/features/users/hooks/use-user-table.tsx:23
@@ -3241,8 +3247,8 @@ msgid "SKU"
 msgstr "SKU"
 
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:27
-#: src/features/orders/hooks/use-order-table.tsx:32
-#: src/features/orders/hooks/use-order-table.tsx:51
+#: src/features/orders/hooks/use-order-table.tsx:47
+#: src/features/orders/hooks/use-order-table.tsx:66
 #: src/features/product-options/hooks/use-option-products-table.tsx:24
 #: src/features/products/components/import-products/import-preview-step.tsx:197
 #: src/features/products/hooks/use-product-list-table.tsx:34
@@ -3300,7 +3306,7 @@ msgstr "Super Admin"
 msgid "System"
 msgstr "System"
 
-#: src/components/layout/use-sidebar-label.ts:17
+#: src/components/layout/use-sidebar-label.ts:18
 #: src/features/product-tags/components/product-tags-combobox.tsx:17
 #: src/features/products/components/import-products/import-preview-step.tsx:153
 #: src/features/products/components/import-products/import-preview-step.tsx:202
@@ -3468,7 +3474,7 @@ msgstr "To pick up a category, press space or enter. Use the up and down arrow k
 
 #: src/features/customers/hooks/use-customer-table.tsx:40
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:41
-#: src/features/orders/hooks/use-order-table.tsx:63
+#: src/features/orders/hooks/use-order-table.tsx:72
 #: src/features/products/hooks/use-product-table.tsx:54
 msgid "Today"
 msgstr "Today"
@@ -3491,7 +3497,7 @@ msgstr "True"
 #: src/components/data-table/data-table.tsx:82
 #: src/features/customers/hooks/use-customer-table.tsx:57
 #: src/features/draft-orders/hooks/use-draft-order-table.tsx:58
-#: src/features/orders/hooks/use-order-table.tsx:80
+#: src/features/orders/hooks/use-order-table.tsx:89
 #: src/features/products/hooks/use-product-table.tsx:72
 #: src/features/products/hooks/use-variant-table.tsx:74
 msgid "Try changing your filters or search term."
@@ -3545,7 +3551,7 @@ msgstr "Type to add a tag."
 msgid "Type to add one."
 msgstr "Type to add one."
 
-#: src/components/layout/use-sidebar-label.ts:18
+#: src/components/layout/use-sidebar-label.ts:19
 #: src/features/products/components/import-products/import-preview-step.tsx:154
 #: src/routes/_authed/_shell/product-types/index.tsx:21
 #: src/routes/_authed/_shell/product-types/route.tsx:5
@@ -3589,7 +3595,7 @@ msgstr "Uploaded media will appear here."
 msgid "User"
 msgstr "User"
 
-#: src/components/layout/use-sidebar-label.ts:24
+#: src/components/layout/use-sidebar-label.ts:25
 #: src/features/access-control/hooks/use-role-table.tsx:35
 #: src/routes/_authed/settings/users/index.tsx:22
 #: src/routes/_authed/settings/users/route.tsx:5

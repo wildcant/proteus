@@ -39,7 +39,10 @@ const MAIN_SIDEBAR: InternalSidebarGroup[] = [
         to: '/orders',
         icon: 'shopping-cart',
         permission: 'order.read',
-        children: [{ label: 'Draft orders', to: '/draft-orders', permission: 'order.read' }],
+        children: [
+          { label: 'Draft orders', to: '/draft-orders', permission: 'order.read' },
+          { label: 'Closed orders', to: '/closed-orders', permission: 'order.read' },
+        ],
       },
       {
         label: 'Products',

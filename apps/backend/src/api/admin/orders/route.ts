@@ -14,8 +14,11 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const fulfillmentService = req.scope.resolve(Modules.FULFILLMENT)
 
   const { pagination, filters } = req.validatedQuery
-  // Drafts have a list of their own (`/admin/draft-orders`); a canceled draft stays out of this one too.
-  const [orders, count] = await orderService.listAndCountOrders({ ...filters, isDraftOrder: false }, pagination)
+  // Open drafts have a list of their own (`/admin/draft-orders`); a canceled draft is done, so it reads as an order.
+  const [orders, count] = await orderService.listAndCountOrders(
+    { ...filters, $or: [{ isDraftOrder: false }, { status: 'canceled' }] },
+    pagination,
+  )
   const { offset, limit } = pagination
 
   const orderIds = orders.map((order) => order.id)

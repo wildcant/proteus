@@ -50,10 +50,15 @@ region and sales channel ids copied from the Cart, as Medusa's does, so the admi
 draft's items after the Cart has closed. Email is optional on every Order, and the confirmation
 email is skipped when there is none, so a shopper can order without giving one.
 
-Drafts are left out of the admin orders list, a Customer's order history, order counts and the
-order placed event. The admin lists them on their own, edits a draft's shipping address (phone
-included), shipping method (with a custom amount) and items, deletes one made by mistake, cancels
-one the shop won't fulfil, and converts one.
+Drafts are left out of a Customer's order history, order counts and the order placed event. The
+admin lists open drafts on their own, edits a draft's shipping address (phone included), shipping
+method (with a custom amount) and items, deletes one made by mistake, cancels one the shop won't
+fulfil, and converts one. A canceled draft is done with, so it leaves the drafts list for the
+closed orders.
+
+The admin's orders are split by what they still need. The orders list holds the pending Orders,
+which the shop still has to act on; a closed orders list holds the completed, canceled and archived
+ones, canceled drafts included.
 
 **Converting** reserves inventory and fails if an item sold out since the draft was made. It sets the
 status to pending, creates the Order's payment collection and emits order placed.
