@@ -13,10 +13,10 @@ test.beforeEach(async ({ createApi }) => {
 
 test.describe('GET /admin/draft-orders', () => {
   /**
-   * Only confirmed orders read as orders. A draft the shop canceled is `canceled` like any other
-   * order, and it still belongs with the drafts: that is what the flag beside the status is for.
+   * Only open drafts read as drafts. A draft the shop canceled is done with, so the orders list
+   * shows it beside the confirmed orders.
    */
-  test('lists the drafts, canceled ones included, and the orders list leaves them out', async ({ service, expect }) => {
+  test('lists the open drafts, and the orders list takes the canceled ones', async ({ service, expect }) => {
     const { order } = await service.create.order(api.container)
     const draft = await service.create.draftOrder(api.container, { email: null })
     const canceledDraft = await service.create.draftOrder(api.container)
@@ -25,21 +25,18 @@ test.describe('GET /admin/draft-orders', () => {
     const orders = await api.get<AdminOrderListResponse>('/admin/orders')
     const drafts = await api.get<AdminDraftOrderListResponse>('/admin/draft-orders')
 
-    expect(orders.body).toMatchObject({
-      count: 1,
-      orders: [{ id: order.id, reference: orderReference(order.displayId) }],
-    })
-    expect(drafts.body.count).toBe(2)
-    expect(drafts.body.draftOrders.map((draftOrder) => draftOrder.id).sort()).toEqual(
-      [draft.id, canceledDraft.id].sort(),
-    )
-    expect(drafts.body.draftOrders).toContainEqual(
+    expect(orders.body.count).toBe(2)
+    expect(orders.body.orders.map((listed) => listed.id).sort()).toEqual([order.id, canceledDraft.id].sort())
+    expect(orders.body.orders).toContainEqual(
       expect.objectContaining({
-        id: draft.id,
-        status: 'draft',
-        email: null,
-        reference: orderReference(draft.displayId),
+        id: canceledDraft.id,
+        status: 'canceled',
+        reference: orderReference(canceledDraft.displayId),
       }),
     )
+    expect(drafts.body).toMatchObject({
+      count: 1,
+      draftOrders: [{ id: draft.id, status: 'draft', email: null, reference: orderReference(draft.displayId) }],
+    })
   })
 })

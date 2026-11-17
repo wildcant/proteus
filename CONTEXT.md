@@ -226,8 +226,8 @@ collection, so an abandoned one costs nothing. A shopper creates one by sending 
 which closes the Cart; sending the same Cart again returns the same draft. The admin edits its
 items, address and shipping, then converts it to a pending Order — reserving stock, creating its
 payment collection, usually while recording the deposit, and linking it to the guest Customer its
-email or phone finds or makes — or cancels it. Kept out of the admin's
-orders list, a Customer's order history and order counts; the admin lists drafts on their own.
+email or phone finds or makes — or cancels it. Kept out of a Customer's order history and order
+counts; the admin lists open drafts on their own, and a canceled one with the closed orders.
 _Avoid_: quote, pending order, saved cart, order request
 
 **Order Transaction**:

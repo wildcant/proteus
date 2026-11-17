@@ -10,8 +10,11 @@ export const GET = async (req: HttpRequest<typeof GetInput>): Promise<HttpResult
   const orderService = req.scope.resolve(Modules.ORDER)
 
   const { pagination, filters } = req.validatedQuery
-  // By the flag rather than the status, so a draft the shop canceled stays in this list.
-  const [orders, count] = await orderService.listAndCountOrders({ ...filters, isDraftOrder: true }, pagination)
+  // Only open drafts: a draft the shop canceled moves to the orders list.
+  const [orders, count] = await orderService.listAndCountOrders(
+    { ...filters, isDraftOrder: true, status: 'draft' },
+    pagination,
+  )
   const { offset, limit } = pagination
 
   const draftOrders = orders.map((order) => ({ ...order, reference: orderReference(order.displayId) }))

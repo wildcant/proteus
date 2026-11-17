@@ -63,7 +63,9 @@ export function flowLinks<S extends FlowScreen>(screen: S): FlowLinks<S> {
   const events: Record<string, readonly Transition[]> = flow[screen]
   const actions = Object.entries(events).map(([event, transitions]) => {
     if (transitions.every(({ to }) => to === '.')) return [event, stayLink] as const
-    const [only, ...others] = [...new Set(transitions.map(entryOf))]
+    // A stay beside a real target is external (a link out), so the event links only to its targets, as its type says.
+    const targets = transitions.filter(({ to }) => to !== '.')
+    const [only, ...others] = [...new Set(targets.map(entryOf))]
     const action =
       others.length > 0 || !only
         ? (target: ScreenKey, options?: object) => linkTo(target, options)

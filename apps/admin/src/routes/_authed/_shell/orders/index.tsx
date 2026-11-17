@@ -4,17 +4,17 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DataTable } from '#/components/data-table/data-table'
 import { PageLayout } from '#/components/layout/page-layout'
 import { ordersListQueryOptions } from '#/features/orders/api/orders'
-import { useOrderTable } from '#/features/orders/hooks/use-order-table'
+import { OPEN_ORDER_STATUSES, useOrderTable } from '#/features/orders/hooks/use-order-table'
 
 export const Route = createFileRoute('/_authed/_shell/orders/')({
   validateSearch: AdminOrderListParams,
-  loader: ({ context }) => context.queryClient.ensureQueryData(ordersListQueryOptions()),
+  loader: ({ context }) => context.queryClient.ensureQueryData(ordersListQueryOptions({ status: OPEN_ORDER_STATUSES })),
   component: OrdersPage,
 })
 
 function OrdersPage() {
   const { t } = useLingui()
-  const orders = useOrderTable()
+  const orders = useOrderTable(OPEN_ORDER_STATUSES)
 
   return (
     <PageLayout.SingleColumn>
